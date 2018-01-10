@@ -1,0 +1,1400 @@
+%!PS-Adobe-3.0
+%%Creator: graphviz version 2.38.0 (20140413.2041)
+%%Title: dependencies-Number
+%%Pages: (atend)
+%%BoundingBox: (atend)
+%%EndComments
+save
+%%BeginProlog
+/DotDict 200 dict def
+DotDict begin
+
+/setupLatin1 {
+mark
+/EncodingVector 256 array def
+ EncodingVector 0
+
+ISOLatin1Encoding 0 255 getinterval putinterval
+EncodingVector 45 /hyphen put
+
+% Set up ISO Latin 1 character encoding
+/starnetISO {
+        dup dup findfont dup length dict begin
+        { 1 index /FID ne { def }{ pop pop } ifelse
+        } forall
+        /Encoding EncodingVector def
+        currentdict end definefont
+} def
+/Times-Roman starnetISO def
+/Times-Italic starnetISO def
+/Times-Bold starnetISO def
+/Times-BoldItalic starnetISO def
+/Helvetica starnetISO def
+/Helvetica-Oblique starnetISO def
+/Helvetica-Bold starnetISO def
+/Helvetica-BoldOblique starnetISO def
+/Courier starnetISO def
+/Courier-Oblique starnetISO def
+/Courier-Bold starnetISO def
+/Courier-BoldOblique starnetISO def
+cleartomark
+} bind def
+
+%%BeginResource: procset graphviz 0 0
+/coord-font-family /Times-Roman def
+/default-font-family /Times-Roman def
+/coordfont coord-font-family findfont 8 scalefont def
+
+/InvScaleFactor 1.0 def
+/set_scale {
+       dup 1 exch div /InvScaleFactor exch def
+       scale
+} bind def
+
+% styles
+/solid { [] 0 setdash } bind def
+/dashed { [9 InvScaleFactor mul dup ] 0 setdash } bind def
+/dotted { [1 InvScaleFactor mul 6 InvScaleFactor mul] 0 setdash } bind def
+/invis {/fill {newpath} def /stroke {newpath} def /show {pop newpath} def} bind def
+/bold { 2 setlinewidth } bind def
+/filled { } bind def
+/unfilled { } bind def
+/rounded { } bind def
+/diagonals { } bind def
+/tapered { } bind def
+
+% hooks for setting color 
+/nodecolor { sethsbcolor } bind def
+/edgecolor { sethsbcolor } bind def
+/graphcolor { sethsbcolor } bind def
+/nopcolor {pop pop pop} bind def
+
+/beginpage {	% i j npages
+	/npages exch def
+	/j exch def
+	/i exch def
+	/str 10 string def
+	npages 1 gt {
+		gsave
+			coordfont setfont
+			0 0 moveto
+			(\() show i str cvs show (,) show j str cvs show (\)) show
+		grestore
+	} if
+} bind def
+
+/set_font {
+	findfont exch
+	scalefont setfont
+} def
+
+% draw text fitted to its expected width
+/alignedtext {			% width text
+	/text exch def
+	/width exch def
+	gsave
+		width 0 gt {
+			[] 0 setdash
+			text stringwidth pop width exch sub text length div 0 text ashow
+		} if
+	grestore
+} def
+
+/boxprim {				% xcorner ycorner xsize ysize
+		4 2 roll
+		moveto
+		2 copy
+		exch 0 rlineto
+		0 exch rlineto
+		pop neg 0 rlineto
+		closepath
+} bind def
+
+/ellipse_path {
+	/ry exch def
+	/rx exch def
+	/y exch def
+	/x exch def
+	matrix currentmatrix
+	newpath
+	x y translate
+	rx ry scale
+	0 0 1 0 360 arc
+	setmatrix
+} bind def
+
+/endpage { showpage } bind def
+/showpage { } def
+
+/layercolorseq
+	[	% layer color sequence - darkest to lightest
+		[0 0 0]
+		[.2 .8 .8]
+		[.4 .8 .8]
+		[.6 .8 .8]
+		[.8 .8 .8]
+	]
+def
+
+/layerlen layercolorseq length def
+
+/setlayer {/maxlayer exch def /curlayer exch def
+	layercolorseq curlayer 1 sub layerlen mod get
+	aload pop sethsbcolor
+	/nodecolor {nopcolor} def
+	/edgecolor {nopcolor} def
+	/graphcolor {nopcolor} def
+} bind def
+
+/onlayer { curlayer ne {invis} if } def
+
+/onlayers {
+	/myupper exch def
+	/mylower exch def
+	curlayer mylower lt
+	curlayer myupper gt
+	or
+	{invis} if
+} def
+
+/curlayer 0 def
+
+%%EndResource
+%%EndProlog
+%%BeginSetup
+14 default-font-family set_font
+1 setmiterlimit
+% /arrowlength 10 def
+% /arrowwidth 5 def
+
+% make sure pdfmark is harmless for PS-interpreters other than Distiller
+/pdfmark where {pop} {userdict /pdfmark /cleartomark load put} ifelse
+% make '<<' and '>>' safe on PS Level 1 devices
+/languagelevel where {pop languagelevel}{1} ifelse
+2 lt {
+    userdict (<<) cvn ([) cvn load put
+    userdict (>>) cvn ([) cvn load put
+} if
+
+%%EndSetup
+setupLatin1
+%%Page: 1 1
+%%PageBoundingBox: 36 36 515 756
+%%PageOrientation: Portrait
+<< /PageSize [515 756] >> setpagedevice
+0 0 1 beginpage
+gsave
+36 36 479 720 boxprim clip newpath
+0.00617289 0.00617289 set_scale 0 rotate 5835.95 5835.95 translate
+[ /CropBox [36 36 515 756] /PAGES pdfmark
+% Tools.NaturalNumber
+gsave
+1 setlinewidth
+solid
+0 0 0 nodecolor
+59393.87 104913.35 6480 1080 ellipse_path stroke
+0 0 0 nodecolor
+1000 /Times-Roman set_font
+54990.37 104663.35 moveto 8807 (Tools.NaturalNumber) alignedtext
+grestore
+% Math.Tools.FixedPoint
+gsave
+1 setlinewidth
+solid
+0 0 0 nodecolor
+43675.42 111027.16 6480 1080 ellipse_path stroke
+0 0 0 nodecolor
+1000 /Times-Roman set_font
+39034.42 110777.16 moveto 9282 (Math.Tools.FixedPoint) alignedtext
+grestore
+% Tools.NaturalNumber->Math.Tools.FixedPoint
+gsave
+1 setlinewidth
+0 0 0 edgecolor
+newpath 56841.39 105906.16 moveto
+54008.25 107008.13 49448.5 108781.68 46507.42 109925.63 curveto
+stroke
+0 0 0 edgecolor
+newpath 46469.22 109827.83 moveto
+46227.69 110034.44 lineto
+46545.35 110023.54 lineto
+closepath fill
+1 setlinewidth
+solid
+0 0 0 edgecolor
+newpath 46469.22 109827.83 moveto
+46227.69 110034.44 lineto
+46545.35 110023.54 lineto
+closepath stroke
+grestore
+% Math.Tools.Orthogonal
+gsave
+1 setlinewidth
+solid
+0 0 0 nodecolor
+47494.92 89249.8 6480 1080 ellipse_path stroke
+0 0 0 nodecolor
+1000 /Times-Roman set_font
+42770.92 88999.8 moveto 9448 (Math.Tools.Orthogonal) alignedtext
+grestore
+% Tools.NaturalNumber->Math.Tools.Orthogonal
+gsave
+1 setlinewidth
+0 0 0 edgecolor
+newpath 58579.82 103841.74 moveto
+56463.88 101056.36 50795.6 93594.75 48490.47 90560.32 curveto
+stroke
+0 0 0 edgecolor
+newpath 48573.98 90496.66 moveto
+48308.89 90321.29 lineto
+48406.75 90623.7 lineto
+closepath fill
+1 setlinewidth
+solid
+0 0 0 edgecolor
+newpath 48573.98 90496.66 moveto
+48308.89 90321.29 lineto
+48406.75 90623.7 lineto
+closepath stroke
+grestore
+% Number.Stream
+gsave
+1 setlinewidth
+solid
+0 0 0 nodecolor
+26105.54 94956.08 6480 1080 ellipse_path stroke
+0 0 0 nodecolor
+1000 /Times-Roman set_font
+22925.04 94706.08 moveto 6361 (Number.Stream) alignedtext
+grestore
+% Number.Stream->Math.Tools.FixedPoint
+gsave
+1 setlinewidth
+0 0 0 edgecolor
+newpath 27267.27 96018.71 moveto
+30385.82 98871.23 38931.57 106687.99 42292.06 109761.81 curveto
+stroke
+0 0 0 edgecolor
+newpath 42221.34 109839.42 moveto
+42513.57 109964.43 lineto
+42363.07 109684.47 lineto
+closepath fill
+1 setlinewidth
+solid
+0 0 0 edgecolor
+newpath 42221.34 109839.42 moveto
+42513.57 109964.43 lineto
+42363.07 109684.47 lineto
+closepath stroke
+grestore
+% Number.Stream->Math.Tools.Orthogonal
+gsave
+1 setlinewidth
+0 0 0 edgecolor
+newpath 29539.15 94040.06 moveto
+33433.34 93001.16 39761.23 91313 43771.53 90243.13 curveto
+stroke
+0 0 0 edgecolor
+newpath 43798.64 90344.57 moveto
+44061.44 90165.79 lineto
+43744.51 90141.66 lineto
+closepath fill
+1 setlinewidth
+solid
+0 0 0 edgecolor
+newpath 43798.64 90344.57 moveto
+44061.44 90165.79 lineto
+43744.51 90141.66 lineto
+closepath stroke
+grestore
+% Math.Tools.I
+gsave
+1 setlinewidth
+solid
+0 0 0 nodecolor
+13842.54 112533.31 6480 1080 ellipse_path stroke
+0 0 0 nodecolor
+1000 /Times-Roman set_font
+11230.54 112283.31 moveto 5224 (Math.Tools.I) alignedtext
+grestore
+% Number.Stream->Math.Tools.I
+gsave
+1 setlinewidth
+0 0 0 edgecolor
+newpath 25356.89 96029.16 moveto
+23220.38 99091.54 17098.32 107866.62 14762.91 111214.09 curveto
+stroke
+0 0 0 edgecolor
+newpath 14676.65 111154.23 moveto
+14591.11 111460.34 lineto
+14848.88 111274.38 lineto
+closepath fill
+1 setlinewidth
+solid
+0 0 0 edgecolor
+newpath 14676.65 111154.23 moveto
+14591.11 111460.34 lineto
+14848.88 111274.38 lineto
+closepath stroke
+grestore
+% Math.Tools.Functor
+gsave
+1 setlinewidth
+solid
+0 0 0 nodecolor
+26431.7 71670.3 6480 1080 ellipse_path stroke
+0 0 0 nodecolor
+1000 /Times-Roman set_font
+22430.7 71420.3 moveto 8002 (Math.Tools.Functor) alignedtext
+grestore
+% Number.Stream->Math.Tools.Functor
+gsave
+1 setlinewidth
+0 0 0 edgecolor
+newpath 26120.67 93875.8 moveto
+26173.97 90070.77 26352.97 77291.43 26412.37 73050.85 curveto
+stroke
+0 0 0 edgecolor
+newpath 26517.36 73052.08 moveto
+26416.57 72750.64 lineto
+26307.38 73049.14 lineto
+closepath fill
+1 setlinewidth
+solid
+0 0 0 edgecolor
+newpath 26517.36 73052.08 moveto
+26416.57 72750.64 lineto
+26307.38 73049.14 lineto
+closepath stroke
+grestore
+% Math.Tools.Arrow
+gsave
+1 setlinewidth
+solid
+0 0 0 nodecolor
+22184.99 115396.61 6480 1080 ellipse_path stroke
+0 0 0 nodecolor
+1000 /Times-Roman set_font
+18434.49 115146.61 moveto 7501 (Math.Tools.Arrow) alignedtext
+grestore
+% Number.Stream->Math.Tools.Arrow
+gsave
+1 setlinewidth
+0 0 0 edgecolor
+newpath 25898.47 96035.68 moveto
+25238.09 99478.7 23182.39 110196.44 22448.59 114022.26 curveto
+stroke
+0 0 0 edgecolor
+newpath 22345.45 114002.56 moveto
+22392.06 114316.97 lineto
+22551.69 114042.12 lineto
+closepath fill
+1 setlinewidth
+solid
+0 0 0 edgecolor
+newpath 22345.45 114002.56 moveto
+22392.06 114316.97 lineto
+22551.69 114042.12 lineto
+closepath stroke
+grestore
+% Math.Tools.Visitor
+gsave
+1 setlinewidth
+solid
+0 0 0 nodecolor
+29891.13 74424.25 6480 1080 ellipse_path stroke
+0 0 0 nodecolor
+1000 /Times-Roman set_font
+26056.13 74174.25 moveto 7670 (Math.Tools.Visitor) alignedtext
+grestore
+% Number.Stream->Math.Tools.Visitor
+gsave
+1 setlinewidth
+0 0 0 edgecolor
+newpath 26304.65 93876.16 moveto
+26941.72 90420.91 28929.7 79638.7 29637.64 75799.06 curveto
+stroke
+0 0 0 edgecolor
+newpath 29740.91 75818.07 moveto
+29692.04 75504.01 lineto
+29534.39 75780 lineto
+closepath fill
+1 setlinewidth
+solid
+0 0 0 edgecolor
+newpath 29740.91 75818.07 moveto
+29692.04 75504.01 lineto
+29534.39 75780 lineto
+closepath stroke
+grestore
+% Math.Tools.Median
+gsave
+1 setlinewidth
+solid
+0 0 0 nodecolor
+31161.37 81741.78 6480 1080 ellipse_path stroke
+0 0 0 nodecolor
+1000 /Times-Roman set_font
+27188.37 81491.78 moveto 7946 (Math.Tools.Median) alignedtext
+grestore
+% Number.Stream->Math.Tools.Median
+gsave
+1 setlinewidth
+0 0 0 edgecolor
+newpath 26517.94 93878.2 moveto
+27433.46 91485.32 29634.04 85733.71 30641.68 83100.08 curveto
+stroke
+0 0 0 edgecolor
+newpath 30739.8 83137.46 moveto
+30748.94 82819.74 lineto
+30543.67 83062.41 lineto
+closepath fill
+1 setlinewidth
+solid
+0 0 0 edgecolor
+newpath 30739.8 83137.46 moveto
+30748.94 82819.74 lineto
+30543.67 83062.41 lineto
+closepath stroke
+grestore
+% Math.Tools.CoFunctor
+gsave
+1 setlinewidth
+solid
+0 0 0 nodecolor
+48628.68 102629 6480 1080 ellipse_path stroke
+0 0 0 nodecolor
+1000 /Times-Roman set_font
+44044.18 102379 moveto 9169 (Math.Tools.CoFunctor) alignedtext
+grestore
+% Number.Stream->Math.Tools.CoFunctor
+gsave
+1 setlinewidth
+0 0 0 edgecolor
+newpath 28953.47 95926.28 moveto
+33185.6 97368.03 41106.16 100066.32 45496.76 101562.06 curveto
+stroke
+0 0 0 edgecolor
+newpath 45462.95 101661.46 moveto
+45780.78 101658.81 lineto
+45530.66 101462.68 lineto
+closepath fill
+1 setlinewidth
+solid
+0 0 0 edgecolor
+newpath 45462.95 101661.46 moveto
+45780.78 101658.81 lineto
+45530.66 101462.68 lineto
+closepath stroke
+grestore
+% Math.Matrix.Covector
+gsave
+1 setlinewidth
+solid
+0 0 0 nodecolor
+25434 78664.81 6480 1080 ellipse_path stroke
+0 0 0 nodecolor
+1000 /Times-Roman set_font
+20933.5 78414.81 moveto 9001 (Math.Matrix.Covector) alignedtext
+grestore
+% Number.Stream->Math.Matrix.Covector
+gsave
+1 setlinewidth
+0 0 0 edgecolor
+newpath 26061.01 93875.73 moveto
+25942.93 91011.2 25621.94 83224.19 25490.89 80044.82 curveto
+stroke
+0 0 0 edgecolor
+newpath 25595.79 80040.27 moveto
+25478.52 79744.84 lineto
+25385.97 80048.91 lineto
+closepath fill
+1 setlinewidth
+solid
+0 0 0 edgecolor
+newpath 25595.79 80040.27 moveto
+25478.52 79744.84 lineto
+25385.97 80048.91 lineto
+closepath stroke
+grestore
+% Math.Tools.CoMonad
+gsave
+1 setlinewidth
+solid
+0 0 0 nodecolor
+6480.08 90703 6480 1080 ellipse_path stroke
+0 0 0 nodecolor
+1000 /Times-Roman set_font
+2034.58 90453 moveto 8891 (Math.Tools.CoMonad) alignedtext
+grestore
+% Number.Stream->Math.Tools.CoMonad
+gsave
+1 setlinewidth
+0 0 0 edgecolor
+newpath 22155.06 94099.96 moveto
+18840.79 93381.72 14117.96 92358.23 10723.91 91622.69 curveto
+stroke
+0 0 0 edgecolor
+newpath 10746.02 91520.05 moveto
+10430.59 91559.13 lineto
+10701.55 91725.29 lineto
+closepath fill
+1 setlinewidth
+solid
+0 0 0 edgecolor
+newpath 10746.02 91520.05 moveto
+10430.59 91559.13 lineto
+10701.55 91725.29 lineto
+closepath stroke
+grestore
+% Math.Tools.PrettyP
+gsave
+1 setlinewidth
+solid
+0 0 0 nodecolor
+12391.9 73384.13 6480 1080 ellipse_path stroke
+0 0 0 nodecolor
+1000 /Times-Roman set_font
+8473.9 73134.13 moveto 7836 (Math.Tools.PrettyP) alignedtext
+grestore
+% Number.Stream->Math.Tools.PrettyP
+gsave
+1 setlinewidth
+0 0 0 edgecolor
+newpath 25422.55 93881.71 moveto
+23135.07 90283.44 15746.56 78661.1 13235.91 74711.77 curveto
+stroke
+0 0 0 edgecolor
+newpath 13324.41 74655.27 moveto
+13074.85 74458.42 lineto
+13147.19 74767.93 lineto
+closepath fill
+1 setlinewidth
+solid
+0 0 0 edgecolor
+newpath 13324.41 74655.27 moveto
+13074.85 74458.42 lineto
+13147.19 74767.93 lineto
+closepath stroke
+grestore
+% Math.Tools.Adjunction
+gsave
+1 setlinewidth
+solid
+0 0 0 nodecolor
+43215.75 78806.76 6480 1080 ellipse_path stroke
+0 0 0 nodecolor
+1000 /Times-Roman set_font
+38519.25 78556.76 moveto 9393 (Math.Tools.Adjunction) alignedtext
+grestore
+% Number.Stream->Math.Tools.Adjunction
+gsave
+1 setlinewidth
+0 0 0 edgecolor
+newpath 27232.74 93892.19 moveto
+30266.84 91028.48 38597.66 83165.51 41870.44 80076.53 curveto
+stroke
+0 0 0 edgecolor
+newpath 41942.67 80152.74 moveto
+42088.77 79870.46 lineto
+41798.53 80000.02 lineto
+closepath fill
+1 setlinewidth
+solid
+0 0 0 edgecolor
+newpath 41942.67 80152.74 moveto
+42088.77 79870.46 lineto
+41798.53 80000.02 lineto
+closepath stroke
+grestore
+% Math.Tools.Integer
+gsave
+1 setlinewidth
+solid
+0 0 0 nodecolor
+8793.31 104571.75 6480 1080 ellipse_path stroke
+0 0 0 nodecolor
+1000 /Times-Roman set_font
+4931.81 104321.75 moveto 7723 (Math.Tools.Integer) alignedtext
+grestore
+% Number.Stream->Math.Tools.Integer
+gsave
+1 setlinewidth
+0 0 0 edgecolor
+newpath 24243.07 95990.55 moveto
+21000.01 97791.82 14336.38 101492.98 10918.26 103391.49 curveto
+stroke
+0 0 0 edgecolor
+newpath 10867.24 103299.72 moveto
+10655.96 103537.18 lineto
+10969.21 103483.31 lineto
+closepath fill
+1 setlinewidth
+solid
+0 0 0 edgecolor
+newpath 10867.24 103299.72 moveto
+10655.96 103537.18 lineto
+10969.21 103483.31 lineto
+closepath stroke
+grestore
+% Math.Tools.Queue
+gsave
+1 setlinewidth
+solid
+0 0 0 nodecolor
+35787.14 115551.36 6480 1080 ellipse_path stroke
+0 0 0 nodecolor
+1000 /Times-Roman set_font
+32036.64 115301.36 moveto 7501 (Math.Tools.Queue) alignedtext
+grestore
+% Number.Stream->Math.Tools.Queue
+gsave
+1 setlinewidth
+0 0 0 edgecolor
+newpath 26597.62 96033.1 moveto
+28207.84 99501.66 33319.8 110377.2 35137.77 114203.47 curveto
+stroke
+0 0 0 edgecolor
+newpath 35043.03 114248.75 moveto
+35266.69 114474.59 lineto
+35232.68 114158.57 lineto
+closepath fill
+1 setlinewidth
+solid
+0 0 0 edgecolor
+newpath 35043.03 114248.75 moveto
+35266.69 114474.59 lineto
+35232.68 114158.57 lineto
+closepath stroke
+grestore
+% Number.Stream->Math.Tools.Queue
+gsave
+1 setlinewidth
+0 0 0 edgecolor
+newpath 26626.03 96032.94 moveto
+28276.53 99500.88 33388.54 110374.45 35168.54 114202.05 curveto
+stroke
+0 0 0 edgecolor
+newpath 35073.39 114246.46 moveto
+35295.03 114474.28 lineto
+35263.84 114157.97 lineto
+closepath fill
+1 setlinewidth
+solid
+0 0 0 edgecolor
+newpath 35073.39 114246.46 moveto
+35295.03 114474.28 lineto
+35263.84 114157.97 lineto
+closepath stroke
+grestore
+% Math.Tools.Nondeterministic
+gsave
+1 setlinewidth
+solid
+0 0 0 nodecolor
+15374.98 108990.73 6480 1080 ellipse_path stroke
+0 0 0 nodecolor
+1000 /Times-Roman set_font
+9456.48 108740.73 moveto 11837 (Math.Tools.Nondeterministic) alignedtext
+grestore
+% Number.Stream->Math.Tools.Nondeterministic
+gsave
+1 setlinewidth
+0 0 0 edgecolor
+newpath 25286.33 96027.54 moveto
+23348.03 98562.66 18485.39 104922.58 16376.58 107680.73 curveto
+stroke
+0 0 0 edgecolor
+newpath 16293.06 107617.09 moveto
+16194.26 107919.19 lineto
+16459.89 107744.64 lineto
+closepath fill
+1 setlinewidth
+solid
+0 0 0 edgecolor
+newpath 16293.06 107617.09 moveto
+16194.26 107919.19 lineto
+16459.89 107744.64 lineto
+closepath stroke
+grestore
+% Math.Tools.Universe
+gsave
+1 setlinewidth
+solid
+0 0 0 nodecolor
+49110.18 97710.04 6480 1080 ellipse_path stroke
+0 0 0 nodecolor
+1000 /Times-Roman set_font
+44859.18 97460.04 moveto 8502 (Math.Tools.Universe) alignedtext
+grestore
+% Number.Stream->Math.Tools.Universe
+gsave
+1 setlinewidth
+0 0 0 edgecolor
+newpath 31368.84 95586.17 moveto
+35009.41 96021.99 39845.62 96600.95 43549.12 97044.3 curveto
+stroke
+0 0 0 edgecolor
+newpath 43536.76 97148.57 moveto
+43847.11 97079.98 lineto
+43561.72 96940.06 lineto
+closepath fill
+1 setlinewidth
+solid
+0 0 0 edgecolor
+newpath 43536.76 97148.57 moveto
+43847.11 97079.98 lineto
+43561.72 96940.06 lineto
+closepath stroke
+grestore
+% Math.Matrix.Interface
+gsave
+1 setlinewidth
+solid
+0 0 0 nodecolor
+47112.09 81743.85 6480 1080 ellipse_path stroke
+0 0 0 nodecolor
+1000 /Times-Roman set_font
+42668.59 81493.85 moveto 8887 (Math.Matrix.Interface) alignedtext
+grestore
+% Number.Stream->Math.Matrix.Interface
+gsave
+1 setlinewidth
+0 0 0 edgecolor
+newpath 27792.64 93913.27 moveto
+31664.86 91495.61 41167.78 85519 45225.62 82949.62 curveto
+stroke
+0 0 0 edgecolor
+newpath 45281.82 83038.31 moveto
+45479.07 82789.08 lineto
+45169.45 82860.91 lineto
+closepath fill
+1 setlinewidth
+solid
+0 0 0 edgecolor
+newpath 45281.82 83038.31 moveto
+45479.07 82789.08 lineto
+45169.45 82860.91 lineto
+closepath stroke
+grestore
+% Number.Stream->Math.Matrix.Interface
+gsave
+1 setlinewidth
+0 0 0 edgecolor
+newpath 27738.61 93910.82 moveto
+31558.49 91490.36 41062.86 85512.09 45170.33 82945.73 curveto
+stroke
+0 0 0 edgecolor
+newpath 45226 83034.75 moveto
+45424.82 82786.77 lineto
+45114.75 82856.64 lineto
+closepath fill
+1 setlinewidth
+solid
+0 0 0 edgecolor
+newpath 45226 83034.75 moveto
+45424.82 82786.77 lineto
+45114.75 82856.64 lineto
+closepath stroke
+grestore
+% Math.Matrix.Matrix
+gsave
+1 setlinewidth
+solid
+0 0 0 nodecolor
+12383.13 76243.78 6480 1080 ellipse_path stroke
+0 0 0 nodecolor
+1000 /Times-Roman set_font
+8355.13 75993.78 moveto 8056 (Math.Matrix.Matrix) alignedtext
+grestore
+% Number.Stream->Math.Matrix.Matrix
+gsave
+1 setlinewidth
+0 0 0 edgecolor
+newpath 25319.1 93883.67 moveto
+22956.75 90662.29 15927.53 81077.04 13347.05 77558.21 curveto
+stroke
+0 0 0 edgecolor
+newpath 13431.6 77495.96 moveto
+13169.52 77316.13 lineto
+13262.26 77620.14 lineto
+closepath fill
+1 setlinewidth
+solid
+0 0 0 edgecolor
+newpath 13431.6 77495.96 moveto
+13169.52 77316.13 lineto
+13262.26 77620.14 lineto
+closepath stroke
+grestore
+% Math.Matrix.Simple
+gsave
+1 setlinewidth
+solid
+0 0 0 nodecolor
+6598.87 98073.82 6480 1080 ellipse_path stroke
+0 0 0 nodecolor
+1000 /Times-Roman set_font
+2514.87 97823.82 moveto 8168 (Math.Matrix.Simple) alignedtext
+grestore
+% Number.Stream->Math.Matrix.Simple
+gsave
+1 setlinewidth
+0 0 0 edgecolor
+newpath 21428.55 95703.6 moveto
+18453 96179.18 14603.5 96794.44 11572.28 97278.92 curveto
+stroke
+0 0 0 edgecolor
+newpath 11555.69 97175.24 moveto
+11276.03 97326.27 lineto
+11588.84 97382.61 lineto
+closepath fill
+1 setlinewidth
+solid
+0 0 0 edgecolor
+newpath 11555.69 97175.24 moveto
+11276.03 97326.27 lineto
+11588.84 97382.61 lineto
+closepath stroke
+grestore
+% Number.Real
+gsave
+1 setlinewidth
+solid
+0 0 0 nodecolor
+37517.94 64313.18 6480 1080 ellipse_path stroke
+0 0 0 nodecolor
+1000 /Times-Roman set_font
+34837.44 64063.18 moveto 5361 (Number.Real) alignedtext
+grestore
+% Number.Real->Math.Tools.Orthogonal
+gsave
+1 setlinewidth
+0 0 0 edgecolor
+newpath 37949.14 65390.93 moveto
+39553.29 69400.38 45174.89 83451.07 46952.06 87892.96 curveto
+stroke
+0 0 0 edgecolor
+newpath 46854.7 87932.29 moveto
+47063.63 88171.82 lineto
+47049.68 87854.29 lineto
+closepath fill
+1 setlinewidth
+solid
+0 0 0 edgecolor
+newpath 46854.7 87932.29 moveto
+47063.63 88171.82 lineto
+47049.68 87854.29 lineto
+closepath stroke
+grestore
+% Number.Real->Math.Tools.Functor
+gsave
+1 setlinewidth
+0 0 0 edgecolor
+newpath 35939.49 65360.68 moveto
+33912.43 66705.89 30401.44 69035.88 28260.27 70456.82 curveto
+stroke
+0 0 0 edgecolor
+newpath 28202.06 70369.43 moveto
+28010.15 70622.8 lineto
+28318.17 70544.41 lineto
+closepath fill
+1 setlinewidth
+solid
+0 0 0 edgecolor
+newpath 28202.06 70369.43 moveto
+28010.15 70622.8 lineto
+28318.17 70544.41 lineto
+closepath stroke
+grestore
+% Number.Real->Math.Tools.Visitor
+gsave
+1 setlinewidth
+0 0 0 edgecolor
+newpath 36709.63 65384.78 moveto
+35301.95 67250.97 32405.33 71091.1 30880.18 73113.03 curveto
+stroke
+0 0 0 edgecolor
+newpath 30796.34 73049.82 moveto
+30699.51 73352.56 lineto
+30963.99 73176.28 lineto
+closepath fill
+1 setlinewidth
+solid
+0 0 0 edgecolor
+newpath 30796.34 73049.82 moveto
+30699.51 73352.56 lineto
+30963.99 73176.28 lineto
+closepath stroke
+grestore
+% Number.Real->Math.Tools.Median
+gsave
+1 setlinewidth
+0 0 0 edgecolor
+newpath 37124.65 65391.5 moveto
+36018.24 68425.1 32879.91 77029.83 31657.42 80381.7 curveto
+stroke
+0 0 0 edgecolor
+newpath 31558.69 80345.95 moveto
+31554.54 80663.77 lineto
+31755.98 80417.91 lineto
+closepath fill
+1 setlinewidth
+solid
+0 0 0 edgecolor
+newpath 31558.69 80345.95 moveto
+31554.54 80663.77 lineto
+31755.98 80417.91 lineto
+closepath stroke
+grestore
+% Number.Real->Math.Matrix.Covector
+gsave
+1 setlinewidth
+0 0 0 edgecolor
+newpath 36617.39 65382.72 moveto
+34439.26 67969.61 28891.92 74557.97 26527.9 77365.63 curveto
+stroke
+0 0 0 edgecolor
+newpath 26447.43 77298.17 moveto
+26334.53 77595.28 lineto
+26608.07 77433.43 lineto
+closepath fill
+1 setlinewidth
+solid
+0 0 0 edgecolor
+newpath 26447.43 77298.17 moveto
+26334.53 77595.28 lineto
+26608.07 77433.43 lineto
+closepath stroke
+grestore
+% Number.Real->Math.Tools.PrettyP
+gsave
+1 setlinewidth
+0 0 0 edgecolor
+newpath 34801.77 65293.77 moveto
+30063.03 67004.54 20320.8 70521.66 15390.76 72301.49 curveto
+stroke
+0 0 0 edgecolor
+newpath 15354.77 72202.85 moveto
+15108.25 72403.48 lineto
+15426.08 72400.37 lineto
+closepath fill
+1 setlinewidth
+solid
+0 0 0 edgecolor
+newpath 15354.77 72202.85 moveto
+15108.25 72403.48 lineto
+15426.08 72400.37 lineto
+closepath stroke
+grestore
+% Number.Real->Math.Tools.Adjunction
+gsave
+1 setlinewidth
+0 0 0 edgecolor
+newpath 37941.69 65391.08 moveto
+38962.7 67988.23 41557.39 74588.38 42682.19 77449.53 curveto
+stroke
+0 0 0 edgecolor
+newpath 42584.57 77488.2 moveto
+42792.05 77728.99 lineto
+42780.01 77411.37 lineto
+closepath fill
+1 setlinewidth
+solid
+0 0 0 edgecolor
+newpath 42584.57 77488.2 moveto
+42792.05 77728.99 lineto
+42780.01 77411.37 lineto
+closepath stroke
+grestore
+% Number.Real->Math.Matrix.Interface
+gsave
+1 setlinewidth
+0 0 0 edgecolor
+newpath 38109.95 65388.76 moveto
+39782.09 68426.69 44538.11 77067.44 46375.28 80405.22 curveto
+stroke
+0 0 0 edgecolor
+newpath 46283.46 80456.14 moveto
+46520.1 80668.33 lineto
+46467.43 80354.88 lineto
+closepath fill
+1 setlinewidth
+solid
+0 0 0 edgecolor
+newpath 46283.46 80456.14 moveto
+46520.1 80668.33 lineto
+46467.43 80354.88 lineto
+closepath stroke
+grestore
+% Number.Real->Math.Matrix.Matrix
+gsave
+1 setlinewidth
+0 0 0 edgecolor
+newpath 35370.89 65332.31 moveto
+30711.17 67544.11 19697.37 72771.97 14801.56 75095.84 curveto
+stroke
+0 0 0 edgecolor
+newpath 14756.08 75001.2 moveto
+14530.09 75224.7 lineto
+14846.13 75190.91 lineto
+closepath fill
+1 setlinewidth
+solid
+0 0 0 edgecolor
+newpath 14756.08 75001.2 moveto
+14530.09 75224.7 lineto
+14846.13 75190.91 lineto
+closepath stroke
+grestore
+% Math.Number.Stream
+gsave
+1 setlinewidth
+solid
+0 0 0 nodecolor
+49201.01 43276.57 6480 1080 ellipse_path stroke
+0 0 0 nodecolor
+1000 /Times-Roman set_font
+44840.01 43026.57 moveto 8722 (Math.Number.Stream) alignedtext
+grestore
+% Number.Real->Math.Number.Stream
+gsave
+1 setlinewidth
+0 0 0 edgecolor
+newpath 38129.86 63237.7 moveto
+40109.94 59710.52 46337.43 48498.09 48473.53 44615.35 curveto
+stroke
+0 0 0 edgecolor
+newpath 48565.58 44665.86 moveto
+48618.1 44352.39 lineto
+48381.56 44564.69 lineto
+closepath fill
+1 setlinewidth
+solid
+0 0 0 edgecolor
+newpath 48565.58 44665.86 moveto
+48618.1 44352.39 lineto
+48381.56 44564.69 lineto
+closepath stroke
+grestore
+% Number.Real->Math.Number.Stream
+gsave
+1 setlinewidth
+0 0 0 edgecolor
+newpath 38100.97 63237.14 moveto
+40039.21 59708.9 46266.47 48495.13 48442.18 44613.92 curveto
+stroke
+0 0 0 edgecolor
+newpath 48533.86 44665.1 moveto
+48589.06 44352.09 lineto
+48350.71 44562.36 lineto
+closepath fill
+1 setlinewidth
+solid
+0 0 0 edgecolor
+newpath 48533.86 44665.1 moveto
+48589.06 44352.09 lineto
+48350.71 44562.36 lineto
+closepath stroke
+grestore
+% Math.Tools.Prop
+gsave
+1 setlinewidth
+solid
+0 0 0 nodecolor
+57561.44 68203.05 6480 1080 ellipse_path stroke
+0 0 0 nodecolor
+1000 /Times-Roman set_font
+54171.44 67953.05 moveto 6780 (Math.Tools.Prop) alignedtext
+grestore
+% Number.Real->Math.Tools.Prop
+gsave
+1 setlinewidth
+0 0 0 edgecolor
+newpath 41739.95 65132.55 moveto
+45053.78 65775.67 49657.62 66669.14 53044.89 67326.51 curveto
+stroke
+0 0 0 edgecolor
+newpath 53025 67429.61 moveto
+53339.51 67383.69 lineto
+53065 67223.46 lineto
+closepath fill
+1 setlinewidth
+solid
+0 0 0 edgecolor
+newpath 53025 67429.61 moveto
+53339.51 67383.69 lineto
+53065 67223.46 lineto
+closepath stroke
+grestore
+% Math.Matrix.Instances
+gsave
+1 setlinewidth
+solid
+0 0 0 nodecolor
+29819.1 45514.37 6480 1080 ellipse_path stroke
+0 0 0 nodecolor
+1000 /Times-Roman set_font
+25291.1 45264.37 moveto 9056 (Math.Matrix.Instances) alignedtext
+grestore
+% Number.Real->Math.Matrix.Instances
+gsave
+1 setlinewidth
+0 0 0 edgecolor
+newpath 37076.54 63235.39 moveto
+35755.33 60009.3 31833.42 50432.88 30374.22 46869.84 curveto
+stroke
+0 0 0 edgecolor
+newpath 30471.28 46829.8 moveto
+30260.42 46591.97 lineto
+30276.95 46909.38 lineto
+closepath fill
+1 setlinewidth
+solid
+0 0 0 edgecolor
+newpath 30471.28 46829.8 moveto
+30260.42 46591.97 lineto
+30276.95 46909.38 lineto
+closepath stroke
+grestore
+% Number.BiStream
+gsave
+1 setlinewidth
+solid
+0 0 0 nodecolor
+67292.4 30579.85 6480 1080 ellipse_path stroke
+0 0 0 nodecolor
+1000 /Times-Roman set_font
+63639.4 30329.85 moveto 7306 (Number.BiStream) alignedtext
+grestore
+% Number.BiStream->Math.Number.Stream
+gsave
+1 setlinewidth
+0 0 0 edgecolor
+newpath 65795.06 31630.7 moveto
+62470.09 33964.19 54485.9 39567.58 50943.95 42053.35 curveto
+stroke
+0 0 0 edgecolor
+newpath 50883.57 41967.45 moveto
+50698.33 42225.73 lineto
+51004.21 42139.34 lineto
+closepath fill
+1 setlinewidth
+solid
+0 0 0 edgecolor
+newpath 50883.57 41967.45 moveto
+50698.33 42225.73 lineto
+51004.21 42139.34 lineto
+closepath stroke
+grestore
+% Number.Group
+gsave
+1 setlinewidth
+solid
+0 0 0 nodecolor
+61822.69 89832.32 6480 1080 ellipse_path stroke
+0 0 0 nodecolor
+1000 /Times-Roman set_font
+58780.69 89582.32 moveto 6084 (Number.Group) alignedtext
+grestore
+% Number.Group->Math.Tools.CoFunctor
+gsave
+1 setlinewidth
+0 0 0 edgecolor
+newpath 60725.05 90896.9 moveto
+58309.91 93239.31 52543.7 98831.88 49941.94 101355.29 curveto
+stroke
+0 0 0 edgecolor
+newpath 49868.66 101280.09 moveto
+49726.42 101564.32 lineto
+50014.87 101430.83 lineto
+closepath fill
+1 setlinewidth
+solid
+0 0 0 edgecolor
+newpath 49868.66 101280.09 moveto
+49726.42 101564.32 lineto
+50014.87 101430.83 lineto
+closepath stroke
+grestore
+% Number.Group->Math.Tools.Universe
+gsave
+1 setlinewidth
+0 0 0 edgecolor
+newpath 60139.49 90875.37 moveto
+57787.96 92332.57 53529.83 94971.26 51048.64 96508.81 curveto
+stroke
+0 0 0 edgecolor
+newpath 50993.14 96419.67 moveto
+50793.44 96666.95 lineto
+51103.75 96598.18 lineto
+closepath fill
+1 setlinewidth
+solid
+0 0 0 edgecolor
+newpath 50993.14 96419.67 moveto
+50793.44 96666.95 lineto
+51103.75 96598.18 lineto
+closepath stroke
+grestore
+% Number.Group->Math.Matrix.Interface
+gsave
+1 setlinewidth
+0 0 0 edgecolor
+newpath 59942.77 88798.66 moveto
+57205 87293.34 52134.41 84505.32 49255.3 82922.28 curveto
+stroke
+0 0 0 edgecolor
+newpath 49305.68 82830.15 moveto
+48992.2 82777.61 lineto
+49204.5 83014.17 lineto
+closepath fill
+1 setlinewidth
+solid
+0 0 0 edgecolor
+newpath 49305.68 82830.15 moveto
+48992.2 82777.61 lineto
+49204.5 83014.17 lineto
+closepath stroke
+grestore
+% Number.Group->Math.Tools.Prop
+gsave
+1 setlinewidth
+0 0 0 edgecolor
+newpath 61622.84 88752.66 moveto
+60933.06 85154.81 58652.31 73575.67 57846.37 69576.63 curveto
+stroke
+0 0 0 edgecolor
+newpath 57949.3 69555.85 moveto
+57787 69282.56 lineto
+57743.45 69597.41 lineto
+closepath fill
+1 setlinewidth
+solid
+0 0 0 edgecolor
+newpath 57949.3 69555.85 moveto
+57787 69282.56 lineto
+57743.45 69597.41 lineto
+closepath stroke
+grestore
+% Number.Group->Math.Tools.Prop
+gsave
+1 setlinewidth
+0 0 0 edgecolor
+newpath 61597.15 88752.91 moveto
+60869.41 85155.63 58587.9 73577.54 57817.94 69577.55 curveto
+stroke
+0 0 0 edgecolor
+newpath 57921.01 69557.51 moveto
+57761.29 69282.71 lineto
+57714.78 69597.14 lineto
+closepath fill
+1 setlinewidth
+solid
+0 0 0 edgecolor
+newpath 57921.01 69557.51 moveto
+57761.29 69282.71 lineto
+57714.78 69597.14 lineto
+closepath stroke
+grestore
+% Number
+gsave
+1 setlinewidth
+solid
+0 0 0 nodecolor
+58267.66 19451.99 6480 1080 ellipse_path stroke
+0 0 0 nodecolor
+1000 /Times-Roman set_font
+56628.66 19201.99 moveto 3278 (Number) alignedtext
+grestore
+% Number->Math.Number.Stream
+gsave
+1 setlinewidth
+0 0 0 edgecolor
+newpath 57857.31 20530.25 moveto
+56382.53 24405.56 51351.82 37624.84 49718.03 41917.98 curveto
+stroke
+0 0 0 edgecolor
+newpath 49619.87 41880.71 moveto
+49611.3 42198.44 lineto
+49816.13 41955.4 lineto
+closepath fill
+1 setlinewidth
+solid
+0 0 0 edgecolor
+newpath 49619.87 41880.71 moveto
+49611.3 42198.44 lineto
+49816.13 41955.4 lineto
+closepath stroke
+grestore
+% Math.Number.Real
+gsave
+1 setlinewidth
+solid
+0 0 0 nodecolor
+71108.82 6138.03 6480 1080 ellipse_path stroke
+0 0 0 nodecolor
+1000 /Times-Roman set_font
+67247.82 5888.03 moveto 7722 (Math.Number.Real) alignedtext
+grestore
+% Number->Math.Number.Real
+gsave
+1 setlinewidth
+0 0 0 edgecolor
+newpath 59296.12 18385.66 moveto
+61635.08 15960.58 67345.35 10040.07 69871.68 7420.72 curveto
+stroke
+0 0 0 edgecolor
+newpath 69947.53 7493.32 moveto
+70080.22 7204.5 lineto
+69796.38 7347.54 lineto
+closepath fill
+1 setlinewidth
+solid
+0 0 0 edgecolor
+newpath 69947.53 7493.32 moveto
+70080.22 7204.5 lineto
+69796.38 7347.54 lineto
+closepath stroke
+grestore
+% Math.Number.BiStream
+gsave
+1 setlinewidth
+solid
+0 0 0 nodecolor
+59544.22 1079.63 6480 1080 ellipse_path stroke
+0 0 0 nodecolor
+1000 /Times-Roman set_font
+54710.72 829.63 moveto 9667 (Math.Number.BiStream) alignedtext
+grestore
+% Number->Math.Number.BiStream
+gsave
+1 setlinewidth
+0 0 0 edgecolor
+newpath 58342.72 18371.73 moveto
+58562.44 15209.43 59204.15 5973.89 59448.36 2459.25 curveto
+stroke
+0 0 0 edgecolor
+newpath 59553.12 2466.3 moveto
+59469.17 2159.75 lineto
+59343.63 2451.75 lineto
+closepath fill
+1 setlinewidth
+solid
+0 0 0 edgecolor
+newpath 59553.12 2466.3 moveto
+59469.17 2159.75 lineto
+59343.63 2451.75 lineto
+closepath stroke
+grestore
+endpage
+showpage
+grestore
+%%PageTrailer
+%%EndPage: 1
+%%Trailer
+%%Pages: 1
+%%BoundingBox: 36 36 515 756
+end
+restore
+%%EOF
