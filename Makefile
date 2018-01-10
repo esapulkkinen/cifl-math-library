@@ -17,12 +17,12 @@ test :
 	cabal test -j --show-details=failures
 
 dependencegraph :
-	mkdir -p dist/doc/html/cifl
+	mkdir -p dist/doc/html/cifl-math-library
 	dependencies/draw_graph.sh Tools
 	dependencies/draw_graph.sh Graph
 	dependencies/draw_graph.sh Matrix
 	dependencies/draw_graph.sh Number
-	mv dependencies-*.ps dependencies-*.pdf dist/doc/html/cifl/
+	mv dependencies-*.ps dependencies-*.pdf dist/doc/html/cifl-math-library/
 
 document : 
 	cabal haddock --haddock-options="--title=cifl-math-library" --verbose=0 --all --hyperlink-source > dist/haddock-output
