@@ -19,7 +19,7 @@
 >import qualified Math.Number.Stream as Stream
 >import Math.Tools.Prop
 
-import qualified Model.Derivative as D
+import qualifiedci Model.Derivative as D
 
 >import Math.Matrix.Instances (characteristicPolynomial)
 
@@ -445,6 +445,8 @@ gamma z = integral (close 0,infinity_gen) $ \t -> exp (negate t) * (t ** (z-1))
 >approximately_equal x y = show_at_precision x 30 == show_at_precision y 30
 
 
+
+
 >constructively_less :: Rational -> R -> R -> Closure Bool
 >constructively_less between (Limit (Pre a ar)) (Limit (Pre b br)) = limit $
 >   (a < between || between < b)
@@ -540,6 +542,24 @@ gamma z = integral (close 0,infinity_gen) $ \t -> exp (negate t) * (t ** (z-1))
                    | otherwise = []
     enumFromThenTo x x2 y | x <= y = x : enumFromThenTo x2 (2*x2-x) y
                           | otherwise = []
+
+>-- | This attempts to work around the density problem by computing range
+>-- | in some type which does have enum instance,
+>-- | then using the given function to map to reals.
+>enumFromThenToReal :: (Enum e) => (e -> R) -> e -> e -> e -> [R]
+>enumFromThenToReal f a s b = [f x | x <- [a,s..b]]
+
+>fromThenTo :: Rational -> Rational -> Rational -> [R]
+>fromThenTo = enumFromThenToReal fromRational
+
+>fromTo :: Rational -> Rational -> [R]
+>fromTo = enumFromToReal fromRational
+
+>-- | This attempts to work around the density problem by computing range
+>-- | in some type which does have enum instance,
+>-- | then using the given function to map to reals.
+>enumFromToReal :: (Enum e) => (e -> R) -> e -> e -> [R]
+>enumFromToReal f a b = [f x | x <- [a..b]]
 
 >realEnumFromThenTo :: R -> R -> R -> Stream [Rational]
 >realEnumFromThenTo (Limit str) (Limit str2) (Limit str3) = strEnumFromThenTo str str2 str3
