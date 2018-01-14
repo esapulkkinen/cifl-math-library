@@ -16,7 +16,7 @@
 >-- indices as input, e.g.:
 >-- 
 >-- @identity :: (ThreeD :&: ThreeD) Integer@
->-- @identity = Matrix $ \i j -> if i == j then 1 else 0@
+>-- @identity = Matrix $ \\i j -> if i == j then 1 else 0@
 >--
 >-- Note that index types are specifically restricted to be small types,
 >-- since the Universe type class operations enumerate all elements

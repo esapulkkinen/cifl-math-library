@@ -1,4 +1,17 @@
 >{-# Language Trustworthy,UndecidableInstances, ExistentialQuantification, FlexibleInstances, MultiParamTypeClasses, MagicHash, TypeOperators, FlexibleContexts, Arrows, TypeFamilies, OverloadedLists #-}
+>-- |
+>-- This module implements lazy infinite streams,
+>-- stream generating functions and lots of operations on the lazy streams.
+>-- some examples for use of this module:
+>-- 
+>-- @fib = 1 `div` (1 - z - z*z)@
+>-- 
+>-- @pascal_triangle = Matrix $ 1 `div` (1 - z - z2*z)@
+>-- 
+>-- @take 4 fib == [1,1,2,3]@
+>-- 
+>-- @alternating_bits = cycle [0,1]@
+>
 >module Math.Number.Stream where
 >import Data.Monoid
 >import Data.Complex
