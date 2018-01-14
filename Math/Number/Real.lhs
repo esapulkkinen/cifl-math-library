@@ -12,6 +12,8 @@
 >import Math.Tools.Orthogonal
 >import Math.Tools.Adjunction
 >import Math.Tools.PrettyP
+>import Math.Tools.Arrow (BiArrow (..))
+>import Math.Tools.Isomorphism ((:==:)(..))
 >import Math.Matrix.Interface
 >import Math.Matrix.Covector
 >import Math.Matrix.Matrix
@@ -152,6 +154,9 @@ max_convergence_ratio = fmap (foldl1 max) . cauchy
 >  data Closure R = RClosure { runRClosure :: R }
 >  limit str = RClosure $ limit_real str
 >  approximations = fmap (Limit . return) . approximate . runRClosure
+
+>completenessOfReals :: Closure R :==: R
+>completenessOfReals = runRClosure <-> RClosure
 
 >instance Num (Closure R) where
 >   (RClosure x) + (RClosure y) = RClosure $ x + y
