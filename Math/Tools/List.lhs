@@ -14,11 +14,15 @@ interleave swaps arguments after every element.
 >interleave2 :: [[a]] -> [a]
 >interleave2 = foldr interleave []
 
-shift rotates the first k elements (and leaves the rest of the list intact)
+>-- | shift rotates the first k elements (and leaves the rest of the list intact)
 
 >shift :: Int -> [a] -> [a]
 >shift _ []     = []
 >shift k (c:cr) = take k cr ++ [c] ++ drop k cr
+
+
+>-- | From discussion in Haskell-Cafe mailing list by Koen Claessen:
+>-- <https://mail.haskell.org/pipermail/haskell-cafe/2002-June/003122.html>
 
 >selections :: [a] -> [(a,[a])]
 >selections []     = []
@@ -26,6 +30,9 @@ shift rotates the first k elements (and leaves the rest of the list intact)
 
 >twice_selections :: [a] -> [(a,a,[a])]
 >twice_selections lst = [(x,y,r) | (x,xr) <- selections lst, (y,r)  <- selections xr]
+
+>-- | From discussion in Haskell-Cafe mailing list by Koen Claessen:
+>-- <https://mail.haskell.org/pipermail/haskell-cafe/2002-June/003122.html>
 
 >permutations :: [a] -> [[a]]
 >permutations [] = [[]]
