@@ -84,6 +84,16 @@
 >vector3_to_vec3 :: Vector3 a -> ThreeD -> a
 >vector3_to_vec3 (Vector3 x y z) = svec3 x y z
 
+>vec3_iso_obj :: Vector3 ThreeD
+>vec3_iso_obj = Vector3 ThreeD0 ThreeD1 ThreeD2
+
+>vec3_to_vector3 :: (ThreeD -> a) -> Vector3 a
+>vec3_to_vector3 f = fmap f vec3_iso_obj
+
+>vector3_natiso :: (->) ThreeD :<~>: Vector3
+>vector3_natiso = NaturalIso (NatTrans vec3_to_vector3)
+>                            (NatTrans vector3_to_vec3)
+
 >constant3 :: a -> Vector3 a
 >constant3 x = Vector3 x x x
 
@@ -514,7 +524,7 @@ divergence f = fmap (%. f) del3
 >matrix_indices3 :: (Integral a) => (Vector3 :*: Vector3) (a,a)
 >matrix_indices3 = matrix (,) vector_indices3 vector_indices3
 
-would use %. instead of 'dot3' if %. didn't need ConjugateSymmetric
+>-- | would use @%.@ instead of @dot3@ if @%.@ didn't need @ConjugateSymmetric@
 
 >matrix_multiply3 :: (Num a) => Matrix3 a -> Matrix3 a -> Matrix3 a
 >matrix_multiply3 (Matrix m1) m2 

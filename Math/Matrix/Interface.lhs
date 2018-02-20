@@ -23,7 +23,10 @@
 >infixl 6 %+
 >infixl 6 %-
 >infixl 5 :*:
-> 
+>
+>-- | The primary data type for matrices.
+>-- Note that indices are represented in the functors,
+>-- If you want to use numeric indices, use 'Math.Matrix.Simple'. 
 >data (f :*: g) a = Matrix { cells :: f (g a) }
 
 >-- | <https://en.wikipedia.org/wiki/Matrix_%28mathematics%29>

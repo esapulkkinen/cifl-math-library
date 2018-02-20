@@ -1,6 +1,6 @@
 >{-# LANGUAGE KindSignatures, DataKinds, GADTs, ConstraintKinds, RankNTypes, AllowAmbiguousTypes #-}
 >module Math.Matrix.FiniteQueue where
->import qualified Matrix.FiniteVector as Vec
+>import qualified Math.Matrix.FiniteVector as Vec
 >import Math.Matrix.FiniteVector
 
 >data Que :: Nat -> Nat -> * -> * where

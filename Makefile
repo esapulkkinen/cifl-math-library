@@ -27,6 +27,9 @@ dependencegraph :
 document : 
 	cabal haddock --haddock-options="--title=cifl-math-library" --verbose=0 --all --hyperlink-source > dist/haddock-output
 
+publish_document : dependencegraph document hscolor
+	cp -r dist/doc/html/cifl-math-library/* docs/
+
 hscolor :
 	cabal hscolour --all
 

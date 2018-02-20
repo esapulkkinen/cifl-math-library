@@ -16,6 +16,7 @@
 >-- indices as input, e.g.:
 >-- 
 >-- @identity :: (ThreeD :&: ThreeD) Integer@
+>-- 
 >-- @identity = Matrix $ \\i j -> if i == j then 1 else 0@
 >--
 >-- Note that index types are specifically restricted to be small types,
@@ -31,6 +32,7 @@
 >import Math.Tools.Universe
 >import Math.Tools.PrettyP as Tools.PrettyP
 >import Math.Tools.CoMonad
+>import Math.Tools.NaturalTransformation
 >import Math.Matrix.Interface
 >import Math.Matrix.Matrix
 
@@ -49,6 +51,10 @@
 >   ppf f = (hsep $ take 10 lst) <> if null lst2 then Tools.PrettyP.empty else pp ".." 
 >     where lst = [pp (f i) | i <- all_elements]
 >           lst2 = drop 10 lst
+
+>mapDimensions :: (->) a :~> f -> (->) b :~> g -> (a :&: b) c -> (f :*: g) c
+>mapDimensions col row (Matrix m) = Matrix $ nattrans_component col $
+>    fmap (nattrans_component row) m
 
 >simpleMatrix :: (Functor m, Functor n) =>
 > (a :&: b) c -> m a -> n b -> (m :*: n) c

@@ -21,7 +21,7 @@
 >import qualified Math.Number.Stream as Stream
 >import Math.Tools.Prop
 
-import qualifiedci Model.Derivative as D
+import qualified Model.Derivative as D
 
 >import Math.Matrix.Instances (characteristicPolynomial)
 
@@ -90,6 +90,66 @@ max_convergence_ratio = fmap (foldl1 max) . cauchy
 >cauchy :: (MetricSpace a) => Stream a -> Stream [R]
 >cauchy s = codiagonals $ matrix distance s s
 
+>cseq_difference_matrix :: (Functor m, Functor n, Num a)
+> => m a -> n a -> (m :*: n) a
+>cseq_difference_matrix s t = matrix (\x y -> abs (x - y)) s t
+
+>-- | See "Suppes: Axiomatic Set Theory"
+>-- Note that we would like to check that
+>-- forall eps. exists n. forall k > n. |s_k - t_k| < eps.
+>-- However, this is undecidable in particular with respect to what to choose for 'n'.
+>-- We can nonetheless compute the stream of distances.
+>cauchy_sequence_equivalence :: (Num a) => Stream a -> Stream a -> Stream a
+>cauchy_sequence_equivalence s t = diagonal $ cseq_difference_matrix s t
+
+>-- | cseq_equivalence_matrix computes equivalence of cauchy sequences.
+>-- However, the 'modulus' argument is undecidable. But if you produce a modulus,
+>-- this chooses the part of the cauchy sequence differences that should converge
+>-- according to the convergence ratio of the @epsilon@ from the infinitesimal instance.
+>-- Thus if you can prove that the matrix elements converge to zero when elements
+>-- of increasing index are chosen, you would have proven equality of the two cauchy
+>-- sequences. This could be possible in special cases, even if it's undecidable
+>-- in general. Note that it suffices to consider the convergence of the first column,
+>-- because you could move any part to the first column by choosing reasonable values
+>-- of the modulus.
+>-- The other differences are included so computations and analysis of the situation
+>-- can be easier to perform.
+>cseq_equivalence_matrix :: (Num a, Infinitesimal eps)
+> => (eps -> Integer) -> Stream a -> Stream a -> (Stream :*: Stream) a
+>cseq_equivalence_matrix modulus x y = Matrix $ do
+>   eps <- epsilon_stream
+>   let n = modulus eps
+>   return $ Stream.drop n seq
+> where seq = cauchy_sequence_equivalence x y
+
+>-- | This version of cauchy sequence equality convergence check
+>-- produces a stream of lists, where each list contains those elements
+>-- which are close to each other in terms of choice of indices, e.g.
+>-- @C(s,t)_i = [ abs(s_j - t_k) | j <- naturals, k <- naturals, i == j + k]@
+>-- thus the complexity of the stream element lists of the result should increase
+>-- in the same way than the complexity of the input stream elements.
+>-- The lists in the result stream have monotonically increasing length.
+>-- thus to compute results for particular level of approximation, it should suffice
+>-- to choose a list from the result stream, and perform the equivalence check
+>-- using the values in the list. To do this, it would be necessary to be able
+>-- to determine how close to zero the elements in the list should be.
+>-- the middle element (if any) of the list is probably the most interesting,
+>-- because that would mean j == k, therefore the computation result
+>-- would be @abs(s_j - t_j)@, but due to different rate of convergence of the input
+>-- sequences, it can happen that the elementwise differences are not really
+>-- representative of the stream convergence behaviour at the diagonal.
+>-- however, analyzing these numbers should produce useful results about
+>-- convergence of the input stream element differences.
+>-- e.g choosing minimum and maximum element from each list determines
+>-- best and worst approximation in the same depth of approximations.
+>-- for the equality of the cauchy sequences to hold, the best approximation should
+>-- stay close to zero and better so when further elements of the stream are obtained.
+>cseq_convergence :: (Num a) => Stream a -> Stream a -> Stream [a]
+>cseq_convergence s t = codiagonals $ cseq_difference_matrix s t
+
+>cseq_equivalence_list :: (Num a, Infinitesimal eps) => (eps -> Integer) -> Stream a -> Stream a -> Stream [a]
+>cseq_equivalence_list modulus x y = codiagonals $ cseq_equivalence_matrix modulus x y
+
 >converges :: (MetricSpace a) => Stream a -> a -> Stream [R]
 >converges s p = codiagonals $ matrix distance s (constant p)
 >
@@ -98,6 +158,9 @@ max_convergence_ratio = fmap (foldl1 max) . cauchy
 
 >instance InnerProductSpace R where
 >   x %. y = x * y
+
+>instance Infinitesimal Rational where
+>   epsilon_stream = fmap (1 /) $ Stream.power 10
 
 >instance MetricSpace R where
 >  distance x y = abs (x-y)
@@ -261,18 +324,35 @@ lowerbound set = Characteristic $ \x -> and $ map (x <=) set
 >distance_matrix :: R -> R -> (Stream :*: Stream) Rational
 >distance_matrix (Limit x) (Limit y) = matrix (\a b -> abs $ a - b) x y
 
+>-- | compute rational approximation more precise than the given rational
+>-- the precision is expressed as rational number close to zero,
+>-- the result will be within range @[r-p,r+p]@, in the sense
+>-- that in the sequence of rational approximations @r = {r_i}_{i \\in N}@
+>-- @abs(r_{i+1) - r_i) <= p@. Note that we do _not_ attempt to prove
+>-- that all successive approximations have this same property,
+>-- we need the differences to be monotonically decreasing for this
+>-- to represent correct precision.
+>at_precision_rational :: R -> Rational -> Rational
+>at_precision_rational (Limit s) p = check_precision s
+> where check_precision ~z@(Pre x ~z'@(Pre y _))
+>         | abs (y - x) <= p = x
+>         | otherwise = check_precision z'
+
+>-- | here precision is expresses as integer power of 10
+>--   1 == 10^(-1), 2 == 10^(-2), 3 == 10^(-3) and so on.
+>--   so how many digits after the decimal point are required.
 >at_precision :: R -> Integer -> R
 >at_precision (Limit s) p = Limit $ check_precision s
 >  where check_precision   ~z@(Pre x ~z'@(Pre y _))
 >             | abs (y - x) <= 10^^(negate p) = z
 >             | otherwise = check_precision z'
 
+>-- | rational precision expressed as integer power of 10
 >precision_rational :: R -> Integer -> Rational
 >precision_rational (Limit s) p = check_precision s
 >   where check_precision ~z@(Pre x ~z'@(Pre y yr))
 >           | abs (y - x) <= 10^^(negate p) = x
 >           | otherwise = check_precision z'
-
 
 >real_derivate :: (R -> R) -> R -> R
 >real_derivate f x = accumulation_point $ derivate f x
@@ -389,7 +469,6 @@ i'th element of derivates_at(f,s) is D^i[f](s_i)
 >   eps <- approximations dx
 >   return $ (eps *) $ Prelude.sum $ map f [xa,xa+eps..ya]
 
-
 >integral_real :: (R,R) -> (R -> R) -> R
 >integral_real (x,y) f = runRClosure $ limit $ do
 >   (eps, xa, ya) <- fzip3 (approximate $ runRClosure epsilon)
@@ -405,18 +484,11 @@ i'th element of derivates_at(f,s) is D^i[f](s_i)
 >                            (approximate y)
 >       return $ (eps *) $ Prelude.sum $ map f [xa,xa+eps..ya]
 
->-- | <https://en.wikipedia.org/wiki/Fourier_transform Fourier transform>
-
-fourier :: (Num a) => (Complex a -> Complex a) -> Complex a -> Closure (Complex a)
-
-fourier curve f phi = integrate_curve (negate infinity_gen, infinity_gen) curve $ 
-                  \x -> f x * exp (negate 2*pi*(0:+1)*x*phi)
-
-
 >-- | <https://en.wikipedia.org/wiki/Line_integral Line integral>
 
-line_integral :: (Rational -> Rational) -> (Rational -> Rational) -> (R,R) -> R
-line_integral f r (a,b) = integral (a,b) (\t -> f (r t) * abs (derivate r t))
+>line_integral :: (R -> R) -> (R -> R) -> (R,R) -> R
+>line_integral f r (a,b) = integral_real (a,b) $ \t ->
+>   f (r t) * abs (accumulation_point $ derivate r t)
 
 Requires: lim[x->0]curve(x) = 0 /\ lim[i->INF] dx_i = 0
 
@@ -691,6 +763,8 @@ gamma z = integral (close 0,infinity_gen) $ \t -> exp (negate t) * (t ** (z-1))
 >logistic :: (Floating a) => a -> a
 >logistic x = exp x / (exp x + 1)
 
+>-- | this converts a real to a sequence of doubles, each item
+>-- attempting to approximate the real to higher accuracy.
 >floating_approximations :: R -> Stream Double
 >floating_approximations = fmap fromRational . approximate
 

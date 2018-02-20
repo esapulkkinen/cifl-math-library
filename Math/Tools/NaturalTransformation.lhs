@@ -14,7 +14,7 @@
 >import Math.Matrix.Interface
 >import Math.Matrix.Matrix
 
-=== NATURAL TRANSFORMATION ============0
+=== NATURAL TRANSFORMATION ============
 
 >newtype f :~> g = NatTrans { nattrans_component :: forall a. f a -> g a }
 
@@ -25,9 +25,9 @@
 >vert :: g :~> h -> f :~> g -> f :~> h
 >vert (NatTrans f) (NatTrans g) = NatTrans (f . g)
 
+>horiz :: (Functor h) => h :~> k -> f :~> g -> (h :*: f) :~> (k :*: g)
+>horiz s t = NatTrans (Matrix .  nattrans_component s . fmap (nattrans_component t) . cells)
 
->horiz :: (Functor k) => h :~> k -> f :~> g -> (h :*: f) :~> (k :*: g)
->horiz s t = NatTrans (Matrix . fmap (nattrans_component t) . nattrans_component s . cells)
 
 >map_natural_matrix :: (Functor f, Functor h) 
 >           => f :~> g -> h :~> i -> (a -> b) -> (f :*: h) a -> (g :*: i) b
@@ -38,6 +38,10 @@
 
 >map_columns :: f :~> g -> (f :*: h) a -> (g :*: h) a
 >map_columns (NatTrans f) = Matrix . f . cells
+
+>mapMatrix :: (Functor f, Functor g)
+> => f :~> f' -> g :~> g' -> (a -> b) -> (f :*: g) a -> (f' :*: g') b
+>mapMatrix col row elem m = (col `horiz` row) `nattrans_component` (fmap elem m)
 
 >unyoneda :: (Category cat) => cat a :~> f -> f a
 >unyoneda (NatTrans f) = f id
@@ -76,6 +80,9 @@
 >vertIso :: g :<~>: h -> f :<~>: g -> f :<~>: h
 >vertIso (NaturalIso x x') (NaturalIso y y')
 >   = NaturalIso (x `vert` y) (y' `vert` x')
+
+>horizIso :: (Functor f, Functor f') => f :<~>: f' -> g :<~>: g' -> (f :*: g) :<~>: (f' :*: g')
+>horizIso (NaturalIso x xinv) (NaturalIso y yinv) = NaturalIso (x `horiz` y) (xinv `horiz` yinv)
 
 >swap_dimensions_iso :: (Traversable f, Traversable g,
 >                        Applicative f, Applicative g)

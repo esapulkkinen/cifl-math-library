@@ -10,7 +10,7 @@
 >--
 >-- The graph representation is based on just single set which contains both
 >-- vertices and edges. This means we have operation,
->-- 'Graph.InGraphMonad.isVertexM', for determining whether an element
+>-- 'Math.Graph.InGraphMonad.isVertexM', for determining whether an element
 >-- of the set is a vertex or an edge.
 >-- 
 >-- For non-mathematicians, think of a database table with
@@ -70,7 +70,7 @@
 >-- | monad for inspecting graph data
 >    module Math.Graph.InGraphMonad)
 >   where
->import Math.Graph.Action hiding (action)
+>import Math.Graph.Action hiding (action, unyoneda)
 >import Math.Graph.Reversible
 >import Math.Graph.TransformationMonoid
 >import Math.Graph.Labeled

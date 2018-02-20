@@ -9,20 +9,24 @@ name:                cifl-math-library
 -- PVP summary:      +-+------- breaking API changes
 --                   | | +----- non-breaking API additions
 --                   | | | +--- code changes with no API change
-version:             1.0.0.0
+version:             1.0.1.0
 
 -- A short (one-line) description of the package.
 synopsis:            Math libraries
 
 description:  Haskell libraries containing graphs, vector spaces, matrices,               
-              real numbers.
-              Haskell libraries for conversion of graphs to XML and DOT format.
+            real numbers.
               
-              <dependencies-Tools.pdf Tools dependencies>
+            Haskell libraries for conversion of graphs to XML and DOT format
               
-              <dependencies-Matrix.pdf Matrix dependencies>
+            See Github page at <https://github.com/esapulkkinen/cifl-math-library>.
+            See documentation at <https://esapulkkinen.github.io/cifl-math-library/>.
+              
+            <dependencies-Tools.pdf Tools dependencies>
+              
+            <dependencies-Matrix.pdf Matrix dependencies>
 
-              <dependencies-Graph.pdf Graph dependencies>
+            <dependencies-Graph.pdf Graph dependencies>
 
 -- The license under which the package is released.
 license:             LGPL
@@ -37,7 +41,8 @@ author:              Esa Pulkkinen
 -- An email address to which users can send suggestions, bug reports, and 
 -- patches.
 maintainer:          esa.pulkkinen@iki.fi
-
+bug-reports: https://github.com/esapulkkinen/cifl-math-library/issues
+homepage: https://github.com/esapulkkinen/cifl-math-library
 category:            Development
 
 build-type:          Simple
@@ -45,7 +50,7 @@ stability: alpha
                      
 -- Extra files to be distributed with the package, such as examples or a 
 -- README.
-extra-source-files:  
+extra-source-files:  README.md
 
 -- Constraint on the version of Cabal needed to build this package.
 cabal-version:       >=1.10

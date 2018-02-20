@@ -1,4 +1,14 @@
 >{-# LANGUAGE Trustworthy #-}
+>-- | This module provides conversions from graphs to Gxl format using HaXML.
+>-- 
+>--  HaXML is (c) Malcolm Wallace and licensed under LGPL.
+>--  The Math.Graph.XML.GXL is generated using HaXML.
+>--
+>--  JSON uses Text.JSON package from <https://hackage.haskell.org/package/json>
+>-- 
+>--  Please see HaXML web page, <https://hackage.haskell.org/package/HaXml>
+>--  and GXL web page <http://www.gupro.de/GXL/> for further details about
+>--  these packages.
 >module Math.Graph.XML where
 >import Data.Set (Set)
 >import Data.Map (Map)

@@ -6,14 +6,18 @@
 >import Data.Int
 >import Data.Word
 
-import System.Random
-
-The universe class describes a listing of elements of type a, not
-including the 'undefined'.
-This class is frequently needed when dealing with properties.
-
-This is a representation of a recursively enumerable set.
-
+>-- | The universe class describes a listing of elements of type a, not
+>-- including the 'undefined'.
+>-- This class is frequently needed when dealing with properties.
+>-- 
+>-- This is a representation of a recursively enumerable set.
+>--
+>-- Note that algorithms based on this can be excessively inefficient
+>-- e.g. for 64 bit integers going through all alternatives is not likely
+>-- to be fully successful. The instances for big types are designed
+>-- so that most likely occurring values are in the beginning of
+>-- the list, e.g. for Integer type, the universe is
+>-- @[0,1,-1,2,-2,...]@.
 >class Universe a where
 >   all_elements :: [a]
 
@@ -45,8 +49,8 @@ This is a representation of a recursively enumerable set.
 >instance Universe Word32 where { all_elements = [minBound..maxBound] }
 >instance Universe Word64 where { all_elements = [minBound..maxBound] }
 
-order here is chosen based on what numbers are more
-likely in applications, so numbers close to zero occur first.
+>-- | order here is chosen based on what numbers are more
+>-- likely in applications, so numbers close to zero occur first.
 
 >all_nums :: (Num t, Bounded t, Enum t) => [t]
 >all_nums = interleave [0 .. maxBound] [-1,-2..minBound]
@@ -75,7 +79,7 @@ likely in applications, so numbers close to zero occur first.
 >instance (Universe a) => Universe [a] where
 >   all_elements = all_lists all_elements
 
-All lists produces the infinite list of all lists.
+>-- | All lists produces the infinite list of all lists.
 
 >all_lists :: [a] -> [[a]]
 >all_lists lst = [] : do lsts <- all_lists lst
@@ -94,7 +98,7 @@ All lists produces the infinite list of all lists.
 >all_functions_with_domain :: (Universe c) => [d] -> [[(d,c)]]
 >all_functions_with_domain dom = all_functions_from dom all_elements
 
-all_functions_from only produces any results if the domain list is finite.
+>-- | all_functions_from only produces any results if the domain list is finite.
 
 >all_functions_from :: [c] -> [d] -> [[(c,d)]]
 >all_functions_from [] _ = [[]]

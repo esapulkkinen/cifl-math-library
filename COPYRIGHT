@@ -1,13 +1,14 @@
 This code is under the GNU LGPL. Copyright (C) 1999-2018 Esa Pulkkinen
 For exact terms, see http://www.gnu.org/copyleft/lgpl.txt.
 
+See <https://github.com/esapulkkinen/cifl-math-library>.
+Documentation is at: <https://esapulkkinen.github.io/cifl-math-library/>.
+
 There are portions that I have read from internet from various
 places. I have tried to insert comment on the portion of code that is
 obtained from such sources and included link to the corresponding
 place. I believe I have only used sources that have open source
-license that is compatible with LGPL, but to the extent that the
-licenses are incompatible with LGPL, those portions retain the original
-license.
+license that is compatible with LGPL.
 
 Portions that are based on data from Wikipedia
 (http://en.wikipedia.org) are copyright with creative commons
@@ -47,5 +48,19 @@ non-commercial.  The specification of GXL is copyright by its authors,
 to allow control of its evolution. The specification can be reproduced
 and used without charge, but with explicit acknowledgement of its
 authors."
+=====
+HaXML is from https://hackage.haskell.org/package/HaXml
+HaXML is (c) Malcolm Wallace and licensed under LGPL.
+====
+JSON package (c) 2007-2009 Galois Inc,
+from https://hackage.haskell.org/package/json
+Licensed under BSD3.
+===
+The dependency graphs on the documentation are generated using
+graphviz (which is under "Common Public License"), and ps2pdf (from
+ghostscript, under GPL).
 
-
+See <https://www.graphviz.org/> for graphviz.
+However I'm not distributing graphviz in conjunction with this
+library, only graphs rendered using it.
+===

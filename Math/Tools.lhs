@@ -39,7 +39,7 @@
 >import Math.Tools.Arrow hiding (assoc)
 >import qualified Math.Tools.Assert
 >import Math.Tools.Category
->import Math.Tools.CoFunctor
+>import Math.Tools.CoFunctor hiding (terminal)
 >import Math.Tools.CoMonad
 >import Math.Tools.Complex
 >import Math.Tools.Expression
@@ -49,11 +49,13 @@
 >import qualified Math.Tools.Identity
 >import qualified Math.Tools.Id
 >import Math.Tools.I
->import Math.Tools.Integer
+>import Math.Tools.Integer hiding (square_root)
+>import qualified Math.Tools.Integer 
 >import Math.Tools.Isomorphism hiding (swap)
 >import Math.Tools.LineInfo
->import Math.Tools.List
->import Math.Tools.Map
+>import Math.Tools.List hiding (interleave)
+>import Math.Tools.Map hiding (sequence)
+>import qualified Math.Tools.Map
 >import Math.Tools.Maybe
 >import Math.Tools.Median
 >import qualified Math.Tools.Monad

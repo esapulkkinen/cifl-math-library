@@ -102,6 +102,11 @@ import qualified Model.Nondeterminism as Nondet
 >class (Limiting a) => Closed a where
 >  accumulation_point :: Closure a -> a
 
+>instance Limiting Rational where
+>   data Closure Rational = RationalClosure (Stream Rational)
+>   limit = RationalClosure
+>   approximations (RationalClosure s) = s
+
 >instance Limiting Double where
 >   data Closure Double = DoubleClosure (Stream Double)
 >   limit (Pre x xr) = DoubleClosure (Pre x xr)
@@ -727,10 +732,29 @@ instance (Num a) => Matrix.VectorSpace ((Stream :*: Stream) a) where
 >   where ~(Pre d  dr) = stream_diagonal y
 >         ~(Pre zz cr) = codiagonal y
 
+                      
+codiagonals :: (Stream :*: Stream) a -> Stream [a]
+codiagonals q
+   | (d,~(Pre x xr, Pre y yr),m) <- dematrix q = Pre [d] $ Pre [x,y] $ liftA3 f xr yr $ codiagonals m
+    where f pre suf r = pre : (r ++ [suf])
+
+This is faster than above commented version of codiagonals, because
+the suffix computation on Seq is constant time rather than linear.
+
+>codiagonals_seq :: (Stream :*: Stream) a -> Stream (Seq a)
+>codiagonals_seq q
+>   | ~(d,~(Pre x xr, Pre y yr),m) <- dematrix q =
+>       Pre (Seq.singleton d) $
+>       Pre (Seq.singleton x Seq.|> y) $
+>       liftA3 f xr yr $ codiagonals_seq m
+>    where f pre suf r = (pre Seq.<| r) Seq.|> suf
+
+
 >-- | The 'codiagonals' function will divide a two-dimensional
->-- stream of streams (where elements are @e_(i,j)@ ) into a stream of
+>-- stream of streams (where elements are @e_(i,j)@ into a stream of
 >-- lists
->--   @l_k where l_k = [e_(i,j) | i <- naturals, j <- naturals, i+j == k]@.
+>-- 
+>--   @l_k@ where @l_k = [e_(i,j) | i <- naturals, j <- naturals, i+j == k]@
 >-- 
 >-- The indices in the streams are closely related to "Cantor pairing
 >-- function" (which is a bijection)
@@ -761,22 +785,6 @@ instance (Num a) => Matrix.VectorSpace ((Stream :*: Stream) a) where
 >-- 
 >-- The resulting lists would be: 
 >--  @[d], [x,y], [xr0,d',yr0], [xr1,x',y',yr1],...@
-                      
-codiagonals :: (Stream :*: Stream) a -> Stream [a]
-codiagonals q
-   | (d,~(Pre x xr, Pre y yr),m) <- dematrix q = Pre [d] $ Pre [x,y] $ liftA3 f xr yr $ codiagonals m
-    where f pre suf r = pre : (r ++ [suf])
-
-This is faster than codiagonals, because the suffix computation
-on Seq is constant time rather than linear.
-
->codiagonals_seq :: (Stream :*: Stream) a -> Stream (Seq a)
->codiagonals_seq q
->   | ~(d,~(Pre x xr, Pre y yr),m) <- dematrix q =
->       Pre (Seq.singleton d) $
->       Pre (Seq.singleton x Seq.|> y) $
->       liftA3 f xr yr $ codiagonals_seq m
->    where f pre suf r = (pre Seq.<| r) Seq.|> suf
 
 >codiagonals :: (Stream :*: Stream) a -> Stream [a]
 >codiagonals x = fmap Data.Foldable.toList $ codiagonals_seq x
