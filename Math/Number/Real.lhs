@@ -21,8 +21,6 @@
 >import qualified Math.Number.Stream as Stream
 >import Math.Tools.Prop
 
-import qualified Model.Derivative as D
-
 >import Math.Matrix.Instances (characteristicPolynomial)
 
 >-- | Problem with this representation: real number ranges cannot be represented.
@@ -232,6 +230,9 @@ max_convergence_ratio = fmap (foldl1 max) . cauchy
 
 >limit_real :: Stream R -> R
 >limit_real str = Limit $ str >>= approximate
+
+>lift_real :: (Rational -> Rational) -> R -> R
+>lift_real f = Limit . fmap f . approximate
 
 >instance Show (Closure R) where
 >   show (RClosure (Limit str)) = show (take 10 $ fmap fromRational str)
@@ -521,7 +522,10 @@ gamma z = integral (close 0,infinity_gen) $ \t -> exp (negate t) * (t ** (z-1))
 >approximately_equal :: R -> R -> Bool
 >approximately_equal x y = show_at_precision x 30 == show_at_precision y 30
 
-
+>approximately_eq :: R -> R -> Bool
+>approximately_eq x y = a == b
+>   where a = show_at_precision x 7
+>         b = show_at_precision y 7
 
 
 >constructively_less :: Rational -> R -> R -> Closure Bool
@@ -596,10 +600,9 @@ gamma z = integral (close 0,infinity_gen) $ \t -> exp (negate t) * (t ** (z-1))
 >    -- fst (properFraction 0.9999...) == 0 != 1 == fst (properFraction 1.00..)
 >    -- however, since comparing constructive reals is noncomputable,
 >    -- we couldn't possibly declare that 0.9999.. == 1.000000..
->    properFraction r = (fromInteger (numerator rat)
->                        `div` fromInteger (denominator rat), 
->                Limit $ fmap (snd . properFraction) $ approximate r)
->      where rat = shead $ approximate $ r `at_precision` 5
+>    properFraction r = (fromIntegral wholepart,lift_real (snd . properFraction) r)
+>      where rat = shead $ approximate $ r `at_precision` 2
+>            wholepart = (numerator rat) `div` (denominator rat)
 
 >-- | Enum instance for reals is undecidable with respect to end of
 >-- real intervals, since comparison of two real numbers is undecidable.
@@ -657,6 +660,9 @@ gamma z = integral (close 0,infinity_gen) $ \t -> exp (negate t) * (t ** (z-1))
 >    (Limit s) / (Limit t) = Limit $ liftA2 (/) s t
 >    recip (Limit s) = Limit $ fmap recip s
 >    fromRational r = Limit $ Stream.constant r
+
+>toReal :: Rational -> R
+>toReal = fromRational
 
 >instance Fractional (Closure R) where
 >   (RClosure x) / (RClosure y) = RClosure $ x / y
@@ -755,8 +761,10 @@ gamma z = integral (close 0,infinity_gen) $ \t -> exp (negate t) * (t ** (z-1))
 >slow_golden_ratio :: R
 >slow_golden_ratio = (1 + sqrt 5) / 2
 
->primitive_root_of_unity :: Integer -> Closure (Complex R)
->primitive_root_of_unity i = newtons_method (\x -> x ^^ i - (1 :+ 0)) (0 :+ 1)
+Doesn't work since triggers problems with equality comparison:
+
+primitive_root_of_unity :: Integer -> Closure (Complex R)
+primitive_root_of_unity i = newtons_method (\x -> x ^^ i - (1 :+ 0)) (0 :+ 1)
 
 >-- | https://en.wikipedia.org/wiki/Logistic_function
 
@@ -811,13 +819,28 @@ exp_by_series2 (Limit x) = Limit $ sum_stream $
 >exp_by_series :: R -> R
 >exp_by_series (Limit x) = Limit $ (Pre 1 $ fmap (1 /) factorial) `approximate_sums` x
 
+>sin_by_series :: R -> R
+>sin_by_series (Limit x) = (Limit $ x >>= \xappr -> fst $ uninterleave $ sum_stream 
+>        $ liftA2 (*) filterStream
+>        $ liftA2 (/) (index_powers $ constant xappr)
+>        $ factorial) `at_precision`  3
+>  where filterStream = Pre 0 $ Pre 1 $ Pre 0 $ Pre (negate 1) $ filterStream
+
+uninterleave stuff is needed to ensure at_precision works correctly,
+since the sum of the generating function has zero at every second element,
+it means there are always two adjacent equal elements.
+
+>cos_by_series :: R -> R
+>cos_by_series (Limit x) = (Limit $ x >>= \xappr -> fst $ uninterleave $ sum_stream
+>        $ liftA2 (*) filterStream
+>        $ liftA2 (/) (index_powers (constant xappr)) factorial) `at_precision` 3
+>  where filterStream = Pre 1 $ Pre 0 $ Pre (negate 1) $ Pre 0 $ filterStream
+
 >-- | Using Simon Plouffe's BPP digit extraction algorithm for computing pi.
 >-- See <https://secure.wikimedia.org/wikipedia/en/wiki/Pi> for details.
 >-- exp:  <http://en.wikipedia.org/wiki/Exponential_function Exponential function>
 >-- log:  <http://en.wikipedia.org/wiki/Logarithm Logarithm>
 >-- <http://en.wikipedia.org/wiki/Trigonometric_functions trigonometric functions>
->-- problem: cos pi = -2 != -1,
->--          sin (2*pi) = -1 != 0
 >-- <https://en.wikipedia.org/wiki/Inverse_trigonometric_functions inverse trigonometric functions>
 >-- <http://en.wikipedia.org/wiki/Hyperbolic_function hyperbolic function>
 >instance Floating R where
@@ -834,8 +857,8 @@ exp_by_series2 (Limit x) = Limit $ sum_stream $
 >                  return $ (1 / (2*fromIntegral n+1))*aaprx^(2*n+1))
 >         where a' = (a-1)/(a+1)
 >    x ** y = exp (y * log x)
->    sin (Limit x) = Limit $ sin_stream x
->    cos (Limit x) = Limit $ cos_stream x
+>    sin = sin_by_series
+>    cos = cos_by_series
 >    tan x = sin x / cos x
 >    asin x = integral_real (0,x) $ \a -> 1 / (sqrt $ 1 - a*a)
 >    acos x = integral_real (x,1) $ \a -> 1 / (sqrt $ 1 - a*a)

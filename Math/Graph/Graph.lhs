@@ -1,6 +1,8 @@
 >{-# LANGUAGE FlexibleInstances, FlexibleContexts #-}
 >-- | This graph representation is based on the book "Lawvere: Sets for mathematics".
 >-- vertices are such edges where @e `act` gdom == e == e `act` gcod@
+>-- 
+>-- Note it's probably better to use 'Math.Graph.Reversible' instead.
 >module Math.Graph.Graph where
 >import Prelude hiding (reverse, (.),id)
 >import Control.Category 

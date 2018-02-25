@@ -2,9 +2,6 @@
 >module Math.Matrix.QuantumMechanics where
 >import Control.Applicative
 >import Data.Complex
-
-import Model.Units
-
 >import Math.Matrix.Dimension
 >import Math.Tools.Complex
 >import Math.Matrix.Stream

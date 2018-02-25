@@ -23,7 +23,7 @@
 >qcTests = $quickCheckAll
 
 >tests :: Test
->tests = "Model.Median" ~: test [
+>tests = "Math.Tools.Median" ~: test [
 >   median_algebra (const () :: [Integer] -> ()),
 >   median_algebra (const () :: Bool -> ()),
 >   median_algebra (const () :: Integer -> ()),

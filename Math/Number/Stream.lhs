@@ -1034,8 +1034,9 @@ the suffix computation on Seq is constant time rather than linear.
 >stream_log :: (Integral a) => Stream a -> Stream a
 >stream_log s = liftA2 div s factorial
 
->-- | For a stream of terms @[a0,a1,a2,...]@, 'approximate_sums a x' computes
->-- @\n -> Sum[i=0..n]{a_i*x_i^i}@, where n is the index to the result stream.
+>-- | For a stream of terms @a=[a0,a1,a2,...]@, and @x=[x0,x1,x2,...]@,
+>-- 'approximate_sums a x' computes
+>-- @\\n -> Sum[i=0..n]{a_i*x_i^i}@, where n is the index to the result stream.
 
 >approximate_sums :: (Fractional a) => Stream a -> Stream a -> Stream a
 >approximate_sums gen x = diagonal $ Matrix $ fmap sum_stream $ cells $ matrix (*) gen (index_powers x)
@@ -1049,15 +1050,21 @@ the suffix computation on Seq is constant time rather than linear.
 >log_generating_function :: (Fractional a) => Stream a
 >log_generating_function = negate $ fmap (1/) nonzero_naturals
 
+>-- | <https://en.wikipedia.org/wiki/Trigonometric_functions>
+
 >cos_stream :: (Fractional a) => Stream a -> Stream a
 >cos_stream x = uninterleave_index 1 $ stail $ approximate_sums cos_generating_function x
+
+>-- | <https://en.wikipedia.org/wiki/Trigonometric_functions>
 
 >sin_stream :: (Fractional a) => Stream a -> Stream a
 >sin_stream x = uninterleave_index 1 $ approximate_sums sin_generating_function x
 
+>-- | <https://en.wikipedia.org/wiki/Trigonometric_functions>
 >sin_generating_function :: (Fractional a) => Stream a
 >sin_generating_function = stail $ liftA2 (*) (-1 / (1+z*z)) exponential_stream
 
+>-- | <https://en.wikipedia.org/wiki/Trigonometric_functions>
 >cos_generating_function :: (Fractional a) => Stream a 
 >cos_generating_function = liftA2 (*) (1 / (1+z*z)) (stail $ exponential_stream)
 

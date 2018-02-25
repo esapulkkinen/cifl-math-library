@@ -1,20 +1,22 @@
 >-- -*- coding: utf-8 -*-
 >{-# LANGUAGE UnicodeSyntax, FlexibleContexts, TypeOperators #-}
->module Math.Matrix.Unicode where
->-- ^
+>-- |
 >-- To use these, use emacs "Options/Select input method" and choose 'TeX'.
->-- then enter the symbol by using backslash and the indicated name.
+>-- Then enter the symbol by using backslash and the indicated name.
 >-- for prefix operators, it's necessary to use parenthesis in applications.
 >-- ctrl-\ changes whether expansions occur.
+>module Math.Matrix.Unicode where
+>
 >import Math.Matrix.Interface
 >import Math.Matrix.Vector3
->import Model.Real
+>import Math.Number.Real
 >import Math.Tools.CoFunctor
 >
-
+>-- | in
 >(∈) ∷ (BinaryLogic p) ⇒ a → p a → Bool
 >(∈) = isIn
 > 
+>-- | notin
 >(∉) ∷ (BinaryLogic p) ⇒ a → p a → Bool
 >(∉) = isNotIn
 

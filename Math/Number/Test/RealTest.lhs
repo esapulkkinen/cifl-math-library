@@ -40,6 +40,13 @@ prop_sin_asin_inverses = forAll (realInRange 0 (2*pi)) $ \r -> asin (sin r) `app
 
 >prop_average_test = average (pi :: R) 0 `approximately_equal` (pi / 2)
 
+prop_sin_90deg = sin (pi / 2 :: R) `approximately_eq` 1 
+prop_cos_90deg = cos (pi / 2 :: R) `approximately_eq` 0 
+prop_sin_360deg = sin (2*pi :: R) `approximately_eq` 0 
+prop_cos_360deg = cos (2*pi :: R) `approximately_eq` 1 
+prop_sin_0deg = sin (0 :: R) `approximately_eq` 0 
+prop_cos_0deg = cos (0 :: R) `approximately_eq` 1 
+
 >derivatetest1 :: Test
 >derivatetest1 = -- True ~? "derivatetest1"
 >  accumulation_point (derivate (\(x :: R) -> x*x) 4.0) `approximately_equal` 8.0 ~? "derivatetest1"
@@ -48,7 +55,7 @@ prop_sin_asin_inverses = forAll (realInRange 0 (2*pi)) $ \r -> asin (sin r) `app
 >qcTests = $quickCheckAll
 
 >tests :: Test
->tests = "Model.Real" ~: test [
+>tests = "Math.Number.Real" ~: test [
 >   -- median_algebra (const () :: R -> ()),
 >   derivatetest1,
 >   "properties" ~: qcTests

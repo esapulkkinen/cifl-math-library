@@ -46,7 +46,7 @@
 >-- an element of a graph is either an edge or a vertex.
 >--
 >-- the action_endomorphism allows obtaining source vertex, target vertex and inverse edge of an element
->-- See 'Model.Graph.GraphMonoid' for details.
+>-- See 'Math.Graph.GraphMonoid' for details.
 >--
 >-- Note that the monoid data structure contains only names of the monoid elements -
 >-- the action_endomorphism is then used to convert it to actual operation.
@@ -137,7 +137,7 @@ graph_representation (Endo f) (Endo g) = Endo $ f . g
 >--  Note though that edge names produced from pair of vertices by the function given must be unique,
 >--  no overlaps are allowed, so it is required that for call 'completeG vertices edge'
 >-- 
->--  prop> forall v,w : vertices . v != v' && w != w' -> edge v w != edge v' w'
+>--  prop> forall v,w : vertices . (v != v' || w != w') => edge v w != edge v' w'
 >-- 
 >completeG :: (Ord a) => [a] -> (a -> a -> a) -> Graph Three a
 >completeG vertices edge = edgesG [(edge x y,(x,y))

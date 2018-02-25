@@ -26,6 +26,8 @@
 >   module Math.Matrix.Dimension,
 >-- | alternative impl of "Math.Matrix.Covector"
 >   module Math.Matrix.Bracket,
+>-- | unicode syntax
+>   module Math.Matrix.Unicode,
 >-- | commutator and characteristic polynomials
 >   module Math.Matrix.Instances) where
 >import Math.Matrix.Interface hiding (unit)
@@ -43,3 +45,4 @@
 >import qualified Math.Matrix.Indexable
 >import Math.Matrix.Dimension
 >import Math.Matrix.QuasiQuoter
+>import Math.Matrix.Unicode

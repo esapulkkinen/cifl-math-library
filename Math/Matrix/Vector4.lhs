@@ -16,9 +16,6 @@
 >import Math.Tools.Median
 >import Math.Tools.Visitor
 >import Math.Tools.CoMonad
-
-import Model.Units
-
 >import Math.Matrix.Vector1
 >import Math.Matrix.Vector2
 >import Math.Matrix.Vector3
