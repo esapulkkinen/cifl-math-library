@@ -49,6 +49,13 @@ prop_sin_asin_inverses = forAll (realInRange 0 (2*pi)) $ \r -> asin (sin r) `app
 
 <pre><a name="line-29"></a><span class='hs-varop'>&gt;</span><span class='hs-varid'>prop_average_test</span> <span class='hs-keyglyph'>=</span> <span class='hs-varid'>average</span> <span class='hs-layout'>(</span><span class='hs-varid'>pi</span> <span class='hs-keyglyph'>::</span> <span class='hs-conid'>R</span><span class='hs-layout'>)</span> <span class='hs-num'>0</span> <span class='hs-varop'>`approximately_equal`</span> <span class='hs-layout'>(</span><span class='hs-varid'>pi</span> <span class='hs-varop'>/</span> <span class='hs-num'>2</span><span class='hs-layout'>)</span>
 </pre>
+prop_sin_90deg = sin (pi / 2 :: R) `approximately_eq` 1 
+prop_cos_90deg = cos (pi / 2 :: R) `approximately_eq` 0 
+prop_sin_360deg = sin (2*pi :: R) `approximately_eq` 0 
+prop_cos_360deg = cos (2*pi :: R) `approximately_eq` 1 
+prop_sin_0deg = sin (0 :: R) `approximately_eq` 0 
+prop_cos_0deg = cos (0 :: R) `approximately_eq` 1 
+
 <pre><a name="line-30"></a><span class='hs-varop'>&gt;</span><span class='hs-varid'>derivatetest1</span> <span class='hs-keyglyph'>::</span> <span class='hs-conid'>Test</span>
 <a name="line-31"></a><span class='hs-varop'>&gt;</span><span class='hs-varid'>derivatetest1</span> <span class='hs-keyglyph'>=</span> <span class='hs-comment'>-- True ~? "derivatetest1"</span>
 <a name="line-32"></a><span class='hs-varop'>&gt;</span>  <span class='hs-varid'>accumulation_point</span> <span class='hs-layout'>(</span><span class='hs-varid'>derivate</span> <span class='hs-layout'>(</span><span class='hs-keyglyph'>\</span><span class='hs-layout'>(</span><span class='hs-varid'>x</span> <span class='hs-keyglyph'>::</span> <span class='hs-conid'>R</span><span class='hs-layout'>)</span> <span class='hs-keyglyph'>-&gt;</span> <span class='hs-varid'>x</span><span class='hs-varop'>*</span><span class='hs-varid'>x</span><span class='hs-layout'>)</span> <span class='hs-num'>4.0</span><span class='hs-layout'>)</span> <span class='hs-varop'>`approximately_equal`</span> <span class='hs-num'>8.0</span> <span class='hs-varop'>~?</span> <span class='hs-str'>"derivatetest1"</span>
@@ -57,7 +64,7 @@ prop_sin_asin_inverses = forAll (realInRange 0 (2*pi)) $ \r -> asin (sin r) `app
 <a name="line-34"></a><span class='hs-varop'>&gt;</span><span class='hs-varid'>qcTests</span> <span class='hs-keyglyph'>=</span> <span class='hs-varop'>$</span><span class='hs-varid'>quickCheckAll</span>
 </pre>
 <pre><a name="line-35"></a><span class='hs-varop'>&gt;</span><span class='hs-varid'>tests</span> <span class='hs-keyglyph'>::</span> <span class='hs-conid'>Test</span>
-<a name="line-36"></a><span class='hs-varop'>&gt;</span><span class='hs-varid'>tests</span> <span class='hs-keyglyph'>=</span> <span class='hs-str'>"Model.Real"</span> <span class='hs-varop'>~:</span> <span class='hs-varid'>test</span> <span class='hs-keyglyph'>[</span>
+<a name="line-36"></a><span class='hs-varop'>&gt;</span><span class='hs-varid'>tests</span> <span class='hs-keyglyph'>=</span> <span class='hs-str'>"Math.Number.Real"</span> <span class='hs-varop'>~:</span> <span class='hs-varid'>test</span> <span class='hs-keyglyph'>[</span>
 <a name="line-37"></a><span class='hs-varop'>&gt;</span>   <span class='hs-comment'>-- median_algebra (const () :: R -&gt; ()),</span>
 <a name="line-38"></a><span class='hs-varop'>&gt;</span>   <span class='hs-varid'>derivatetest1</span><span class='hs-layout'>,</span>
 <a name="line-39"></a><span class='hs-varop'>&gt;</span>   <span class='hs-str'>"properties"</span> <span class='hs-varop'>~:</span> <span class='hs-varid'>qcTests</span>
