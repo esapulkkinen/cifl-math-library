@@ -9,7 +9,7 @@
 >-- For undirected graph, the monoid 'Four' is used, which represents operations of id,source, target and inverse.
 >--
 >-- See "Math.Graph.InGraphMonad" for how to read graphs in monadic context
->
+>-- 
 >-- See "Math.Graph.InGraphA" for how to read graphs in arrow context
 >-- 
 >module Math.Graph.Reversible where
