@@ -227,102 +227,25 @@
 >  v %. w = sum_components4 $ pure (*) <*> v <*> (conj <$> w)
 
 
->-- | <https://en.wikipedia.org/wiki/Quaternion>
->quarternion_product :: (Num a) => Vector4 a -> Vector4 a -> Vector4 a
->quarternion_product (Vector4 a1 b1 c1 d1) (Vector4 a2 b2 c2 d2) =
->   Vector4 (a1*a2 - b1*b2 - c1*c2 - d1*d2)
->           (a1*b2 + b1*a2 + c1*d2 - d1*c2)
->           (a1*c2 - b1*d2 + c1*a2 + d1*b2)
->           (a1*d2 + b1*c2 - c1*b2 + d1*a2)
-
->-- | <https://en.wikipedia.org/wiki/Quaternion>
->quarternion_conjugate :: (Num a) => Vector4 a -> Vector4 a
->quarternion_conjugate (Vector4 a b c d) = Vector4 a (negate b) (negate c) (negate d)
-
->-- | <https://en.wikipedia.org/wiki/Quaternion>
->quarternion_inverse :: (ConjugateSymmetric a, Floating a) => Vector4 a -> Vector4 a
->quarternion_inverse q = (norm q * norm q) %* quarternion_conjugate q
->
->-- | <https://en.wikipedia.org/wiki/Quaternion>
->quarternion_left_divide :: (ConjugateSymmetric a, Floating a) => Vector4 a -> Vector4 a -> Vector4 a
->quarternion_left_divide q p = quarternion_inverse q * p
-
->-- | <https://en.wikipedia.org/wiki/Quaternion>
->quarternion_right_divide :: (ConjugateSymmetric a, Floating a) => Vector4 a -> Vector4 a -> Vector4 a
->quarternion_right_divide q p = q * quarternion_inverse p
-
->-- | <https://en.wikipedia.org/wiki/Quaternion>
->quarternion_split :: (Num a) => Vector4 a -> (Vector4 a, Vector4 a)
->quarternion_split (Vector4 t x y z) = (Vector4 t 0 0 0, Vector4 0 x y z)
-
->-- | <https://en.wikipedia.org/wiki/Quaternion>
->quarternion_exp :: (ConjugateSymmetric a,Floating a) => Vector4 a -> Vector4 a
->quarternion_exp q = exp (tcoord4 t) %* (cos nv %* t4 %+ (sin nv / nv) %* v)
->    where (t,v) = quarternion_split q
->          nv = norm v
-
->-- | <https://en.wikipedia.org/wiki/Quaternion>
->quarternion_log q = log nq %* t4 %+ (acos (tcoord4 q / nq) / norm v) %* v
->   where (t,v) = quarternion_split q
->         nq = norm q
-
->instance (Floating a, ConjugateSymmetric a) => Fractional (Vector4 a) where
->   (/) = quarternion_left_divide
->   recip = quarternion_inverse
->   fromRational q = Vector4 (fromRational q) 0 0 0
-
->instance (Floating a, ConjugateSymmetric a) => Floating (Vector4 a) where
->   exp = quarternion_exp
->   log = quarternion_log
-
->instance (Num a) => ConjugateSymmetric (Vector4 a) where
->   conj = quarternion_conjugate
-
->-- | <https://en.wikipedia.org/wiki/Quaternion>
->quarternion_unit :: (Num a) => Vector4 a
->quarternion_unit = Vector4 1 0 0 0
-
->-- | <https://en.wikipedia.org/wiki/Quaternion>
->quarternion_i :: (Num a) => Vector4 a
->quarternion_i    = Vector4 0 1 0 0
-
->-- | <https://en.wikipedia.org/wiki/Quaternion>
->quarternion_j :: (Num a) => Vector4 a
->quarternion_j    = Vector4 0 0 1 0
-
->-- | <https://en.wikipedia.org/wiki/Quaternion>
->quarternion_k :: (Num a) => Vector4 a
->quarternion_k    = Vector4 0 0 0 1
 
 >versor :: (Floating a, ConjugateSymmetric a) => Vector4 a -> Vector4 a
 >versor q = (1 / norm q) %* q
 
->instance (Num a) => Num (Vector4 a) where
->   v1 + v2 = pure (+) <*> v1 <*> v2
->   v1 - v2 = pure (-) <*> v1 <*> v2
->   (*) = quarternion_product
->   negate = fmap negate
->   abs = fmap abs
->   signum = fmap signum
->   fromInteger i = Vector4 (fromInteger i) (fromInteger 0) (fromInteger 0) (fromInteger 0)
-
 >instance (Floating a, ConjugateSymmetric a) => Num ((Vector4 :*: Vector4) a) where
->   (Matrix v) + (Matrix v') = Matrix $ v + v'
->   (Matrix v) - (Matrix v') = Matrix $ v - v'
+>   (Matrix v) + (Matrix v') = Matrix $ liftA2 (liftA2 (+)) v v'
+>   (Matrix v) - (Matrix v') = Matrix $ liftA2 (liftA2 (-)) v v'
 >   (*) = (%*%)
->   negate (Matrix v) = Matrix $ negate v
->   abs (Matrix v) = Matrix (abs v)
->   signum (Matrix v) = Matrix (signum v)
+>   negate (Matrix v) = Matrix $ liftA (liftA negate) v
+>   abs (Matrix v) = Matrix $ liftA (liftA abs) v
+>   signum (Matrix v) = Matrix $ liftA (liftA signum) v
 >   fromInteger i = diagonal_matrix (constant4 (fromInteger i))
 
 
 >instance (Floating a, ConjugateSymmetric a) => LieAlgebra ((Vector4 :*: Vector4) a) where
 >   (%<>%) = matrix_commutator
 
-
->-- | <https://en.wikipedia.org/wiki/Quaternion>
 >instance MetricSpace (Vector4 R) where
->   distance x y = norm (x - y)
+>   distance x y = norm (x %- y)
 
 >index4 :: Int -> Vector4 a -> a
 >index4 0 = tcoord4
@@ -456,9 +379,9 @@ laplace4_units f = divergence4_units (grad4_units f)
 >instance (Num a) => VectorSpace ((Vector1 :*: Vector4) a) where
 >  type Scalar ((Vector1 :*: Vector4) a) = a
 >  vzero = Matrix $ Vector1 vzero 
->  vnegate (Matrix v) = Matrix $ fmap negate v
+>  vnegate (Matrix v) = Matrix $ fmap (fmap negate) v
 >  v %* (Matrix x) = Matrix $ fmap (fmap (v *)) x
->  (Matrix x) %+ (Matrix y) = Matrix $ x %+ y
+>  (Matrix x) %+ (Matrix y) = Matrix $ liftA2 (liftA2 (+)) x y
 
 >-- | 1 x 4 matrices:
 >instance Transposable Vector1 Vector4 where
@@ -487,9 +410,9 @@ laplace4_units f = divergence4_units (grad4_units f)
 >instance (Num a) => VectorSpace ((Vector2 :*: Vector4) a) where
 >  type Scalar ((Vector2 :*: Vector4) a) = a
 >  vzero = Matrix $ Vector2 vzero vzero
->  vnegate (Matrix v) = Matrix $ fmap negate v
+>  vnegate (Matrix v) = Matrix $ fmap (fmap negate) v
 >  v %* (Matrix x) = Matrix $ fmap (fmap (v *)) x
->  (Matrix x) %+ (Matrix y) = Matrix $ x %+ y
+>  (Matrix x) %+ (Matrix y) = Matrix $ liftA2 (liftA2 (+)) x y
 
 >-- | 4 x 2 matrices
 >instance Transposable Vector4 Vector2 where
@@ -500,7 +423,7 @@ laplace4_units f = divergence4_units (grad4_units f)
 >instance (Num a) => VectorSpace ((Vector4 :*: Vector2) a) where
 >  type Scalar ((Vector4 :*: Vector2) a) = a
 >  vzero = Matrix $ Vector4 vzero vzero vzero vzero
->  vnegate (Matrix v) = Matrix $ fmap negate v
+>  vnegate (Matrix v) = Matrix $ fmap (fmap negate) v
 >  v %* (Matrix x) = Matrix $ fmap (fmap (v *)) x
 >  (Matrix x) %+ (Matrix y) = Matrix $ x %+ y
 
@@ -518,7 +441,7 @@ laplace4_units f = divergence4_units (grad4_units f)
 >instance (Num a) => VectorSpace ((Vector4 :*: Vector3) a) where
 >  type Scalar ((Vector4 :*: Vector3) a) = a
 >  vzero = Matrix $ Vector4 vzero vzero vzero vzero
->  vnegate (Matrix v) = Matrix $ fmap negate v
+>  vnegate (Matrix v) = Matrix $ fmap (fmap negate) v
 >  v %* (Matrix x) = Matrix $ fmap (fmap (v *)) x
 >  (Matrix x) %+ (Matrix y) = Matrix $ x %+ y
 
@@ -536,9 +459,9 @@ laplace4_units f = divergence4_units (grad4_units f)
 >instance (Num a) => VectorSpace ((Vector3 :*: Vector4) a) where
 >  type Scalar ((Vector3 :*: Vector4) a) = a
 >  vzero = Matrix $ Vector3 vzero vzero vzero
->  vnegate (Matrix v) = Matrix $ fmap negate v
+>  vnegate (Matrix v) = Matrix $ fmap (fmap negate) v
 >  v %* (Matrix x) = Matrix $ fmap (fmap (v *)) x
->  (Matrix x) %+ (Matrix y) = Matrix $ x %+ y
+>  (Matrix x) %+ (Matrix y) = Matrix $ liftA2 (liftA2 (+)) x y
 
 
 >-- | 4 x 4 matrices
@@ -549,9 +472,9 @@ laplace4_units f = divergence4_units (grad4_units f)
 >instance (Num a) => VectorSpace ((Vector4 :*: Vector4) a) where
 >  type Scalar ((Vector4 :*: Vector4) a) = a
 >  vzero = Matrix $ Vector4 vzero vzero vzero vzero
->  vnegate (Matrix v) = Matrix $ fmap negate v
+>  vnegate (Matrix v) = Matrix $ fmap (fmap negate) v
 >  v %* (Matrix x) = Matrix $ fmap (fmap (v *)) x
->  (Matrix x) %+ (Matrix y) = Matrix $ x %+ y
+>  (Matrix x) %+ (Matrix y) = Matrix $ liftA2 (liftA2 (+)) x y
 
 >transpose4 :: Matrix4 a -> Matrix4 a
 >transpose4 (Matrix m) = matrix ($) diagonal_projections4 m
@@ -640,12 +563,6 @@ laplace4_units f = divergence4_units (grad4_units f)
 >determinant4 (Matrix m) = combine $ pure (*) <*> tcoord4 m <*> amv  
 >   where amv = fmap (determinant . Matrix . removet4 . (`fmap` m)) removes4
 >         combine (Vector4 a b c d) = a - b + c - d
-
->quarternion_complex :: Vector4 a -> Vector2 (Complex a)
->quarternion_complex (Vector4 a b c d) = Vector2 (a :+ b) (c :+ d)
-
->complex_quarternion :: Vector2 (Complex a) -> Vector4 a
->complex_quarternion (Vector2 (a :+ b) (c :+ d)) = Vector4 a b c d
 
 >instance (Fractional a) => InvertibleMatrix Vector4 a where
 >   inverse = inverse4

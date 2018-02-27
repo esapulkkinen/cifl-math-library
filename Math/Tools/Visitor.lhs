@@ -12,9 +12,8 @@
 >import qualified Data.Set as Set
 >import Control.Monad.Trans.State.Lazy
 
-loosely based on GOF: Design Patterns visitor pattern, and also on
-Haskell 'foldr' function and common variations of it.
-
+>-- | loosely based on GOF: Design Patterns visitor pattern, and also on
+>-- Haskell 'foldr' function and common variations of it.
 >class Visitor v where
 >   data Fold v :: * -> *
 >   visit :: Fold v a -> v -> a
@@ -42,6 +41,7 @@ Haskell 'foldr' function and common variations of it.
 
 >class (Builder v) => ConstantBuilder v where
 >   newBuilder :: v -> Unfold v a
+
 
 
 >instance FunctorBuilder ((->) b) where
