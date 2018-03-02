@@ -5,6 +5,7 @@
 >import Math.Matrix.Dimension
 >import Math.Tools.PrettyP
 >import Math.Tools.Universe
+>import Math.Tools.NumericExpression
 >import Math.Matrix.Matrix
 >import Data.Monoid
 >import Data.Complex
@@ -31,6 +32,15 @@
 >  zcoord4 :: s
 > }
 >    deriving (Eq)
+
+>instance (Num a) => Num (Vector4 a) where
+>   v1 + v2 = pure (+) <*> v1 <*> v2
+>   v1 - v2 = pure (+) <*> v1 <*> v2
+>   (*) = liftA2 (*)
+>   negate = fmap negate
+>   abs = fmap abs
+>   signum = fmap signum
+>   fromInteger i = Vector4 (fromInteger i) (fromInteger i) (fromInteger i) (fromInteger i)
 
 >instance Unfoldable Vector4 where
 >   unfoldF f = f >>= \a -> f >>= \b -> f >>= \c -> f >>= \d ->
@@ -154,6 +164,9 @@
 >instance Visitor (Vector4 a) where
 >  data Fold (Vector4 a) b = Vector4Fold (a -> a -> a -> a -> b)
 >  visit (Vector4Fold f) (Vector4 x y z t) = f x y z t
+
+>instance IdVisitor (Vector4 a) where
+>   idFold = Vector4Fold Vector4 
 
 >instance Foldable Vector4 where
 >   foldMap f (Vector4 x y z t) = f x `mappend` f y `mappend` f z `mappend` f t
@@ -558,6 +571,20 @@ laplace4_units f = divergence4_units (grad4_units f)
 
 >inverse4 :: (Fractional a) => Matrix4 a -> Matrix4 a
 >inverse4 m = (1 / determinant m) %* adjucate4 m
+
+>-- | Generalization of cross product to four dimensions
+>-- This is computed using formal determinant representation of cross product
+>-- expanded to four dimensions
+>-- <https://en.wikipedia.org/wiki/Cross_product>
+>-- This computes vector that is linearly independent of all three vectors given
+>-- in four dimensional space.
+>cross4 :: (Num a) => Vector4 a -> Vector4 a -> Vector4 a -> Vector4 a
+>cross4 v1 v2 v3 = Vector4 det1 det2 det3 det4
+>  where det1 =          determinant3 $ Matrix $ fmap removet4 v
+>        det2 = negate $ determinant3 $ Matrix $ fmap (rotate . removex4) v
+>        det3 =          determinant3 $ Matrix $ fmap (inverseRotate . removey4) v
+>        det4 = negate $ determinant3 $ Matrix $ fmap removez4 v
+>        v = Vector3 v1 v2 v3
 
 >determinant4 :: (Num a) => Matrix4 a -> a
 >determinant4 (Matrix m) = combine $ pure (*) <*> tcoord4 m <*> amv  
