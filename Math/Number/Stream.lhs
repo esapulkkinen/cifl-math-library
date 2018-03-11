@@ -102,6 +102,11 @@ import qualified Model.Nondeterminism as Nondet
 >class (Limiting a) => Closed a where
 >  accumulation_point :: Closure a -> a
 
+>instance Limiting Integer where
+>   data Closure Integer = IntegerClosure { runIntegerClosure :: Stream Integer }
+>   limit = IntegerClosure
+>   approximations = runIntegerClosure
+
 >instance Limiting Rational where
 >   data Closure Rational = RationalClosure (Stream Rational)
 >   limit = RationalClosure

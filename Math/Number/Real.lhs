@@ -300,6 +300,11 @@ lowerbound set = Characteristic $ \x -> and $ map (x <=) set
 >limit_above :: R -> (R -> R) -> Closure R
 >limit_above c f = limit $ approximations (close $ c + accumulation_point epsilon) >>= (return . f)
 
+>-- | <http://en.wikipedia.org/wiki/Squeeze_theorem Squeeze_theorem>
+>limit_both :: R -> (R -> R) -> Closure R
+>limit_both c f = limit $ approximations (limit_below c f)
+>            `interleave` approximations (limit_above c f)
+
 
 >negative_infinity :: R
 >negative_infinity = negate infinity
@@ -559,10 +564,18 @@ gamma z = integral (close 0,infinity_gen) $ \t -> exp (negate t) * (t ** (z-1))
 >instance ShowPrecision Float where
 >   show_at_precision r _ = show r
 
+>signum_real :: R -> Int -> Int
+>signum_real _ 0 = 0
+>signum_real r i
+>   | (a,b) <- properFraction (shead $ approximate r) =
+>       if signum a == 0
+>        then signum_real (r*10) (i-1)
+>         else signum a
 
 >show_at_precision_real :: R -> Integer -> String
->show_at_precision_real r i = show a ++ "." ++ decs
->   where decs = if a == 0 then decimals_str2 (abs b) i
+>show_at_precision_real r i = signcorr r ++ show a ++ "." ++ decs
+>   where signcorr r = if signum a == 0 && signum_real b 30 == -1 then "-" else ""
+>         decs = if a == 0 then decimals_str2 (abs b) i
 >                          else decimals (abs (b `at_precision` i)) i
 >         (a,b) = properFraction r
 >         decimals x 0 = ""
@@ -590,7 +603,7 @@ gamma z = integral (close 0,infinity_gen) $ \t -> exp (negate t) * (t ** (z-1))
 >    toRational = shead . approximate . (`at_precision` 5)
 
 >instance RealFrac R where
->    -- ^ not really computable for reals, since 'truncate' is undecidable
+>    -- ^ not really computable for reals, since 'floor' is undecidable
 >    -- according to <http://www.win.tue.nl/~hzantema/hg2.pdf Geuvers: Stream representations of real numbers>
 >    -- we implement this using approximations nonetheless because
 >    -- this is used for printing the real number.
@@ -602,15 +615,19 @@ gamma z = integral (close 0,infinity_gen) $ \t -> exp (negate t) * (t ** (z-1))
 >    -- we couldn't possibly declare that 0.9999.. == 1.000000..
 >    properFraction r = (fromIntegral wholepart,lift_real (snd . properFraction) r)
 >      where rat = shead $ approximate $ r `at_precision` 2
->            wholepart = (numerator rat) `div` (denominator rat)
+>            wholepart = sign * ((abs $ numerator rat)
+>                                `div` (abs $ denominator rat))
+>            sign = signum (numerator rat) * signum (denominator rat)
+>    floor = fst . properFraction
+>    round = floor . (+ 0.5)
 
 >-- | Enum instance for reals is undecidable with respect to end of
 >-- real intervals, since comparison of two real numbers is undecidable.
 >-- Thus enumFromTo and enumFromThenTo produce errors indicating
 >-- density problem.
 >instance Enum R where
->    succ (Limit s) = Limit $ fmap succ s
->    pred (Limit s) = Limit $ fmap pred s
+>    succ = lift_real succ
+>    pred = lift_real pred
 >    toEnum i = Limit $ constant (toEnum i)
 >    fromEnum (Limit xr) = fromEnum (shead $ Stream.drop 8 xr)
 >    enumFrom x  = x : map succ (enumFrom x)
@@ -648,17 +665,17 @@ gamma z = integral (close 0,infinity_gen) $ \t -> exp (negate t) * (t ** (z-1))
 >strEnumFromThenTo (Pre x xr) (Pre x2 x2r) (Pre y yr) = Pre (enumFromThenTo x x2 y) (strEnumFromThenTo xr x2r yr)
 
 >instance Num R where
->    (Limit s) + (Limit t) = Limit $ s + t
->    (Limit s) - (Limit t) = Limit $ s - t
+>    (Limit s) + (Limit t) = Limit $ liftA2 (+) s t
+>    (Limit s) - (Limit t) = Limit $ liftA2 (-) s t
 >    (Limit s) * (Limit t) = Limit $ liftA2 (*) s t
->    negate (Limit s) = Limit $ negate s
->    abs (Limit s) = Limit $ abs s
->    signum (Limit s) = Limit $ fmap signum s
+>    negate = lift_real negate
+>    abs = lift_real abs
+>    signum = lift_real signum
 >    fromInteger i = Limit $ Stream.constant $ fromInteger i
 
 >instance Fractional R where
 >    (Limit s) / (Limit t) = Limit $ liftA2 (/) s t
->    recip (Limit s) = Limit $ fmap recip s
+>    recip = lift_real recip
 >    fromRational r = Limit $ Stream.constant r
 
 >toReal :: Rational -> R
@@ -820,10 +837,11 @@ exp_by_series2 (Limit x) = Limit $ sum_stream $
 >exp_by_series (Limit x) = Limit $ (Pre 1 $ fmap (1 /) factorial) `approximate_sums` x
 
 >sin_by_series :: R -> R
->sin_by_series (Limit x) = (Limit $ x >>= \xappr -> fst $ uninterleave $ sum_stream 
+>sin_by_series (Limit x) = (Limit $ x >>= \xappr ->
+>        Stream.filter (\a -> a >= -1 && a <= 1) $ fst $ uninterleave $ sum_stream 
 >        $ liftA2 (*) filterStream
 >        $ liftA2 (/) (index_powers $ constant xappr)
->        $ factorial) `at_precision`  3
+>        $ factorial) `at_precision` 2
 >  where filterStream = Pre 0 $ Pre 1 $ Pre 0 $ Pre (negate 1) $ filterStream
 
 uninterleave stuff is needed to ensure at_precision works correctly,
@@ -831,9 +849,11 @@ since the sum of the generating function has zero at every second element,
 it means there are always two adjacent equal elements.
 
 >cos_by_series :: R -> R
->cos_by_series (Limit x) = (Limit $ x >>= \xappr -> fst $ uninterleave $ sum_stream
+>cos_by_series (Limit x) = (Limit $ x >>= \xappr ->
+>        Stream.filter (\a -> a >= -1 && a <= 1) $
+>        fst $ uninterleave $ sum_stream
 >        $ liftA2 (*) filterStream
->        $ liftA2 (/) (index_powers (constant xappr)) factorial) `at_precision` 3
+>        $ liftA2 (/) (index_powers (constant xappr)) factorial) `at_precision` 2
 >  where filterStream = Pre 1 $ Pre 0 $ Pre (negate 1) $ Pre 0 $ filterStream
 
 >-- | Using Simon Plouffe's BPP digit extraction algorithm for computing pi.
