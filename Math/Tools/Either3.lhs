@@ -1,4 +1,4 @@
->{-# LANGUAGE TypeFamilies #-}
+>{-# LANGUAGE TypeFamilies, LambdaCase #-}
 >module Math.Tools.Either3 where
 >import Math.Tools.Visitor
 
@@ -7,9 +7,10 @@
 >                   | Right3 c
 
 >instance Functor (Either3 a b) where
->   fmap _ (Left3 x) = Left3 x
->   fmap _ (Middle3 y) = Middle3 y
->   fmap f (Right3 z)  = Right3 (f z)
+>   fmap f = \case
+>     (Left3 x) -> Left3 x
+>     (Middle3 y) -> Middle3 y
+>     (Right3 z) -> Right3 (f z)
 
 >instance Visitor (Either3 a b c) where
 >   data Fold (Either3 a b c) d = FoldEither3 (a -> d) (b -> d) (c -> d)

@@ -33,6 +33,7 @@
 >       deriving (Eq)
 
 
+
 >instance Unfoldable Vector3 where
 >   unfoldF f = f >>= \a -> f >>= \b -> f >>= \c -> return $ Vector3 a b c
 
@@ -232,6 +233,12 @@
 >instance Traversable Vector3 where
 >   traverse f (Vector3 x y z) = Vector3 <$> f x <*> f y <*> f z
 
+>vector_epsilon :: (Infinitesimal a) => Stream (Vector3 a)
+>vector_epsilon = epsilon_stream Stream.>>!= \x ->
+>   epsilon_stream Stream.>>!= \y ->
+>   epsilon_stream Stream.>>!= \z ->
+>   return $ Vector3 x y z
+
 >instance (Show (f a)) => Show ((Vector3 :*: f) a) where
 >  show (Matrix (Vector3 a b c))
 >   = show a ++ "\n" ++ show b ++ "\n" ++ show c
@@ -311,11 +318,11 @@ approximations_vector3 (Vector3 x y z) = do
 
 >partial_derivate3y :: (Infinitesimal a, Closed a) => Dual (Vector3 a) -> Dual (Vector3 a)
 >partial_derivate3y (Covector f) = Covector $ partial_derivate ch f
->   where ch eps (Vector3 x y z) = Vector3 x (y+eps*y) z
+>   where ch eps (Vector3 x y z) = Vector3 x (y+eps) z
           
 >partial_derivate3z :: (Infinitesimal a, Closed a) => Dual (Vector3 a) -> Dual (Vector3 a)
 >partial_derivate3z (Covector f) = Covector $ partial_derivate ch f
->   where ch eps (Vector3 x y z) = Vector3 x y (z+eps*z)
+>   where ch eps (Vector3 x y z) = Vector3 x y (z+eps)
 
 
 >del3 :: (Infinitesimal v, Closed v) => Vector3 (Dual (Vector3 v) -> Dual (Vector3 v))
@@ -485,7 +492,6 @@ divergence f = fmap (%. f) del3
 >vector3 :: [a] -> Vector3 a
 >vector3 [x,y,z] = Vector3 x y z
 >vector3 _ = error "vector3: Invalid number of items in vector"
-
 
 >-- | <https://en.wikipedia.org/wiki/Lie_algebra>
 >instance (Num a) => LieAlgebra (Vector3 a) where

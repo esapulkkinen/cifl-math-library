@@ -1,4 +1,4 @@
->{-# LANGUAGE TypeFamilies #-}
+>{-# LANGUAGE TypeFamilies, LambdaCase #-}
 >module Math.Tools.LeafTree where
 >import qualified Prelude as P
 >import Prelude hiding (zipWith)
@@ -56,8 +56,9 @@
 >isLeaf (SubTree _) = False
 
 >instance Functor LeafTree where
->  fmap f (Leaf x) = Leaf (f x)
->  fmap f (SubTree lst) = SubTree (map (fmap f) lst)
+>  fmap f = \case
+>    (Leaf x) -> Leaf (f x)
+>    (SubTree lst) -> SubTree $ map (fmap f) lst
 
 >instance Visitor (LeafTree e) where
 >  data Fold (LeafTree e) a = LeafTreeFold (e -> a) ([a] -> a)

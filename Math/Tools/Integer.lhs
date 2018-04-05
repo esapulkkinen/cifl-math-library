@@ -23,16 +23,19 @@
 >gcd_ a b | a > b     = gcd_ (a - b) b
 >         | otherwise = gcd_ (b - a) a
 
+>-- | See Knuth: TAOCP, or
+>-- <http://www.math.harvard.edu/~mazur/preprints/when_is_one.pdf>
 >rising_factorial_power :: (Num a, Eq a) => a -> a -> a
 >rising_factorial_power 0 _ = 0
 >rising_factorial_power x 0 = 1
 >rising_factorial_power x n = x * rising_factorial_power (x+1) (n-1)
 
+>-- | See Knuth: TAOCP
+>-- or <http://www.math.harvard.edu/~mazur/preprints/when_is_one.pdf>
 >falling_factorial_power :: (Num a,Eq a) => a -> a -> a
 >falling_factorial_power x 0 = 1
 >falling_factorial_power 0 _ = 0
 >falling_factorial_power x n = x * (falling_factorial_power (x-1) (n-1))
-
 
 using product form
 

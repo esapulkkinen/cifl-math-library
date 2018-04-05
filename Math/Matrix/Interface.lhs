@@ -167,6 +167,12 @@ eigenvectors_generic m a = Matrix $ fmap (fix . (a %/)) (eigenvalues m)
 >angle x y = acos $
 > (x %. y) / (innerproductspace_norm x * innerproductspace_norm y)
 
+>-- | <https://en.wikipedia.org/wiki/Cross_product>
+>-- This is a skew-symmetric matrix whose application to a vector
+>-- is same as cross product of a with the vector.
+>-- @cross_product_matrix v <<*> w == v %<>% w@.
+>cross_product_matrix :: (SquareMatrix m a, LieAlgebra (m a)) => m a -> (m :*: m) a
+>cross_product_matrix a = Matrix $ fmap (%<>% a) $ cells identity
 
 >i_vec,j_vec,k_vec,l_vec :: (StandardBasis v) => v
 >i_vec = unit_vectors !! 0

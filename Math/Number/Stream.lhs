@@ -1446,6 +1446,15 @@ the suffix computation on Seq is constant time rather than linear.
 >peirces_triangle_list :: (Num a, Ord a) => Stream [a]
 >peirces_triangle_list = fmap (takeWhile (/= 0)) $ cells peirces_triangle
 
+>-- | <https://en.wikipedia.org/wiki/Injective_function?wprof=sfla1>
+>-- falling factorial powers specify number of injective functions
+>-- from domain with specified number of elements to codomain with
+>-- specified number of elements.
+>-- <https://en.wikipedia.org/wiki/Falling_and_rising_factorials?wprof=sfla1>
+>--
+>-- Be careful about indices here, could cause off-by-one error!
+>falling_factorial_powers_diag = Matrix $ liftA2 (liftA2 (*)) (fmap constant factorial) (cells pascal_triangle_diag)
+
 >falling_factorial_powers :: (Eq a,Num a) => (Stream :*: Stream) a
 >falling_factorial_powers = matrix falling_factorial_power nonzero_naturals nonzero_naturals
 

@@ -51,7 +51,7 @@
 >data R = Limit { approximate :: Stream Rational }
 >data Modulus = Modulus { modulus_value :: R, modulus :: Rational -> Integer }
 
->class (Fractional a, Limiting a) => Infinitesimal a where
+>class (Fractional a,Limiting a) => Infinitesimal a where
 >  epsilon :: Closure a
 >  epsilon_stream :: Stream a
 >  epsilon = limit epsilon_stream
@@ -372,6 +372,10 @@ lowerbound set = Characteristic $ \x -> and $ map (x <=) set
 >derivate f x = limit $ do
 >    eps <- approximations epsilon
 >    return $ (f (x + eps) - f x) / eps
+
+>vector_derivate f x = limit $ do
+>   eps <- approximations epsilon
+>   return $ (1 / (2*eps)) %* (f (x + eps) %- f (x - eps))
 
 >pseudo_derivate :: (Fractional r, Limiting r, Infinitesimal a)
 >                => (a -> r) -> a -> Closure r
