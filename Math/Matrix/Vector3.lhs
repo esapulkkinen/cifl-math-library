@@ -381,11 +381,6 @@ grad3 f x = Vector3 (partial_derivate3x f x)
 >        fy = Covector (ycoord3 . f)
 >        fz = Covector (zcoord3 . f)
 
-
-laplacian3 f = divergence3 (grad3 f)
-
-divergence f = fmap (%. f) del3
-
 >instance Applicative Vector3 where
 >   pure x = Vector3 x x x
 >   (Vector3 f g h) <*> (Vector3 x y z) = Vector3 (f x) (g y) (h z)
