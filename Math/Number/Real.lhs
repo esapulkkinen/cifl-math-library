@@ -26,12 +26,12 @@
 >-- | Problem with this representation: real number ranges cannot be represented.
 >-- given two rational numbers r1 < r2, it should be there are infinitely
 >-- many real numbers between r1 and r2, so support density of irrationals.
-
+>-- 
 >-- In constructive mathematics, given two real numbers @r1' < r2'@, there
 >-- should exist a rational number r, such that @r1' < r@ or @r < r2'@.
 >-- HOWEVER, these comparisons are a type error. In particular this
 >-- cannot be used to _define_ how to compare real numbers.
-
+>-- 
 >-- what is meant is if @r1' < r2'@
 >--                  then there exists a rational r
 >--                  such that @r1' < fromRational r@ or @fromRational r < r2'@
