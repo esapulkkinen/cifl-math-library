@@ -26,15 +26,16 @@
 >-- | Problem with this representation: real number ranges cannot be represented.
 >-- given two rational numbers r1 < r2, it should be there are infinitely
 >-- many real numbers between r1 and r2, so support density of irrationals.
+>-- <https://en.wikipedia.org/wiki/Dense_order>
 >-- 
 >-- In constructive mathematics, given two real numbers @r1' < r2'@, there
->-- should exist a rational number r, such that @r1' < r@ or @r < r2'@.
+>-- should exist a rational number r, such that @r1' < r@ and @r < r2'@.
 >-- HOWEVER, these comparisons are a type error. In particular this
 >-- cannot be used to _define_ how to compare real numbers.
 >-- 
 >-- what is meant is if @r1' < r2'@
 >--                  then there exists a rational r
->--                  such that @r1' < fromRational r@ or @fromRational r < r2'@
+>--                  such that @r1' < fromRational r@ and @fromRational r < r2'@
 >-- 
 >-- In here properties of fromRational are important. Note that comparisons
 >-- invoke the real comparison, so at most is a recursive definition
@@ -45,8 +46,8 @@
 >-- real number, then @r1 < r2@ makes sense. But comparing whether two real
 >-- numbers are the same is undecidable (algorithm for this comparison
 >-- will not halt if they are same). Would this mean that if @r1 < r2@ is
->-- computable, wouldn't @~(r1 < r2 || r2 < r1)@ be equality of reals;
->-- This is computable in the limit, but not computable?
+>-- computable, wouldn't @~(r1 < r2 || r2 < r1)@ be computable equality of reals;
+>-- This is computable in the limit , but not computable? <https://en.wikipedia.org/wiki/Computation_in_the_limit>
 
 >data R = Limit { approximate :: Stream Rational }
 >data Modulus = Modulus { modulus_value :: R, modulus :: Rational -> Integer }
