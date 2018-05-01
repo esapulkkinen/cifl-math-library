@@ -41,8 +41,9 @@
 >import Math.Number.Group
 >import Math.Number.Real
 
->data Quantity r = As { value_amount :: r,
->                       value_dimension :: Dimension }
+>data Quantity r = As {
+>   value_amount :: r,
+>   value_dimension :: Dimension }
 >  deriving (Eq, Typeable)
 
 >instance Functor Quantity where

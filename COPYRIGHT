@@ -1,23 +1,39 @@
 This code is under the GNU LGPL. Copyright (C) 1999-2018 Esa Pulkkinen
 For exact terms, see http://www.gnu.org/copyleft/lgpl.txt.
+I do not give or offer legal advice.
 
 See <https://github.com/esapulkkinen/cifl-math-library>.
 Documentation is at: <https://esapulkkinen.github.io/cifl-math-library/>.
 
-There are portions that I have read from internet from various
-places. I have tried to insert comment on the portion of code that is
-obtained from such sources and included link to the corresponding
-place. I believe I have only used sources that have open source
-license that is compatible with LGPL.
+There are portions that I have read from internet from various places
+and by nature of the library's use of the data must be incorporated to
+the Haskell code. These portions are allowed to be copied also under
+their original author's license. I have tried to insert comment on the
+portion of code that is obtained from or based on such sources and
+included link or reference to the corresponding place and add a
+reference to the corresponding license in this file. The code contains
+many such references. Usually they are visible in the automatically
+generated documentation as well.
+
+Due to nature of basic mathematical theory, very few portions of the
+code contain original mathematics. I do not attempt to claim to have
+invented any such basic theory such as what is found in basic linear
+algebra, category theory or graph theory or other such well known part
+of mathematics.
 
 Portions that are based on data from Wikipedia
-(http://en.wikipedia.org) are copyright with creative commons
-attribute share-alike license version 3.0.
-http://creativecommons.org/licenses/by-sa/3.0/
+<http://en.wikipedia.org> are copyright by Wikipedia authors with
+creative commons attribute share-alike license version 3.0 (CC BY-SA
+3.0), <http://creativecommons.org/licenses/by-sa/3.0/>, and co-licensed
+with GFDL <http://www.gnu.org/copyleft/fdl.html>.
 
 Portions also refer to Haskell wiki (https://wiki.haskell.org) which
 is under simple permissive license
 (https://wiki.haskell.org/HaskellWiki:Copyrights).
+
+With respect to many modules in Math.Graph package, and occasionally
+in other modules as well, the book "Lawvere, Rosebrugh: Sets for
+mathematics" has been an invaluable resource.
 
 Portions are based on Haskell standard library and its implementation
 in the GHC compiler as described in GHC documentation.
