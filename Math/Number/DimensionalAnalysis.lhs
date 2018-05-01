@@ -1,5 +1,15 @@
 >{-# LANGUAGE Safe, GADTs, TypeFamilies, FlexibleContexts, FlexibleInstances, TypeOperators, DataKinds #-}
 >-- | This module provides dimensional analysis according to SI system of units.
+>--   For reference have used <https://en.wikipedia.org/wiki/Dimensional_analysis>
+>--   and <https://en.wikipedia.org/wiki/International_System_of_Units>.
+>-- 
+>--  In reality this should be according to the International system of units, but
+>--  I have not used the official standard documents when writing this code. However it is recognized
+>--  that any major deviation from the standard would be considered a bug in this code.
+>--
+>-- For official references, see e.g. "ISO80000-1:2009:Quantities and Units" and
+>--           "NIST Special Publication 330, 2008: The International system of units".
+>-- 
 >-- Example uses:
 >-- 
 >-- @show (3 %* meter) = "3 m"@
@@ -18,7 +28,7 @@
 >module Math.Number.DimensionalAnalysis where
 >import Data.Complex
 >import Data.Typeable
->import Data.Proxy
+>import Data.Ratio
 >import Control.Monad (guard)
 >import Control.Applicative (Alternative)
 >import Control.Exception
@@ -59,7 +69,12 @@
 >quantityComplex :: Quantity (Complex r) -> Complex (Quantity r)
 >quantityComplex ((a :+ b) `As` d) = (a `As` d) :+ (b `As` d)
 
->instance (Closed a) => Closed (Quantity a) where
+>ratioQuantity :: (Integral r, Show r) => Ratio (Quantity r) -> Quantity (Ratio r)
+>ratioQuantity r = ((a % b) `As` (d - d'))
+>    where (a `As` d) = numerator  r
+>          (b `As` d') = denominator r
+
+>instance (Closed a, Show a) => Closed (Quantity a) where
 >   accumulation_point s
 >     | (Stream.Pre (As x d) xr) <- approximations s
 >     = accumulation_point (limit $ Stream.Pre x (fmap value_amount xr)) `As` d
@@ -265,13 +280,15 @@
 >(=-=) :: (VectorSpace v) => v -> v -> v
 >x =-= y = x %+ vnegate y
 
->instance Stream.Limiting (Quantity r) where
->   data Closure (Quantity r) = QuantityClosure (Stream (Quantity r))
->   limit s = QuantityClosure s
->   approximations (QuantityClosure a) = a
+>instance (Show r) => Stream.Limiting (Quantity r) where
+>   data Closure (Quantity r) = QuantityClosure (Stream r) Dimension
+>   limit z@(Stream.Pre (x `As` d) r@(Stream.Pre (y `As` d') _))
+>     | d == d' = let QuantityClosure yr _ = limit r in QuantityClosure (Stream.Pre x yr) d
+>     | otherwise = invalidDimensions "limit" d d' x y
+>   approximations (QuantityClosure a d) = fmap (`As` d) a
 
 >instance (ShowPrecision r, Floating r, Ord r) => Show (Stream.Closure (Quantity r)) where
->   show (QuantityClosure s) = show s
+>   show (QuantityClosure s d) = show d ++ ":" ++ show s
 
 >instance (Show r,Fractional r) => Fractional (Quantity r) where
 >   (x `As` r) / (y `As` r') = (x/y) `As` (r %- r')
@@ -361,6 +378,39 @@
 >invalidDimensionsM :: (Monad m, Show b, Show c) => String -> Dimension -> Dimension -> b -> c -> m a
 >invalidDimensionsM op r r' a b = fail $
 >     op ++ ":Invalid dimensions: " ++ show r ++ " != " ++ show r' ++ "; " ++ show a ++ "<>" ++ show b
+
+>instance (Enum r, Show r) => Enum (Quantity r) where
+>   succ (a `As` r) = succ a `As` r
+>   pred (a `As` r) = pred a `As` r
+>   toEnum i = toEnum i `As` dimensionless
+>   fromEnum (a `As` r)
+>     | isDimensionless r = fromEnum a
+>     | otherwise = invalidDimensions "fromEnum" r dimensionless a a                 
+>   enumFrom (a `As` r) = map (`As` r) $ enumFrom a
+>   enumFromThen (a `As` r) (b `As` r')
+>     | r == r' = map (`As` r) $ enumFromThen a b
+>     | otherwise = invalidDimensions "enumFromThen" r r' a b
+>   enumFromTo (a `As` r) (b `As` r')
+>     | r == r' = map (`As` r) $ enumFromTo a b
+>     | otherwise = invalidDimensions "enumFromTo" r r' a b
+>   enumFromThenTo (a `As` r) (b `As` r') (c `As` r'')
+>     | r == r' && r == r'' = map (`As` r) $ enumFromThenTo a b c
+>     | r == r'   = invalidDimensions "enumFromThenTo" r r'' a c
+>     | otherwise = invalidDimensions "enumFromThenTo" r r' a b
+
+>instance (Integral r, Show r) => Integral (Quantity r) where
+>   quot (a `As` r) (b `As` r') = (a `quot` b) `As` (r %- r')
+>   rem (a `As` r) (b `As` r') = (a `rem` b) `As` (r %- r')
+>   div (a `As` r) (b `As` r') = (a `div` b) `As` (r %- r')
+>   mod (a `As` r) (b `As` r') = (a `mod` b) `As` (r %- r')
+>   quotRem (a `As` r) (b `As` r') = let (a',b') = quotRem a b
+>                                        d = r %- r'
+>                                    in (a' `As` d, b' `As` d)
+>   divMod (a `As` r) (b `As` r') = let (a',b') = divMod a b
+>                                       d = r %- r'
+>                                    in (a' `As` d, b' `As` d)
+>   toInteger (a `As` d) | isDimensionless d = toInteger a
+>                        | otherwise = invalidDimensions "toInteger" d dimensionless a a
 
 >instance (Num r, Show r) => Num (Quantity r) where
 >  (x `As` r) + (y `As` r')
