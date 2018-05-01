@@ -2,7 +2,7 @@
 >module Math.Matrix.QuantumMechanics where
 >import Control.Applicative
 >import Data.Complex
->import Math.Matrix.Dimension
+>import Math.Number.DimensionalAnalysis
 >import Math.Tools.Complex
 >import Math.Matrix.Stream
 >import Math.Matrix.Vector3

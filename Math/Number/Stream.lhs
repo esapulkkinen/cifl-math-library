@@ -171,7 +171,6 @@ import qualified Model.Nondeterminism as Nondet
 >   limit x = SClosure (fmap limit x) (limit $ stream_diagonal $ Matrix $ x)
 >   approximations = fmap approximations . runSClosure
 
-
 >instance (Show (Closure a)) => Show (Closure (Stream a)) where
 >   show (SClosure str l) = "lim[" ++ show (take 10 str) ++ "...] = " ++ show l
 
@@ -793,7 +792,6 @@ the suffix computation on Seq is constant time rather than linear.
 
 >codiagonals :: (Stream :*: Stream) a -> Stream [a]
 >codiagonals x = fmap Data.Foldable.toList $ codiagonals_seq x
-
 
 >data Transform2D a b = Transform2D {
 >   transform_diagonal   :: a -> b,

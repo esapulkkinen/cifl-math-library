@@ -39,7 +39,7 @@
 >   nextLevel3 :: w a -> (w a, w a, w a)
 
 >class (Comonad w) => ChainComonad w where
->   chain :: w a -> Maybe (w a)
+>   coMonadChain :: w a -> Maybe (w a)
 
 >class (Comonad w) => TreeComonad w where
 >   children :: w a -> [w a]

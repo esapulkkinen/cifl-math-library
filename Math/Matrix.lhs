@@ -22,8 +22,6 @@
 >   module Math.Matrix.Linear,
 >-- | operations on Indexable class
 >   module Math.Matrix.Indexable,
->-- | dimensional analysis
->   module Math.Matrix.Dimension,
 >-- | alternative impl of "Math.Matrix.Covector"
 >   module Math.Matrix.Bracket,
 >-- | unicode syntax
@@ -43,6 +41,5 @@
 >import Math.Matrix.Transpose
 >import Math.Matrix.Linear
 >import qualified Math.Matrix.Indexable
->import Math.Matrix.Dimension
 >import Math.Matrix.QuasiQuoter
 >import Math.Matrix.Unicode

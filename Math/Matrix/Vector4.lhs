@@ -2,7 +2,9 @@
 >module Math.Matrix.Vector4 where
 >import Control.Applicative
 >import Math.Tools.Functor
->import Math.Matrix.Dimension
+
+import Math.Matrix.Dimension
+
 >import Math.Tools.PrettyP
 >import Math.Tools.Universe
 >import Math.Tools.NumericExpression

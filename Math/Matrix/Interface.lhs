@@ -6,6 +6,7 @@
 >module Math.Matrix.Interface where
 >import Data.Monoid
 >import Data.Ratio
+>import Data.Traversable
 >import Data.Complex
 >import Data.List (intersperse)
 >import qualified Data.Set
@@ -129,6 +130,13 @@
 >matrix :: (Functor m, Functor n) => (a -> b -> c) -> m a -> n b -> (m :*: n) c
 >matrix f x y = Matrix $ flip fmap x $ \a -> 
 >                        flip fmap y $ \b -> f a b
+
+
+>matrixM :: (Traversable f, Traversable g, Monad m) => 
+>           (a -> b -> m c) -> f a -> g b -> m ((f :*: g) c)
+>matrixM f row col = do res <- flip mapM row $ \a ->
+>                              flip mapM col $ \b -> f a b
+>                       return $ Matrix res
 
 >matrixMatrix :: (Functor m, Functor n, Functor m', Functor n')
 >             => (a -> b -> c)

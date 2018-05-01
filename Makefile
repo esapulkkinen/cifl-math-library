@@ -1,4 +1,6 @@
 
+unit : configure build test
+
 all : configure build test dependencegraph document hscolor
 
 all_with_install : all install
