@@ -382,7 +382,7 @@ instance (Num a) => Matrix.VectorSpace ((Stream :*: Stream) a) where
 >-- the (*) operation is specific to generating function interpretation.
 >-- convolution/Cauchy product
 >--
->-- prop> x * y == sum [x_i * y_j | k <- naturals, i+j==k]
+>-- prop> (x * y)_k == sum [x_i * y_j | i+j==k]
 >-- 
 >instance (Num a) => Num (Stream a) where
 >   (+) = liftA2 (+)
