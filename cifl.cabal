@@ -28,6 +28,8 @@ description:  Haskell libraries containing graphs, vector spaces, matrices,
 
               <dependencies-Graph.pdf Graph dependencies>
 
+              <dependencies-Number.pdf Number dependencies>
+
               <https://github.com/esapulkkinen/cifl-math-library/blob/master/COPYRIGHT COPYRIGHT>.
 
 -- The license under which the package is released.
