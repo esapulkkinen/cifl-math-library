@@ -45,8 +45,6 @@
 >-- prop> isVertex v => target v == v
 >--
 >module Math.Graph (
->-- | library for general actions of a monoid
->    module Math.Graph.Action,
 >-- | operations for building graphs
 >    module Math.Graph.Reversible,
 >-- | labeled graphs
@@ -68,7 +66,9 @@
 >-- | arrow for inspecting graph data
 >    module Math.Graph.InGraphA,
 >-- | monad for inspecting graph data
->    module Math.Graph.InGraphMonad)
+>    module Math.Graph.InGraphMonad,
+>-- | library for general actions of a monoid
+>    module Math.Graph.Action)
 >   where
 >import Math.Graph.Action hiding (action, unyoneda)
 >import Math.Graph.Reversible

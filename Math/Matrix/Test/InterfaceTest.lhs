@@ -77,7 +77,7 @@ https://en.wikipedia.org/wiki/Inner_product_space
 >     .&&. linearity_first_argument f .&&. positive_definiteness f
 
 
-https://en.wikipedia.org/wiki/Lie_algebra
+>-- | <https://en.wikipedia.org/wiki/Lie_algebra>
 
 >bilinearity (f :: v -> ()) =
 >   forAll arbitrary $ \ (a :: Scalar v, b :: Scalar v, x :: v, y :: v, z :: v) ->

@@ -9,7 +9,7 @@ name:                cifl-math-library
 -- PVP summary:      +-+------- breaking API changes
 --                   | | +----- non-breaking API additions
 --                   | | | +--- code changes with no API change
-version:             1.0.1.0
+version:             1.0.2.0
 
 -- A short (one-line) description of the package.
 synopsis:            Math libraries
@@ -26,7 +26,9 @@ description:  Haskell libraries containing graphs, vector spaces, matrices,
               
             <dependencies-Matrix.pdf Matrix dependencies>
 
-            <dependencies-Graph.pdf Graph dependencies>
+              <dependencies-Graph.pdf Graph dependencies>
+
+              <https://github.com/esapulkkinen/cifl-math-library/blob/master/COPYRIGHT COPYRIGHT>.
 
 -- The license under which the package is released.
 license:             LGPL
@@ -55,14 +57,49 @@ extra-source-files:  README.md
 -- Constraint on the version of Cabal needed to build this package.
 cabal-version:       >=1.10
 
+Flag WithHaXML
+     description: Build with HAXMl
+     default: False
+     
+Flag Library-Only
+     Default: False
+                          
 library
-    exposed-modules: Math.Tools,Math.Number.Real,Math.Matrix,Math.Tools.Cmdline, Math.Matrix.Interface, Math.Matrix.Simple, Math.Matrix.Instances,Math.Tools.NumericExpression, Math.Tools.Nondeterministic, Math.Tools.Set, Math.Tools.Monoid, Math.Tools.PrettyP, Math.Tools.Show, Math.Number.DimensionalAnalysis, Math.Tools.BDD, Math.Tools.NaturalNumber, Math.Tools.Id,  Math.Tools.Queue, Math.Tools.List, Math.Tools.Integer, Math.Tools.LeafTree, Math.Tools.Maybe, Math.Tools.CoFunctor, Math.Matrix.Covector, Math.Matrix.Indexable, Math.Tools.Monad, Math.Tools.CoMonad, Math.Tools.Map, Math.Tools.Parser, Math.Tools.Expression, Math.Tools.Identity, Math.Tools.Functor, Math.Tools.LineInfo, Math.Tools.ParserInterface,   Math.Tools.Universe, Math.Tools.NaturalTransformation, Math.Tools.Isomorphism, Math.Matrix.Linear, Math.Matrix.Matrix, Math.Tools.I, Math.Tools.Tree, Math.Tools.Orthogonal, Math.Tools.Endomorphism, Math.Tools.ParseMonad, Math.Tools.ExpressionMonad, Math.Tools.FixedPoint, Math.Tools.StateArrow, Math.Tools.Arrow, Math.Tools.ParsingCombinators, Math.Number.Group, Math.Tools.Adjunction, Math.Tools.Median, Math.Tools.Visitor, Math.Tools.Complex, Math.Tools.Arrows, Math.Matrix.FreeVectorSpace, Math.Number.Stream, Math.Graph, Math.Matrix.Bracket, Math.Matrix.Vector1, Math.Matrix.Vector2, Math.Matrix.Vector4, Math.Number.BiStream, Math.Matrix.Transpose, Math.Matrix.Vector3, Math.Graph.GraphReader, Math.Graph.Reversible, Math.Graph.Monoid, Math.Graph.Labeled, Math.Graph.GraphMonoid, Math.Graph.Show, Math.Graph.Graph, Math.Graph.Invertible, Math.Graph.Action, Math.Graph.InGraphMonad, Math.Graph.ActionSet, Math.Graph.GraphMap, Math.Graph.Interface, Math.Graph.GraphMonad, Math.Graph.TransformationMonoid, Math.Graph.Algorithms, Math.Graph.InGraphA, Math.Graph.Dot, Math.Graph.XML, Math.Graph.Inductive
-  other-extensions:    MultiParamTypeClasses, ScopedTypeVariables, FlexibleContexts, FunctionalDependencies, FlexibleInstances, TypeOperators, GADTs, StandaloneDeriving, UndecidableInstances, TypeFamilies, ExistentialQuantification, Rank2Types, TypeSynonymInstances, RankNTypes, DeriveDataTypeable, TemplateHaskell, ImpredicativeTypes, DeriveFoldable, DeriveTraversable, KindSignatures, AllowAmbiguousTypes, GeneralizedNewtypeDeriving, UnicodeSyntax
-  ghc-options: -j  
-  ghc-shared-options: -j -shared -fPIC
+    exposed-modules: Math,Math.Number,Math.Tools,Math.Number.Real,Math.Matrix,Math.Tools.Cmdline, Math.Matrix.Interface, Math.Matrix.Simple, Math.Matrix.Instances,Math.Number.NumericExpression, Math.Tools.Nondeterministic, Math.Tools.Set, Math.Tools.Monoid, Math.Tools.PrettyP, Math.Tools.Show, Math.Number.DimensionalAnalysis, Math.Tools.BDD, Math.Tools.NaturalNumber, Math.Tools.Id,  Math.Tools.Queue, Math.Tools.List, Math.Tools.Integer, Math.Tools.LeafTree, Math.Tools.Maybe, Math.Tools.CoFunctor, Math.Matrix.Covector, Math.Matrix.Indexable, Math.Tools.Monad, Math.Tools.CoMonad, Math.Tools.Map, Math.Tools.Parser, Math.Tools.Expression, Math.Tools.Identity, Math.Tools.Functor, Math.Tools.LineInfo, Math.Tools.ParserInterface,   Math.Tools.Universe, Math.Tools.NaturalTransformation, Math.Tools.Isomorphism, Math.Matrix.Linear, Math.Matrix.Matrix, Math.Tools.I, Math.Tools.Tree, Math.Tools.Orthogonal, Math.Tools.Endomorphism, Math.Tools.ParseMonad, Math.Tools.ExpressionMonad, Math.Tools.FixedPoint, Math.Tools.StateArrow, Math.Tools.Arrow, Math.Tools.ParsingCombinators, Math.Number.Group, Math.Tools.Adjunction, Math.Tools.Median, Math.Tools.Visitor, Math.Tools.Complex, Math.Tools.Arrows, Math.Matrix.FreeVectorSpace, Math.Number.Stream, Math.Graph, Math.Matrix.Bracket, Math.Matrix.Vector1, Math.Matrix.Vector2, Math.Matrix.Vector4, Math.Number.BiStream, Math.Matrix.Transpose, Math.Matrix.Vector3, Math.Graph.GraphReader, Math.Graph.Reversible, Math.Graph.Monoid, Math.Graph.Labeled, Math.Graph.GraphMonoid, Math.Graph.Show, Math.Graph.Graph, Math.Graph.Invertible, Math.Graph.Action, Math.Graph.InGraphMonad, Math.Graph.ActionSet, Math.Graph.GraphMap, Math.Graph.Interface, Math.Graph.GraphMonad, Math.Graph.TransformationMonoid, Math.Graph.Algorithms, Math.Graph.InGraphA, Math.Graph.Dot, Math.Graph.XML, Math.Graph.Inductive
+  other-modules: Math.Number.DimensionalAnalysisTypes
+  other-extensions:    MultiParamTypeClasses, ScopedTypeVariables, FlexibleContexts, FunctionalDependencies, FlexibleInstances, TypeOperators, GADTs, StandaloneDeriving, TypeFamilies, ExistentialQuantification, Rank2Types, TypeSynonymInstances, RankNTypes, DeriveDataTypeable, TemplateHaskell, ImpredicativeTypes, DeriveFoldable, DeriveTraversable, KindSignatures, AllowAmbiguousTypes, GeneralizedNewtypeDeriving, UnicodeSyntax, LambdaCase
+  ghc-options: -j2 -fPIC
+--  ghc-shared-options: -j -shared -fPIC
   -- +RTS -N -A128m -n2m -RTS  
   -- Other library packages from which modules are imported.
-  build-depends:       base >=4.8 && <4.9, random >=1.1 && <1.2, mtl >=2.2 && <2.3, arrows >=0.4 && <0.5, array >= 0.5.1.0, template-haskell >= 2.10.0.0, time >= 1.5.0.1, containers >= 0.5.6.2, transformers >= 0.4.2.0, pretty >= 1.1.2.0, syb >= 0.5.1, stm >= 2.4.4.1, parallel >= 3.2.0.6, unix >= 2.7.1.0, bytestring >= 0.10.6.0, HaXml >= 1.25.3, fgl >= 5.5.3.0, graphviz >= 2999.18.1.2, text >= 1.2.2.1, json >= 0.9.1, parallel >= 3.2.0.6
+  If flag(WithHaXML)
+     build-depends: HaXML
+     other-modules: Math.Graph.XML.GXL
+  Else
+     build-depends:
+  other-modules: Math.Tools.Group, Math.Tools.Prop
+  other-modules: Math.Tools.OppositeArrow
+  other-modules: Math.Tools.Lexer
+  other-modules: Math.Tools.Exception
+  other-modules: Math.Tools.Assert
+  other-modules: Math.Matrix.Unicode
+  other-modules: Math.Matrix.QuasiQuoter
+  other-modules: Math.Matrix.FiniteVector
+  other-modules: Math.Graph.XML.GXL
+  other-modules: Math.Tools.Category
+  other-modules: Math.Tools.FunctorM
+  other-modules: Math.Tools.NaturalAPI
+  build-depends:       base >=4.8, random >=1.1 && <1.2
+  build-depends: mtl >=2.2 && <2.3, arrows >=0.4 && <0.5
+  build-depends: array >= 0.5.1.0, template-haskell >= 2.10.0.0
+  build-depends: time >= 1.5.0.1, containers >= 0.5.6.2
+  build-depends: transformers >= 0.4.2.0, pretty >= 1.1.2.0
+  build-depends: syb >= 0.5.1, stm >= 2.4.4.1
+  build-depends: parallel >= 3.2.0.6, unix >= 2.7.1.0
+  build-depends: bytestring >= 0.10.6.0, fgl >= 5.5.3.0
+  build-depends: graphviz >= 2999.18.1.2, text >= 1.2.2.1
+  build-depends: json >= 0.9.1, parallel >= 3.2.0.6
+  build-depends: binary >= 0.7.5.0, template-haskell, ghc-prim
   
   -- Directories containing source files.
   -- hs-source-dirs:      
@@ -74,6 +111,37 @@ Test-Suite unit-tests
         type:    exitcode-stdio-1.0
         main-is:   UnitTest.lhs
         other-modules: Math.Tools.Test.ToolsTests, Math.Number.Test.RealTest, Math.Matrix.Test.Vector3Test
-        build-depends: base >= 4.8, containers >= 0.5.6.2, random >= 1.1, pretty >= 1.1.2.0, array >= 0.5.1.0, HUnit >= 1.3.1.1, transformers >= 0.4.2.0, syb >= 0.5.1, QuickCheck >= 2.8.1, mtl >= 2.2.1, arrows >= 0.4.4.1, HaXml >= 1.25.3, fgl >= 5.5.3.0, text >= 1.2.2.1, graphviz >= 2999.18.1.2, json >= 0.9.1, parallel >= 3.2.0.6
-        default-language: Haskell2010 
-        ghc-options: -j -threaded -feager-blackholing
+        other-modules: Math.Number.Test.NumberTests, Math.Number.Test.StreamTest
+        other-modules: Math.Matrix.Test.InterfaceTest, Math.Matrix.Test.MatrixTests
+        other-modules: Math.Matrix.Covector, Math.Matrix.FiniteVector, Math.Matrix.Indexable, Math.Matrix.Instances, Math.Matrix.Interface, Math.Matrix.Matrix, Math.Matrix.Simple
+        other-modules: Math.Matrix.Vector1, Math.Matrix.Vector2, Math.Matrix.Vector3
+        other-modules: Math.Number.Group
+        other-modules: Math.Number.Test.DimensionalAnalysisTest, Math.Number.DimensionalAnalysis
+        other-modules: Math.Tools.List, Math.Tools.Median, Math.Tools.NaturalTransformation
+        other-modules: Math.Tools.Prop, Math.Tools.Queue, Math.Tools.Show
+        other-modules: Math.Tools.Test.AdjunctionTest
+        other-modules: Math.Tools.Test.MedianTest
+        other-modules: Math.Tools.Nondeterministic, Math.Tools.Orthogonal
+        other-modules: Math.Tools.OppositeArrow, Math.Tools.PrettyP
+        other-modules: Math.Tools.Visitor, Math.Tools.Universe
+        other-modules: Math.Tools.Integer, Math.Tools.I, Math.Tools.Functor
+        other-modules: Math.Tools.Isomorphism, Math.Tools.FixedPoint
+        other-modules: Math.Tools.CoMonad, Math.Tools.CoFunctor
+        other-modules: Math.Tools.Arrow, Math.Tools.Adjunction
+        other-modules: Math.Test.Common, Math.Number.Stream
+        other-modules: Math.Number.Real
+        other-modules: Math.Matrix.FiniteVector, Math.Matrix.QuasiQuoter
+        other-modules: Math.Matrix.Unicode, Math.Matrix.Unicode
+        other-modules: Math.Tools.Assert, Math.Tools.Category
+        other-modules: Math.Tools.Exception, Math.Tools.FunctorM
+        other-modules: Math.Tools.Group, Math.Tools.Lexer, Math.Tools.NaturalAPI
+        other-modules: Math.Tools.OppositeArrow, Math.Tools.Prop
+        other-modules: Math.Matrix.Vector4, Math.Matrix.Vector4
+        other-modules: Math.Tools.LineInfo
+        other-modules: Math.Tools.ParseMonad, Math.Tools.ParserInterface
+        build-depends: base >= 4.8, containers >= 0.5.6.2, random >= 1.1, pretty >= 1.1.2.0, array >= 0.5.1.0, transformers >= 0.4.2.0, syb >= 0.5.1, QuickCheck >= 2.8.1, mtl >= 2.2.1, arrows >= 0.4.4.1, fgl >= 5.5.3.0, text >= 1.2.2.1, graphviz >= 2999.18.1.2, json >= 0.9.1, parallel >= 3.2.0.6, binary >= 0.7.5.0, bytestring >= 0.10.6.0, HUnit, template-haskell
+        default-language: Haskell2010
+        if flag(Library-Only)
+          Buildable: False
+        
+--        ghc-options: -j -threaded -feager-blackholing

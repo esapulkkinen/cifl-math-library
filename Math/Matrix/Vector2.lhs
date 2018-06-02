@@ -1,7 +1,9 @@
->{-# LANGUAGE Safe,FlexibleInstances, MultiParamTypeClasses, FlexibleContexts, TypeOperators, TypeFamilies, PatternGuards #-}
+>{-# LANGUAGE Safe,FlexibleInstances, MultiParamTypeClasses, FlexibleContexts, TypeOperators, TypeFamilies, PatternGuards, ScopedTypeVariables, StandaloneDeriving #-}
 >module Math.Matrix.Vector2 where
 >import Data.Monoid hiding (Dual)
 >import Data.Complex
+>import Data.Sequence (Seq, (<|))
+>import qualified Data.Sequence as Seq
 >import Control.Applicative
 >import Math.Tools.Functor
 >import Math.Matrix.Matrix
@@ -25,6 +27,22 @@
 >j2 :: (Num a) => Vector2 a
 >j2 = identity <!> (ycoord2,id)
 
+>instance ProjectionSpace Vector2 Vector1 where
+>   data (Vector2 \\\ Vector1) a = S21Vector (Vector1 a)
+>   project_first (Vector2 x _) = Vector1 x
+>   project_second (Vector2 _ y) = S21Vector $ Vector1 y
+>   join_vector (Vector1 x) (S21Vector (Vector1 y)) = Vector2 x y
+
+>instance Functor (Vector2 \\\ Vector1) where
+>   fmap f (S21Vector x) = S21Vector $ fmap f x
+
+>instance Applicative (Vector2 \\\ Vector1) where
+>   pure x = S21Vector $ pure x
+>   (S21Vector f) <*> (S21Vector x) = S21Vector $ f <*> x
+
+>matrix_root :: (SquareMatrix m a,ProjectionSpace m Vector1) => (m :*: m) a -> a
+>matrix_root = vector_element . project_first . diagonal
+
 >instance Comonad Vector2 where
 >   extract (Vector2 x _) = x
 >   duplicate (Vector2 x y) = Vector2 (Vector2 x y)
@@ -44,10 +62,34 @@
 >y2_op = Covector ycoord2
 
 >type Matrix2 a = (Vector2 :*: Vector2) a
->type Codiagonal2 a = (Vector1 a, Vector1 a)
 
->zero_codiagonal2 :: (Num a) => Codiagonal2 a
->zero_codiagonal2 = (vzero,vzero)
+>instance CodiagonalMatrix Vector2 a where
+>   data Codiagonal Vector2 a = Codiagonal2 {
+>     down_codiagonal2 :: Vector1 a,
+>     right_codiagonal2 :: Vector1 a
+>   }
+>   type (Vector2 \\ a) = Vector1 a
+>   codiagonal = codiagonal2
+>   (|\|) = mat2
+>   down_project = down_codiagonal2
+>   right_project = right_codiagonal2
+
+>instance Functor (Codiagonal Vector2) where
+>   fmap f (Codiagonal2 a b) = Codiagonal2 (fmap f a) (fmap f b)
+
+>instance Applicative (Codiagonal Vector2) where
+>   pure x = Codiagonal2 (pure x) (pure x)
+>   (Codiagonal2 f1 f2) <*> (Codiagonal2 x1 x2) =
+>     Codiagonal2 (f1 <*> x1) (f2 <*> x2)
+
+>instance (Show a) => Show (Codiagonal Vector2 a) where
+>   show (Codiagonal2 down right) = "* " ++ show (vector_element right) ++ "\n"
+>                                   ++ show (vector_element down) ++ " *"
+
+deriving instance (Show a) => Show (Codiagonal Vector2 a)
+
+>zero_codiagonal2 :: (Num a) => Codiagonal Vector2 a
+>zero_codiagonal2 = Codiagonal2 vzero vzero
 
 >constant2 :: a -> Vector2 a
 >constant2 x = Vector2 x x
@@ -61,12 +103,14 @@
 >complexMatrix (a :+ b) = Matrix $ Vector2 (Vector2 a (negate b))
 >                                          (Vector2 b a)
 
->codiagonal2 :: Matrix2 a -> Codiagonal2 a
+>codiagonal2 :: Matrix2 a -> Codiagonal Vector2 a
 >codiagonal2 (Matrix (Vector2 (Vector2 _ y)
->                             (Vector2 x _))) = (Vector1 x, Vector1 y)
+>                             (Vector2 x _))) =
+>   Codiagonal2 (Vector1 x) (Vector1 y)
+
 
 >diagonal_matrix2 :: (Num a) => Vector2 a -> (Vector2 :*: Vector2) a
->diagonal_matrix2 v = matrix2 v zero_codiagonal2
+>diagonal_matrix2 v = v |\| zero_codiagonal2
 
 >sum_coordinates2 :: (Num a) => Vector2 a -> a
 >sum_coordinates2 (Vector2 x y) = x + y
@@ -74,9 +118,14 @@
 >product_coordinates2 :: (Num a) => Vector2 a -> a
 >product_coordinates2 (Vector2 x y) = x * y
 
->matrix2 :: Vector2 a -> Codiagonal2 a -> (Vector2 :*: Vector2) a
->matrix2 (Vector2 d x) (Vector1 b, Vector1 a) = Matrix $ Vector2 (Vector2 d a)
->                                                                (Vector2 b x)
+>mat2 :: Vector2 a -> Codiagonal Vector2 a -> (Vector2 :*: Vector2) a
+>mat2 (Vector2 a b) (Codiagonal2 (Vector1 a') (Vector1 a''))
+>    = Matrix $ Vector2 (Vector2 a a'')
+>                       (Vector2 a' b)
+
+>matrix2 :: Vector2 a -> Codiagonal Vector2 a -> (Vector2 :*: Vector2) a
+>matrix2 (Vector2 d x) (Codiagonal2 (Vector1 b) (Vector1 a)) = Matrix $
+>   Vector2 (Vector2 d a) (Vector2 b x)
 
 >vec2 :: (a,a) -> Vector2 a
 >vec2 (x,y) = Vector2 x y
@@ -155,6 +204,9 @@ curl2 f z = Vector2 (partial_derivate2y (xcoord2 . f) z)
 >instance (MedianAlgebra s) => MedianAlgebra (Vector2 s) where
 >  med (Vector2 a b) (Vector2 a' b') (Vector2 a'' b'')
 >   = Vector2 (med a a' a'') (med b b' b'') 
+
+>instance (Num s) => Semigroup (Vector2 s) where
+>  (<>) = (%+)
 
 >instance (Num s) => Monoid (Vector2 s) where
 >  mempty = vzero

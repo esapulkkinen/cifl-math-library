@@ -12,7 +12,7 @@
 >import qualified Data.Set as Set
 >import Control.Monad.Trans.State.Lazy
 
->-- | loosely based on GOF: Design Patterns visitor pattern, and also on
+>-- | loosely based on "Gamma et al: Design Patterns" visitor pattern, and also on
 >-- Haskell 'foldr' function and common variations of it.
 >class Visitor v where
 >   data Fold v :: * -> *

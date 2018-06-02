@@ -40,6 +40,10 @@
 
 >class (VectorSpace v, Scalar v ~ Complex a) => ComplexVectorSpace v a where
 
+>class (VectorSpace v) => BilinearVectorSpace v where
+>   biLin :: v -> v -> Scalar v
+
+
 >class InnerProductSpace m where
 >  (%.) :: m -> m -> Scalar m -- dot product/inner product
 
@@ -88,6 +92,36 @@
 >  identity :: (m :*: m) a
 >  diagonal :: (m :*: m) a -> m a
 >  diagonal_matrix :: m a -> (m :*: m) a
+
+>-- | CodiagonalMatrix represents a matrix that can be split along the diagonal.
+>-- The Codiagonal type represents a matrix without its diagonal.
+>-- The ProjectionVector type represents a vector down from first element of diagonal
+>-- when the diagonal is removed. This vector often has less elements than the original vector.
+>-- Similarly for vector right from the first element of diagonal.
+
+>class (Functor m, Functor n) => ProjectionSpace (m :: * -> *) (n :: * -> *) where
+>   data (m \\\ n) a
+>   project_first   :: m a -> n a
+>   project_second  :: m a -> (m \\\ n) a
+>   join_vector :: n a -> (m \\\ n) a -> m a
+
+>class CodiagonalMatrix m a where
+>   data Codiagonal m a
+>   type (m \\ a)
+>   codiagonal :: (m :*: m) a -> Codiagonal m a
+>   (|\|) :: m a -> Codiagonal m a -> (m :*: m) a
+>   down_project  :: Codiagonal m a -> m \\ a
+>   right_project :: Codiagonal m a -> m \\ a
+
+
+codiagonal_project :: (m :*: n) a -> ((m \\ m') :*: (n \\ n')) a
+
+data Codiagonal m n a = Codiagonal {
+    down_project :: (m \\ n) a,
+    right_project :: (m \\ n) a,
+    diagonal_project :: Codiagonal (m \\ n) Id a
+  }
+
 
 >class (SquareMatrix m a) => FiniteSquareMatrix m a where
 >  determinant :: (m :*: m) a -> a

@@ -1,4 +1,4 @@
->{-# LANGUAGE Trustworthy #-}
+>{-# LANGUAGE Trustworthy, CPP #-}
 >-- | This module provides conversions from graphs to Gxl format using HaXML.
 >-- 
 >--  HaXML is (c) Malcolm Wallace and licensed under LGPL.
@@ -14,11 +14,18 @@
 >import Data.Map (Map)
 >import qualified Data.Set as Set
 >import qualified Data.Map as Map
+>
+
+#ifdef WITH_HAXML
+
 >import Text.XML.HaXml.Pretty
 >import Text.XML.HaXml.Namespaces
 >import Text.XML.HaXml.XmlContent
 >import Text.XML.HaXml.Types
 >import Text.XML.HaXml.OneOfN
+
+#endif
+
 >import qualified Text.JSON as JSON
 >import Text.PrettyPrint
 >import Math.Graph.XML.GXL
@@ -27,6 +34,8 @@
 >import Math.Graph.Interface
 >import Math.Graph.InGraphMonad
 >import Math.Graph.GraphMonoid
+
+#ifdef WITH_HAXML
 
 >digraphToXMLString :: (Monad m, GraphMonoid mon) => G.Graph mon String -> m String
 >digraphToXMLString g = do
@@ -40,6 +49,8 @@
 >    v <- inGraphM g bidirectionalGraphToXML
 >    return $ showXml False v
 
+#endif
+
 >digraphToJSON :: (Monad m, GraphMonoid mon) => InGraphM mon String m JSON.JSValue
 >digraphToJSON = do edges <- linksM
 >                   let edges' = JSON.makeObj $ concatMap 
@@ -52,6 +63,8 @@
 
 >digraphToJSONString :: (Monad m, GraphMonoid mon) => InGraphM mon String m String
 >digraphToJSONString = digraphToJSON >>= (return . JSON.encode)
+
+#ifdef WITH_HAXML
 
 >digraphToXML :: (Monad m, GraphMonoid mon) => InGraphM mon String m Gxl
 >digraphToXML = do edges <- edgesM
@@ -88,3 +101,5 @@
 >                               (Just Edge_isdirected_false)
 >       label e = Attr (Attr_Attrs Nothing "label" Nothing) []
 >                      (FiveOf10 (AString e))
+
+#endif

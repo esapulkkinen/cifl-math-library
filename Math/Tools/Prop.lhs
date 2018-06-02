@@ -1,4 +1,4 @@
->{-# LANGUAGE Safe,ExistentialQuantification, ScopedTypeVariables, FlexibleInstances, MultiParamTypeClasses, FlexibleContexts, TypeFamilies, TypeOperators #-}
+>{-# LANGUAGE Safe,ExistentialQuantification, ScopedTypeVariables, FlexibleInstances, MultiParamTypeClasses, FlexibleContexts, TypeFamilies, TypeOperators, GADTs, LambdaCase #-}
 >module Math.Tools.Prop where
 >import Prelude hiding (sum,id,(.))
 >import Control.Monad.Fix
@@ -500,3 +500,33 @@ universal_map f p = { b | p <= f^-1({b}) }
 >forevery :: (Universe b) => Prop b -> Prop ()
 >forevery = prop_universal . prop_iso_terminal_inverse
 
+>data (b :\: a) = PSub { runpsub :: PProp a -> PProp b }
+
+>data PProp a where
+>   PProp :: Prop a -> PProp a
+>   PNeg  :: (Prop a -> Prop b) -> PProp (b :\: a)
+
+>pneg_func :: (a -> b) -> PProp (a :\: b)
+>pneg_func f = PNeg $ \a -> inverse_image f a
+
+pnegeq :: (Universe a) => PProp (Prop a :\: a)
+pnegeq = PNeg $ \case
+   (PProp x) -> PProp $ Characteristic (==x)
+
+pnegeither :: PProp t -> PProp (Either t a :\: a)
+pnegeither (PProp (Characteristic f)) = PNeg $ \ case
+   (PProp (Characteristic g)) -> PProp (Characteristic (either f g))
+
+pneg3 :: (PProp a -> PProp b -> PProp c) -> PProp ((c :\: b) :\: a)
+pneg3 = PNeg . fmap PNeg
+
+pprop :: (a -> b) -> PProp (a :\: b)
+pprop g = PNeg $ \case
+   (PProp f) -> PProp (inverse_image g f)
+
+   (PNeg h) -> PNeg (h . inverse_image PUnNeg g)
+
+>instance CoFunctor PProp where
+>   inverse_image f (PProp p) = PProp $ inverse_image f p
+
+   inverse_image f (PNeg g) = PNeg (g . inverse_image f)

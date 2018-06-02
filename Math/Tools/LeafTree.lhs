@@ -31,6 +31,9 @@
 >zipWith f (SubTree lst) z@(Leaf _)     = SubTree $ map (\i -> zipWith f i z) lst 
 >zipWith f (Leaf x) (Leaf y)       = Leaf $ f x y
 
+>instance (Semigroup a) => Semigroup (LeafTree a) where
+>   (<>) = zipWith (<>)
+
 >instance (Monoid a) => Monoid (LeafTree a) where
 >  mempty  = SubTree empty
 >  mappend = zipWith mappend

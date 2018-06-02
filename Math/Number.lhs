@@ -7,9 +7,12 @@
 >-- | infinite dimensional vector to two directions
 >   module Math.Number.BiStream,
 >-- | dimensional analysis
->   module Math.Number.DimensionalAnalysis
+>   module Math.Number.DimensionalAnalysis,
+>-- | symbolic expressions
+>   module Math.Number.NumericExpression
 > ) where
 >import Math.Number.Real
 >import Math.Number.Stream
 >import Math.Number.BiStream
 >import Math.Number.DimensionalAnalysis
+>import Math.Number.NumericExpression

@@ -1,7 +1,12 @@
->{-# LANGUAGE Safe,MultiParamTypeClasses, TypeSynonymInstances, FlexibleInstances, FlexibleContexts, TypeOperators, TypeFamilies, PatternGuards, DataKinds #-}
+>{-# LANGUAGE Safe,MultiParamTypeClasses, TypeSynonymInstances #-}
+>{-# LANGUAGE FlexibleInstances, FlexibleContexts, TypeOperators #-}
+>{-# LANGUAGE TypeFamilies, PatternGuards, DataKinds, LambdaCase #-}
+>{-# LANGUAGE StandaloneDeriving #-}
 >module Math.Matrix.Vector3 where
 >import Control.Applicative
 >import Data.Complex
+>import Data.Sequence (Seq)
+>import qualified Data.Sequence as Seq
 >import qualified Data.Monoid as Mon
 >import Math.Tools.Functor
 >import Math.Matrix.Interface
@@ -73,7 +78,6 @@
 >                                    (f (Covector zcoord3)) 
 
 >type Matrix3 a = (Vector3 :*: Vector3) a
->type Codiagonal3 a = (Vector2 a, Vector2 a, Codiagonal2 a)
 
 
 >vec3 :: (a,a,a) -> Vector3 a
@@ -276,6 +280,9 @@ linear f (Vector3 x y z) = (x %* f xid) %+ (y %* f yid) %+ (z %* f zid)
 >  return x = Vector3 x x x
 >  x >>= f = diagonal3 $ Matrix $ fmap f x
 
+>instance (Num s) => Semigroup (Vector3 s) where
+>   (<>) = (%+)
+
 >instance (Num s) => Mon.Monoid (Vector3 s) where
 >  mempty = vzero
 >  mappend = (%+)
@@ -311,19 +318,24 @@ approximations_vector3 (Vector3 x y z) = do
 >        chy eps y = y + eps
 >        chz eps z = z + eps
 
+>dx3 :: (Num a) => a -> Vector3 a -> Vector3 a
+>dx3 eps = \case { (Vector3 x y z) -> Vector3 (x + eps) y z }
+> 
+>dy3 :: (Num a) => a -> Vector3 a -> Vector3 a
+>dy3 eps = \case { (Vector3 x y z) -> Vector3 x (y + eps) z }
+> 
+>dz3 :: (Num a) => a -> Vector3 a -> Vector3 a
+>dz3 eps = \case { (Vector3 x y z) -> Vector3 x y (z + eps) }
+
 >partial_derivate3x :: (Infinitesimal a, Closed a)
 >                   => Dual (Vector3 a) -> Dual (Vector3 a)
->partial_derivate3x (Covector f) = Covector $ partial_derivate ch f
->   where ch eps (Vector3 x y z) = Vector3 (x+eps) y z
+>partial_derivate3x (Covector f) = Covector $ partial_derivate dx3 f
 
 >partial_derivate3y :: (Infinitesimal a, Closed a) => Dual (Vector3 a) -> Dual (Vector3 a)
->partial_derivate3y (Covector f) = Covector $ partial_derivate ch f
->   where ch eps (Vector3 x y z) = Vector3 x (y+eps) z
+>partial_derivate3y (Covector f) = Covector $ partial_derivate dy3 f
           
 >partial_derivate3z :: (Infinitesimal a, Closed a) => Dual (Vector3 a) -> Dual (Vector3 a)
->partial_derivate3z (Covector f) = Covector $ partial_derivate ch f
->   where ch eps (Vector3 x y z) = Vector3 x y (z+eps)
-
+>partial_derivate3z (Covector f) = Covector $ partial_derivate dz3 f
 
 >del3 :: (Infinitesimal v, Closed v) => Vector3 (Dual (Vector3 v) -> Dual (Vector3 v))
 >del3 = Vector3 partial_derivate3x partial_derivate3y partial_derivate3z
@@ -570,18 +582,25 @@ grad3 f x = Vector3 (partial_derivate3x f x)
 >rotate_coordinates3 :: Vector3 a -> Vector3 a
 >rotate_coordinates3 (Vector3 x y z) = Vector3 y z x
 
->zero_codiagonal3 :: (Num a) => Codiagonal3 a
->zero_codiagonal3 = (vzero,vzero,zero_codiagonal2)
+>zero_codiagonal3 :: (Num a) => Codiagonal Vector3 a
+>zero_codiagonal3 = Codiagonal3 vzero vzero zero_codiagonal2
 
 >diagonal_matrix3 :: (Num a) => Vector3 a -> (Vector3 :*: Vector3) a
 >diagonal_matrix3 v = matrix3 v zero_codiagonal3
 
->matrix3 :: Vector3 a -> Codiagonal3 a -> (Vector3 :*: Vector3) a
->matrix3 (Vector3 d1 d2 d3) (Vector2 a' a'', Vector2 a b,
->                           (Vector1 x, Vector1 y)) = Matrix $
+>matrix3 :: Vector3 a -> Codiagonal Vector3 a -> (Vector3 :*: Vector3) a
+>matrix3 (Vector3 d1 d2 d3) (Codiagonal3 (Vector2 a' a'') (Vector2 a b)
+>                             (Codiagonal2 (Vector1 x) (Vector1 y))) = Matrix $
 >   Vector3 (Vector3 d1 a b)
 >           (Vector3 a' d2 y)
 >           (Vector3 a'' x d3)
+
+>codiag3 :: Matrix3 a -> Codiagonal Vector3 a
+>codiag3 (Matrix (Vector3 (Vector3 _ a b)
+>                            (Vector3 a' _ b')
+>                            (Vector3 a'' b'' _))) =
+>    Codiagonal3 (Vector2 a' a'')
+>                (Vector2 a b) (Codiagonal2 (Vector1 b'') (Vector1 b'))
 
 
 >codiagonal3 :: Matrix3 a -> Vector2 (Vector2 a, Vector2 a)
@@ -590,6 +609,74 @@ grad3 f x = Vector3 (partial_derivate3x f x)
 >                            (Vector3 a'' b'' _))) = 
 >                   Vector2 (Vector2 a' a'' , Vector2 a b  )
 >                           (Vector2 b'' b'', Vector2 b' b')
+
+>instance ProjectionSpace Vector3 Vector1 where
+>   data (Vector3 \\\ Vector1) a = S31Vector (Vector2 a)
+>   project_first (Vector3 x _ _) = Vector1 x
+>   project_second (Vector3 _ y z) = S31Vector $ Vector2 y z
+>   join_vector (Vector1 x) (S31Vector (Vector2 y z)) = Vector3 x y z
+
+>instance ProjectionSpace (Vector3 \\\ Vector1) Vector1 where
+>   data ((Vector3 \\\ Vector1) \\\ Vector1) a = S311Vector (Vector1 a)
+>   project_first (S31Vector (Vector2 x _)) = Vector1 x
+>   project_second (S31Vector (Vector2 _ y)) = S311Vector (Vector1 y)
+>   join_vector (Vector1 x) (S311Vector (Vector1 y)) = S31Vector $ Vector2 x y
+
+>instance ProjectionSpace Vector3 Vector2 where
+>   data (Vector3 \\\ Vector2) a = S32Vector (Vector1 a)
+>   project_first (Vector3 x y _) = Vector2 x y
+>   project_second (Vector3 _ _ z) = S32Vector $ Vector1 z
+>   join_vector (Vector2 x y) (S32Vector (Vector1 z)) = Vector3 x y z
+
+>instance (Show a) => Show ((Vector3 \\\ Vector2) a) where
+>   show (S32Vector x) = show x
+
+>instance Functor (Vector3 \\\ Vector2) where
+>   fmap f (S32Vector v) = S32Vector (fmap f v)
+>   
+>instance Applicative (Vector3 \\\ Vector2) where
+>   pure x = S32Vector (pure x)
+>   (S32Vector f) <*> (S32Vector x) = S32Vector $ f <*> x
+
+>instance (Show a) => Show ((Vector3 \\\ Vector1) a) where
+>   show (S31Vector x) = show x
+
+>instance Functor (Vector3 \\\ Vector1) where
+>   fmap f (S31Vector v) = S31Vector (fmap f v)
+
+>instance Applicative (Vector3 \\\ Vector1) where
+>   pure x = S31Vector (pure x)
+>   (S31Vector f) <*> (S31Vector x) = S31Vector $ f <*> x
+
+>instance CodiagonalMatrix Vector3 a where
+>   data Codiagonal Vector3 a = Codiagonal3 {
+>      down_codiagonal3 :: Vector2 a,
+>      right_codiagonal3 :: Vector2 a,
+>      diagonal_codiagonal3 :: Codiagonal Vector2 a
+>     }
+>   type (Vector3 \\ a) = Vector2 a
+>   codiagonal = codiag3
+>   (|\|) = matrix3
+>   down_project = down_codiagonal3
+>   right_project = right_codiagonal3
+
+>instance (Show a) => Show (Codiagonal Vector3 a) where
+>   show (Codiagonal3 (Vector2 d1 d2) (Vector2 r1 r2)
+>         (Codiagonal2 (Vector1 a1) (Vector1 a2))) =
+>     "* " ++ show r1 ++ " " ++ show r2 ++ "\n" ++
+>     show d1 ++ " * " ++ show a2 ++ "\n" ++
+>     show d2 ++ " " ++ show a1 ++ " *"
+
+deriving instance (Show a) => Show (Codiagonal Vector3 a)
+
+>instance Functor (Codiagonal Vector3) where
+>   fmap f (Codiagonal3 down right diag) =
+>     Codiagonal3 (fmap f down) (fmap f right) (fmap f diag)
+
+>instance Applicative (Codiagonal Vector3) where
+>   pure x = Codiagonal3 (pure x) (pure x) (pure x)
+>   (Codiagonal3 f1 f2 fr) <*> (Codiagonal3 x1 x2 xr) =
+>     Codiagonal3 (f1 <*> x1) (f2 <*> x2) (fr <*> xr)
 
 >instance Indexable Vector3 where
 >  diagonal_projections = diagonal_projections3

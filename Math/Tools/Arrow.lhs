@@ -68,8 +68,14 @@ https://en.wikipedia.org/wiki/Braided_monoidal_category
 >class (Category arr) => CPSArrow arr where
 >   callcc :: (forall bot. arr c bot -> arr b c) -> arr b c
 
+>-- | Arrow version of Functor from Haskell Prelude
 >class FunctorArrow (f :: * -> *) (arr :: * -> * -> *) where
 >      amap :: arr c d -> arr (f c) (f d)
+
+>-- | Arrow version of Applicative from Haskell Prelude
+>class (FunctorArrow f arr) => ApplicativeArrow (f :: * -> *) (arr :: * -> * -> *) where
+>   apure :: arr a (f a)
+>   aapply :: f (arr a b) -> arr (f a) (f b)
 
 >class CoFunctorArrow (f :: * -> *) (arr :: * -> * -> *) where
 >      inverseImage :: arr c d -> arr (f d) (f c)

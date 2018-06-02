@@ -38,6 +38,9 @@
 >  pure x = InGraphM $ pure x
 >  (InGraphM mf) <*> (InGraphM mx) = InGraphM $ mf <*> mx
 
+>instance (Applicative m, Semigroup a) => Semigroup (InGraphM mon e m a) where
+>   (<>) = liftA2 (<>)
+
 >instance (Monoid a, Applicative m) => Monoid (InGraphM mon e m a) where
 >   mempty = pure mempty
 >   mappend f g = liftA2 mappend f g

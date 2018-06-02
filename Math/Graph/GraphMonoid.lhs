@@ -64,12 +64,17 @@
 >   pp TDom = pp "dom"
 >   pp TCod = pp "cod"
 
+>instance Semigroup Three where
+>   (<>) = mappend_three
+
 >instance Monoid Three where
 >   mempty = TId
->   mappend TId x = x
->   mappend x TId = x
->   mappend TDom x = TDom
->   mappend TCod x = TCod
+>   mappend = mappend_three
+>   
+>mappend_three TId x = x
+>mappend_three x TId = x
+>mappend_three TDom x = TDom
+>mappend_three TCod x = TCod
 
 >instance GraphMonoid Three where
 >   gdom = TDom
@@ -101,15 +106,20 @@
 >   monoidA FCod = arr (const True)
 >   monoidA FNot = arr not
 
+>instance Semigroup Four where
+>   (<>) = mappend_four
+
 >instance Monoid Four where
 >   mempty = FId
->   mappend FId x = x
->   mappend x FId = x
->   mappend FDom x = FDom
->   mappend FCod x = FCod
->   mappend FNot FDom = FCod
->   mappend FNot FCod = FDom
->   mappend FNot FNot = FId
+>   mappend = mappend_four
+>
+>mappend_four FId x = x
+>mappend_four x FId = x
+>mappend_four FDom x = FDom
+>mappend_four FCod x = FCod
+>mappend_four FNot FDom = FCod
+>mappend_four FNot FCod = FDom
+>mappend_four FNot FNot = FId
 
 >instance Group Four where
 >   ginvert FId = FId

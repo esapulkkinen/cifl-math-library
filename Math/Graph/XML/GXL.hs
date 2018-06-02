@@ -1,4 +1,7 @@
+{-# LANGUAGE CPP #-}
 module Math.Graph.XML.GXL where
+
+#ifdef WITH_HAXML
 
 import Text.XML.HaXml.XmlContent
 import Text.XML.HaXml.Types
@@ -641,3 +644,5 @@ instance XmlContent Tup_ where
 
 
 {-Done-}
+
+#endif

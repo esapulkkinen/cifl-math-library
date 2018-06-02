@@ -5,6 +5,8 @@
 >-- <https://en.wikipedia.org/wiki/Eigenvalue_algorithm>
 >module Math.Matrix.Covector where
 >import Data.Complex
+>import Prelude hiding (id,(.))
+>import Control.Category
 >import Math.Tools.CoFunctor
 >import Math.Tools.CoMonad
 >import Math.Tools.Arrow
@@ -43,6 +45,9 @@
 >class (VectorSpace v) => FiniteDimensional v where
 >   finite :: (Dual :*: Dual) v -> v
 
+>instance (Semigroup (Scalar v)) => Semigroup (Dual v) where
+>   (Covector f) <> (Covector g) = Covector $ \v -> f v <> g v
+
 >instance (Monoid (Scalar v)) => Monoid (Dual v) where
 >   mempty = Covector $ const mempty
 >   mappend (Covector f) (Covector g) = Covector $ \v -> mappend (f v) (g v)
@@ -56,11 +61,6 @@
 
 >outer_vector :: (VectorSpace v, Scalar w ~ Scalar v) => Dual w -> v -> w -> v
 >outer_vector (Covector y) x w = y w %* x
-
-
-conjugate_transpose :: (Functor m, Functor n, RealFloat a,
-                        Transposable m n)
-                    => (m :*: n) (Complex a) -> (n :*: m) (Complex a)
 
 >-- | <http://en.wikipedia.org/wiki/Conjugate_transpose>
 >conjugate_transpose :: (Transposable m n, ConjugateSymmetric a)
@@ -85,12 +85,16 @@ conjugate_transpose :: (Functor m, Functor n, RealFloat a,
 >kernel (Covector f) x = f x == 0
 
 >-- | would like to make 'adjoint' as instance of CoFunctor,
->-- but the constraint prevents.
+>-- but the constraint prevents. Instead we declare VectorSpaceMap.
 >adjoint :: (Scalar a ~ Scalar b) => (a -> b) -> Dual b -> Dual a
 >adjoint f (Covector g) = Covector (g . f)
 
 >data VectorSpaceMap v w where
 >   VectorSpaceMap :: (Scalar v ~ Scalar w) => (v -> w) -> VectorSpaceMap v w
+
+>instance Category VectorSpaceMap where
+>   id = VectorSpaceMap id
+>   (VectorSpaceMap f) . (VectorSpaceMap g) = VectorSpaceMap (f . g)
 
 >instance CoFunctorArrow Dual VectorSpaceMap where
 >   inverseImage (VectorSpaceMap f) = VectorSpaceMap (adjoint f)
@@ -131,25 +135,25 @@ conjugate_transpose :: (Functor m, Functor n, RealFloat a,
 
 >instance (FractionalSpace v) => Fractional (Dual v) where
 >  (Covector f) / (Covector g) = Covector $ \a -> f a / g a
->  recip (Covector f) = Covector $ recip . f
+>  recip = scalar_map recip
 >  fromRational r = Covector $ const $ fromRational r
 > 
 >instance (FractionalSpace v, Floating (Scalar v)) => Floating (Dual v) where
 >   pi = Covector $ const pi
->   exp (Covector f) = Covector $ exp . f
->   log (Covector f) = Covector $ log . f
->   sqrt (Covector f) = Covector $ sqrt . f
->   sin (Covector f) = Covector $ sin . f
->   cos (Covector f) = Covector $ cos . f
->   tan (Covector f) = Covector $ tan . f
->   asin (Covector f) = Covector $ asin . f
->   acos (Covector f) = Covector $ acos . f
->   atan (Covector f) = Covector $ atan . f
->   sinh (Covector f) = Covector $ sinh . f
->   cosh (Covector f) = Covector $ cosh . f
->   tanh (Covector f) = Covector $ tanh . f
->   asinh (Covector f) = Covector $ asinh . f
->   acosh (Covector f) = Covector $ acosh . f
->   atanh (Covector f) = Covector $ atanh . f
+>   exp = scalar_map exp
+>   log = scalar_map log
+>   sqrt = scalar_map sqrt
+>   sin = scalar_map sin
+>   cos = scalar_map cos
+>   tan = scalar_map tan
+>   asin = scalar_map asin
+>   acos = scalar_map acos
+>   atan = scalar_map atan
+>   sinh = scalar_map sinh
+>   cosh = scalar_map cosh
+>   tanh = scalar_map tanh
+>   asinh = scalar_map asinh
+>   acosh = scalar_map acosh
+>   atanh = scalar_map atanh
 
 

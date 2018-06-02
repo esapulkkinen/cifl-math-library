@@ -1,7 +1,8 @@
->{-# LANGUAGE Trustworthy,FlexibleInstances, MultiParamTypeClasses, RankNTypes, ImpredicativeTypes, Arrows, TypeOperators, LambdaCase, ScopedTypeVariables #-}
+>{-# LANGUAGE Trustworthy,FlexibleInstances, MultiParamTypeClasses, RankNTypes, ImpredicativeTypes, Arrows, TypeOperators, LambdaCase, ScopedTypeVariables, TypeFamilies #-}
 >module Math.Tools.Isomorphism where
 >import Prelude hiding ((.),id)
 >import Data.Map (Map)
+>import Data.Monoid
 >import qualified Data.Map as Map
 >import Control.Category
 >import Control.Arrow
@@ -10,7 +11,11 @@
 >import Math.Tools.Integer
 >import Math.Tools.Arrow
 >import Math.Tools.CoFunctor
+>import Math.Tools.Visitor
 >import Data.Ratio
+>import qualified Data.Binary as Bin
+>import Data.ByteString.Lazy (ByteString)
+>import qualified Data.ByteString.Lazy as Bytes
 
 >-- | See <http://twanvl.nl/blog/haskell/isomorphism-lenses> I also saw
 >-- somewhere (can't remember where) a blog post for an idea for
@@ -28,9 +33,23 @@
 >  #-}
 
 >type Iso a b = a :==: b
+>type Aut a = a :==: a
+
+>inverseEndo :: Endo a -> Endo a -> Aut a
+>inverseEndo (Endo f) (Endo g) = f <-> g
+
+>visit_iso :: (ComposableVisitor v) => v :==: a -> v -> a
+>visit_iso = visit . embed . epimorphism
 
 >class (BiArrow arr, Groupoid arr) => Isomorphic arr where
 >   iso :: arr a b -> a :==: b
+
+>class IsomorphicFunctor f where
+>   data IsoA f a b
+>   transformIso :: IsoA f a b -> f a :==: f b
+
+>appIsoF :: (IsomorphicFunctor f) => IsoA f a b -> f a -> f b
+>appIsoF = epimorphism . transformIso
 
 >instance (Arrow arr) => ArrowTransformation (:==:) arr where
 >   mapA = mapA . runIso
@@ -123,7 +142,7 @@ yonedaIso = Iso representable inverse_representable
 >curryIso :: ((a,b) -> c) :==: (a -> b -> c)
 >curryIso = curry <-> uncurry
 
->intIso :: a :==: a -> (Integer -> a) :==: a
+>intIso :: Aut a -> (Integer -> a) :==: a
 >intIso (Iso s p) = (\ f -> f 0) <-> foldInt
 >   where foldInt x0 0 = x0
 >         foldInt x0 i | i < 0 = p (foldInt x0 (i+1))      
@@ -143,7 +162,7 @@ yonedaIso = Iso representable inverse_representable
 
 TODO: negative integers?
 
->squareIso :: Integer :==: Integer
+>squareIso :: Aut Integer
 >squareIso = absIso >>> (sqrIso <||> sqrIso) >>> invertA absIso
 >   where sqrIso = (\i -> i*i) <-> square_root
 
@@ -153,11 +172,11 @@ TODO: negative integers?
 >absIso = (\i -> (if signum i /= -1 then Left else Right) (abs i))
 >           <-> (either id negate)
 
->plusminusIso :: (Integral a) => (a,a) :==: (a,a)
+>plusminusIso :: (Integral a) => Aut (a,a)
 >plusminusIso = (\ (x,y) -> (x+y,x-y))
 >                 <-> (\(a,b) -> ((a+b)`div` 2, (a-b) `div` 2))
 
->timesDivideIso :: (Floating a) => (a,a) :==: (a,a)
+>timesDivideIso :: (Floating a) => Aut (a,a)
 >  -- bug: sign is lost. Solution: e^(i*pi) == -1
 >  -- bug: y must be non-zero
 >timesDivideIso = (\ (x,y) -> (x*y,x/y))
@@ -178,7 +197,7 @@ TODO: negative integers?
 >type Bot = forall a. a
 
 >initialIso :: (BiArrow arr, Arrow arr') => arr () (arr' Bot a)
->initialIso =  (\ () -> proc x -> returnA -< x)
+>initialIso =  (\ () -> proc x -> returnA -< undefined)
 >          <-> const ()
 
 >terminalIso :: (Isomorphic arr, Arrow arr') => arr () (arr' a ())
@@ -292,11 +311,29 @@ coexponentialIso :: arr (arr' c (Either a b)) (arr' (arr' c b) a)
 >(<**>) (Iso f f') (Iso g g') = (\ (x,y) -> (f x, g y))
 >                           <-> (\ (x,y) -> (f' x, g' y))
 
+>encodeDecode :: (Bin.Binary a) => a :==: Bytes.ByteString
+>encodeDecode = Bin.encode <-> Bin.decode
+
+>encoding :: (Bin.Binary a) => Aut Bytes.ByteString -> Aut a
+>encoding f = encodeDecode >>> f >>> invertA encodeDecode
+>
+>decoding :: (Bin.Binary a) => Aut a -> Aut Bytes.ByteString
+>decoding f = invertA encodeDecode >>> f >>> encodeDecode
+
 >product3 :: a :==: b -> c :==: d -> e :==: f -> (a,c,e) :==: (b,d,f)
 >product3 z z2 z3 = (\ (x,y,z) -> (f x, g y, h z)) <-> (\ (x,y,z) -> (f' x, g' y, h' z))
 >   where Iso f f' = iso z
 >         Iso g g' = iso z2          
 >         Iso h h' = iso z3
+
+>first3 :: a :==: a' -> (a,b,c) :==: (a',b,c)
+>first3 f = product3 f id id
+
+>second3 :: b :==: b' -> (a,b,c) :==: (a,b',c)
+>second3 f = product3 id f id
+> 
+>third3 :: c :==: c' -> (a,b,c) :==: (a,b,c')
+>third3 f = product3 id id f
 
 >(<||>) :: (Isomorphic arr) => arr a b -> arr c d -> arr (Either a c) (Either b d)
 >(<||>) z z2 = (either (Left . f)  (Right . g))

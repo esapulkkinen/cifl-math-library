@@ -45,6 +45,7 @@ prop_eigenvalue3 = forAll arbitrary $ \ (m :: (Vector3 :*: Vector3) Float) ->
 >prop_vector2_vectorspace = MatrixTest.vectorspace (const () :: Vector2 Integer -> ())
 >prop_vector1_vectorspace = MatrixTest.vectorspace (const () :: Vector1 Integer -> ())
 >prop_vector3_liealgebra  = MatrixTest.lie_algebra (const () :: Vector3 Integer -> ())
+>prop_vector3_rational_liealgebra = MatrixTest.lie_algebra (const () :: Vector3 Rational -> ())
 > -- prop_vector2_liealgebra  = MatrixTest.lie_algebra (const () :: Vector2 Integer -> ())
 > -- prop_vector1_liealgebra  = MatrixTest.lie_algebra (const () :: Vector1 Integer -> ())
 >prop_vector1_vector3_vs = MatrixTest.vectorspace (const () :: (Vector1 :*: Vector3) Integer -> ())

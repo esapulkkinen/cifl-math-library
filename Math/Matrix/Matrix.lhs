@@ -53,9 +53,10 @@ categorically and examples")
 >    => Eq ((f :*: g) a) where
 >  x == y = liftA2 (==) x y <!> (and,and)
 
->instance Comonad ((,) a :*: (->) a) where
->   extract (Matrix (x,f)) = f x
->   duplicate (Matrix (a,f)) = Matrix (a,\x -> Matrix (x,f))
+instance Comonad ((,) a :*: (->) a) where
+   extract (Matrix (x,f)) = f x
+   duplicate (Matrix (a,f)) = Matrix (a,\x -> Matrix (x,f))
+
 
 >(!$!) :: (Functor f, Functor g) => f (a -> b) -> g a -> (f :*: g) b
 >(!$!) = matrix ($)
@@ -136,6 +137,8 @@ example use: m <!> (xcoord3,ycoord3)
 >(<!!>) :: (Array.Ix i, Array.Ix j) => (Array i :*: Array j) a -> (i,j) -> a
 >(<!!>) m (x,y) = m <!> ((Array.! x),(Array.! y))
 
+
+
 matrix_commutator :: (Applicative h, Transposable h h, InnerProductSpace (h a), Scalar (h a) ~ a) => (h :*: h) a -> (h :*: h) a -> (h :*: h) a
 
 >matrix_commutator :: (Num a, Applicative h, Transposable h h,
@@ -210,6 +213,9 @@ matrix_commutator :: (Applicative h, Transposable h h, InnerProductSpace (h a), 
 >instance (MonadPlus g, Indexable g, MonadPlus f) => MonadPlus (g :*: f) where
 >   mzero = Matrix mzero
 >   mplus (Matrix f) (Matrix g) = Matrix $ liftA2 mplus f g
+
+>instance (Semigroup a, Applicative f, Applicative g) => Semigroup ((f :*: g) a) where
+>   (<>) = liftA2 (<>)
 
 >instance (Monoid a, Applicative f, Applicative g) => Monoid ((f :*: g) a) where
 >   mempty = pure mempty

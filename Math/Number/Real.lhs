@@ -177,7 +177,8 @@ max_convergence_ratio = fmap (foldl1 max) . cauchy
 >  => (eps -> a -> a) -> (a -> a) -> a -> a
 >partial_derive delta f v = accumulation_point $ limit $ do
 >   eps <- epsilon_stream
->   return $ (f (delta eps v) - f v) / delta eps 0
+>   let v_plus_dv = delta eps v
+>   return $ (f v_plus_dv - f v) / (v_plus_dv - v)
 
 >partial_derivate :: (Closed eps, Infinitesimal eps)
 > => (eps -> a -> a) -> (a -> eps) -> a -> eps
@@ -185,12 +186,16 @@ max_convergence_ratio = fmap (foldl1 max) . cauchy
 >   eps <- epsilon_stream
 >   return $ (f (delta eps v) - f v) / eps
 
+
 >-- | <https://en.wikipedia.org/wiki/Wirtinger_derivatives>
 
 >complex_derivate :: (RealFloat r, Closed r, Infinitesimal r)
 >                 => (Complex r -> Complex r) -> Complex r -> Complex r
->complex_derivate f z = (partial_derivate (\eps z' -> z' + (eps :+ 0)) (realPart . f) z)/2
->                    :+ (negate $ partial_derivate (\eps z' -> z' + (0 :+ eps)) (imagPart . f) z / 2)
+>complex_derivate f z = (partial_derivate (\eps z' -> z' + (eps :+ 0))
+>                                         (realPart . f) z)/2
+>                    :+ (negate $ (partial_derivate
+>                                     (\eps z' -> z' + (0 :+ eps))
+>                                     (imagPart . f) z) / 2)
 
 >instance (RealFloat a, Infinitesimal a) => Infinitesimal (Complex a) where
 >  epsilon = limit $ liftA2 (:+) (approximations epsilon) (approximations epsilon)
@@ -270,7 +275,7 @@ lowerbound set = Characteristic $ \x -> and $ map (x <=) set
 >         (Pre c cr) = approximations a
 
 >negate_limit :: (Limiting a, Num a) => Closure a -> Closure a
->negate_limit = limit . fmap negate . approximations 
+>negate_limit = cmap negate
 
 >infimum :: [Closure R] -> Closure R
 >infimum = negate_limit . supremum_gen . map negate_limit
@@ -341,7 +346,7 @@ lowerbound set = Characteristic $ \x -> and $ map (x <=) set
 >-- to represent correct precision.
 >at_precision_rational :: R -> Rational -> Rational
 >at_precision_rational (Limit s) p = check_precision s
-> where check_precision ~z@(Pre x ~z'@(Pre y _))
+> where check_precision z@(Pre x z'@(Pre y _))
 >         | abs (y - x) <= p = x
 >         | otherwise = check_precision z'
 
@@ -350,8 +355,9 @@ lowerbound set = Characteristic $ \x -> and $ map (x <=) set
 >--   so how many digits after the decimal point are required.
 >at_precision :: R -> Integer -> R
 >at_precision (Limit s) p = Limit $ check_precision s
->  where check_precision   ~z@(Pre x ~z'@(Pre y _))
->             | abs (y - x) <= 10^^(negate p) = z
+>  where lm = 10^^(negate p)
+>        check_precision   ~z@(Pre x ~z'@(Pre y _))
+>             | abs (y - x) <= lm = z
 >             | otherwise = check_precision z'
 
 >-- | rational precision expressed as integer power of 10
@@ -387,11 +393,11 @@ lowerbound set = Characteristic $ \x -> and $ map (x <=) set
 >derivates :: (Infinitesimal a, Closed a) => (a -> a) -> Stream (a -> a)
 >derivates = iterate_stream $ \f x -> accumulation_point $ derivate f x
 
-i'th element of derivates_at(f,s) is D^i[f](s_i)
-
+>-- | i'th element of derivates_at(f,s) is D^i[f](s_i)
 >derivates_at :: (Infinitesimal a, Closed a) => (a -> a) -> Stream a -> Stream a
 >derivates_at f x = derivates f <*> x
 
+>-- | <https://en.wikipedia.org/wiki/Taylor_series>
 >taylor :: (Infinitesimal a, Closed a) => (a -> a) -> a -> (Stream :*: Stream) a
 >taylor f a = Matrix $ sum_stream $ mapper <$> sub_powers
 >   where mapper p = liftA3 (\a b c -> a*b*c) der divider p
@@ -557,6 +563,9 @@ gamma z = integral (close 0,infinity_gen) $ \t -> exp (negate t) * (t ** (z-1))
 >instance ShowPrecision R where
 >   show_at_precision = show_at_precision_real
 
+>instance (ShowPrecision a) => ShowPrecision (Complex a) where
+>   show_at_precision (a :+ b) x = show_at_precision a x ++ ":+" ++ show_at_precision b x
+
 >instance ShowPrecision Double where
 >   show_at_precision r _ = show r
 
@@ -585,23 +594,22 @@ gamma z = integral (close 0,infinity_gen) $ \t -> exp (negate t) * (t ** (z-1))
 >         (a,b) = properFraction r
 >         decimals x 0 = ""
 >         decimals x i
->             | (a',b') <- properFraction (x*10) = 
->                               show a' ++ decimals b' (i-1)
+>             | (a',b') <- properFraction (x*10), r <- decimals b' (pred i) = show a' ++ r
 >         decimals_str2 x i = case decimals2 x i of
->           (0,res) -> decimals (res `at_precision` i) i
+>           (0,res) -> decimals (res `at_precision` i) i 
 >           (j,res) -> decimals (res `at_precision` i) i 
 >                        ++ "e" ++ show j
 >         decimals2 x 0 = (0,x)
 >         decimals2 x i = let (a',b') = properFraction (x*10) 
 >                           in case a' of
->                             0 -> let (res,res2) = decimals2 b' (i-1) in (res-1,res2)
+>                             0 -> let (res,res2) = decimals2 b' (pred i) in (pred res,res2)
 >                             _ -> (0,x)
 
 >instance Show R where
->    show s = show_at_precision s 30
+>    show s = show_at_precision s 20
 
 >instance PpShow R where
->    pp s = pp (show_at_precision s 30)
+>    pp s = pp (show_at_precision s 10)
 
 
 >instance Real R where -- needs Ord instance
@@ -705,6 +713,13 @@ gamma z = integral (close 0,infinity_gen) $ \t -> exp (negate t) * (t ** (z-1))
 
 >logarithm_by_newton :: R -> Closure R
 >logarithm_by_newton e = newtons_method (\x -> exp x - e) 1
+
+>invert_by_newton :: (Closed a, Infinitesimal a) => (a -> a) -> a -> Closure a
+>invert_by_newton f e = newtons_method (\x -> f x - e) 1
+
+>-- computes x from equation @(Df)(x) = y@ by newton's method
+>differential_equation1 :: (Closed a, Infinitesimal a) => (a -> a) -> a -> Closure a
+>differential_equation1 f y = newtons_method (\x -> accumulation_point (derivate f x) - y) 1
 
 
 >exp_by_powers :: (Fractional r, Limiting r) => r -> Closure r

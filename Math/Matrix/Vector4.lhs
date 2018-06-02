@@ -1,4 +1,4 @@
->{-# LANGUAGE Safe,FlexibleInstances, MultiParamTypeClasses,FlexibleContexts, TypeOperators, TypeFamilies, NoMonomorphismRestriction #-}
+>{-# LANGUAGE Safe,FlexibleInstances, MultiParamTypeClasses,FlexibleContexts, TypeOperators, TypeFamilies, NoMonomorphismRestriction, StandaloneDeriving #-}
 >module Math.Matrix.Vector4 where
 >import Control.Applicative
 >import Math.Tools.Functor
@@ -7,7 +7,6 @@ import Math.Matrix.Dimension
 
 >import Math.Tools.PrettyP
 >import Math.Tools.Universe
->import Math.Tools.NumericExpression
 >import Math.Matrix.Matrix
 >import Data.Monoid
 >import Data.Complex
@@ -76,7 +75,41 @@ import Math.Matrix.Dimension
 >dt4 = epsilon %* t4
 
 >type Matrix4 a = (Vector4 :*: Vector4) a
->type Codiagonal4 a = (Vector3 a, Vector3 a, Codiagonal3 a)
+
+>codiag4 :: (Vector4 :*: Vector4) a -> Codiagonal Vector4 a
+>codiag4 (Matrix m) = Codiagonal4 down right rest
+>   where right = removex4 (xcoord4 m)
+>         down = fmap xcoord4 (removex4 m)
+>         rest = codiag3 $ Matrix $ fmap removex4 (removex4 m)
+
+>matrix4 :: Vector4 a -> Codiagonal Vector4 a -> (Vector4 :*: Vector4) a
+>matrix4 (Vector4 d1 d2 d3 d4) (Codiagonal4 down (Vector3 r1 r2 r3) rest) =
+>       Matrix $ Vector4 (Vector4 d1 r1 r2 r3) v2 v3 v4
+>    where Vector3 v2 v3 v4 = liftA2 (\i (Vector3 a b c) -> Vector4 i a b c) down (cells rest')
+>          rest' = matrix3 (Vector3 d2 d3 d4) rest
+
+>instance CodiagonalMatrix Vector4 a where
+>   data Codiagonal Vector4 a = Codiagonal4 {
+>      down_codiagonal4 :: Vector3 a,
+>      right_codiagonal4 :: Vector3 a,
+>      diagonal_codiagonal4 :: Codiagonal Vector3 a
+>   }
+>   type (Vector4 \\ a) = Vector3 a
+>   codiagonal = codiag4
+>   (|\|) = matrix4
+>   down_project = down_codiagonal4
+>   right_project = right_codiagonal4
+
+>instance Functor (Codiagonal Vector4) where
+>   fmap f (Codiagonal4 down right diag) =
+>     Codiagonal4 (fmap f down) (fmap f right) (fmap f diag)
+
+>instance Applicative (Codiagonal Vector4) where
+>   pure x = Codiagonal4 (pure x) (pure x) (pure x)
+>   (Codiagonal4 f1 f2 fr) <*> (Codiagonal4 x1 x2 xr) =
+>      Codiagonal4 (f1 <*> x1) (f2 <*> x2) (fr <*> xr)
+
+>deriving instance (Show a) => Show (Codiagonal Vector4 a)
 
 >instance (Num a) => StandardBasis (Vector4 a) where
 >  unit_vectors = [Vector4 1 0 0 0,
@@ -181,6 +214,9 @@ import Math.Matrix.Dimension
 >                          <*> all_elements
 >                          <*> all_elements
 >                          <*> all_elements
+
+>instance (Num s) => Semigroup (Vector4 s) where
+>   (<>) = (%+)
 
 >instance (Num s) => Monoid (Vector4 s) where
 >  mempty = vzero
@@ -517,16 +553,16 @@ laplace4_units f = divergence4_units (grad4_units f)
 >diagonal4x :: Matrix4 a -> Vector4 a
 >diagonal4x (Matrix x) = diagonal_projections4 <*> x
 
->zero_codiagonal4 :: (Num a) => Codiagonal4 a
->zero_codiagonal4 = (constant3 0, constant3 0, zero_codiagonal3)
+>zero_codiagonal4 :: (Num a) => Codiagonal Vector4 a
+>zero_codiagonal4 = Codiagonal4 (constant3 0) (constant3 0) (zero_codiagonal3)
 
 >diagonal_matrix4 :: (Num a) => Vector4 a -> (Vector4 :*: Vector4) a
 >diagonal_matrix4 v = matrix4 v zero_codiagonal4
 
->matrix4 :: Vector4 a -> Codiagonal4 a -> (Vector4 :*: Vector4) a
->matrix4 (Vector4 d1 d2 d3 d4) (Vector3 a' a'' a''', Vector3 a b c,
->                               (Vector2 x'' x''', Vector2 b' c',
->                                (Vector1 b''', Vector1 c''))) = Matrix $
+>mat4 :: Vector4 a -> Codiagonal Vector4 a -> (Vector4 :*: Vector4) a
+>mat4 (Vector4 d1 d2 d3 d4) (Codiagonal4 (Vector3 a' a'' a''') (Vector3 a b c)
+>                             (Codiagonal3 (Vector2 x'' x''') (Vector2 b' c')
+>                               (Codiagonal2 (Vector1 b''') (Vector1 c'')))) = Matrix $
 >   Vector4 (Vector4 d1   a    b   c)
 >           (Vector4 a'  d2    b'  c')
 >           (Vector4 a''  x''  d3  c'')

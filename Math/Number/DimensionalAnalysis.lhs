@@ -29,8 +29,9 @@
 >import Data.Complex
 >import Data.Typeable
 >import Data.Ratio
->import Control.Monad (guard)
->import Control.Applicative (Alternative)
+>import Data.Char
+>import Control.Monad (guard, mplus, foldM)
+>import Control.Applicative (Alternative(many,some,(<|>)))
 >import Control.Exception
 >import Math.Tools.PrettyP
 >import Math.Tools.List (interleave)
@@ -40,6 +41,8 @@
 
 >import Math.Number.Group
 >import Math.Number.Real
+>import Text.ParserCombinators.ReadPrec
+>import Text.Read
 
 >data Quantity r = As {
 >   value_amount :: r,
@@ -181,6 +184,9 @@
 >   (Dimension l w t c te lu su) %. (Dimension l' w' t' c' te' lu' su')
 >     = l*l'+w*w'+t*t'+c*c'+te*te'+lu*lu'+su*su'
 
+>instance Semigroup Dimension where
+>   (<>) = (%+)
+
 >instance Monoid Dimension where
 >   mempty = dimensionless
 >   mappend = (%+)
@@ -319,6 +325,9 @@
 >     | d == d' = atan2 x y `As` radian_dimension
 >     | otherwise = invalidDimensions "atan2" d d' x y
 
+>instance (Show r, ConjugateSymmetric r) => ConjugateSymmetric (Quantity r) where
+>   conj (x `As` d) = conj x `As` d
+
 >instance (Show r,Floating r, Real r) => Floating (Quantity r) where
 >   pi = pi `As` radian_dimension
 >   sqrt (x `As` r) = sqrt x `As` (r / 2)
@@ -360,14 +369,52 @@
 >  dimension (_ `As` r) = r
 >  fromAmount x = x `As` dimensionless
 
->instance (ShowPrecision r, Floating r, Ord r) => Show (Quantity r) where
+>-- | This read instance handles input examples such
+>--   as "10 m/(s*s)", "38.4 F", "12 As", "13 kgm/(s*s)",
+>--     "3.4 mm"
+>instance Read (Quantity Double) where
+>   readPrec = do
+>     v <- readPrec
+>     whitespace
+>     (do prefix <- chooseprefix
+>         lst <- some chooseunit
+>         lst' <- ((whitespace >> string "/" >> unitdivider) >>= (return . Just)) <++ return Nothing
+>         let lst'' = maybe lst (\lst2 -> lst ++ map (\(i,j) -> (i,1 / j)) lst2) lst'
+>         return $ prefix $ v %* (product $ map snd lst''))
+>       <++ do
+>             lst <- many chooseunit
+>             lst' <- ((whitespace >> string "/" >> whitespace >> unitdivider) >>= (return . Just)) <|> return Nothing
+>             let lst'' = maybe lst (\lst2 -> lst ++ map (\(i,j) -> (i,1 / j)) lst2) lst'
+>             return $ v %* (product $ map snd lst'')
+>      where chooseprefix :: ReadPrec (Quantity Double -> Quantity Double)
+>            chooseprefix = choose (map (\(a,b) -> (a,return b)) siPrefixes)
+>            chooseunit = choose (map (\ (a,b) -> (a,return (a,b))) siUnits)
+>            parens x = string "(" >> whitespace >> reset x >>= \v -> whitespace >> string ")" >> return v
+>            chooseunits = step (chooseunit >>= \v -> whitespace >> string "*" >> whitespace >> chooseunits >>= \r -> return (v:r))
+>                        <++ (chooseunit >>= (\x -> return [x]))
+>            unitdivider = (chooseunit >>= (\x -> whitespace >> string "/" >> unitdivider >>= \xr -> (return (x:xr))))
+>                           <++ (chooseunit >>= (\x -> return [x]))
+>                           <++ parens chooseunits
+
+>choose :: [(String,ReadPrec a)] -> ReadPrec a
+>choose m = choice $ map (\(a,b) -> string a >> b) m
+>string :: String -> ReadPrec ()
+>string lst = mapM (\ch -> get >>= \v -> guard (v==ch)) lst >> return ()
+> 
+>whitespace :: ReadPrec ()
+>whitespace = do str <- look
+>                let lst = takeWhile isSpace str
+>                mapM (const get) lst
+>                return ()
+
+>instance (ShowPrecision r, Floating r) => Show (Quantity r) where
 >  show (x `As` d)
->   | d == kelvin_dimension && x >= 200 = show_at_precision (x-273.15) 10 ++ " ⁰C"
+>   | d == kelvin_dimension = show_at_precision (x-273.15) 10 ++ " ⁰C"
 >   | otherwise = show_at_precision x 10 ++ " " ++ show d
 
->instance (ShowPrecision r, Floating r, Ord r) => PpShow (Quantity r) where
+>instance (ShowPrecision r, Floating r) => PpShow (Quantity r) where
 >  pp (x `As` d)
->   | d == kelvin_dimension && x >= 200 = pp (show_at_precision (x - 273.15) 10) <+> pp "⁰C"
+>   | d == kelvin_dimension = pp (show_at_precision (x - 273.15) 10) <+> pp "⁰C"
 >   | otherwise = pp (show_at_precision x 10) <+> pp d
 
 >(@@) :: r -> Dimension -> Quantity r
@@ -715,8 +762,9 @@ order in the table is significant
 >siemens_dimension = (3 %* second_dimension) %+ (2 %* ampere_dimension)
 >                 %- (kilogram_dimension %+ squaremeter_dimension)
 
->desibel :: (Fractional a) => Quantity a
+>bel,desibel :: (Fractional a) => Quantity a
 >desibel = 0.1 @@ bel_dimension
+>bel = 1 @@ bel_dimension
 
 >-- | <https://en.wikipedia.org/wiki/Physical_constant>
 >planck_length :: (Floating a) => Quantity a
@@ -852,7 +900,6 @@ order in the table is significant
 >siUnits = [
 >   ("eV",electronvolt),
 >   ("m",meter),
->   ("km", kilo meter),
 >   ("rad", radian),
 >   ("sr", steradian),
 >   ("K",kelvin),
@@ -873,6 +920,7 @@ order in the table is significant
 >   ("Sv", sievert),
 >   ("S", siemens),
 >   ("Ω", ohm),
+>   ("ohm", ohm),
 >   ("F", farad),
 >   ("W", watt),
 >   ("min", minute),
@@ -880,6 +928,8 @@ order in the table is significant
 >   ("d", day),
 >   ("w", week),
 >   ("y", year),
+>   ("°C", fromCelsius 1),
+>   ("°C", fromCelsius 1),
 >   ("°", degree),
 >   ("℃", fromCelsius 1),
 >   ("℉", fromFarenheit 1),
@@ -889,21 +939,50 @@ order in the table is significant
 >   ("Gy", gray),
 >   ("kat", katal),
 >   ("Hz", hertz),
->   ("m^2", squaremeter),
->   ("m^3", cubicmeter),
 >   ("dB", desibel),
 >   ("ly", lightyear),
 >   ("AU", astronomicalUnit),
 >   ("pc", parsec),
->   ("Mpc", mega parsec),
->   ("Gpc", giga parsec)
+>   ("l",liter),
+>   ("B", byte),
+>   ("b", bit)
 >  ]
+
+>-- | <https://en.wikipedia.org/wiki/Metric_prefix>
+>siPrefixes :: (Floating a) => [(String,Quantity a -> Quantity a)]
+>siPrefixes = [("E", exa),
+>              ("P", peta),
+>              ("T", tera),
+>              ("G", giga),
+>              ("M", mega),
+>              ("k", kilo),
+>              ("h", hecto),
+>              ("da",deca),
+>              ("d",deci),
+>              ("c",centi),
+>              ("m", milli),
+>              ("n", nano),
+>              ("µ", micro),
+>              ("u", micro),
+>              ("p", pico),
+>              ("f", femto),
+>              ("a", atto),
+>              ("Ki", kibi),
+>              ("Mi", mebi),
+>              ("Gi", gibi),
+>              ("Ti", tebi),
+>              ("Pi", pebi),
+>              ("Ei", exbi),
+>              ("Zi", zebi),
+>              ("Yi", yobi)
+>              ]
 
 >-- | this contains a list of quantities where basis of measurement
 >-- is not zero in the dimension because the corresponding SI unit
 >-- has different zero
 >siZeros :: [(String,Quantity Double)]
 >siZeros = [
+>    ("°C", fromCelsius 0),
 >    ("℃", fromCelsius 0),
 >    ("℉", fromFarenheit 0)
 >   ]

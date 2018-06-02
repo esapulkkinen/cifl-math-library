@@ -5,7 +5,8 @@
 >import Control.Applicative
 >import Control.Arrow
 >import Control.Monad.Trans.Writer
->import Control.Monad.Trans.List
+
+import Control.Monad.Trans.List
 
 >-- | <https://ncatlab.org/nlab/show/idemponent+monad>
 >class (Monad m) => ModalMonad m where

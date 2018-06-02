@@ -45,6 +45,10 @@
 >   (Node f lst) <*> (Node x lst') = Node (f x) $
 >      liftA2 (\ (e,x) (e',x') -> (mappend e e', x <*> x')) lst lst'
 
+>instance (Semigroup n, Semigroup e) => Semigroup (Tree e n) where
+>   (Node x lst) <> (Node y lst') = Node (x <> y) $
+>      liftA2 (\ (e,t) (e',t') -> (e <> e', t <> t')) lst lst'
+
 >instance (Monoid n, Monoid e) => Monoid (Tree e n) where
 >   mempty = Node mempty []
 >   mappend (Node x lst) (Node y lst') = Node (mappend x y) $

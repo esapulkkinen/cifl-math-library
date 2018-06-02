@@ -43,6 +43,7 @@
 > => f :~> f' -> g :~> g' -> (a -> b) -> (f :*: g) a -> (f' :*: g') b
 >mapMatrix col row elem m = (col `horiz` row) `nattrans_component` (fmap elem m)
 
+
 >unyoneda :: (Category cat) => cat a :~> f -> f a
 >unyoneda (NatTrans f) = f id
 
@@ -83,6 +84,12 @@
 
 >horizIso :: (Functor f, Functor f') => f :<~>: f' -> g :<~>: g' -> (f :*: g) :<~>: (f' :*: g')
 >horizIso (NaturalIso x xinv) (NaturalIso y yinv) = NaturalIso (x `horiz` y) (xinv `horiz` yinv)
+
+>matrixIso :: (Functor f, Functor f', Functor g, Functor g')
+> => f :<~>: f' -> g :<~>: g' -> a :==: b -> ((f :*: g) a) :==: ((f' :*: g') b)
+>matrixIso (NaturalIso f f') (NaturalIso g g') (Iso x x') =
+>   Iso (mapMatrix f g x) (mapMatrix f' g' x')
+
 
 >swap_dimensions_iso :: (Traversable f, Traversable g,
 >                        Applicative f, Applicative g)

@@ -1,18 +1,21 @@
->{-# LANGUAGE Safe,FlexibleInstances, MultiParamTypeClasses, TypeOperators, TypeFamilies, Arrows, LambdaCase, DeriveAnyClass, ExistentialQuantification #-}
+>{-# LANGUAGE Safe,FlexibleInstances, MultiParamTypeClasses, TypeOperators, TypeFamilies, Arrows, LambdaCase, DeriveAnyClass, ExistentialQuantification, ScopedTypeVariables #-}
 >-- | This module provides matrices with indices.
 >-- Matrices are constructed using smatrix and svec operations, example:
 >-- 
 >-- @
->-- smatrix (*) (svec3 1 2 3) (svec4 5 4 3 2) :: (ThreeD :&: FourD) Int
+>-- let m = smatrix (*) (svec3 1 2 3) (svec4 5 4 3 2) :: (ThreeD :&: FourD) Int
 >-- == 5   4 3 2
 >--    10  8 6 4
 >--    15 12 9 6
 >-- @
+>--
+>-- indexing occurs with the @(#)@ operator, for example, @m # (1,0) == 10@.
+>-- 
 >-- The number after svec is the number of elements in the dimension
->-- along row or column. The binary operation is applied to each pair
+>-- along row or column. Indices start from zero. The binary operation is applied to each pair
 >-- of elements to construct the matrix element.
 >--
->-- Matrices can also be constructed using Matrix constructor, with
+>-- Matrices can also be constructed using @Matrix@ constructor, with
 >-- indices as input, e.g.:
 >-- 
 >-- @identity :: (ThreeD :&: ThreeD) Integer@
@@ -20,9 +23,10 @@
 >-- @identity = Matrix $ \\i j -> if i == j then 1 else 0@
 >--
 >-- Note that index types are specifically restricted to be small types,
->-- since the Universe type class operations enumerate all elements
+>-- since the Universe type class operations are often used to enumerate all elements
 >-- of the type. This is enforced in show operations, which only show
->-- ten elements per dimension.
+>-- ten elements per dimension. For convenience, pre-defined index types,
+>-- OneD, TwoD, ThreeD, FourD, FiveD are defined, for up to 5 dimensional matrices.
 >-- 
 >module Math.Matrix.Simple where
 >import Prelude hiding (id,(.))
@@ -178,10 +182,18 @@
 >   trace (Matrix f) = sum [f i i | i <- all_elements]
 >   determinant = sdeterminant
 >
+
 >instance (Integral row) => Indexable ((->) row) where
 >   diagonal_projections = \i fi -> fi i
 >   indexable_indices = \i -> fromIntegral i
 >
+>instance (Universe a, Integral a, Num b) => CoordinateSpace (a -> b) where
+>   type Coordinate (a -> b) = a
+>   index i f = f i
+>   listVector lst = \i -> lst !! fromIntegral (toInteger i)
+>   dimension_size (f :: a -> b) = length (all_elements :: [a])
+>   coordinates (f :: a -> b) = (all_elements :: [a])
+>   
 >instance (Universe row, Integral row) => Summable ((->) row) where
 >   sum_coordinates = sumS
 >

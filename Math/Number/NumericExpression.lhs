@@ -1,5 +1,8 @@
->{-# LANGUAGE GADTs, MultiParamTypeClasses, StandaloneDeriving, FlexibleInstances, UndecidableInstances, FlexibleContexts, TypeOperators, TypeFamilies, ExistentialQuantification #-}
->module Math.Tools.NumericExpression where
+>{-# LANGUAGE GADTs, MultiParamTypeClasses, TypeOperators, TypeFamilies, LambdaCase, ScopedTypeVariables, FlexibleInstances, FlexibleContexts, Arrows, Rank2Types, StandaloneDeriving #-}
+>module Math.Number.NumericExpression where
+>import Prelude hiding (id,(.))
+>import Control.Category
+>import Control.Arrow hiding ((<+>))
 >import Math.Tools.PrettyP
 >import Data.Map (Map)
 >import qualified Data.Map as Map
@@ -8,11 +11,41 @@
 >import Math.Tools.Show
 >import Math.Tools.Visitor hiding (var)
 >import Math.Tools.Functor
+>import Math.Tools.Isomorphism
+>import Math.Tools.Arrow
 >import Math.Matrix.Interface
 >import Math.Matrix.Matrix
 
 >data Var a = Var { var_name :: String, var_debruijn_index :: Integer }
 >           | Val a
+
+>instance FunctorArrow Var (->) where
+>   amap f = proc z -> case z of
+>     (Var n i) -> returnA -< (Var n i)
+>     (Val x) -> f >>> arr Val -< x
+
+>instance IsomorphicFunctor Var where
+>  data IsoA Var a b = VarIso {
+>    var_nameIso :: String :==: String,
+>    var_indexIso :: Integer :==: Integer,
+>    var_valIso :: a :==: b }
+>  transformIso = varIso
+>
+>instance BiArrow (IsoA Var) where
+>   f <-> g = VarIso id id (f <-> g)
+
+>instance Category (IsoA Var) where
+>   id = VarIso id id id
+>   (VarIso n i x) . (VarIso n' i' x') = VarIso (n . n') (i . i') (x . x')
+>   
+>instance Groupoid (IsoA Var) where
+>   invertA (VarIso n i x) = VarIso (invertA n) (invertA i) (invertA x)
+>
+>varIso :: IsoA Var a b -> Var a :==: Var b
+>varIso v = iso v <-> iso (invertA v)
+>  where iso v = \case { (Var n i) -> Var (epimorphism (var_nameIso v) n)
+>                                         (epimorphism (var_indexIso v) i) ;
+>                         (Val x) -> Val (epimorphism (var_valIso v) x) }
 
 >instance (PpShow a) => PpShow (Var a) where
 >   pp (Var x i) = pp x <> pp '@' <> pp i
@@ -25,9 +58,9 @@
 >equal_in_context ctx x y = eval ctx x == eval ctx y
 
 >instance Visitor (Var a) where
->   data Fold (Var a) b = VarFold [a] (a -> b)
->   visit (VarFold ctx f) (Var _ i) = f (ctx !! fromIntegral i)
->   visit (VarFold _ f) (Val x) = f x
+>   data Fold (Var a) b = VarFold [a] (String -> a -> b) (a -> b)
+>   visit (VarFold ctx f _) (Var n i) = f n (ctx !! fromIntegral i)
+>   visit (VarFold _ _ g) (Val x) = g x
 
 >evalVar :: [a] -> Var a -> a
 >evalVar ctx (Var _ i) = ctx !! fromIntegral i
@@ -36,8 +69,8 @@
 >withCtx :: (Functor f) => [a] -> (f :*: Var) a -> f a
 >withCtx ctx (Matrix expr) = fmap (evalVar ctx) expr
 
->var :: (Applicative f) => String -> Integer -> (f :*: Var) a
->var x i = Matrix $ pure (Var x i)
+>eVar :: (Applicative f) => String -> Integer -> (f :*: Var) a
+>eVar x i = Matrix $ pure (Var x i)
 
 >expr :: (Functor f) => f a -> (f :*: Var) a
 >expr e = Matrix $ fmap Val e
@@ -69,6 +102,69 @@
 >                       | VScalar (NumExpr a) (VectorSpaceExpr a)
 >                       | VVectorVar (Var (VectorSpaceExpr a))
 >                       | VPrim a
+
+>instance FunctorArrow VectorSpaceExpr (->) where
+>   amap f = proc z -> case z of
+>       VZero -> returnA -< VZero
+>       (VNegate v) -> do v' <- amap f -< v
+>                         returnA -< VNegate v'
+>       (VPlus x y) -> do x' <- amap f -< x
+>                         y' <- amap f -< y
+>                         returnA -< VPlus x' y'
+>       (VScalar x v) -> do x' <- amap f -< x
+>                           v' <- amap f -< v
+>                           returnA -< VScalar x' v'
+>       (VVectorVar v) -> do v' <- amap (amap f) -< v
+>                            returnA -< VVectorVar v'
+>       (VPrim x) -> do x' <- f -< x
+>                       returnA -< VPrim x'
+
+>instance IsomorphicFunctor VectorSpaceExpr where
+>  data IsoA VectorSpaceExpr a b = VectorSpaceIso {
+>     vnegate_iso :: IsoA VectorSpaceExpr a b,
+>     vplus_1_iso :: IsoA VectorSpaceExpr a b,
+>     vplus_2_iso :: IsoA VectorSpaceExpr a b,
+>     vscalar_1_iso :: IsoA NumExpr a b,
+>     vscalar_2_iso :: IsoA VectorSpaceExpr a b,
+>     vvector_1_iso :: IsoA Var (VectorSpaceExpr a) (VectorSpaceExpr b),
+>     vprim_iso :: a :==: b }
+>  transformIso = vectorSpaceIso
+
+>vectorSpaceIso :: IsoA VectorSpaceExpr a b -> (VectorSpaceExpr a) :==: (VectorSpaceExpr b)
+>vectorSpaceIso v = iso v <-> iso (invertA v)
+>   where iso v = \case
+>           VZero -> VZero
+>           (VNegate x) -> VNegate ((vnegate_iso v) `appIsoF` x)
+>           (VPlus x y) -> VPlus ((vplus_1_iso v) `appIsoF` x)
+>                                ((vplus_2_iso v) `appIsoF` y)
+>           (VScalar x w) -> VScalar ((vscalar_1_iso v) `appIsoF` x)
+>                                    ((vscalar_2_iso v) `appIsoF` w)
+>           (VVectorVar w) -> VVectorVar ((vvector_1_iso v) `appIsoF` w)
+>           (VPrim x) -> VPrim ((vprim_iso v) `epimorphism` x)
+
+>instance BiArrow (IsoA VectorSpaceExpr) where
+>   f <-> g = VectorSpaceIso (f <-> g) (f <-> g) (f <-> g)
+>                           (f <-> g) (f <-> g) (amap f <-> amap g) (f <-> g)
+
+>instance Category (IsoA VectorSpaceExpr) where
+>   id = VectorSpaceIso id id id id id id id
+>   (f :: IsoA VectorSpaceExpr b' c') . (g :: IsoA VectorSpaceExpr a' b') =
+>     VectorSpaceIso (vnegate_iso f . vnegate_iso g)
+>                          (vplus_1_iso f . vplus_1_iso g)
+>                          (vplus_2_iso f . vplus_2_iso g)
+>                          (vscalar_1_iso f . vscalar_1_iso g)
+>                          (vscalar_2_iso f . vscalar_2_iso g)
+>                          (vvector_1_iso f . vvector_1_iso g)
+>                          (vprim_iso f . vprim_iso g)
+>
+>instance Groupoid (IsoA VectorSpaceExpr) where
+>   invertA v = VectorSpaceIso (invertA (vnegate_iso v))
+>                              (invertA (vplus_1_iso v))
+>                              (invertA (vplus_2_iso v))
+>                              (invertA (vscalar_1_iso v))
+>                              (invertA (vscalar_2_iso v))
+>                              (invertA (vvector_1_iso v))
+>                              (invertA (vprim_iso v))
 
 >instance (PpShow a) => PpShow (VectorSpaceExpr a) where
 >   pp VZero = pp '0'
@@ -107,9 +203,11 @@
 instance Expression VectorSpaceExpr VectorCtx a where
    eval = evalVectorSpaceExpr
 
->deriving instance (Show a, Show (Scalar a)) => Show (VectorSpaceExpr a)
+>deriving instance (Show a) => Show (VectorSpaceExpr a)
+
 >deriving instance (Show a) => Show ((NumExpr :*: Var) a)
 
+>-- | Basically same as methods in Num type class from prelude, but as data.
 >data NumExpr a = Plus (NumExpr a) (NumExpr a)
 >            | Product (NumExpr a) (NumExpr a)
 >            | Subtract (NumExpr a) (NumExpr a)
@@ -119,6 +217,98 @@ instance Expression VectorSpaceExpr VectorCtx a where
 >            | NumPrim (Var a)
 >            | FromInteger Integer
 >            | InnerProduct (VectorSpaceExpr a) (VectorSpaceExpr a)
+
+>instance FunctorArrow NumExpr (->) where
+>   amap f = proc z -> case z of
+>     (Plus x y) -> run Plus -< (x,y)
+>     (Product x y) -> run Product -< (x,y)
+>     (Subtract x y) -> run Subtract -< (x,y)
+>     (Negate x) -> amap f >>> arr Negate -< x
+>     (Abs x) -> amap f >>> arr Abs -< x
+>     (NumPrim v) -> amap f >>> arr NumPrim -< v
+>     (FromInteger i) -> returnA -< FromInteger i
+>     (InnerProduct x y) -> arr (uncurry InnerProduct) <<< (amap f *** amap f) -< (x,y)
+>    where run p = arr (uncurry p) <<< (amap f *** amap f)
+                      
+>instance IsomorphicFunctor NumExpr where
+>  data IsoA NumExpr a b = NumIso {
+>   plusIso_1 :: IsoA NumExpr a b,
+>   plusIso_2 :: IsoA NumExpr a b,
+>   prodIso_1 :: IsoA NumExpr a b,
+>   prodIso_2 :: IsoA NumExpr a b,
+>   subtractIso_1 :: IsoA NumExpr a b,
+>   subtractIso_2 :: IsoA NumExpr a b,
+>   negateIso :: IsoA NumExpr a b,
+>   numAbsIso :: IsoA NumExpr a b,
+>   signumIso :: IsoA NumExpr a b,
+>   numPrimIso :: IsoA Var a b,
+>   fromIntegerIso :: Integer :==: Integer,
+>   innerProductIso_1 :: IsoA VectorSpaceExpr a b,
+>   innerProductIso_2 :: IsoA VectorSpaceExpr a b }
+>  transformIso = numIso
+
+
+>numIso :: IsoA NumExpr a b -> NumExpr a :==: NumExpr b
+>numIso v = iso v <-> iso (invertA v)
+>  where iso v = \case
+>          (Plus x y) -> Plus ((plusIso_1 v) `appIsoF` x)
+>                             ((plusIso_2 v) `appIsoF` y)
+>          (Product x y) -> Product ((prodIso_1 v) `appIsoF` x)
+>                                   ((prodIso_2 v) `appIsoF` y)
+>          (Negate x) -> Negate ((negateIso v) `appIsoF` x)
+>          (Abs x) -> Abs ((numAbsIso v) `appIsoF` x)
+>          (Signum x) -> Signum ((signumIso v) `appIsoF` x)
+>          (NumPrim x) -> NumPrim ((numPrimIso v) `appIsoF` x)
+>          (FromInteger i) -> FromInteger ((fromIntegerIso v) `epimorphism` i)
+>          (InnerProduct x y) -> InnerProduct ((innerProductIso_1 v) `appIsoF` x)
+>                                             ((innerProductIso_2 v) `appIsoF` y)
+
+>instance BiArrow (IsoA NumExpr) where
+>   f <-> g = NumIso niso niso niso niso niso niso niso niso niso (f <-> g)
+>                   id (f <-> g) (f <-> g)
+>     where niso = f <-> g
+
+
+>instance Groupoid (IsoA NumExpr) where
+>   invertA f = NumIso (invertA (plusIso_1 f))
+>                      (invertA (plusIso_2 f))
+>                      (invertA (prodIso_1 f))
+>                      (invertA (prodIso_2 f))
+>                      (invertA (subtractIso_1 f))
+>                      (invertA (subtractIso_2 f))
+>                      (invertA (negateIso f))
+>                      (invertA (numAbsIso f))
+>                      (invertA (signumIso f))
+>                      (invertA (numPrimIso f))
+>                      (invertA (fromIntegerIso f))
+>                      (invertA (innerProductIso_1 f))
+>                      (invertA (innerProductIso_2 f))
+
+>instance Category (IsoA NumExpr) where
+>   id = NumIso id id id id id id id id id id id id id
+>   f . g = NumIso (plusIso_1 f . plusIso_1 g)
+>                  (plusIso_2 f . plusIso_2 g)
+>                  (prodIso_1 f . prodIso_1 g)
+>                  (prodIso_2 f . prodIso_2 g)
+>                  (subtractIso_1 f . subtractIso_1 g)
+>                  (subtractIso_2 f . subtractIso_2 g)
+>                  (negateIso f . negateIso g)
+>                  (numAbsIso f . numAbsIso g)
+>                  (signumIso f . signumIso g)
+>                  (numPrimIso f . numPrimIso g)
+>                  (fromIntegerIso f . fromIntegerIso g)
+>                  (innerProductIso_1 f . innerProductIso_1 g)
+>                  (innerProductIso_2 f . innerProductIso_2 g)
+
+
+
+>plus_assoc_iso :: NumExpr a :==: NumExpr a
+>plus_assoc_iso = \case { (Plus (Plus x y) z) -> Plus x (Plus y z) ;  z -> z }
+>              <-> \case { (Plus x (Plus y z)) -> Plus (Plus x y) z ; z -> z }
+
+>product_assoc_iso :: NumExpr a :==: NumExpr a
+>product_assoc_iso = \case { (Product (Product x y) z) -> Product x (Product y z) ; z -> z }
+>       <-> \case { (Product x (Product y z)) -> Product (Product x y) z ; z -> z }
 
 >instance (PpShow a) => PpShow (NumExpr a) where
 >   pp (Plus a b) = pp a <> pp '+' <> pp b
@@ -146,6 +336,7 @@ instance Expression VectorSpaceExpr VectorCtx a where
 >instance (Enum a) => Expression EnumExpr [] a where
 >   eval = runEnumExpr
 
+>-- | basically same as Fractional class in Prelude.
 >data FracExpr a = PrimFracExpr (NumExpr a)
 >                | Divide (FracExpr a) (FracExpr a)
 >                | Recip  (FracExpr a)
@@ -157,6 +348,7 @@ instance Expression VectorSpaceExpr VectorCtx a where
 >   pp (Recip a) = pp "1/" <> pp a
 >   pp (FromRational a) = pp a
 
+>-- | basically same as Floating class in Prelude, but as data.
 >data FloatExpr a = PrimPi
 >                 | Exp (FloatExpr a)
 >                 | Log (FloatExpr a)
@@ -183,7 +375,7 @@ instance Expression VectorSpaceExpr VectorCtx a where
 >   pp (Exp a) = pp_unary "exp" a
 >   pp (Log a) = pp_unary "log" a
 >   pp (Sqrt a) = pp_unary "sqrt" a
->   pp (Sin a) = pp_unary "sun" a
+>   pp (Sin a) = pp_unary "sin" a
 >   pp (Cos a) = pp_unary "cos" a
 >   pp (Tan a) = pp_unary "tan" a
 >   pp (Asin a) = pp_unary "asin" a
@@ -369,6 +561,8 @@ instance Expression VectorSpaceExpr VectorCtx a where
 >  visit z (NumPrim a)    = visit (exprfold_prim z) a
 >  visit z (FromInteger i) = exprfold_frominteger z i
 
+
+
 >instance Visitor (EnumExpr a) where
 >   data Fold (EnumExpr a) b = EnumExprFold {
 >      enumfold_succ :: b -> b,
@@ -388,7 +582,7 @@ instance Expression VectorSpaceExpr VectorCtx a where
 >runFracExpr ctx = visit $ fracExprFold $ numExprFold $ varFold ctx
 
 >varFold :: [a] -> Fold (Var a) a
->varFold ctx = VarFold ctx id
+>varFold ctx = VarFold ctx (const id) id
 
 >vecSpaceFold :: (IdVisitor a, VectorSpace b, a ~ Scalar b) =>
 >                Fold (Var b) b
@@ -403,6 +597,15 @@ instance Expression VectorSpaceExpr VectorCtx a where
 >numExprFold varFold = NumExprFold (+) (*) (-) negate abs signum
 >                                  varFold 
 >                                  fromInteger
+
+isoVarExprFold ctx ctx' (Iso f g) = VarFold ctx (\n v -> f (Var n v))
+                                           (\v -> f (Val v))
+
+isoNumExprFold ctx z@(Iso f g) variso = NumExprFold (h Plus) (h Product) (h Subtract)
+                                           (f . Negate) (f . Abs) (f . Signum)
+                                          (isoVarExprFold ctx (variso >>> )
+                                          (\i -> f (FromInteger i))
+    where h exp = \x y -> f (exp x y)
 
 >fracExprFold :: (Fractional b) =>
 >                Fold (NumExpr a) b -> Fold (FracExpr a) b

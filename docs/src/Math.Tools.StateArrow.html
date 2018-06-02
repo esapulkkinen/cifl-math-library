@@ -1,0 +1,55 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"><html xmlns="http://www.w3.org/1999/xhtml"><head><link rel="stylesheet" type="text/css" href="style.css" /><script type="text/javascript" src="highlight.js"></script></head><body><pre><span class="">&gt;{-# LANGUAGE MultiParamTypeClasses, FlexibleInstances #-}
+&gt;module Math.Tools.StateArrow where
+&gt;import Prelude hiding (id,(.))
+&gt;import Control.Category
+&gt;import Control.Arrow
+&gt;import Math.Tools.Arrow
+
+STArrow is based on the state functor from John Hughes' &quot;Generalising
+monads to Arrows&quot; paper.
+
+type STArrow s b c = Kleisli (ST s) b c
+
+&gt;newtype STArrow s a b c = SF { runSTArrow :: a (b,s) (c,s) }
+
+&gt;liftState :: Arrow a =&gt; a b c -&gt; STArrow s a b c
+&gt;liftState f = SF (first f)
+
+&gt;class StateAspect sa s where
+&gt;      fetch :: sa b s
+&gt;      store :: sa s ()
+
+&gt;instance Arrow a =&gt; StateAspect (STArrow s a) s where
+&gt;	  fetch = SF (arr (\ (_,s) -&gt; (s,s)))
+&gt;	  store = SF (arr (\ (x,_) -&gt; ((),x)))
+
+&gt;instance (Arrow a) =&gt; Category (STArrow s a) where
+&gt;   id = liftState id
+&gt;   SF f . SF g = SF (f . g)
+
+&gt;instance Arrow a =&gt; Arrow (STArrow s a) where
+&gt;       arr f = liftState (arr f)
+&gt;       first (SF f) = SF (arr (\ ((b,d),s) -&gt; ((b,s),d)) &gt;&gt;&gt; first f
+&gt;                         &gt;&gt;&gt; arr (\ ((c,s),d) -&gt; ((c,d),s)))
+
+fetch :: Arrow a =&gt; STArrow s a b s
+fetch = SF (arr (\ (_,s) -&gt; (s,s)))
+
+store :: Arrow a =&gt; STArrow s a s ()
+store = SF (arr (\ (x,s) -&gt; ((),x)))
+
+&gt;instance ArrowChoice a =&gt; ArrowChoice (STArrow s a) where
+&gt;	  left (SF f) = SF ( arr (\ (x,s) -&gt; case x of
+&gt;                              Left b -&gt; Left (b,s)
+&gt;			       Right c -&gt; Right (c,s)) &gt;&gt;&gt;
+&gt;			((f &gt;&gt;&gt; first (arr Left)) ||| first (arr Right)))
+
+&gt;instance ArrowZero a =&gt; ArrowZero (STArrow s a) where
+&gt;	  zeroArrow = SF zeroArrow
+
+&gt;instance ArrowPlus a =&gt; ArrowPlus (STArrow s a) where
+&gt;	  (SF f) &lt;+&gt; (SF g) = SF (f Control.Arrow.&lt;+&gt; g)
+
+&gt;instance ArrowApply a =&gt; ArrowApply (STArrow s a) where
+&gt;	  app = SF (arr (\ ((SF f,b),s) -&gt; (f,(b,s))) &gt;&gt;&gt; app)
+</span></pre></body></html>

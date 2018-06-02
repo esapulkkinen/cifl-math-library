@@ -26,6 +26,9 @@
 >instance Located LineInfo where
 >   location_of = id
 
+>instance Semigroup LineInfo where
+>   (<>) = sum_lineinfo
+
 >instance Monoid LineInfo where
 >   mempty = emptyLineInfo
 >   mappend = sum_lineinfo

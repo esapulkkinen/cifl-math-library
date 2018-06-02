@@ -13,7 +13,8 @@ portion of code that is obtained from or based on such sources and
 included link or reference to the corresponding place and add a
 reference to the corresponding license in this file. The code contains
 many such references. Usually they are visible in the automatically
-generated documentation as well.
+generated documentation as well, but to be sure to find all of them,
+please read the actual Haskell code.
 
 Due to nature of basic mathematical theory, very few portions of the
 code contain original mathematics. I do not attempt to claim to have

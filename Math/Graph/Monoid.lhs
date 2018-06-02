@@ -7,6 +7,9 @@
 >data Mon a b where
 >   Mon :: ((Monoid m) => m) -> Mon m m
 
+>instance Semigroup (Mon x x) where
+>   (Mon x) <> (Mon y) = Mon (x <> y)
+
 >instance Monoid (Mon x x) where
 >   mempty = Mon mempty
 >   mappend (Mon x) (Mon y) = Mon (mappend x y)

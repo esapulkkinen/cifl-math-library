@@ -53,7 +53,7 @@ set.
 >          take3 (_,_,c) = c
 
 >foldM :: (Monad m) => (a -> b -> m b) -> m b -> Map i a -> m b
->foldM f x = Map.fold (\a mb -> mb >>= f a) x
+>foldM f x = Map.foldr (\a mb -> mb >>= f a) x
 
 >foldKeyM :: (Monad m) => (i -> a -> b -> m b) -> m b -> Map i a -> m b
 >foldKeyM f x = Map.foldrWithKey (\k a mb -> mb >>= f k a) x
@@ -96,13 +96,13 @@ set.
 >          isLeft (Left _) = True
 >          isLeft (Right _) = False
 
->intersectZipMapA :: (Ord i, Arrow arr,FunctorArrow [] arr) =>
+>intersectZipMapA :: (Ord i, ArrowChoice arr) =>
 >                    arr (Map.Map i a, Map.Map i b) (Map.Map i (a,b))
 >intersectZipMapA = intersectMapA returnA
 
 intersectMapA intersects two maps in O(n log(n)) time.
 
->intersectMapA :: (Ord i, Arrow arr,FunctorArrow [] arr) => arr (a,b) c
+>intersectMapA :: (Ord i, ArrowChoice arr) => arr (a,b) c
 >              -> arr (Map.Map i a, Map.Map i b) (Map.Map i c)
 >intersectMapA f = proc (m1,m2) -> do
 >             let k1 = filter (`Map.member` m2) $ Map.keys m1
@@ -125,7 +125,7 @@ that do not match in the maps are returned separately.
 >         brest = x `Map.difference` b
 >         crest = y `Map.difference` c
 
->intersectMapKeyA :: (Ord i, Arrow arr,FunctorArrow [] arr) => arr (i,(a,b)) c
+>intersectMapKeyA :: (Ord i, ArrowChoice arr) => arr (i,(a,b)) c
 >                 -> arr (Map.Map i a, Map.Map i b) (Map.Map i c)
 >intersectMapKeyA f = proc (m1,m2) -> do
 >             let k1 = filter (`Map.member` m2) $ Map.keys m1
@@ -145,7 +145,7 @@ that do not match in the maps are returned separately.
 >                  alst' <- amap f -< alst
 >                  returnA -< Map.fromAscList alst'
 
->unionMapA :: (Ord i, Arrow arr,FunctorArrow [] arr) => arr (a,a) a
+>unionMapA :: (Ord i, ArrowChoice arr) => arr (a,a) a
 >          -> arr (Map.Map i a, Map.Map i a) (Map.Map i a)
 >unionMapA f = proc (m1,m2) -> do
 >              unifiedMap <- intersectMapA f -< (m1,m2)
@@ -172,7 +172,7 @@ that do not match in the maps are returned separately.
 >                                         (proc _ -> returnA -< Map.empty)
 
 >foldMapA :: (ArrowApply arr) => arr (a,b) b -> arr (Map.Map i a, b) b
->foldMapA f = proc (m,r0) -> Map.fold (\val r -> r >>> (proc j -> f -< (val,j))) returnA m -<< r0 
+>foldMapA f = proc (m,r0) -> Map.foldr (\val r -> r >>> (proc j -> f -< (val,j))) returnA m -<< r0 
 
 >foldMapKeyA :: (ArrowApply arr) => arr (i,a,b) b -> arr (Map.Map i a, b) b
 >foldMapKeyA f = proc (m,r0) -> Map.foldrWithKey (\k val r -> r >>> (proc j -> f -< (k,val,j))) returnA m -<< r0

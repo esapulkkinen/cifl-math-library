@@ -3,6 +3,8 @@
 >import Control.Applicative
 >import Data.Monoid hiding (Dual)
 >import Data.Complex
+>import Data.Sequence (Seq)
+>import qualified Data.Sequence as Seq
 >import Math.Tools.I
 >import Math.Tools.CoMonad
 >import Math.Tools.Median
@@ -21,6 +23,55 @@
 
 >instance Foldable Vector1 where
 >   foldMap f (Vector1 x) = f x
+
+>instance ProjectionSpace Vector1 Vector1 where
+>   data (Vector1 \\\ Vector1) a = S11Vector
+>   project_first = id
+>   project_second _ = S11Vector
+>   join_vector v _ = v
+
+>instance Functor (Vector1 \\\ Vector1) where
+>   fmap _ S11Vector = S11Vector
+
+>project_down :: (Functor (m \\\ m'),
+>                ProjectionSpace m m',
+>                ProjectionSpace n Vector1)
+>               => (m :*: n) a -> (m \\\ m') a
+>project_down m = fmap vector_element $ m <!> (project_second, project_first)
+ 
+>project_right :: (ProjectionSpace m Vector1, ProjectionSpace n n')
+>              => (m :*: n) a -> (n \\\ n') a
+>project_right m = vector_element $ m <!> (project_first, project_second)
+
+>project_diagonal :: (ProjectionSpace m m', ProjectionSpace n n')
+>                 => (m :*: n) a -> ((m \\\ m') :*: (n \\\ n')) a
+>project_diagonal m = Matrix $ m <!> (project_second, project_second)
+
+>grid :: (Applicative n, Applicative (f \\\ n),
+>             ProjectionSpace f n,
+>             ProjectionSpace g n',
+>             ProjectionSpace g n'')
+>            => (n :*: n') a
+>            -> (n :*: (g \\\ n')) a
+>            -> ((f \\\ n) :*: n'') a
+>            -> ((f \\\ n) :*: (g \\\ n'')) a
+>            -> (f :*: g) a
+>grid (Matrix a) (Matrix right) (Matrix down) (Matrix m) = Matrix $
+>   (liftA2 join_vector a right) `join_vector` (liftA2 join_vector down m)
+
+
+>prefixMatrix :: (Applicative (f \\\ Vector1),
+>             ProjectionSpace f Vector1,
+>             ProjectionSpace g Vector1)
+>            => a
+>            -> (f \\\ Vector1) a -> (g \\\ Vector1) a
+>            -> ((f \\\ Vector1) :*: (g \\\ Vector1)) a
+>            -> (f :*: g) a
+>prefixMatrix d down right = grid (Matrix $ Vector1 (Vector1 d))
+>                       (Matrix $ Vector1 right)
+>                       (Matrix $ fmap Vector1 down)
+
+
 
 >vertical :: (Functor v) => v a -> (v :*: Vector1) a
 >vertical = Matrix . fmap Vector1
@@ -101,6 +152,9 @@ http://en.wikipedia.org/wiki/Bra%E2%80%93ket_notation
 >splittable_codiagonal m = (a <!> (vector_element,vector_element),vector_element (cells b),
 >                           fmap vector_element (cells c), d)
 >   where ((a,b),(c,d)) = split_matrix m
+
+>instance (Num a) => Semigroup (Vector1 a) where
+>   (<>) = (%+)
 
 >instance (Num a) => Monoid (Vector1 a) where
 >  mempty = vzero

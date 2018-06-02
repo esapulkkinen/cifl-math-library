@@ -1,4 +1,5 @@
->{-# LANGUAGE Safe,DataKinds, MultiParamTypeClasses, GADTs, FlexibleInstances, FlexibleContexts, UndecidableInstances, TypeOperators, KindSignatures, TypeFamilies, ExistentialQuantification, ScopedTypeVariables #-}
+>{-# LANGUAGE Safe,DataKinds, MultiParamTypeClasses, GADTs, FlexibleInstances, FlexibleContexts, UndecidableInstances, TypeOperators, KindSignatures, TypeFamilies, ExistentialQuantification, ScopedTypeVariables, TypeOperators, AllowAmbiguousTypes #-}
+>{-# OPTIONS_GHC -cpp #-}
 >module Math.Matrix.FiniteVector where
 >import Control.Applicative
 >import Math.Matrix.Interface
@@ -6,7 +7,25 @@
 
 >data Vec :: Nat -> * -> * where
 >  Empty :: Vec 0 a 
->  Cons :: a -> Vec n a -> Vec (1 + n) a 
+>  Cons :: a -> Vec n a -> Vec (1 + n) a
+>  Assoc :: Vec (n + (m + p)) a -> Vec ((n + m) + p) a
+
+>vzero_vec = Empty
+> 
+>vnegate_vec :: (Num a) => Vec n a -> Vec n a
+>vnegate_vec = fmap negate
+
+>class Appendable n m where
+>   vplus :: Vec n a -> Vec m a -> Vec (n + m) a
+
+>instance Appendable 0 0 where
+>   vplus Empty Empty = Empty
+
+>instance Appendable n 0 where
+>   vplus v Empty = v
+
+>instance Appendable 0 n where
+>   vplus Empty v = v
 
 >instance Functor (Vec n) where
 >   fmap f Empty = Empty

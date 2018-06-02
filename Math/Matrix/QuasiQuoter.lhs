@@ -5,7 +5,20 @@
 >--   @[mat3x4|1 2 3 4;3 4 5 6;5 6 7 8|] :: (Vector3 :*: Vector4) Integer@
 >-- 
 >--   @[double2x2|3.4 5.6;6.7 8.8|] :: (Vector2 :*: Vector2) Double@
+>--
+>-- The semicolons can be replaced with new line character to produce
+>-- the matrix layout in the code, e.g.:
 >-- 
+>-- >  [mat4x4|1 1 1 1
+>-- >          2 2 2 2
+>-- >          3 3 3 3
+>-- >          4 4 4 4|]
+>--
+>-- The code supports matrices up to 4x4 matrices.
+>-- For larger matrices, you should provide a vector type,
+>-- and use e.g.
+>-- @mat7x3 = parseMat (const () :: Vec 7 (Vec 3 Integer) -> ())@
+>-- @dbl7x2 = parseDbl (const () :: Vec 13 (Vec 2 Integer) -> ())@
 >module Math.Matrix.QuasiQuoter where
 >import Control.Monad
 >import Math.Tools.Lexer
@@ -18,6 +31,7 @@
 >import Math.Matrix.Vector2
 >import Math.Matrix.Vector3
 >import Math.Matrix.Vector4
+>import Math.Matrix.Simple
 >import qualified Language.Haskell.TH as TH
 >import qualified Language.Haskell.TH.Quote as Quote
 >import Language.Haskell.TH.Syntax
@@ -107,7 +121,6 @@
 >parse2x1mat = parseMat (const () :: Vector2 (Vector1 Integer) -> ())
 >parse3x1mat = parseMat (const () :: Vector3 (Vector1 Integer) -> ())
 >parse4x1mat = parseMat (const () :: Vector4 (Vector1 Integer) -> ())
-
 
 >parse1x4dbl = parseDbl (const () :: Vector1 (Vector4 Double) -> ())
 >parse2x4dbl = parseDbl (const () :: Vector2 (Vector4 Double) -> ())

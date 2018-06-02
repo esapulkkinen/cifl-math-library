@@ -4,7 +4,7 @@
 >import Data.Complex
 >import Math.Number.DimensionalAnalysis
 >import Math.Tools.Complex
->import Math.Matrix.Stream
+>import Math.Number.Stream
 >import Math.Matrix.Vector3
 >import Math.Matrix.Vector4
 >import Math.Matrix.Interface
@@ -147,3 +147,14 @@ hamiltonian v m psi = negate (reduced_planck_constant^2)/(2*m)*laplace psi + v p
 >  => Quantity a -> Dual (Vector4 (Quantity a)) -> Dual (Vector4 (Quantity a))
 >klein_gordon m phi = (1 / (c*c)) %* (derivate4t_squared phi)
 >   %- ((∇·∇) phi) %+ (((m*m*c*c)/(hbar*hbar)) %* phi)
+
+>-- | <https://en.wikipedia.org/wiki/Schr%C3%B6dinger_equation>
+>schrodinger :: (RealFloat a, Show a, Closed a, Infinitesimal a)
+>            => Quantity (Complex a)
+>            -> Dual (Vector4 (Quantity (Complex a)))
+>            -> Dual (Vector4 (Quantity (Complex a)))
+>            -> Dual (Vector4 (Quantity (Complex a)))
+>schrodinger mu phi v = Covector $ \ rt ->
+>   ((0:+1) %* hbar) * derivate4t phi `bracket` rt
+>  + (1 / (2*mu)) * hbar * hbar * ((∇·∇) phi `bracket` rt)
+>  - v `bracket` rt * phi `bracket` rt

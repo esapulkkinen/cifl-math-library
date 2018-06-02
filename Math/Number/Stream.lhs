@@ -240,6 +240,9 @@ import qualified Model.Nondeterminism as Nondet
 >  mempty = pure mempty
 >  mappend = liftA2 mappend
 
+>instance (Semigroup a) => Semigroup (Stream a) where
+>   (<>) = liftA2 (<>)
+
 instance (Num a) => Matrix.VectorSpace ((Stream :*: Stream) a) where
   type Scalar ((Stream :*: Stream) a) = a
   vzero = Matrix $ constant (constant 0)
@@ -276,7 +279,7 @@ instance (Num a) => Matrix.VectorSpace ((Stream :*: Stream) a) where
 
 >instance Matrix.Transposable Stream Stream where
 >  transpose x = stream_matrix (stream_diagonal x)
->                              (fmap swap $ codiagonal x)
+>                              (fmap swap $ codiagonal_substreams $ codiagonal x)
 >    where swap (x,y) = (y,x)
 
 >instance (Num a) => Matrix.VectorSpace (Stream a) where
@@ -317,7 +320,7 @@ instance (Num a) => Matrix.VectorSpace ((Stream :*: Stream) a) where
 >            -> Stream b 
 >bind_matrix f h = do 
 >                     d <- stream_diagonal f
->                     (x,y) <- codiagonal f                       
+>                     (x,y) <- stream_codiagonal f                       
 >                     h d x y
 
 >-- | stream matrix with a specified diagonal, other elements are zero.
@@ -390,8 +393,7 @@ instance (Num a) => Matrix.VectorSpace ((Stream :*: Stream) a) where
 >   negate = liftA negate
 >   abs = liftA abs
 >   signum = liftA signum
->   x * y = --fmap sum $ codiagonals $ matrix (*) x y
->     fmap sum_seq $ codiagonals_seq $ matrix (*) x y
+>   x * y = fmap sum_seq $ codiagonals_seq $ matrix (*) x y
 >   fromInteger i = Pre (fromInteger i) zero
 
 >sum_seq :: (Num a) => Seq a -> a
@@ -654,15 +656,23 @@ instance (Num a) => Matrix.VectorSpace ((Stream :*: Stream) a) where
 
 >-- | Everything but a diagonal
 
->codiagonal :: (Stream :*: Stream) a -> Stream (Stream a, Stream a)
->codiagonal ~(Matrix ~(Pre ~(Pre _ x) yr)) = Pre (x,fmap shead yr)
->               (codiagonal $ Matrix $ fmap stail yr)
+>stream_codiagonal :: (Stream :*: Stream) a -> Stream (Stream a, Stream a)
+>stream_codiagonal ~(Matrix ~(Pre ~(Pre _ x) yr)) = Pre (x,fmap shead yr)
+>               (stream_codiagonal $ Matrix $ fmap stail yr)
 
->zero_codiagonal :: (Num a) => Stream (Stream a, Stream a)
->zero_codiagonal = constant (constant 0, constant 0)
+>instance CodiagonalMatrix Stream a where
+>   data Codiagonal Stream a = CodiagonalStream { codiagonal_substreams :: Stream (Stream a, Stream a) }
+>   type (Stream \\ a) = Stream a
+>   codiagonal = CodiagonalStream . stream_codiagonal
+>   diag |\| (CodiagonalStream codiag) = stream_matrix diag codiag
+>   down_project (CodiagonalStream (Pre (x,_) _)) = x
+>   right_project (CodiagonalStream (Pre (_,y) _)) = y
+
+>zero_codiagonal :: (Num a) => Codiagonal Stream a
+>zero_codiagonal = CodiagonalStream $ constant (constant 0, constant 0)
 
 >stream_diagonal_matrix :: (Num a) => Stream a -> (Stream :*: Stream) a
->stream_diagonal_matrix m = stream_matrix m zero_codiagonal
+>stream_diagonal_matrix m = m |\| zero_codiagonal
 
 >-- | stream_matrix creates matrix from a diagonal and a codiagonal
 
@@ -674,9 +684,10 @@ instance (Num a) => Matrix.VectorSpace ((Stream :*: Stream) a) where
 >prefix_stream_matrix (Pre x xr) (row,col) (Matrix m) = Matrix $ 
 >       Pre (Pre x row) $ liftA2 Pre col m
 
->pseudo_codiagonal :: (Stream :*: Stream) a -> Stream (Stream a, Stream a)
+>pseudo_codiagonal :: (Stream :*: Stream) a -> Codiagonal Stream a
 >pseudo_codiagonal (Matrix (Pre (Pre _ x)
->                       (Pre y yr))) = Pre (x,y) (pseudo_codiagonal $ Matrix yr)
+>                       (Pre y yr))) = CodiagonalStream $
+>                             Pre (x,y) (codiagonal_substreams $ pseudo_codiagonal $ Matrix yr)
 
 >pseudo_matrix :: Stream a -> Stream (Stream a, Stream a) -> (Stream :*: Stream) a
 >pseudo_matrix (Pre a ar) (Pre (x,y) yr) = Matrix $ Pre (Pre a x) (Pre y (cells $ pseudo_matrix ar yr))
@@ -685,7 +696,7 @@ instance (Num a) => Matrix.VectorSpace ((Stream :*: Stream) a) where
 >           -> ((Stream a,Stream a) -> (Stream b, Stream b))
 >           -> (Stream :*: Stream) a -> (Stream :*: Stream) b
 >map_matrix f g s = stream_matrix (fmap f y) (fmap g x)
->   where x = codiagonal s
+>   where x = stream_codiagonal s
 >         y = stream_diagonal s
 
 >map_diagonal :: (a -> a) -> (Stream :*: Stream) a -> (Stream :*: Stream) a
@@ -734,7 +745,7 @@ instance (Num a) => Matrix.VectorSpace ((Stream :*: Stream) a) where
 >               -> (a, (Stream a, Stream a), (Stream :*: Stream) a)
 >dematrix y = (d,zz,stream_matrix dr cr)
 >   where ~(Pre d  dr) = stream_diagonal y
->         ~(Pre zz cr) = codiagonal y
+>         ~(Pre zz cr) = stream_codiagonal y
 
                       
 codiagonals :: (Stream :*: Stream) a -> Stream [a]
@@ -852,7 +863,7 @@ the suffix computation on Seq is constant time rather than linear.
 >uncodiagonals :: Stream [a] -> (Stream :*: Stream) a
 >uncodiagonals (Pre [d] (Pre [x,y] re)) = stream_matrix diag codiag
 > where codiaghead = (x `Pre` fmap head re,y `Pre` fmap last re)
->       codiag = codiaghead `Pre` codiagonal next
+>       codiag = codiaghead `Pre` stream_codiagonal next
 >       diag = d `Pre` stream_diagonal next
 >       next = uncodiagonals $ fmap (\lst -> P.take (length lst - 2) (tail lst)) re
 
@@ -1363,9 +1374,10 @@ the suffix computation on Seq is constant time rather than linear.
 >-- | computes (a + b)^n for all n, using binomial coefficients.
 >--   Hint: use 'z' in one of the argument.
 >--   @pascal_triangle == Matrix $ polynomial_powers 1 z@
+>--   Note: stream_powers can sometimes be a more efficient alternative.
 >polynomial_powers :: (Integral a) => a -> a -> Stream a
 >polynomial_powers a b = fmap (sum . map mapper) coeffs
->   where mapper ~(k,~(a',b')) = k * (a ^ a') * (b ^ b')
+>   where mapper (k,(a',b')) = k * (a ^ a') * (b ^ b')
 >         coeffs = codiagonals $ liftA2 (,) pascal_triangle_diag
 >                              $ matrix (,) naturals naturals
 
@@ -1609,6 +1621,8 @@ the suffix computation on Seq is constant time rather than linear.
 >   negate x = cmap negate x
 >   abs x = cmap abs x
 >   signum x = cmap signum x
+>   fromInteger x = ComplexClosure (limit (constant (fromInteger x))
+>                                   :+ limit (constant (fromInteger 0)))
 
 
 >instance (Closed a) => Closed (Complex a) where

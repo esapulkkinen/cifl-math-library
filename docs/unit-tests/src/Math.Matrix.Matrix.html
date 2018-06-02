@@ -1,0 +1,272 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"><html xmlns="http://www.w3.org/1999/xhtml"><head><link rel="stylesheet" type="text/css" href="style.css" /><script type="text/javascript" src="highlight.js"></script></head><body><pre><span class="">&gt;{-# LANGUAGE Safe,ExistentialQuantification, TypeOperators, Rank2Types, Arrows, TypeFamilies, StandaloneDeriving, FlexibleContexts, FlexibleInstances #-}
+&gt;module Math.Matrix.Matrix where
+&gt;import Data.Complex
+&gt;import Data.Array (Array)
+&gt;import qualified Data.Array as Array
+&gt;import Control.Arrow
+&gt;import Control.Monad
+&gt;import Control.Monad.Zip
+&gt;import Data.Foldable
+&gt;import Data.Traversable
+&gt;import Math.Tools.Orthogonal
+&gt;import Math.Tools.Adjunction
+&gt;import Math.Tools.Visitor
+&gt;import Math.Tools.PrettyP hiding (empty)
+&gt;import Math.Tools.FixedPoint
+&gt;import Math.Tools.Arrow
+&gt;import Math.Tools.CoFunctor
+&gt;import Math.Tools.Isomorphism
+&gt;import qualified Control.Applicative as Applicative
+&gt;import Control.Applicative
+&gt;import Math.Tools.I
+&gt;import Math.Matrix.Interface
+&gt;import Math.Tools.CoMonad
+
+The :*: should be used when the number of dimensions of matrix is
+exactly 2.
+
+&gt;type family Transpose a
+&gt;type instance Transpose ((f :*: g) a) = (g :*: f) a
+
+See video by Bartosz Milewski (&quot;Category theory II 7.2: Comonads
+categorically and examples&quot;)
+
+&gt;conjIso :: (ConjugateSymmetric a) =&gt; a :==: a
+&gt;conjIso = conj &lt;-&gt; conj
+
+&gt;transposeIso :: (Transposable m n, Transposable n m) =&gt; (m :*: n) a :==: (n :*: m) a
+&gt;transposeIso = transpose &lt;-&gt; transpose
+
+&gt;vnegateIso :: (VectorSpace v) =&gt; v :==: v
+&gt;vnegateIso = vnegate &lt;-&gt; vnegate
+
+&gt;instance (Comonad f, Comonad g, Transposable g f, Transposable f g)
+&gt;  =&gt; Comonad (f :*: g) where
+&gt;   extract (Matrix m) = extract (extract m)
+&gt;   duplicate (Matrix m) = fmap Matrix
+&gt;                        $ transpose $ Matrix $ fmap duplicate $ cells
+&gt;                        $ transpose $ Matrix $ fmap duplicate m
+
+&gt;deriving instance (Eq a, Applicative f, Applicative g, Foldable f, Foldable g, Ord (f (g a))) =&gt; Ord ((f :*: g) a)
+
+&gt;instance (Eq a, Applicative f, Applicative g, Foldable f, Foldable g)
+&gt;    =&gt; Eq ((f :*: g) a) where
+&gt;  x == y = liftA2 (==) x y &lt;!&gt; (and,and)
+
+instance Comonad ((,) a :*: (-&gt;) a) where
+   extract (Matrix (x,f)) = f x
+   duplicate (Matrix (a,f)) = Matrix (a,\x -&gt; Matrix (x,f))
+
+
+&gt;(!$!) :: (Functor f, Functor g) =&gt; f (a -&gt; b) -&gt; g a -&gt; (f :*: g) b
+&gt;(!$!) = matrix ($)
+
+&gt;matrixBind :: (Functor f) =&gt; f a -&gt; (a -&gt; g b) -&gt; (f :*: g) b
+&gt;matrixBind x = Matrix . flip fmap x
+
+&gt;-- | this is same as Matrix.Interface.matrix
+&gt;matrix2d :: (Functor f, Functor g) =&gt; (a -&gt; b -&gt; c) -&gt; f a -&gt; g b -&gt; (f :*: g) c
+&gt;matrix2d f x y  = x `matrixBind` \a -&gt; f a &lt;$&gt; y
+
+&gt;matrix3d :: (Functor f, Functor g, Functor h)
+&gt; =&gt; (a -&gt; b -&gt; c -&gt; d)
+&gt; -&gt; f a -&gt; g b -&gt; h c
+&gt; -&gt; (f :*: (g :*: h)) d
+&gt;matrix3d f x y z = x `matrixBind` \a -&gt; matrix (f a) y z
+
+&gt;matrix4d :: (Functor f, Functor g, Functor h, Functor i)
+&gt; =&gt; (a -&gt; b -&gt; c -&gt; d -&gt; e)
+&gt; -&gt; f a -&gt; g b -&gt; h c -&gt; i d
+&gt; -&gt; (f :*: (g :*: (h :*: i))) e
+&gt;matrix4d f x y z t = x `matrixBind` \a -&gt; matrix3d (f a) y z t
+
+&gt;applyCol :: (Applicative f) =&gt; (f :*: (-&gt;) a) b -&gt; f a -&gt; f b
+&gt;applyCol (Matrix m) x = pure ($) &lt;*&gt; m &lt;*&gt; x
+
+&gt;applyRow :: ((-&gt;) a :*: g) b -&gt; a -&gt; g b
+&gt;applyRow (Matrix m) x = m x
+
+&gt;matrixA :: (ArrowApply arr,FunctorArrow f arr, FunctorArrow g arr) 
+&gt;        =&gt; arr (a,b) c -&gt; arr (f a, g b) ((f :*: g) c)
+&gt;matrixA f = proc z -&gt; do
+&gt;              res &lt;- outerA f -&lt; z
+&gt;              returnA -&lt; Matrix res
+
+&gt;-- | &lt;https://en.wikipedia.org/wiki/Modular_exponentiation&gt;
+&gt;-- @modular_exponentiation m b c == m^b  (mod c)@
+&gt;modular_exponentiation :: (Integral a, SquareMatrix f a, Functor f,
+&gt;                           InnerProductSpace (f a), a ~ Scalar (f a)) 
+&gt;                      =&gt; (f :*: f) a -&gt; Integer -&gt; a -&gt; (f :*: f) a
+&gt;modular_exponentiation m b c 
+&gt;   | b == 0         = identity
+&gt;   | b `mod` 2 == 1 = fmap (`mod` c) $ 
+&gt;                         m %*% modular_exponentiation m (pred b) c
+&gt;   | otherwise = fmap (`mod` c) $ d %*% d
+&gt;          where d = modular_exponentiation m (b `div` 2) c
+
+&gt;isSymmetric :: (Transposable m m, Applicative m, Foldable m, Eq a) =&gt; (m :*: m) a -&gt; Bool
+&gt;isSymmetric m = transpose m == m
+
+&gt;apply_vector :: (SquareMatrix m b) =&gt; m (a -&gt; b) -&gt; m a -&gt; m b
+&gt;apply_vector f x = diagonal (f !$! x)
+
+&gt;apply_columns :: (Functor n, Functor m, Applicative f)
+&gt;              =&gt; (m :*: f) (a -&gt; b) -&gt; (n :*: f) a -&gt; (m :*: n) (f b)
+&gt;apply_columns (Matrix a) (Matrix b) = matrix (&lt;*&gt;) a b
+
+&gt;matrixAssoc :: (Functor f) =&gt; (f :*: g :*: h) a -&gt; (f :*: (g :*: h)) a
+&gt;matrixAssoc (Matrix (Matrix x)) = Matrix (fmap Matrix x)
+
+&gt;matrixUnassoc :: (Functor f) =&gt; (f :*: (g :*: h)) a -&gt; (f :*: g :*: h) a
+&gt;matrixUnassoc (Matrix x) = Matrix $ Matrix $ fmap cells x
+
+&gt;matrixLeftId :: (I :*: f) a -&gt; f a
+&gt;matrixLeftId (Matrix (I x)) = x
+
+&gt;matrixRightId :: (Functor f) =&gt; (f :*: I) a -&gt; f a
+&gt;matrixRightId (Matrix f) = fmap unI f
+
+example use: m &lt;!&gt; (xcoord3,ycoord3)
+
+&gt;(&lt;!&gt;) :: (Functor f, Functor g) =&gt; (g :*: f) a -&gt; (g c -&gt; b,f a -&gt; c) -&gt; b
+&gt;m &lt;!&gt; (x,y) = MatrixFold (x,y) `visit` m
+
+&gt;(!*!) :: (Functor f, Functor g, Num a) =&gt; g a -&gt; f a -&gt; (g :*: f) a
+&gt;x !*! y = matrix (*) x y
+
+&gt;(&lt;!!&gt;) :: (Array.Ix i, Array.Ix j) =&gt; (Array i :*: Array j) a -&gt; (i,j) -&gt; a
+&gt;(&lt;!!&gt;) m (x,y) = m &lt;!&gt; ((Array.! x),(Array.! y))
+
+
+
+matrix_commutator :: (Applicative h, Transposable h h, InnerProductSpace (h a), Scalar (h a) ~ a) =&gt; (h :*: h) a -&gt; (h :*: h) a -&gt; (h :*: h) a
+
+&gt;matrix_commutator :: (Num a, Applicative h, Transposable h h,
+&gt;                      InnerProductSpace (h a), Scalar (h a) ~ a)
+&gt;                     =&gt; (h :*: h) a -&gt; (h :*: h) a -&gt; (h :*: h) a 
+&gt;matrix_commutator m n = liftA2 (-) (m %**% n) (n %**% m)
+
+&gt;matrix_anticommutator :: (Num a, Applicative h, Transposable h h,
+&gt;                      InnerProductSpace (h a), Scalar (h a) ~ a)
+&gt;                     =&gt; (h :*: h) a -&gt; (h :*: h) a -&gt; (h :*: h) a 
+&gt;matrix_anticommutator m n = liftA2 (+) (m %**% n) (n %**% m)
+
+&gt;normalized_anticommutator :: (Fractional a, Applicative h, Transposable h h,
+&gt;                      InnerProductSpace (h a), Scalar (h a) ~ a)
+&gt;                     =&gt; (h :*: h) a -&gt; (h :*: h) a -&gt; (h :*: h) a 
+&gt;normalized_anticommutator m n = liftA (/2) (matrix_anticommutator m n)
+
+&gt;commute :: (Fractional a, Applicative f, Transposable f f,
+&gt;            InnerProductSpace (f a), Scalar (f a) ~ a) =&gt;
+&gt;   Complex ((f :*: f) a) -&gt; Complex ((f :*: f) a) -&gt; (f :*: f) (Complex a)
+&gt;commute (x :+ y) (x' :+ y') = liftA2 (:+) (normalized_anticommutator x x')
+&gt;                                          (matrix_commutator y y')
+
+
+&gt;bind_diagonal :: (Monad m) =&gt; (m :*: m) a -&gt; (a -&gt; m b) -&gt; m b
+&gt;bind_diagonal (Matrix f) g = do { v &lt;- f ; r &lt;- v ; g r }
+
+&gt;pairMatrix :: (Functor f, Functor g) =&gt; f a -&gt; g b -&gt; (f :*: g) (a,b)
+&gt;pairMatrix = matrix (,)
+
+&gt;(!+!) :: (Functor f, Functor g, Num a) =&gt; g a -&gt; f a -&gt; (g :*: f) a
+&gt;x !+! y = matrix (+) x y
+
+&gt;cofunctor_inverse_image :: (Functor f, CoFunctor g) =&gt; (a -&gt; b) -&gt; (g :*: f) b -&gt; (g :*: f) a
+&gt;cofunctor_inverse_image f (Matrix x) = Matrix $ inverse_image (fmap f) x
+
+&gt;instance (CoFunctor f, Functor g) =&gt; CoFunctor (g :*: f) where
+&gt;  inverse_image f (Matrix x) = Matrix $ fmap (inverse_image f) x
+
+
+&gt;cofunctor_map :: (CoFunctor f, CoFunctor g) =&gt; (a -&gt; b) -&gt; (g :*: f) a -&gt; (g :*: f) b
+&gt;cofunctor_map f (Matrix x) = Matrix (inverse_image (inverse_image f) x)
+
+&gt;instance (Functor f, Functor g) =&gt; Functor (g :*: f) where
+&gt;   fmap f (Matrix x) = Matrix $ fmap (fmap f) x
+
+&gt;instance (Foldable f, Foldable g) =&gt; Foldable (f :*: g) where
+&gt;   foldMap f (Matrix m) = foldMap (foldMap f) m
+
+&gt;instance (Traversable f, Traversable g) =&gt; Traversable (f :*: g) where
+&gt;   traverse f (Matrix m) = Matrix &lt;$&gt; traverse (traverse f) m
+
+&gt;instance (Applicative f, Applicative g) =&gt; Applicative (f :*: g) where
+&gt;   pure = Matrix . pure . pure
+&gt;   (Matrix fs) &lt;*&gt; (Matrix xs) = Matrix $ pure (&lt;*&gt;) &lt;*&gt; fs &lt;*&gt; xs
+
+
+&gt;instance (Alternative f, Alternative g) =&gt; Alternative (g :*: f) where
+&gt;   empty = Matrix Applicative.empty
+&gt;   (Matrix a) &lt;|&gt; (Matrix b) = Matrix $ pure (&lt;|&gt;) &lt;*&gt; a &lt;*&gt; b
+
+&gt;instance (Monad f, Monad g, Indexable f) =&gt; Monad ((:*:) f g) where
+&gt;   return x = Matrix $ return (return x)
+&gt;   (Matrix v) &gt;&gt;= f = Matrix $ liftA2 (\d x -&gt; x &gt;&gt;= (d . cells . f)) diagonal_projections v
+
+&gt;in_transpose :: (Monad g, Indexable f) =&gt; (f :*: g) a -&gt; (a -&gt; (g :*: f) b) -&gt; (f :*: g) b
+&gt;in_transpose (Matrix v) f = Matrix $ liftA2 (\d x -&gt; x &gt;&gt;= (fmap d . cells . f)) diagonal_projections v
+
+&gt;instance (MonadZip g, MonadZip f, Indexable g) =&gt; MonadZip (g :*: f) where
+&gt;   mzipWith f (Matrix a) (Matrix b) = Matrix $ mzipWith (mzipWith f) a b
+
+&gt;instance (MonadPlus g, Indexable g, MonadPlus f) =&gt; MonadPlus (g :*: f) where
+&gt;   mzero = Matrix mzero
+&gt;   mplus (Matrix f) (Matrix g) = Matrix $ liftA2 mplus f g
+
+&gt;instance (Semigroup a, Applicative f, Applicative g) =&gt; Semigroup ((f :*: g) a) where
+&gt;   (&lt;&gt;) = liftA2 (&lt;&gt;)
+
+&gt;instance (Monoid a, Applicative f, Applicative g) =&gt; Monoid ((f :*: g) a) where
+&gt;   mempty = pure mempty
+&gt;   mappend = liftA2 mappend
+
+&gt;instance (Array.Ix i) =&gt; PpShowF (Array i) where
+&gt;   ppf ary = ppf [ary Array.! i | i &lt;- Array.range (Array.bounds ary) ]
+
+&gt;instance (Array.Ix i) =&gt; PpShowVerticalF (Array i) where
+&gt;   ppf_vertical ary = vcat [pp (ary Array.! i) | i &lt;- Array.range (Array.bounds ary) ]
+
+&gt;instance (Functor f, Functor g) =&gt; Builder ((g :*: f) a) where
+&gt;   data Unfold ((g :*: f) a) b = forall c d. MatrixUnfold (c -&gt; d -&gt; a)
+&gt;                                                          (b -&gt; g c)
+&gt;                                                          (b -&gt; f d)
+&gt;   build (MatrixUnfold m g f) x = matrix m (g x) (f x)
+
+&gt;instance (Functor g) =&gt; Visitor ((g :*: f) a) where
+&gt;   data Fold ((g :*: f) a) b = forall c. MatrixFold (g c -&gt; b,f a -&gt; c)
+&gt;   visit (MatrixFold (gt,ft)) (Matrix x) = gt (fmap ft x)
+
+
+instance (Functor f, Functor g) =&gt; Builder (Matrix g f a) b where
+   type Unfold (Matrix g f a) b = (c -&gt; d -&gt; a,Unfold (g c) b,Unfold (f d) b)
+   build (CUnfold h z1 z2) v = Matrix (outer h (build z1 v) (build z2 v))
+
+instance (Functor g, Functor f, Builder a) =&gt; Builder (Matrix g f a) where
+   data Unfold (Matrix g f a) b = MatrixUnfold (b -&gt; g b) (b -&gt; f b) (Unfold a b)
+   build (MatrixUnfold gt ft z) x = Matrix (fmap (fmap (build z). ft) (gt x))
+
+&gt;fmap_split :: (SplittableVector m n, AppendableVector m' n') =&gt;
+&gt;   (m a -&gt; m' a') -&gt; (n a -&gt; n' a') -&gt; (m :+: n) a -&gt; (m' :+: n') a'
+&gt;fmap_split f g x = let (a,b) = vsplit x in (f a |&gt; g b)
+
+&gt;split_matrix :: (SplittableVector m n, SplittableVector f f', Functor (f :+: f'), Functor (m :+: n))
+&gt;             =&gt; ((f :+: f') :*: (m :+: n)) a -&gt; 
+&gt;                           (((f :*: m) a, (f :*: n) a),
+&gt;                           ((f' :*: m) a, (f' :*: n) a))
+&gt;split_matrix m = ((Matrix $ fmap fst a, Matrix $ fmap snd a),
+&gt;                  (Matrix $ fmap fst b, Matrix $ fmap snd b))
+&gt;   where (a,b) = m &lt;!&gt; (vsplit,vsplit)
+
+
+&gt;join_matrix :: (AppendableVector m' n', AppendableVector m n) =&gt;
+&gt;    (m :*: m') a -&gt; (m :*: n') a -&gt; (n :*: m') a -&gt; (n :*: n') a -&gt; ((m :+: n) :*: (m' :+: n')) a
+&gt;join_matrix (Matrix a) (Matrix b) (Matrix c) (Matrix d) = Matrix $ (liftA2 (|&gt;) a b) |&gt; (liftA2 (|&gt;) c d)
+
+&gt;matrix_iso :: (f :*: g) a :==: f (g a)
+&gt;matrix_iso = cells &lt;-&gt; Matrix
+
+
+codiagonal m = codiagonal a |&gt;
+   where ((a,b),(c,d)) = split_matrix m
+</span></pre></body></html>

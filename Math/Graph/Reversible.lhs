@@ -111,6 +111,9 @@ graph_representation (Endo f) (Endo g) = Endo $ f . g
 >                                  e2 = action_endomorphism g2 m `appEndo` z
 >                               in if e1 == e2 then e1 else error "intersectionG: ambiguous"
 
+>instance (Ord a, Show a) => Semigroup (Graph m a) where
+>   (<>) = unionG
+
 >instance (Ord a, Show a) => Monoid (Graph m a) where
 >   mempty = emptyG
 >   mappend = unionG
