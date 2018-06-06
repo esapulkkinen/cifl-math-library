@@ -1,6 +1,53 @@
+>{-# LANGUAGE GeneralizedNewtypeDeriving, TypeFamilies, DataKinds, TypeOperators, TypeInType #-}
+>{-# LANGUAGE ExistentialQuantification, GADTs, PolyKinds #-}
 >module Math.Number.Units where
+>import Data.Ratio
 >import Math.Matrix.Interface
 >import Math.Number.DimensionalAnalysis
+>import qualified GHC.TypeLits as TL
+>import qualified GHC.TypeNats as TN
+>import Data.Typeable
+>import Data.Kind
+
+>data Rat = Rat TN.Nat TN.Nat
+
+>type OneRat  = 'Rat 1 1
+>type ZeroRat = 'Rat 0 1
+
+data RatioRep (a :: 'Rat x y) = RatioRep
+
+data Rep :: Dim RatioRep -> * where
+
+>-- In dimensional analysis implementation of
+>-- "Barton&Nackman: Scientific and Engineering C++", the dimensions
+>-- are checked in compile time. I think that's a mistake since it requires
+>-- too much from the compiler (computation of rational arithmetic in types).
+>-- Here's an approach (incomplete) that attempts to do that in Haskell's
+>-- promoted types.
+
+data Dim p = forall la lb wa wb ta tb ca cb tea teb lua lub sua sub. Dim {
+   length_pow :: p ('Rat la lb),
+   weight_pow :: p ('Rat wa wb),
+   time_pow :: p ('Rat ta tb),
+   current_pow :: p ('Rat ca cb),
+   temperature_pow :: p ('Rat tea teb),
+   luminosity_pow  :: p ('Rat lua lub),
+   substance_pow :: p ('Rat sua sub) }
+
+newtype Length = Length (Rep ('Dim OneRat ZeroRat ZeroRat ZeroRat ZeroRat ZeroRat ZeroRat))
+
+newtype Length = Length (Rep ('Dim 1 1 0 1 0 1 0 1 0 1 0 1 0 1))
+ deriving (Eq,Ord,Num,Show)
+
+>newtype Length = Length (Quantity Double) deriving (Eq,Ord,Num,Show)
+>newtype Weight = Weight (Quantity Double) deriving (Eq,Ord,Num,Show)
+>newtype Speed  = Speed (Quantity Double) deriving (Eq,Ord,Num,Show)
+>newtype Force  = Force (Quantity Double) deriving (Eq,Ord,Num,Show)
+>newtype Time = Second (Quantity Double) deriving (Eq,Ord,Num,Show)
+>newtype Current = Current (Quantity Double) deriving (Eq,Ord,Num,Show)
+>newtype Temperature = Temperature (Quantity Double) deriving (Eq,Ord,Num,Show)
+>newtype Luminosity = Luminosity (Quantity Double) deriving (Eq,Ord,Num,Show)
+>newtype Substance = Substance (Quantity Double) deriving (Eq,Ord,Num,Show)
 
 >-- | <https://en.wikipedia.org/wiki/United_States_customary_units>
 >point = (127/360) %* milli meter

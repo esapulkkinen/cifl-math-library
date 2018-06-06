@@ -4,11 +4,15 @@
 >--   and <https://en.wikipedia.org/wiki/International_System_of_Units>.
 >-- 
 >--  In reality this should be according to the International system of units, but
->--  I have not used the official standard documents when writing this code. However it is recognized
->--  that any major deviation from the standard would be considered a bug in this code.
+>--  I have not used the official standard documents when writing this code.
+>--  However it is recognized that any major deviation from
+>--  the standard would be considered a bug in this code.
 >--
 >-- For official references, see e.g. "ISO80000-1:2009:Quantities and Units" and
 >--           "NIST Special Publication 330, 2008: The International system of units".
+>--
+>-- For c++ approach to dimensional analysis, see
+>-- "Barton&Nackman: Scientific and Engineering C++".
 >-- 
 >-- Example uses:
 >-- 
@@ -115,6 +119,8 @@
 >   | isDimensionless (value_dimension x) = return $ 2.0 ** value_amount x
 >   | otherwise = invalidDimensionsM "toAlternatives" (value_dimension x) dimensionless x x
 
+>-- | the Unit class should be defined by any newtype based
+>-- types that should interact well with the dimensional analysis mechanism.
 >class (VectorSpace u) => Unit u where
 >   amount :: u -> Scalar u
 >   fromAmount :: Scalar u -> u
@@ -123,6 +129,27 @@
 
 >quantity :: (Unit u) => u -> Quantity (Scalar u)
 >quantity x = amount x @@ dimension x
+
+>(@@) :: r -> Dimension -> Quantity r
+>x @@ y = x `As` y
+
+>instance Unit Float where
+>   amount x = x
+>   unitOf _ = ""
+>   dimension _ = dimensionless
+>   fromAmount x = x
+
+>instance Unit Double where
+>   amount x = x
+>   unitOf _ = ""
+>   dimension _ = dimensionless
+>   fromAmount x = x
+
+>instance (Num r, VectorSpace r) => Unit (Quantity r) where
+>  amount (x `As` _) = x
+>  unitOf (_ `As` r) = show r
+>  dimension (_ `As` r) = r
+>  fromAmount x = x `As` dimensionless
 
 >convert :: (Scalar u ~ Scalar v, Unit v, Unit u, Show v, Show u, Monad m, Fractional (Scalar u))
 >        => v -> u -> m (Scalar u)
@@ -363,11 +390,7 @@
 >instance (Show r, Real r) => Real (Quantity r) where
 >   toRational (x `As` r) = toRational x
 
->instance (Num r, VectorSpace r) => Unit (Quantity r) where
->  amount (x `As` _) = x
->  unitOf (_ `As` r) = show r
->  dimension (_ `As` r) = r
->  fromAmount x = x `As` dimensionless
+
 
 >-- | This read instance handles input examples such
 >--   as "10 m/(s*s)", "38.4 F", "12 As", "13 kgm/(s*s)",
@@ -417,8 +440,6 @@
 >   | d == kelvin_dimension = pp (show_at_precision (x - 273.15) 10) <+> pp "⁰C"
 >   | otherwise = pp (show_at_precision x 10) <+> pp d
 
->(@@) :: r -> Dimension -> Quantity r
->x @@ y = x `As` y
 
 >invalidDimensions :: (Show b, Show c) => String -> Dimension -> Dimension -> b -> c -> a
 >invalidDimensions op r r' a b= throw $ InvalidDimensionsException r r' $
@@ -950,7 +971,9 @@ order in the table is significant
 
 >-- | <https://en.wikipedia.org/wiki/Metric_prefix>
 >siPrefixes :: (Floating a) => [(String,Quantity a -> Quantity a)]
->siPrefixes = [("E", exa),
+>siPrefixes = [("Y", yotta),
+>              ("Z", zetta),
+>              ("E", exa),
 >              ("P", peta),
 >              ("T", tera),
 >              ("G", giga),
@@ -986,3 +1009,4 @@ order in the table is significant
 >    ("℃", fromCelsius 0),
 >    ("℉", fromFarenheit 0)
 >   ]
+
