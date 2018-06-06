@@ -1,4 +1,4 @@
->{-# LANGUAGE GeneralizedNewtypeDeriving, TypeFamilies, DataKinds, TypeOperators, TypeInType #-}
+>{-# LANGUAGE CPP,GeneralizedNewtypeDeriving, TypeFamilies, DataKinds, TypeOperators, TypeInType #-}
 >{-# LANGUAGE ExistentialQuantification, GADTs, PolyKinds #-}
 >module Math.Number.Units where
 >import Data.Ratio
@@ -13,6 +13,8 @@
 
 >type OneRat  = 'Rat 1 1
 >type ZeroRat = 'Rat 0 1
+
+#if __GLASGOW_HASKELL__ >= 800
 
 data RatioRep (a :: 'Rat x y) = RatioRep
 
@@ -39,15 +41,27 @@ newtype Length = Length (Rep ('Dim OneRat ZeroRat ZeroRat ZeroRat ZeroRat ZeroRa
 newtype Length = Length (Rep ('Dim 1 1 0 1 0 1 0 1 0 1 0 1 0 1))
  deriving (Eq,Ord,Num,Show)
 
->newtype Length = Length (Quantity Double) deriving (Eq,Ord,Num,Show)
->newtype Weight = Weight (Quantity Double) deriving (Eq,Ord,Num,Show)
->newtype Speed  = Speed (Quantity Double) deriving (Eq,Ord,Num,Show)
->newtype Force  = Force (Quantity Double) deriving (Eq,Ord,Num,Show)
->newtype Time = Second (Quantity Double) deriving (Eq,Ord,Num,Show)
->newtype Current = Current (Quantity Double) deriving (Eq,Ord,Num,Show)
->newtype Temperature = Temperature (Quantity Double) deriving (Eq,Ord,Num,Show)
->newtype Luminosity = Luminosity (Quantity Double) deriving (Eq,Ord,Num,Show)
->newtype Substance = Substance (Quantity Double) deriving (Eq,Ord,Num,Show)
+
+>newtype Length = Length (Quantity Double)
+> deriving (Eq,Ord,Num,Show, Unit via Quantity Double)
+>newtype Weight = Weight (Quantity Double)
+> deriving (Eq,Ord,Num,Show, Unit via Quantity Double)
+>newtype Speed  = Speed (Quantity Double)
+> deriving (Eq,Ord,Num,Show, Unit via Quantity Double)
+>newtype Force  = Force (Quantity Double)
+> deriving (Eq,Ord,Num,Show, Unit via Quantity Double)
+>newtype Time = Second (Quantity Double)
+> deriving (Eq,Ord,Num,Show, Unit via Quantity Double)
+>newtype Current = Current (Quantity Double)
+> deriving (Eq,Ord,Num,Show, Unit via Quantity Double)
+>newtype Temperature = Temperature (Quantity Double)
+> deriving (Eq,Ord,Num,Show, Unit via Quantity Double)
+>newtype Luminosity = Luminosity (Quantity Double)
+> deriving (Eq,Ord,Num,Show, Unit via Quantity Double)
+>newtype Substance = Substance (Quantity Double)
+> deriving (Eq,Ord,Num,Show, Unit via Quantity Double)
+
+#endif
 
 >-- | <https://en.wikipedia.org/wiki/United_States_customary_units>
 >point = (127/360) %* milli meter
