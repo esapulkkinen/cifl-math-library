@@ -4,6 +4,7 @@
 >{-# LANGUAGE StandaloneDeriving #-}
 >module Math.Matrix.Vector3 where
 >import Control.Applicative
+>import Control.Monad
 >import Data.Complex
 >import Data.Sequence (Seq)
 >import qualified Data.Sequence as Seq

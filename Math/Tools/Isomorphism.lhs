@@ -24,16 +24,21 @@
 
 >data a :==: b = Iso { epimorphism :: a -> b,
 >                     section     :: b -> a }
->              
->{-# RULES
->    "section-def"     forall p. epimorphism p . section p = id
->  #-}
->{-# RULES
->    "retraction-def"  forall p. section p . epimorphism p = id
->  #-}
 
 >type Iso a b = a :==: b
 >type Aut a = a :==: a
+
+>-- | <https://en.wikipedia.org/Galois_Connection>
+>-- Note that since isomorphisms do not need to be equalities,
+>-- this function need not produce identity.
+>leftIdempotent :: a :==: b -> a -> a
+>leftIdempotent i = section i . epimorphism i
+
+>-- | <https://en.wikipedia.org/Galois_Connection>
+>-- Note that since isomorphisms do not need to be equalities,
+>-- this function need not produce an identity.
+>rightIdempotent :: a :==: b -> b -> b
+>rightIdempotent i = epimorphism i . section i
 
 >inverseEndo :: Endo a -> Endo a -> Aut a
 >inverseEndo (Endo f) (Endo g) = f <-> g
@@ -392,4 +397,26 @@ foldListIso f g h = let self = listIso >>> ((iso f <**> self) <||> iso g) >>> is
 >maybeIso :: (BiArrow arr) => arr (Maybe a) (Either a ()) 
 >maybeIso = (maybe (Right ()) Left) <-> (either Just (const Nothing))
 
+>data IsomorphismA arr a b = IsoA { epimorphismA :: arr a b,
+>                                   sectionA :: arr b a }
 
+instance (MonoidalCategory arr) => MonoidalCategory (IsomorphismA arr) where
+   type Prod (IsomorphismA arr) a b = Prod arr a b
+   type MUnit (IsomorphismA arr) = MUnit arr
+   (IsoA f g) -*- (IsoA f' g') = IsoA (f -*- f') (g -*- g')
+   assoc = IsoA assoc deassoc
+   deassoc = IsoA deassoc assoc
+   leftunitor = IsoA leftunitor unleftunitor
+   unleftunitor = IsoA unleftunitor leftunitor
+   rightunitor = IsoA rightunitor unrightunitor
+   unrightunitor = IsoA unrightunitor rightunitor
+
+>instance (Category arr) => Category (IsomorphismA arr) where
+>   id = IsoA id id
+>   (IsoA f g) . (IsoA f' g') = IsoA (f . f') (g' . g)
+
+>instance (Arrow arr) => BiArrow (IsomorphismA arr) where
+>   f <-> g = IsoA (arr f) (arr g)
+
+>instance (Category arr) => Groupoid (IsomorphismA arr) where
+>   invertA (IsoA f g) = IsoA g f

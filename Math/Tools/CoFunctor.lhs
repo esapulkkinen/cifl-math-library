@@ -95,14 +95,6 @@ direct_image(f) -| inverse_image(f) -| universal(f)
 >terminal_part :: (Propositional p) => p () -> p ()
 >terminal_part p = runProposition p ()
 
->{-# RULES
->    "cofunctor/assoc" forall f g. inverse_image (g . f)
->                            = inverse_image f . inverse_image g
->  #-}
-
-act :: (CoFunctor p) => (a -> b) -> (b -> c) -> p c -> p a
-act x y = inverse_image x . inverse_image y
-
 >propositional_implication :: (PropositionalLogic p) => p a -> p a -> p a
 >propositional_implication f g = (invert f) -|- g
 

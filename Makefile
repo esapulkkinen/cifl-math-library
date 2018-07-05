@@ -1,6 +1,8 @@
+#!/usr/bin/make
+SHELL=/bin/sh
+CABAL_CONFIG ?= ${HOME}/.cabal-8.4.2/config
+CABALOPTS ?= --config-file=$(CABAL_CONFIG)
 
-CABAL_CONFIG=${HOME}/.cabal-8.4.2/config
-CABALOPTS=--config-file=${CABAL_CONFIG}
 CABAL=cabal
 
 unit : configure build test
@@ -19,14 +21,18 @@ configure :
 
 
 build : 
-	$(CABAL) $(CABALOPTS) build -j4 --ghc-options="+RTS -M768M -c -qa -N -RTS"
+	$(CABAL) $(CABALOPTS) build -j4 
+
+build-llvm:
+	$(CABAL) $(CABALOPTS) build -j4 --ghc-options="-fllvm"
 
 interpreter :
 	cabal $(CABALOPTS) configure -flibrary-only
-	cabal $(CABALOPTS) repl
+	cabal $(CABALOPTS) repl --ghc-option="-fobject-code"
 
 test : 
 	cabal $(CABALOPTS) test -j4 --show-details=failures --ghc-options="+RTS -M786M -RTS"
+	@grep -h Counts dist/test/*.log
 
 dependencegraph :
 	mkdir -p dist/doc/html/cifl-math-library
@@ -41,6 +47,8 @@ document :
 
 publish_document : dependencegraph document hscolor
 	cp -r dist/doc/html/cifl-math-library/* docs/
+	sed -i 's+COPYRIGHT">COPYRIGHT+COPYRIGHT" rel="license">COPYRIGHT+g' docs/index.html
+	sed -i 's+<head><meta+<head><link href="https://github.com/esapulkkinen/cifl-math-library/blob/master/COPYRIGHT" rel="license"/><link href="https://github.com/esapulkkinen/cifl-math-library/blob/master/AUTHORS" rel="author"/><meta+g' docs/*.html
 
 hscolor :
 	cabal $(CABALOPTS) hscolour --all 

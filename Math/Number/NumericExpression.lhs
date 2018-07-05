@@ -598,15 +598,6 @@ instance Expression VectorSpaceExpr VectorCtx a where
 >                                  varFold 
 >                                  fromInteger
 
-isoVarExprFold ctx ctx' (Iso f g) = VarFold ctx (\n v -> f (Var n v))
-                                           (\v -> f (Val v))
-
-isoNumExprFold ctx z@(Iso f g) variso = NumExprFold (h Plus) (h Product) (h Subtract)
-                                           (f . Negate) (f . Abs) (f . Signum)
-                                          (isoVarExprFold ctx (variso >>> )
-                                          (\i -> f (FromInteger i))
-    where h exp = \x y -> f (exp x y)
-
 >fracExprFold :: (Fractional b) =>
 >                Fold (NumExpr a) b -> Fold (FracExpr a) b
 >fracExprFold numFold = FracExprFold numFold (/) recip fromRational

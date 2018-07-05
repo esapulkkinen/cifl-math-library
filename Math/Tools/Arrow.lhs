@@ -13,10 +13,6 @@
 >import Prelude hiding (id,(.))
 >import Math.Tools.PrettyP (Doc,render,vcat,pp)
 
->{-# RULES
->    "category-assoc"    forall f g h. (f . g) . h = f . (g . h)
->  #-}
-
 >class (Category ar, Category ar') => ArrowTransformation ar ar' where
 >      mapA :: ar a b -> ar' a b
 
@@ -89,7 +85,6 @@ https://en.wikipedia.org/wiki/Braided_monoidal_category
 >   counitA :: arr  (f (g b)) b
 >   unitA = ladA id
 >   counitA = radA id
-
 
 >outerA :: (FunctorArrow f arr, FunctorArrow g arr, ArrowApply arr)
 >   => arr (a,b) c -> arr (f a,g b) (f (g c))

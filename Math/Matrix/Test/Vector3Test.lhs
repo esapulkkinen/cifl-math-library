@@ -33,11 +33,6 @@ https://en.wikipedia.org/wiki/Eigenvalues_and_eigenvectors
 >checkEigenValueTrace :: (Vector3 :*: Vector3) Float -> Test
 >checkEigenValueTrace a = trace a ~=? sum_coordinates (eigenvalues a)
 
-prop_eigenvalue3 = forAll arbitrary $ \ (m :: (Vector3 :*: Vector3) Float) ->
-      m <<*> v m === e m %* v m
-  where v m = eigenvectors m <!> (xcoord3,id)
-        e m = xcoord3 (eigenvalues m)
-
 >testEigenValue3_identity = checkEigenValue identity (Vector3 1 2 3) 1
 >testEigenValue3_trace_identity    = checkEigenValueTrace identity
 

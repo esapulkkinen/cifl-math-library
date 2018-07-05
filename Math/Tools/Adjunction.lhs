@@ -27,19 +27,6 @@ import Control.Monad.Reader hiding (fix) -- instances of Functor ((->) a) and Mo
 >embed_adjunction :: (Adjunction f g, Adjunction g f) => (f a -> f b) -> a -> b
 >embed_adjunction f x = rightAdjunct f (unit x)
 
->{-# RULES
->     "lad/natural"  forall b f a .
->                    leftAdjunct ( b . f . fmap a ) = fmap b . leftAdjunct f . a
->  #-}
->{-# RULES 
->     "fmap/ladjoint" forall a .
->                    leftAdjunct ( a . counit ) = fmap a
->  #-}
->{-# RULES
->     "fmap/radjoint" forall a .
->                    rightAdjunct ( unit . a ) = fmap a
->  #-}
-
 >-- | zipR and cozipL are from Edward Kmett's Adjunction package
 >-- <http://hackage.haskell.org/packages/archive/adjunctions/0.9.0.4/doc/html/src/Data-Functor-Adjunction.html>
 

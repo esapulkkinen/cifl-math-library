@@ -8,6 +8,7 @@
 >import Control.Monad.Zip
 >import Data.Foldable
 >import Data.Traversable
+>import Data.Semigroup
 >import Math.Tools.Orthogonal
 >import Math.Tools.Adjunction
 >import Math.Tools.Visitor

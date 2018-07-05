@@ -5,6 +5,7 @@
 >import qualified Math.Matrix.Test.MatrixTests
 >import qualified Math.Number.Test.NumberTests
 >main = do counts <- runTestTT tests
+>          putStrLn (show counts)
 >          if failures counts == 0 && errors counts == 0 then
 >            exitSuccess
 >           else

@@ -1,4 +1,4 @@
->{-# Language Trustworthy,UndecidableInstances, ExistentialQuantification, FlexibleInstances, MultiParamTypeClasses, MagicHash, TypeOperators, FlexibleContexts, Arrows, TypeFamilies, OverloadedLists #-}
+>{-# Language Trustworthy,UndecidableInstances, ExistentialQuantification, FlexibleInstances, MultiParamTypeClasses, MagicHash, TypeOperators, FlexibleContexts, Arrows, TypeFamilies #-}
 >-- |
 >-- This module implements lazy infinite streams,
 >-- stream generating functions and lots of operations on the lazy streams.
@@ -191,9 +191,8 @@ import qualified Model.Nondeterminism as Nondet
 >    Matrix.NormedSpace (m a),
 >    Matrix.LinearTransform m m a)
 >   => (m :*: m) a -> m a -> Stream (m a)
->eigenvector_by_power_iteration a b = iterate_stream (\b' -> let m = a Matrix.<<*> b' in (1 / Matrix.norm m) Matrix.%* m) b
-
-
+>eigenvector_by_power_iteration a b = iterate_stream f b
+>   where f b' | m <- a Matrix.<<*> b' = (1 / Matrix.norm m) Matrix.%* m
 
 >stream_distance_count :: (Eq a) => Stream a -> Stream a -> Integer
 >stream_distance_count (Pre x xr) (Pre y yr) 
@@ -809,8 +808,28 @@ the suffix computation on Seq is constant time rather than linear.
 >   transform_commutator :: a -> a -> b,
 >   transform_symmetry :: a -> b -> a -> b }
 
+>-- | This operation allows customizing the behaviour of the codiagonals transformation.
+>codiagonalsWith :: Transform2D a b -> (Stream :*: Stream) a -> Stream b
+>codiagonalsWith z@(Transform2D diag pair thr) q = Pre (diag d) $ Pre (pair x y) $
+>             liftA3 thr xr (codiagonalsWith z m) yr 
+>    where (d,(Pre x xr, Pre y yr),m) = dematrix q
+
 >element2D :: a -> a -> Transform2D () a
 >element2D x y = Transform2D (\ () -> x) (\ () () -> y) (\ () m () -> m)
+
+>functor2D :: (TArrow.FunctorArrow f arr, C.Category arr) =>
+>   (arr a a -> arr a a -> arr (f a) (f a))
+>   -> Transform2D (arr a a) (arr (f a) (f a))
+>functor2D g = Transform2D TArrow.amap g (\x y z -> TArrow.amap x <<< y <<< TArrow.amap z)
+
+>category2D :: (C.Category cat) => Transform2D (cat a a) (cat a a)
+>category2D = Transform2D id (<<<) (\x y z -> x <<< y <<< z)
+
+>arrow2D :: (TArrow.BiArrow arr, Arrow arr) => Transform2D (a -> a) (arr a a)
+>arrow2D = Transform2D arr (TArrow.<->) (\f x g -> arr f <<< x <<< arr g)
+
+>median2D :: (MedianAlgebra a) => Transform2D a a
+>median2D = Transform2D id min med
 
 >commutatorSum2D :: (LieAlgebra a) => Transform2D a a
 >commutatorSum2D = Transform2D vnegate (%<>%) (\x y z -> x %+ y %+ z)
@@ -823,11 +842,6 @@ the suffix computation on Seq is constant time rather than linear.
 >  = Transform2D (d . d')
 >                (\a b -> c (c' a b) (c' b a))
 >                (\a m b -> s (s' a (d' a) b) m (s' a (d' b) b))
-
->codiagonalsWith :: Transform2D a b -> (Stream :*: Stream) a -> Stream b
->codiagonalsWith z@(Transform2D diag pair thr) q = Pre (diag d) $ Pre (pair x y) $
->             liftA3 thr xr (codiagonalsWith z m) yr 
->    where (d,(Pre x xr, Pre y yr),m) = dematrix q
 
 >monoid2D :: (Monoid a) => (a -> a -> a -> a) -> Transform2D a a
 >monoid2D = Transform2D (const mempty) mappend
@@ -1574,6 +1588,15 @@ the suffix computation on Seq is constant time rather than linear.
 >    dx <- cells stream_epsilon
 >    return $ (f (x + dx) - f x) / dx
 
+>stream_integral :: (Limiting b, Fractional b, Enum b) => (Stream b -> Stream b) -> (Stream b, Stream b) -> Closure (Stream b)
+>stream_integral f (xa,ya) = limit $ do
+>   eps <- cells stream_epsilon
+>   return $ (eps *) $ sum $ fmap f [xa,xa+eps..ya]
+
+>-- | <https://en.wikipedia.org/wiki/Pi>
+
+>stream_pi :: (Limiting a, Fractional a, Enum a, Eq a, Floating a) => Closure (Stream a)
+>stream_pi = stream_integral (\x -> 1 / sqrt (1 - x*x)) (negate 1,1)
 
 >complex_pi :: (RealFloat a) => Stream (Complex a)
 >complex_pi = log (fromNum $ negate 1) / fromNum (0 :+ 1)

@@ -607,15 +607,6 @@ instance Expression VectorSpaceExpr VectorCtx a where
 <a name="line-517"></a><span class='hs-varop'>&gt;</span>                                  <span class='hs-varid'>varFold</span> 
 <a name="line-518"></a><span class='hs-varop'>&gt;</span>                                  <span class='hs-varid'>fromInteger</span>
 </pre>
-isoVarExprFold ctx ctx' (Iso f g) = VarFold ctx (\n v -> f (Var n v))
-                                           (\v -> f (Val v))
-
-isoNumExprFold ctx z@(Iso f g) variso = NumExprFold (h Plus) (h Product) (h Subtract)
-                                           (f . Negate) (f . Abs) (f . Signum)
-                                          (isoVarExprFold ctx (variso >>> )
-                                          (\i -> f (FromInteger i))
-    where h exp = \x y -> f (exp x y)
-
 <pre><a name="line-519"></a><span class='hs-varop'>&gt;</span><span class='hs-varid'>fracExprFold</span> <span class='hs-keyglyph'>::</span> <span class='hs-layout'>(</span><span class='hs-conid'>Fractional</span> <span class='hs-varid'>b</span><span class='hs-layout'>)</span> <span class='hs-keyglyph'>=&gt;</span>
 <a name="line-520"></a><span class='hs-varop'>&gt;</span>                <span class='hs-conid'>Fold</span> <span class='hs-layout'>(</span><span class='hs-conid'>NumExpr</span> <span class='hs-varid'>a</span><span class='hs-layout'>)</span> <span class='hs-varid'>b</span> <span class='hs-keyglyph'>-&gt;</span> <span class='hs-conid'>Fold</span> <span class='hs-layout'>(</span><span class='hs-conid'>FracExpr</span> <span class='hs-varid'>a</span><span class='hs-layout'>)</span> <span class='hs-varid'>b</span>
 <a name="line-521"></a><span class='hs-varop'>&gt;</span><span class='hs-varid'>fracExprFold</span> <span class='hs-varid'>numFold</span> <span class='hs-keyglyph'>=</span> <span class='hs-conid'>FracExprFold</span> <span class='hs-varid'>numFold</span> <span class='hs-layout'>(</span><span class='hs-varop'>/</span><span class='hs-layout'>)</span> <span class='hs-varid'>recip</span> <span class='hs-varid'>fromRational</span>
