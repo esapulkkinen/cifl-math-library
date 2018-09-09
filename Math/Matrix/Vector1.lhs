@@ -18,6 +18,13 @@
 >data Vector1 a = Vector1 { vector_element :: a }
 >  deriving (Eq, Ord)
 
+>instance (ConjugateSymmetric a) => ConjugateSymmetric (Vector1 a) where
+>   conj = fmap conj
+
+>-- | <https://en.wikipedia.org/wiki/Conjugate_transpose>
+>instance (ConjugateSymmetric a) => ConjugateSymmetric ((Vector1 :*: Vector1) a) where
+>   conj = fmap conj . transpose
+
 >instance (Num a) => FiniteDimensional (Vector1 a) where
 >   finite (Matrix (Covector f)) = Vector1 (f (Covector vector_element))
 
@@ -159,6 +166,14 @@ http://en.wikipedia.org/wiki/Bra%E2%80%93ket_notation
 >instance (Num a) => Monoid (Vector1 a) where
 >  mempty = vzero
 >  mappend = (%+)
+
+>instance (Num a, ConjugateSymmetric a) => Semigroup ((Vector1 :*: Vector1) a) where
+>   (<>) = (%**%)
+
+>-- | see "Lawvere,Rosebrugh: Sets for mathematics", pg. 167.
+>instance (Num a, ConjugateSymmetric a) => Monoid ((Vector1 :*: Vector1) a) where
+>   mempty = identity
+>   mappend = (%**%)
 
 >instance Monad Vector1 where
 >  return x = Vector1 x

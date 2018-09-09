@@ -1,9 +1,19 @@
->{-# LANGUAGE GADTs #-}
+>{-# LANGUAGE GADTs, FlexibleInstances #-}
 >module Math.Tools.Monoid where
 >import Prelude hiding (id,(.))
+>import Control.Applicative
 >import Control.Category
 >import Control.Arrow
 >import Math.Tools.Arrow
+
+>newtype Elementwise a = Elementwise a
+
+>instance (Semigroup a, Applicative f) => Semigroup (Elementwise (f a)) where
+>   (Elementwise x) <> (Elementwise y) = Elementwise $ liftA2 (<>) x y
+>
+>instance (Monoid a, Applicative f) => Monoid (Elementwise (f a)) where
+>   mempty = Elementwise $ pure mempty
+>   mappend = (<>)
 
 >data MonoidT arr a b where
 >    Mon :: arr a a -> MonoidT arr a a

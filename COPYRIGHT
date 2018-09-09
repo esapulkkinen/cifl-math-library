@@ -10,11 +10,11 @@ and by nature of the library's use of the data must be incorporated to
 the Haskell code. These portions are allowed to be copied also under
 their original author's license. I have tried to insert comment on the
 portion of code that is obtained from or based on such sources and
-included link or reference to the corresponding place and add a
-reference to the corresponding license in this file. The code contains
-many such references. Usually they are visible in the automatically
-generated documentation as well, but to be sure to find all of them,
-please read the actual Haskell code.
+included URL, link or reference to the corresponding place and add a
+reference or copy of the corresponding license in this file. The code
+contains many such references. Usually they are visible in the
+automatically generated documentation as well, but to be sure to find
+all of them, please read the actual Haskell code.
 
 Due to nature of basic mathematical theory, very few portions of the
 code contain original mathematics. I do not attempt to claim to have
@@ -33,8 +33,9 @@ is under simple permissive license
 (https://wiki.haskell.org/HaskellWiki:Copyrights).
 
 With respect to many modules in Math.Graph package, and occasionally
-in other modules as well, the book "Lawvere, Rosebrugh: Sets for
-mathematics" has been an invaluable resource.
+in other modules as well, the book
+"Lawvere, Rosebrugh: Sets for mathematics", ISBN 0-521-01060-8
+has been an invaluable resource.
 
 Portions are based on Haskell standard library and its implementation
 in the GHC compiler as described in GHC documentation.
@@ -80,6 +81,27 @@ graphviz (which is under "Common Public License"), and ps2pdf (from
 ghostscript, under GPL).
 
 See <https://www.graphviz.org/> for graphviz.
-However I'm not distributing graphviz in conjunction with this
-library, only graphs rendered using it.
 ===
+See cifl.cabal file for information about individual Haskell library
+build-depends. The code is relying on many libraries from the hackage
+repository: <http://hackage.haskell.org/>.
+
+I am not distributing these, users are encouraged to use cabal
+automatic dependency management to download them
+from hackage.haskell.org.
+
+Library build-depends (warning up-to-date version in cifl.cabal file):
+  build-depends:       base, random >=1.1 && <1.2
+  build-depends: mtl >=2.2 && <2.3, arrows >=0.4 && <0.5
+  build-depends: array >= 0.5.1.0, template-haskell >= 2.10.0.0
+  build-depends: time >= 1.5.0.1, containers >= 0.5.6.2
+  build-depends: transformers >= 0.4.2.0, pretty >= 1.1.2.0
+  build-depends: syb >= 0.5.1, stm >= 2.4.4.1
+  build-depends: parallel >= 3.2.0.6, unix >= 2.7.1.0
+  build-depends: bytestring >= 0.10.6.0, fgl >= 5.5.3.0
+  build-depends: graphviz >= 2999.18.1.2, text >= 1.2.2.1
+  build-depends: json >= 0.9.1, parallel >= 3.2.0.6
+  build-depends: binary >= 0.7.5.0, template-haskell, ghc-prim
+
+Test build depends (warning: up-to-date version in cifl.cabal): 
+  build-depends: base, containers >= 0.5.6.2, random >= 1.1, pretty >= 1.1.2.0, array >= 0.5.1.0, transformers >= 0.4.2.0, syb >= 0.5.1, QuickCheck >= 2.8.1, mtl >= 2.2.1, arrows >= 0.4.4.1, fgl >= 5.5.3.0, text >= 1.2.2.1, graphviz >= 2999.18.1.2, json >= 0.9.1, parallel >= 3.2.0.6, binary >= 0.7.5.0, bytestring >= 0.10.6.0, HUnit, template-haskell

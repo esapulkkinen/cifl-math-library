@@ -222,6 +222,14 @@ import Math.Matrix.Dimension
 >  mempty = vzero
 >  mappend = (%+)
 
+>instance (Num a, ConjugateSymmetric a) => Semigroup ((Vector4 :*: Vector4) a) where
+>   (<>) = (%**%)
+
+>-- | see "Lawvere,Rosebrugh: Sets for mathematics", pg. 167.
+>instance (Num a, ConjugateSymmetric a) => Monoid ((Vector4 :*: Vector4) a) where
+>   mempty = identity
+>   mappend = (%**%)
+
 >instance (Limiting a) => Limiting (Vector4 a) where
 >  data Closure (Vector4 a) = Vector4Closure { runVector4Closure :: Vector4 (Closure a) }
 >  limit str = Vector4Closure $ Vector4
@@ -274,7 +282,7 @@ import Math.Matrix.Dimension
 >instance (Floating a, ConjugateSymmetric a) => NormedSpace (Vector4 a) where
 >  norm v = sqrt (v %. v)
 
->instance (ConjugateSymmetric a) => InnerProductSpace (Vector4 a) where
+>instance (Num a, ConjugateSymmetric a) => InnerProductSpace (Vector4 a) where
 >  v %. w = sum_components4 $ pure (*) <*> v <*> (conj <$> w)
 
 
@@ -282,7 +290,7 @@ import Math.Matrix.Dimension
 >versor :: (Floating a, ConjugateSymmetric a) => Vector4 a -> Vector4 a
 >versor q = (1 / norm q) %* q
 
->instance (Floating a, ConjugateSymmetric a) => Num ((Vector4 :*: Vector4) a) where
+>instance (Num a, ConjugateSymmetric a) => Num ((Vector4 :*: Vector4) a) where
 >   (Matrix v) + (Matrix v') = Matrix $ liftA2 (liftA2 (+)) v v'
 >   (Matrix v) - (Matrix v') = Matrix $ liftA2 (liftA2 (-)) v v'
 >   (*) = (%*%)
@@ -292,7 +300,7 @@ import Math.Matrix.Dimension
 >   fromInteger i = diagonal_matrix (constant4 (fromInteger i))
 
 
->instance (Floating a, ConjugateSymmetric a) => LieAlgebra ((Vector4 :*: Vector4) a) where
+>instance (Num a, ConjugateSymmetric a) => LieAlgebra ((Vector4 :*: Vector4) a) where
 >   (%<>%) = matrix_commutator
 
 >instance MetricSpace (Vector4 R) where
@@ -526,6 +534,14 @@ laplace4_units f = divergence4_units (grad4_units f)
 >  vnegate (Matrix v) = Matrix $ fmap (fmap negate) v
 >  v %* (Matrix x) = Matrix $ fmap (fmap (v *)) x
 >  (Matrix x) %+ (Matrix y) = Matrix $ liftA2 (liftA2 (+)) x y
+
+>instance (ConjugateSymmetric a) => ConjugateSymmetric (Vector4 a) where
+>   conj = fmap conj
+
+>-- | <https://en.wikipedia.org/wiki/Conjugate_transpose>
+>instance (ConjugateSymmetric a) => ConjugateSymmetric ((Vector4 :*: Vector4) a) where
+>   conj = fmap conj . transpose
+
 
 >transpose4 :: Matrix4 a -> Matrix4 a
 >transpose4 (Matrix m) = matrix ($) diagonal_projections4 m

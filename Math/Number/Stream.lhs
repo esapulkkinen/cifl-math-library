@@ -239,6 +239,13 @@ import qualified Model.Nondeterminism as Nondet
 >  mempty = pure mempty
 >  mappend = liftA2 mappend
 
+>instance (Num a, Closed a, ConjugateSymmetric a) => Semigroup ((Stream :*: Stream) a) where
+>   (<>) = (%**%)
+
+>instance (Num a, Closed a, ConjugateSymmetric a) => Monoid ((Stream :*: Stream) a) where
+>   mempty = identity
+>   mappend = (%**%)
+
 >instance (Semigroup a) => Semigroup (Stream a) where
 >   (<>) = liftA2 (<>)
 
@@ -802,6 +809,8 @@ the suffix computation on Seq is constant time rather than linear.
 
 >codiagonals :: (Stream :*: Stream) a -> Stream [a]
 >codiagonals x = fmap Data.Foldable.toList $ codiagonals_seq x
+
+
 
 >data Transform2D a b = Transform2D {
 >   transform_diagonal   :: a -> b,

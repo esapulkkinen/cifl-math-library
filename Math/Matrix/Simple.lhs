@@ -49,7 +49,8 @@
 >type SMatrix3 elem = (ThreeD :&: ThreeD) elem
 >type SMatrix4 elem = (FourD :&: FourD) elem
 >type InfMatrix elem = (Integer :&: Integer) elem
->
+
+
 
 >instance (Universe a) => PpShowF ((->) a) where
 >   ppf f = (hsep $ take 10 lst) <> if null lst2 then Tools.PrettyP.empty else pp ".." 
@@ -122,10 +123,19 @@
 > => LieAlgebra ((row :&: row) a) where
 >   x %<>% y = x %***% y %- y %***% x
 >
->(%***%) :: (Universe mid, ConjugateSymmetric a)
+>(%***%) :: (Universe mid, ConjugateSymmetric a, Num a)
 > => (row :&: mid) a -> (mid :&: col) a -> (row :&: col) a
 >(%***%) = (%**%)
->
+
+>-- | "Lawvere, Rosebrugh: Sets for Mathematics", pg. 167.
+>instance (Universe x, ConjugateSymmetric a, Num a) => Semigroup ((x :&: x) a) where
+>   (<>) = (%***%)
+
+>-- | "Lawvere, Rosebrugh: Sets for Mathematics", pg. 167.
+>instance (Universe x, Eq x, ConjugateSymmetric a, Num a) => Monoid ((x :&: x) a) where
+>   mempty = identity
+>   mappend = (%***%)
+
 >class CoFactorDimension dim where
 >   cofactorDim :: (Num a) => dim -> (dim :&: dim) a -> a
 

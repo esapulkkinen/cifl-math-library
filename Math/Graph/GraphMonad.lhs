@@ -6,7 +6,7 @@
 >import Math.Graph.GraphMonoid
 
 >-- | This monad is based on idea from "Mac Lane: Categories for the working
->-- mathematician" e.g. monad defined by the functor T(a) = G x A, where G
+>-- mathematician" e.g. monad defined by the functor T(A) = G x A, where G
 >-- is a group or monoid.
 
 >data GraphM g a = GraphM { runGraphM :: (g,a) }

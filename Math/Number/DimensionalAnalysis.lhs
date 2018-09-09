@@ -1,4 +1,4 @@
->{-# LANGUAGE Safe, GADTs, TypeFamilies, FlexibleContexts, FlexibleInstances, TypeOperators, DataKinds #-}
+>{-# LANGUAGE Safe, GADTs, TypeFamilies, FlexibleContexts, FlexibleInstances, TypeOperators, DataKinds, UnicodeSyntax #-}
 >-- | This module provides dimensional analysis according to SI system of units.
 >--   For reference have used <https://en.wikipedia.org/wiki/Dimensional_analysis>
 >--   and <https://en.wikipedia.org/wiki/International_System_of_Units>.
@@ -37,8 +37,9 @@
 >import Control.Monad (guard, mplus, foldM)
 >import Control.Applicative (Alternative(many,some,(<|>)))
 >import Control.Exception
->import Math.Tools.PrettyP
+>import Math.Tools.PrettyP hiding (parens)
 >import Math.Tools.List (interleave)
+>import Math.Tools.Show
 >import Math.Matrix.Interface
 >import Math.Number.Stream (Stream, Limiting(..), Closed(..))
 >import qualified Math.Number.Stream as Stream
@@ -52,6 +53,11 @@
 >   value_amount :: r,
 >   value_dimension :: Dimension }
 >  deriving (Eq, Typeable)
+
+>type Prefix r = Quantity r -> Quantity r
+
+>hasDimension :: Quantity r -> Dimension -> Bool
+>hasDimension (_ `As` d) d' = d == d'
 
 >instance Functor Quantity where
 >   fmap f (x `As` d) = f x `As` d
@@ -87,15 +93,26 @@
 >     | (Stream.Pre (As x d) xr) <- approximations s
 >     = accumulation_point (limit $ Stream.Pre x (fmap value_amount xr)) `As` d
 
+>-- | <https://en.wikipedia.org/wiki/Level_(logarithmic_quantity)>
 >data Level r = Level {
 >   reference_value :: Quantity r,
 >   base_of_logarithm :: r }
+
 
 >level :: (Show a, Floating a, Real a) => Quantity a -> Level a -> Quantity a
 >level x (Level q b) = log (x / q) / (log b `As` dimensionless)
 
 >bit_level :: (Num a) => Level a
 >bit_level = Level (1 `As` dimensionless) 2
+
+>bel_level :: (Num a) => Level a
+>bel_level = Level (1 `As` dimensionless) 10
+
+>ratioToDecibel :: (Fractional a, Show a, Floating a, Real a) => Quantity a -> Quantity a
+>ratioToDecibel x = 10 %* level x bel_level
+
+>decibelToRatio :: (Floating a, Real a,Show a) => Quantity a -> Quantity a
+>decibelToRatio x = 10 ** (x/10)
 
 >-- | WARNING: native representation is in number of bits.
 >-- Use code such as the following for conversion:
@@ -205,7 +222,7 @@
 >   (Dimension l w t c te lu su) / (Dimension l' w' t' c' te' lu' su') =
 >     Dimension (l/l') (w/w') (t/t') (c/c') (te/te') (lu/lu') (su / su') 
 >   recip a = fromInteger 1 / a
->   fromRational i = Dimension 0 0 0 0 0 0 0 
+>   fromRational i = Dimension i i i i i i i 
 
 >instance InnerProductSpace Dimension where
 >   (Dimension l w t c te lu su) %. (Dimension l' w' t' c' te' lu' su')
@@ -243,7 +260,7 @@
 >zetta = (1000000000000000000000 =*)
 >yotta = (1000000000000000000000000 =*)
 
->prefix_value :: (Num a) => (Quantity a -> Quantity a) -> a
+>prefix_value :: (Num a) => Prefix a -> a
 >prefix_value f = value_amount $ f $ 1 `As` dimensionless
 
 >decimal_prefixes :: (Num a) => [(String,a)]
@@ -377,8 +394,9 @@
 >   atanh = require_dimensionless "atanh" atanh
 
 >instance (Ord r, Show r) => Ord (Quantity r) where
->   compare (x `As` r) (y `As` r') | r == r' = compare x y
->                                  | otherwise = invalidDimensions "compare" r r' x y
+>   compare (x `As` r) (y `As` r')
+>     | r == r' = compare x y
+>     | otherwise = invalidDimensions "compare" r r' x y
 
 >instance (Show r,RealFrac r) => RealFrac (Quantity r) where
 >   properFraction (x `As` r) = let (b,c) = properFraction x in (b,c `As` r)
@@ -390,7 +408,11 @@
 >instance (Show r, Real r) => Real (Quantity r) where
 >   toRational (x `As` r) = toRational x
 
+>readprefix :: ReadPrec (Quantity Double -> Quantity Double)
+>readprefix = choose $ map (\(a,b) -> (a,return b)) siPrefixes
 
+>readunit :: ReadPrec (String,Quantity Double)
+>readunit = choose $ map (\ (a,b) -> (a,return (a,b))) siUnits
 
 >-- | This read instance handles input examples such
 >--   as "10 m/(s*s)", "38.4 F", "12 As", "13 kgm/(s*s)",
@@ -399,37 +421,24 @@
 >   readPrec = do
 >     v <- readPrec
 >     whitespace
->     (do prefix <- chooseprefix
->         lst <- some chooseunit
+>     (do prefix <- readprefix
+>         lst <- some readunit
 >         lst' <- ((whitespace >> string "/" >> unitdivider) >>= (return . Just)) <++ return Nothing
 >         let lst'' = maybe lst (\lst2 -> lst ++ map (\(i,j) -> (i,1 / j)) lst2) lst'
 >         return $ prefix $ v %* (product $ map snd lst''))
 >       <++ do
->             lst <- many chooseunit
+>             lst <- many readunit
 >             lst' <- ((whitespace >> string "/" >> whitespace >> unitdivider) >>= (return . Just)) <|> return Nothing
 >             let lst'' = maybe lst (\lst2 -> lst ++ map (\(i,j) -> (i,1 / j)) lst2) lst'
 >             return $ v %* (product $ map snd lst'')
->      where chooseprefix :: ReadPrec (Quantity Double -> Quantity Double)
->            chooseprefix = choose (map (\(a,b) -> (a,return b)) siPrefixes)
->            chooseunit = choose (map (\ (a,b) -> (a,return (a,b))) siUnits)
+>      where 
 >            parens x = string "(" >> whitespace >> reset x >>= \v -> whitespace >> string ")" >> return v
->            chooseunits = step (chooseunit >>= \v -> whitespace >> string "*" >> whitespace >> chooseunits >>= \r -> return (v:r))
->                        <++ (chooseunit >>= (\x -> return [x]))
->            unitdivider = (chooseunit >>= (\x -> whitespace >> string "/" >> unitdivider >>= \xr -> (return (x:xr))))
->                           <++ (chooseunit >>= (\x -> return [x]))
+>            chooseunits = step (readunit >>= \v -> whitespace >> string "*" >> whitespace >> chooseunits >>= \r -> return (v:r))
+>                        <++ (readunit >>= (\x -> return [x]))
+>            unitdivider = (readunit >>= (\x -> whitespace >> string "/" >> unitdivider >>= \xr -> (return (x:xr))))
+>                           <++ (readunit >>= (\x -> return [x]))
 >                           <++ parens chooseunits
-
->choose :: [(String,ReadPrec a)] -> ReadPrec a
->choose m = choice $ map (\(a,b) -> string a >> b) m
->string :: String -> ReadPrec ()
->string lst = mapM (\ch -> get >>= \v -> guard (v==ch)) lst >> return ()
-> 
->whitespace :: ReadPrec ()
->whitespace = do str <- look
->                let lst = takeWhile isSpace str
->                mapM (const get) lst
->                return ()
-
+ 
 >instance (ShowPrecision r, Floating r) => Show (Quantity r) where
 >  show (x `As` d)
 >   | d == kelvin_dimension = show_at_precision (x-273.15) 10 ++ " ⁰C"
@@ -478,8 +487,19 @@
 >   divMod (a `As` r) (b `As` r') = let (a',b') = divMod a b
 >                                       d = r %- r'
 >                                    in (a' `As` d, b' `As` d)
->   toInteger (a `As` d) | isDimensionless d = toInteger a
->                        | otherwise = invalidDimensions "toInteger" d dimensionless a a
+>   toInteger (a `As` d)
+>     | isDimensionless d = toInteger a
+>     | otherwise = invalidDimensions "toInteger" d dimensionless a a
+
+>plusQ :: (Monad m, Num r, Show r) => Quantity r -> Quantity r -> m (Quantity r)
+>plusQ (x `As` r) (y `As` r')
+>   | r /= r' = invalidDimensionsM "plusQ" r r' x y
+>   | otherwise = return $ (x+y) `As` r
+>
+>minusQ :: (Monad m, Num r, Show r) => Quantity r -> Quantity r -> m (Quantity r)
+>minusQ (x `As` r) (y `As` r')
+>   | r /= r' = invalidDimensionsM "minusQ" r r' x y
+>   | otherwise = return $ (x - y) `As` r
 
 >instance (Num r, Show r) => Num (Quantity r) where
 >  (x `As` r) + (y `As` r')
@@ -545,6 +565,34 @@ order in the table is significant
 >  (Dimension 0 0 0 0 0 0 1 , "mol")
 >  ]
 
+>instance Read Dimension where
+>   readPrec = do lst <- dimension_product_reader
+>                 lst' <- ((optional_whitespace >> string "/" >> dimension_divider_reader) >>= (return . Just)) <++ return Nothing
+>                 let lst'' = maybe lst (\lst2 -> lst ++ map (\j -> negate j) lst2) lst'
+>                 return $ sum lst''
+
+>dimension_product_reader :: ReadPrec [Dimension]
+>dimension_product_reader = step $ do v <- dimension_reader
+>                                     optional_whitespace
+>                                     string "*"
+>                                     optional_whitespace
+>                                     r <- dimension_product_reader
+>                                     return (v:r)
+>                            <++ some dimension_reader
+>                            <++ parens dimension_product_reader
+
+>dimension_divider_reader :: ReadPrec [Dimension]
+>dimension_divider_reader = do
+>        x <- dimension_reader
+>        whitespace
+>        string "/"
+>        xr <- dimension_divider_reader
+>        return (x:xr)
+>  <++ (dimension_reader >>= \x -> return [x])
+>  <++ parens dimension_product_reader
+
+>dimension_reader :: ReadPrec Dimension
+>dimension_reader = choose $ fmap (\ (d,s) -> (s,return d)) full_dimension_table
 
 >dimensionless :: Dimension
 >dimensionless = Dimension 0 0 0 0 0 0 0 
@@ -589,6 +637,7 @@ order in the table is significant
 
 >kelvin_dimension :: Dimension
 >kelvin_dimension = Dimension 0 0 0 0 1 0 0 
+
 >farad_dimension :: Dimension
 >farad_dimension  = Dimension (-2) (-1) 4 2 0 0 0 
 >ohm_dimension :: Dimension
@@ -633,10 +682,6 @@ order in the table is significant
 > 
 >mol_dimension :: Dimension
 >mol_dimension = Dimension 0 0 0 0 0 0 1  
-> 
-
->bel_dimension :: Dimension
->bel_dimension = Dimension 0 1 (-3) 0 0 0 0 
 
 >-- | radian_dimension is basically same as dimensionless, using separate name anyway
 >-- to allow clients to distinguish. No checking for this distinction is implemented.
@@ -668,6 +713,7 @@ order in the table is significant
 >second = 1.0 @@ second_dimension
 >meter :: (Floating a) => Quantity a
 >meter = 1.0 @@ meter_dimension
+>
 >kilogram :: (Floating a) => Quantity a
 >kilogram = 1.0 @@ kilogram_dimension
 >
@@ -768,9 +814,11 @@ order in the table is significant
 >fromDegreesAngle :: (Floating a) => a -> Quantity a
 >fromDegreesAngle alfa = (alfa * pi / 180.0) `As` radian_dimension
 
+>hertz_dimension :: Dimension
 >hertz_dimension = dimensionless %- second_dimension
 >hertz = 1.0 @@ hertz_dimension
 
+>squaremeter_dimension :: Dimension
 >squaremeter_dimension = 2 %* meter_dimension
 >squaremeter = 1.0 @@ squaremeter_dimension
 >
@@ -783,9 +831,6 @@ order in the table is significant
 >siemens_dimension = (3 %* second_dimension) %+ (2 %* ampere_dimension)
 >                 %- (kilogram_dimension %+ squaremeter_dimension)
 
->bel,desibel :: (Fractional a) => Quantity a
->desibel = 0.1 @@ bel_dimension
->bel = 1 @@ bel_dimension
 
 >-- | <https://en.wikipedia.org/wiki/Physical_constant>
 >planck_length :: (Floating a) => Quantity a
@@ -906,8 +951,10 @@ order in the table is significant
 >lightyear = 9460730472580800 @@ meter_dimension
 
 >-- | <https://en.wikipedia.org/wiki/Astronomical_unit>
+>astronomicalUnit :: (Floating a) => Quantity a
 >astronomicalUnit = 149597870700 %* meter
 >-- | <https://en.wikipedia.org/wiki/Parsec>
+>parsec :: (Floating a) => Quantity a 
 >parsec = (648000 / pi) %* astronomicalUnit
 
 >-- | <https://en.wikipedia.org/wiki/Litre>
@@ -950,17 +997,14 @@ order in the table is significant
 >   ("w", week),
 >   ("y", year),
 >   ("°C", fromCelsius 1),
->   ("°C", fromCelsius 1),
+>   ("°F", fromFarenheit 1),
 >   ("°", degree),
->   ("℃", fromCelsius 1),
->   ("℉", fromFarenheit 1),
 >   ("lm", lumen),
 >   ("lx", lux),
 >   ("Bq", becquerel),
 >   ("Gy", gray),
 >   ("kat", katal),
 >   ("Hz", hertz),
->   ("dB", desibel),
 >   ("ly", lightyear),
 >   ("AU", astronomicalUnit),
 >   ("pc", parsec),
@@ -970,7 +1014,7 @@ order in the table is significant
 >  ]
 
 >-- | <https://en.wikipedia.org/wiki/Metric_prefix>
->siPrefixes :: (Floating a) => [(String,Quantity a -> Quantity a)]
+>siPrefixes :: (Floating a) => [(String,Prefix a)]
 >siPrefixes = [("Y", yotta),
 >              ("Z", zetta),
 >              ("E", exa),
@@ -1007,6 +1051,7 @@ order in the table is significant
 >siZeros = [
 >    ("°C", fromCelsius 0),
 >    ("℃", fromCelsius 0),
+>    ("°F", fromFarenheit 0),
 >    ("℉", fromFarenheit 0)
 >   ]
 

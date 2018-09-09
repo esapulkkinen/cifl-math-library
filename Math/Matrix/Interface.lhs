@@ -43,7 +43,6 @@
 >class (VectorSpace v) => BilinearVectorSpace v where
 >   biLin :: v -> v -> Scalar v
 
-
 >class InnerProductSpace m where
 >  (%.) :: m -> m -> Scalar m -- dot product/inner product
 
@@ -62,7 +61,7 @@
 
 >class CompleteSpace m where
 
->class (Num m) => ConjugateSymmetric m where
+>class ConjugateSymmetric m where
 >  conj :: m -> m
 
 >class Linear f where
@@ -133,6 +132,11 @@ data Codiagonal m n a = Codiagonal {
 >   adjucate :: (m :*: m) a -> (m :*: m) a
 >   inverse  :: (m :*: m) a -> (m :*: m) a
 
+>is_unitary :: (InvertibleMatrix m a, Eq ((m :*: m) a),
+>              ConjugateSymmetric ((m :*: m) a))
+>  => (m :*: m) a -> Bool
+>is_unitary m = conj m == inverse m
+
 >class (Functor m) => EigenDecomposable m a where
 >  eigenvalues :: (m :*: m) a -> m a
 
@@ -180,11 +184,11 @@ data Codiagonal m n a = Codiagonal {
 >matrixMatrix f (Matrix x) (Matrix y) = Matrix $ (matrix . matrix) f x y
 
 >invert_matrix :: (Eq a, Num a,InvertibleMatrix m a) => (m :*: m) a -> Maybe ((m :*: m) a)
->invert_matrix m | isInvertibleMatrix m = Just (inverse m)
+>invert_matrix m | is_invertible_matrix m = Just (inverse m)
 >                | otherwise = Nothing
 
->isInvertibleMatrix :: (Eq a, Num a,FiniteSquareMatrix m a) => (m :*: m) a -> Bool
->isInvertibleMatrix m = determinant m /= 0
+>is_invertible_matrix :: (Eq a, Num a,FiniteSquareMatrix m a) => (m :*: m) a -> Bool
+>is_invertible_matrix m = determinant m /= 0
 
 eigenvectors_generic :: (a ~ Scalar (n a),
                 Fractional a, VectorSpace (n a),EigenDecomposable m a)
@@ -325,7 +329,7 @@ index2 (row,col) (C e) = index col (index row e)
 >x %^% 0 = identity
 >x %^% i = x %*% (x %^% (i-1)) 
 
->(|><|) :: (Functor m, Functor n, ConjugateSymmetric a)
+>(|><|) :: (Functor m, Functor n, ConjugateSymmetric a, Num a)
 >       => m a -> n a -> (m :*: n) a
 >(|><|) = matrix $ \a b -> a * conj b
 
@@ -362,7 +366,19 @@ index2 (row,col) (C e) = index col (index row e)
 >instance (Integral a) => ConjugateSymmetric (Ratio a) where { conj = id }
 >instance (RealFloat a) => ConjugateSymmetric (Complex a)where
 >   conj = conjugate
->   
+
+>-- | <https://en.wikipedia.org/wiki/Conjugate_transpose>
+>is_hermitian :: (Eq a, ConjugateSymmetric a) => a -> Bool
+>is_hermitian a = a == conj a
+>
+>-- | <https://en.wikipedia.org/wiki/Conjugate_transpose>
+>is_skew_hermitian :: (Num a, Eq a, ConjugateSymmetric a) => a -> Bool
+>is_skew_hermitian a = a == negate (conj a)
+>
+>-- | <https://en.wikipedia.org/wiki/Conjugate_transpose>
+>is_normal :: (Num a, Eq a, ConjugateSymmetric a) => a -> Bool
+>is_normal a = conj a * a == a * conj a
+>                      
 >instance (Integral a) => VectorSpace (Ratio a) where
 >   type Scalar (Ratio a) = Ratio a
 >   vzero = 0 % 1
@@ -430,14 +446,17 @@ index2 (row,col) (C e) = index col (index row e)
 >   (Endo f) %. (Endo g) = sum [f x * conj (g x) | x <- all_elements]
 
 >instance (RealFloat a) => VectorSpace (Complex a) where
->   type Scalar (Complex a) = a
+>   type Scalar (Complex a) = Complex a
 >   vzero = 0
 >   vnegate = negate
->   a %* b = (a :+ 0) * b
+>   a %* b = a * b
 >   a %+ b = a + b
 
+>instance (RealFloat a) => InnerProductSpace (Complex a) where
+>   a %. b = a * conj b
+
 >instance (RealFloat a) => NormedSpace (Complex a) where
->   norm = magnitude
+>   norm z = magnitude z :+ 0
 
 >instance (Num a) => VectorSpace (Maybe a) where
 >   type Scalar (Maybe a) = a
@@ -449,8 +468,6 @@ index2 (row,col) (C e) = index col (index row e)
 >instance (Num a) => NormedSpace (Maybe a) where
 >   norm Nothing = 0
 >   norm (Just x) = abs x
-
-
 
 >instance NormedSpace Integer where { norm = abs }
 >instance NormedSpace Int where { norm = abs }
@@ -486,6 +503,7 @@ instance (Floating a) => NormedSpace [a] where
 >   vnegate f = negate . f
 >   a %* f = \i -> a * f i
 >   f %+ g = \i -> f i + g i
+
 
 >-- | <https://en.wikipedia.org/wiki/Commutator>
 >instance (VectorSpace a, Num a) => LieAlgebra (a -> a) where
@@ -571,6 +589,7 @@ instance (Floating a) => NormedSpace [a] where
 >  => InnerProductSpace (v,w,u) where
 >    (a,b,c) %. (d,e,f) = a %. d + b %. e + c %. f
 
+>-- | <https://en.wikipedia.org/wiki/Dot_product>
 >instance (Universe a, Num b, ConjugateSymmetric b)
 > => InnerProductSpace (a -> b) where
 >   f %. g = sum [f i * conj (g i) | i <- all_elements]

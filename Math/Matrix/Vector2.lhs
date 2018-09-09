@@ -21,6 +21,10 @@
 >data Vector2 s = Vector2 { xcoord2 :: s, ycoord2 :: s }
 >   deriving (Eq)
 
+>-- | <https://en.wikipedia.org/wiki/Conjugate_transpose>
+>instance (ConjugateSymmetric a) => ConjugateSymmetric ((Vector2 :*: Vector2) a) where
+>   conj = fmap conj . transpose
+
 >i2 :: (Num a) => Vector2 a
 >i2 = identity <!> (xcoord2,id)
 
@@ -212,6 +216,15 @@ curl2 f z = Vector2 (partial_derivate2y (xcoord2 . f) z)
 >  mempty = vzero
 >  mappend = (%+)
 
+>-- | see "Lawvere,Rosebrugh: Sets for mathematics", pg. 167.
+>instance (Num a, ConjugateSymmetric a) => Semigroup ((Vector2 :*: Vector2) a) where
+>   (<>) = (%**%)
+
+>-- | see "Lawvere,Rosebrugh: Sets for mathematics", pg. 167.
+>instance (Num a, ConjugateSymmetric a) => Monoid ((Vector2 :*: Vector2) a) where
+>   mempty = identity
+>   mappend = (%**%)
+
 >instance Applicative Vector2 where
 >   pure x = Vector2 x x
 >   (Vector2 f g) <*> (Vector2 x y) = Vector2 (f x) (g y)
@@ -242,7 +255,7 @@ curl2 f z = Vector2 (partial_derivate2y (xcoord2 . f) z)
 >instance Traversable Vector2 where
 >   traverse f (Vector2 x y) = Vector2 <$> f x <*> f y
 
->instance (Floating a, ConjugateSymmetric a) => Num ((Vector2 :*: Vector2) a) where
+>instance (Num a, ConjugateSymmetric a) => Num ((Vector2 :*: Vector2) a) where
 >   (Matrix v) + (Matrix v') = Matrix $ v + v'
 >   (Matrix v) - (Matrix v') = Matrix $ v - v'
 >   (*) = (%*%)
@@ -251,7 +264,7 @@ curl2 f z = Vector2 (partial_derivate2y (xcoord2 . f) z)
 >   signum (Matrix v) = Matrix $ signum v
 >   fromInteger i = diagonal_matrix $ constant2 $ fromInteger i
 
->instance (Floating a, ConjugateSymmetric a) => LieAlgebra ((Vector2 :*: Vector2) a) where
+>instance (Num a, ConjugateSymmetric a) => LieAlgebra ((Vector2 :*: Vector2) a) where
 >   (%<>%) = matrix_commutator
 
 
@@ -341,7 +354,7 @@ curl2 f z = Vector2 (partial_derivate2y (xcoord2 . f) z)
 >instance (Floating a, ConjugateSymmetric a) => NormedSpace (Vector2 a) where
 >  norm v = sqrt (v %. v)
 
->instance (ConjugateSymmetric a) => InnerProductSpace (Vector2 a) where
+>instance (Num a, ConjugateSymmetric a) => InnerProductSpace (Vector2 a) where
 >  (Vector2 x y) %. (Vector2 x' y') = x*conj x' + y*conj y'
 
 >instance (Num a) => SquareMatrix Vector2 a where

@@ -215,13 +215,6 @@ matrix_commutator :: (Applicative h, Transposable h h, InnerProductSpace (h a), 
 >   mzero = Matrix mzero
 >   mplus (Matrix f) (Matrix g) = Matrix $ liftA2 mplus f g
 
->instance (Semigroup a, Applicative f, Applicative g) => Semigroup ((f :*: g) a) where
->   (<>) = liftA2 (<>)
-
->instance (Monoid a, Applicative f, Applicative g) => Monoid ((f :*: g) a) where
->   mempty = pure mempty
->   mappend = liftA2 mappend
-
 >instance (Array.Ix i) => PpShowF (Array i) where
 >   ppf ary = ppf [ary Array.! i | i <- Array.range (Array.bounds ary) ]
 

@@ -287,6 +287,16 @@ linear f (Vector3 x y z) = (x %* f xid) %+ (y %* f yid) %+ (z %* f zid)
 >instance (Num s) => Mon.Monoid (Vector3 s) where
 >  mempty = vzero
 >  mappend = (%+)
+>  
+>-- | see "Lawvere,Rosebrugh: Sets for mathematics", pg. 167.
+>instance (ConjugateSymmetric a, Num a) => Semigroup ((Vector3 :*: Vector3) a) where
+>   (<>) = (%**%)
+
+
+>-- | see "Lawvere,Rosebrugh: Sets for mathematics", pg. 167.
+>instance (Num a, ConjugateSymmetric a) => Mon.Monoid ((Vector3 :*: Vector3) a) where
+>   mempty  = identity
+>   mappend = (%**%)
 
 >instance (Num s) => Group (Vector3 s) where
 >   ginvert (Vector3 x y z) = Vector3 (negate x) (negate y) (negate z)
@@ -408,10 +418,14 @@ grad3 f x = Vector3 (partial_derivate3x f x)
 >instance (ConjugateSymmetric a) => ConjugateSymmetric (Vector3 a) where
 >   conj (Vector3 x y z) = Vector3 (conj x) (conj y) (conj z)
 
+>-- | <https://en.wikipedia.org/wiki/Conjugate_transpose>
+>instance (ConjugateSymmetric a) => ConjugateSymmetric ((Vector3 :*: Vector3) a) where
+>   conj = fmap conj . transpose
+
 >instance (Floating a, ConjugateSymmetric a) => NormedSpace (Vector3 a) where
 >  norm = innerproductspace_norm 
 
->instance (ConjugateSymmetric a) => InnerProductSpace (Vector3 a) where
+>instance (ConjugateSymmetric a, Num a) => InnerProductSpace (Vector3 a) where
 >  (Vector3 x y z) %. (Vector3 x' y' z') = x * conj x' + y * conj y' + z * conj z'
 
 >sum_coordinates3 :: (Num a) => Vector3 a -> a
@@ -505,7 +519,7 @@ grad3 f x = Vector3 (partial_derivate3x f x)
 >instance (Num a) => LieAlgebra (Vector3 a) where
 >   (%<>%) = cross_product
 
->instance (ConjugateSymmetric a) => LieAlgebra ((Vector3 :*: Vector3) a) where
+>instance (Num a, ConjugateSymmetric a) => LieAlgebra ((Vector3 :*: Vector3) a) where
 >   (%<>%) = matrix_commutator
 
 >cross_product :: (Num a) => Vector3 a -> Vector3 a -> Vector3 a

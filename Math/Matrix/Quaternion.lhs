@@ -78,6 +78,7 @@
 >instance (Floating a, ConjugateSymmetric a) => Floating (Quaternion a) where
 >   exp = qexp
 >   log = qlog
+>   sqrt x = exp (log x / 2)
 
 >instance (Num a) => ConjugateSymmetric (Quaternion a) where
 >   conj = qconjugate
