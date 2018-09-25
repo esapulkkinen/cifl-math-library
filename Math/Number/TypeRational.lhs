@@ -1,13 +1,8 @@
 >{-# LANGUAGE CPP #-}
-
-#if  __GLASGOW_HASKELL__ >= 800
-
 >{-# LANGUAGE DataKinds, TypeOperators, KindSignatures, GADTs, TypeFamilies #-}
 >{-# LANGUAGE UndecidableInstances, MultiParamTypeClasses, PolyKinds #-}
->{-# LANGUAGE FlexibleInstances, TypeFamilyDependencies, CPP #-}
+>{-# LANGUAGE FlexibleInstances, TypeFamilyDependencies #-}
 >module Math.Number.TypeRational where
->-- ^ Type level rationals. Requires GHC >= 8.0
-   
 >import Data.Kind
 >import Math.Number.Stream
 
@@ -150,5 +145,3 @@
 >type PSix  = 'PrTimes PPTwo ('PrTimes PPThree 'PrOne)
 >type PSeven = 'PrTimes PPSeven 'PrOne
 >type PEight = 'PrTimes PPEight 'PrOne
-
-#endif

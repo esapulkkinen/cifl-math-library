@@ -100,11 +100,12 @@
 
 >-- | the Unit class should be defined by any newtype based
 >-- types that should interact well with the dimensional analysis mechanism.
+>-- 
+>--  The fromAmount method must check that compile-time information about dimensions
+>-- is sufficient to determine dimension of the given input
+>-- e.g. @(fromAmount 3 :: Mass)@ is ok, but @(fromAmount 3 :: Quantity Double)@ is not.
 >class (VectorSpace u) => Unit u where
 >   amount :: u -> Scalar u
->-- | The fromAmount method must check that compile-time information about dimensions
->-- is sufficient to determine dimension of the given input
->-- e.g. (fromAmount 3 :: Mass) is ok, but (fromAmount 3 :: Quantity Double) is not.
 >   fromAmount :: Scalar u -> u
 >   fromQuantity :: (Alternative m, Monad m) => Quantity (Scalar u) -> m u
 >   unitOf :: u -> String
