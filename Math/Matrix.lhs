@@ -16,6 +16,8 @@
 >   module Math.Matrix.Vector4,
 >-- | arbitrary dimensional vector
 >   module Math.Matrix.Simple,
+>-- | vectors optimized for SIMD
+>   module Math.Matrix.SIMD,
 >-- | Dual vector
 >   module Math.Matrix.Covector, 
 >-- | data structure for linear arrows
@@ -43,3 +45,4 @@
 >import qualified Math.Matrix.Indexable
 >import Math.Matrix.QuasiQuoter
 >import Math.Matrix.Unicode
+>import Math.Matrix.SIMD

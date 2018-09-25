@@ -33,6 +33,9 @@ build :
 build-llvm:
 	$(CABAL) $(CABALOPTS) $(CABALFLAGS) new-build -j4 --ghc-options="-fllvm"
 
+test-llvm:
+	$(CABAL) $(CABALOPTS) $(CABALFLAGS) new-test -j4 --ghc-options="-fllvm"
+
 interpreter :
 	cabal $(CABALOPTS) $(CABALFLAGS) new-configure -flibrary-only
 	cabal $(CABALOPTS) $(CABALFLAGS) new-repl --ghc-option="-dynamic" --ghc-option="-fobject-code"

@@ -36,7 +36,6 @@
 
 >import Math.Tools.Adjunction
 >import Math.Tools.Arrow hiding (assoc)
->import qualified Math.Tools.Assert
 >import Math.Tools.Category
 >import Math.Tools.CoFunctor hiding (terminal)
 >import Math.Tools.CoMonad

@@ -81,8 +81,6 @@ import qualified Model.Nondeterminism as Nondet
 >                     => (g :*: g) a -> (g :*: g) a
 >matrix_exponential x = shead $ drop 10 (matrix_exponential_stream x)
 
-
-
 >instance (Num a) => FiniteDimensional (Stream a) where
 >   finite (Matrix (Covector f)) = Pre (f (Covector shead))
 >                                      (fmap (\x -> f $ Covector (shead . x)) tls)
@@ -405,15 +403,6 @@ instance (Num a) => Matrix.VectorSpace ((Stream :*: Stream) a) where
 >sum_seq :: (Num a) => Seq a -> a
 >sum_seq = foldr (+) 0
 
->instance (Num a, Closed a, ConjugateSymmetric a) => Num ((Stream :*: Stream) a) where
->   (+) = liftA2 (+)
->   (-) = liftA2 (-)
->   negate = liftA negate
->   abs = liftA abs
->   signum = liftA signum
->   x * y = x %**% y
->   fromInteger i = diagonal_matrix (fromInteger i)
-
 >stream_powers :: (Num a) => Stream a -> (Stream :*: Stream) a
 >stream_powers f = Matrix $ Pre 1 $ fmap (f *) $ cells $ stream_powers f
 
@@ -434,6 +423,26 @@ instance (Num a) => Matrix.VectorSpace ((Stream :*: Stream) a) where
 >                       -> Stream ((h :*: f) a)
 >                       -> Stream ((g :*: f) (Matrix.Scalar (h a)))
 >matrix_convolution x y = fmap Matrix.vsum $ codiagonals_seq $ matrix (Matrix.%*%) x y
+
+>matrix_convolution_product :: (Num a, ConjugateSymmetric a) => (Stream :*: Stream) a -> (Stream :*: Stream) a -> (Stream :*: Stream) a
+>matrix_convolution_product x y = Matrix $ fmap sum $ codiagonals_seq $ matrix (*) (cells x) (cells $ conj y)
+
+>-- | @distance_product a b@ computes @l_k = sqrt(sum[a_i*conj(b_j) | i + j = k])@.
+>distance_product :: (Floating a, ConjugateSymmetric a) => Stream a -> Stream a -> Stream a
+>distance_product a b = fmap (sqrt . sum) $ codiagonals_seq $ matrix (*) a (conj b)
+
+
+>instance (ConjugateSymmetric a) => ConjugateSymmetric ((Stream :*: Stream) a) where
+>   conj = fmap conj . transpose
+
+>instance (Fractional a, ConjugateSymmetric a) => Num ((Stream :*: Stream) a) where
+>   (+) = liftA2 (+)
+>   (-) = liftA2 (-)
+>   (*) = matrix_convolution_product
+>   negate = fmap negate
+>   abs = fmap abs
+>   signum = fmap signum
+>   fromInteger i = diagonal_matrix (fromInteger i)
 
 >and_convolution :: Stream Bool -> Stream Bool -> Stream Bool
 >and_convolution x y = fmap or $ codiagonals_seq $ matrix (&&) x y

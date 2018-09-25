@@ -1,8 +1,10 @@
->{-# LANGUAGE Safe, GADTs, TypeFamilies, FlexibleContexts, FlexibleInstances, TypeOperators, DataKinds, UnicodeSyntax #-}
+>{-# LANGUAGE Safe, GADTs, TypeFamilies, FlexibleContexts, FlexibleInstances, TypeOperators, DataKinds, UnicodeSyntax, MultiParamTypeClasses #-}
 >-- | This module provides dimensional analysis according to SI system of units.
 >--   For reference have used <https://en.wikipedia.org/wiki/Dimensional_analysis>
 >--   and <https://en.wikipedia.org/wiki/International_System_of_Units>.
->-- 
+>--
+>--  This module supports run-time checked quanties.
+>--  
 >--  In reality this should be according to the International system of units, but
 >--  I have not used the official standard documents when writing this code.
 >--  However it is recognized that any major deviation from
@@ -70,10 +72,18 @@
 >instance (Show r, Infinitesimal r) => Infinitesimal (Quantity r) where
 >   epsilon = limit $ fmap (`As` dimensionless) epsilon_stream
 
+>instance (Show r, InnerProductSpace r, Scalar (Quantity r) ~ Scalar r) => InnerProductSpace (Quantity r) where
+>   (x `As` d) %. (y `As` d') | d == d' = x %. y
+>                      | otherwise = invalidDimensions "%." d d' x y
+
 >mapQuantity :: (a -> b)
 >            -> (Dimension -> Dimension)
 >            -> Quantity a -> Quantity b
 >mapQuantity f g (r `As` d) = f r `As` g d
+
+>mapQuantity2 :: (a -> b -> c) -> (Dimension -> Dimension -> Dimension)
+>             -> Quantity a -> Quantity b -> Quantity c
+>mapQuantity2 f g (x `As` d) (y `As` d') = f x y `As` g d d'
 
 >complexQuantity :: (Show r) => Complex (Quantity r) -> Quantity (Complex r)
 >complexQuantity ((a `As` d) :+ (b `As` d'))
@@ -87,6 +97,24 @@
 >ratioQuantity r = ((a % b) `As` (d - d'))
 >    where (a `As` d) = numerator  r
 >          (b `As` d') = denominator r
+
+>-- | the Unit class should be defined by any newtype based
+>-- types that should interact well with the dimensional analysis mechanism.
+>class (VectorSpace u) => Unit u where
+>   amount :: u -> Scalar u
+>-- | The fromAmount method must check that compile-time information about dimensions
+>-- is sufficient to determine dimension of the given input
+>-- e.g. (fromAmount 3 :: Mass) is ok, but (fromAmount 3 :: Quantity Double) is not.
+>   fromAmount :: Scalar u -> u
+>   fromQuantity :: (Alternative m, Monad m) => Quantity (Scalar u) -> m u
+>   unitOf :: u -> String
+>   dimension :: u -> Dimension
+>   -- | zeroAmount is amount of zero in the amount used by Quantity.
+>   zeroAmount :: (Scalar u -> u) -> Scalar u
+>   conversionFactor :: (Scalar u -> u) -> Scalar u
+>   zeroAmount _ = 0
+>   conversionFactor _ = 1
+
 
 >instance (Closed a, Show a) => Closed (Quantity a) where
 >   accumulation_point s
@@ -136,43 +164,8 @@
 >   | isDimensionless (value_dimension x) = return $ 2.0 ** value_amount x
 >   | otherwise = invalidDimensionsM "toAlternatives" (value_dimension x) dimensionless x x
 
->-- | the Unit class should be defined by any newtype based
->-- types that should interact well with the dimensional analysis mechanism.
->class (VectorSpace u) => Unit u where
->   amount :: u -> Scalar u
->   fromAmount :: Scalar u -> u
->   unitOf :: u -> String
->   dimension :: u -> Dimension
-
->quantity :: (Unit u) => u -> Quantity (Scalar u)
->quantity x = amount x @@ dimension x
-
 >(@@) :: r -> Dimension -> Quantity r
 >x @@ y = x `As` y
-
->instance Unit Float where
->   amount x = x
->   unitOf _ = ""
->   dimension _ = dimensionless
->   fromAmount x = x
-
->instance Unit Double where
->   amount x = x
->   unitOf _ = ""
->   dimension _ = dimensionless
->   fromAmount x = x
-
->instance (Num r, VectorSpace r) => Unit (Quantity r) where
->  amount (x `As` _) = x
->  unitOf (_ `As` r) = show r
->  dimension (_ `As` r) = r
->  fromAmount x = x `As` dimensionless
-
->convert :: (Scalar u ~ Scalar v, Unit v, Unit u, Show v, Show u, Monad m, Fractional (Scalar u))
->        => v -> u -> m (Scalar u)
->convert x d
->   | dimension x == dimension d = return (amount x / amount d)
->   | otherwise = invalidDimensionsM "convert" (dimension x) (dimension d) x d
 
 >convertTo :: (Monad m, Floating a, ShowPrecision a,Ord a, VectorSpace a)
 >  => Quantity a -> (String, Quantity a) -> m String
@@ -180,10 +173,25 @@
 >   val <- convert value base
 >   return $ show val ++ qname
 
+>instance (Num r, VectorSpace r) => Unit (Quantity r) where
+>  amount (x `As` _) = x
+>  unitOf (_ `As` r) = show r
+>  fromQuantity q = return q
+>  dimension (_ `As` r) = r
+>  -- | fromAmount is not implemented, as the dimension is not known.
+>  fromAmount x = error "Ambiguous units while constructing run-time Quantity."
+
 >(=/) :: (Fractional (Scalar a), Unit a, Show a) => a -> a -> Scalar a
 >(=/) x y
 >   | dimension x == dimension y = amount x / amount y
 >   | otherwise = invalidDimensions "(=/)" (dimension x) (dimension y) x y
+
+>-- | conversions between units. Dimensions have to match.
+>convert :: (Scalar u ~ Scalar v, Unit v, Unit u, Show v, Show u, Monad m, Fractional (Scalar u))
+>        => v -> u -> m (Scalar u)
+>convert x d
+>   | dimension x == dimension d = return (amount x / amount d)
+>   | otherwise = invalidDimensionsM "convert" (dimension x) (dimension d) x d
 
 >data Dimension = Dimension {
 >   length_power :: Rational,
@@ -629,12 +637,6 @@ order in the table is significant
 >          def (Dimension 0 0 0 0 0 0 0) = ""
 >          def z = show_dimension z
 
->mapAmount :: (Unit a) => (Scalar a -> Scalar a) -> a -> a
->mapAmount f = fromAmount . f . amount
-
->mapAmount2 :: (Unit a) => (Scalar a -> Scalar a -> Scalar a) -> a -> a -> a
->mapAmount2 f x y = fromAmount (f (amount x) (amount y))
-
 >kelvin_dimension :: Dimension
 >kelvin_dimension = Dimension 0 0 0 0 1 0 0 
 
@@ -845,13 +847,22 @@ order in the table is significant
 >planck_temperature :: (Floating a) => Quantity a
 >planck_temperature = 1.41683385e32 %* kelvin
 
+>-- | <https://en.wikipedia.org/wiki/Physical_constant>
 >boltzmann_constant :: (Floating a) => Quantity a
->boltzmann_constant = 1.3808e-23 @@ (joule_dimension %- kelvin_dimension)
+>boltzmann_constant = 1.3806485279e-23 @@ (joule_dimension %- kelvin_dimension)
 
 >-- | <https://en.wikipedia.org/wiki/Gravitational_constant>
 >gravitational_constant :: (Floating a) => Quantity a
 >gravitational_constant = 6.6740831e-11 @@ (3 %* meter_dimension %+ (negate 1) %* kilogram_dimension %+ (negate 2) %* second_dimension)
 >
+>-- | <https://en.wikipedia.org/wiki/Physical_constant>
+>standard_acceleration_of_gravity :: (Floating a) => Quantity a
+>standard_acceleration_of_gravity = 9.80665 @@ (meter_dimension %- 2 %* second_dimension)
+> 
+>-- | <https://en.wikipedia.org/wiki/Physical_constant>
+>standard_atmosphere :: (Floating a) => Quantity a
+>standard_atmosphere = 101325 %* pascal
+
 >-- | <https://en.wikipedia.org/wiki/Speed_of_light>
 >speed_of_light :: (Floating a) => Quantity a
 >speed_of_light = 299792458.0 @@ (meter_dimension %- second_dimension)
@@ -941,6 +952,22 @@ order in the table is significant
 >-- | <https://en.wikipedia.org/wiki/Physical_constant>
 >weak_mixing_angle :: (Floating a) => Quantity a
 >weak_mixing_angle = 0.222321 @@ radian_dimension
+
+>-- | <https://en.wikipedia.org/wiki/Avogadro_constant>
+>avogadro_constant :: (Floating a) => Quantity a
+>avogadro_constant = 6.02214076e23 @@ (negate $ mol_dimension)
+>-- | <https://en.wikipedia.org/wiki/Physical_constant>
+>atomic_mass_constant :: (Floating a) => Quantity a
+>atomic_mass_constant = 1.66053904020e-27 %* kilogram
+
+
+>faraday_constant = 96485.3328959 %* (coulomb / mole)
+>first_radiation_constant = 1.19104295315e-16 %* (watt * meter * meter)
+>loschmidt_constant = 2.686781115e25 @@ ((-3) %* meter_dimension)
+>gas_constant = 8.314459848 %* (joule / (mole * kelvin))
+>molar_planck_constant = 3.990312711018e-10 %* (joule * second / mole)
+>second_radiation_constant = 1.4387773683e-2 %* (meter * kelvin)
+>stefan_boltzmann_constant = 5.67036713e-8 %* (watt / (meter^2 * kelvin^4))
 
 >-- | <https://en.wikipedia.org/wiki/Physical_constant>
 >efimov_factor :: (Floating a) => Quantity a 

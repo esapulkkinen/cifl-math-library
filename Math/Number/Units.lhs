@@ -1,13 +1,192 @@
->{-# LANGUAGE CPP,GeneralizedNewtypeDeriving, TypeFamilies, DataKinds, TypeOperators, TypeInType #-}
->{-# LANGUAGE ExistentialQuantification, GADTs, PolyKinds, UnicodeSyntax #-}
->{-# LANGUAGE FlexibleContexts #-}
+>{-# LANGUAGE CPP,GeneralizedNewtypeDeriving, TypeOperators #-}
+>{-# LANGUAGE ExistentialQuantification, TypeFamilies,GADTs, RankNTypes, UnicodeSyntax #-}
+>{-# LANGUAGE ScopedTypeVariables, StandaloneDeriving, FlexibleContexts #-}
 >-- | This module contains auxiliary definitions related to dimensional analysis.
 >--   This is based on the SI system of units.
+>--   This module supports compile-time checking for dimensional units.
+>--
+>--   It is not necessarily a good idea to make the checking in compile-time.
+>--   In particular, this can prevent operations to be available, e.g. Num and Read
+>--   classes are not supported for compile-time checked quantities. Num because it has
+>--   wrong type for the multiplication and division. Instead of Num, VectorSpace operations
+>--   and operations defined in this module should be used.
+>--
+>--   However, these types can distinguish quantities even in cases where the dimensions
+>--   match, e.g. radians and steradians. Explicit conversions are nonetheless available
+>--   when dimensions match.
+>--
+>--   However, it's very much likely that compile-time checked newtypes
+>--   are faster at run-time than using the run-time checked quantities. This is probably
+>--   the primary reason for wanting this module instead of run-time checked version.
+>-- 
+>--   Also it's not possible to cast input data directly without run-time check
+>--   to a compile-time checked quantity.
+>--
+>--   Notice: Read instances exists only for run-time checked quantities.
+>--
+>--   See "Barton&Nackman: Scientific and Engineering C++" for C++ approach
+>--   to dimensional analysis.
+>--  
 >--   <https://en.wikipedia.org/wiki/International_System_of_Units>
 >module Math.Number.Units where
+>import Control.Monad (guard)
+>import Control.Applicative
 >import Data.Ratio
 >import Math.Matrix.Interface
 >import Math.Number.DimensionalAnalysis
+>import Math.Number.TypeRational
+>import Data.Ratio
+
+>-- | Notice that 'Math.Number.DimensionalAnalysis.fromAmount' from Unit class
+>-- has type @(Unit u) => UnitName u@.
+>-- However usually a concrete constructor of one of the newtypes is used as value.
+>type UnitName u = Scalar u -> u
+
+>(*%%) :: (Scalar u ~ Scalar u') => UnitName u -> UnitName u' -> UnitName (u :* u')
+>(*%%) a b = \v -> QProduct v a b
+
+>(/%%) :: (Scalar u ~ Scalar u') => UnitName u -> UnitName u' -> UnitName (u :/ u')
+>(/%%) a b = \v -> QDivide v a b
+
+>-- | heterogeneous product respecting units
+>-- It may be necessary to use 'Math.Number.Units.quantity' operation
+>-- to convert to run-time representation after using this, because the result type
+>-- accumulates new parts with each use without considering what the total
+>-- dimension of the result is. This can produce excessively complicated types, because
+>-- the type represents the structure of the expression rather than structure of
+>-- the result.
+>(*%) :: (Unit u, Unit w, Num (Scalar u), Scalar u ~ Scalar w)
+>     => u -> w -> u :* w
+>a *% b = QProduct (amount a * amount b) fromAmount fromAmount
+
+>-- | heterogeneous division respecting units.
+>-- These simply accumulate type information about the units.
+>-- It may be necessary to use 'Math.Number.Units.quantity' operation
+>-- to convert to run-time representation after using this, because the result type
+>-- accumulates new parts with each use without considering what the total
+>-- dimension of the result is. This can produce excessively complicated types, because
+>-- the type reprsents the structure of the expression rather than the structure of
+>-- the result.
+>(/%) :: (Fractional (Scalar u), Unit u, Unit w, Scalar u ~ Scalar w)
+>     => u -> w -> u :/ w
+>a /% b = QDivide (amount a / amount b) fromAmount fromAmount
+
+>unitNameToDimension :: (Num (Scalar u), Unit u) => UnitName u -> Dimension
+>unitNameToDimension f = dimension (f 0)
+
+>mapAmount :: (Unit a) => (Scalar a -> Scalar a) -> a -> a
+>mapAmount f = fromAmount . f . amount
+
+>mapAmount2 :: (Unit a) => (Scalar a -> Scalar a -> Scalar a) -> a -> a -> a
+>mapAmount2 f x y = fromAmount (f (amount x) (amount y))
+>
+
+>-- | Conversion from "Quantity a" to a unit-specific type.
+>-- The second argument is the constructor for the newtype specific to the unit.
+>-- 
+>-- Example:  @(3 %* meter) `asUnit` Meter == return (Meter 3)@
+>--           @0.3 `asUnit` Radians == return (Radians 0.3)@
+>--  
+>-- If the dimensions don't match, this raises an exception.
+>asUnit :: (Monad m, Show (Scalar u), Show u, Unit u, Fractional (Scalar u))
+>       => Quantity (Scalar u) -> UnitName u -> m u
+>asUnit (x `As` d) f = let v = f (x / conversionFactor f - zeroAmount f)
+> in if d == dimension v then return v
+>                        else invalidDimensionsM "toUnit" d (dimension v) x (amount v)
+
+>-- | Converts a compile-time checked dimensional unit to run-time checked version
+>-- This often has the effect of reducing the complexity in types.
+>quantity :: (Unit u) => u -> Quantity (Scalar u)
+>quantity (x :: u) = (conversionFactor (fromAmount :: Scalar u -> u) * amount x
+>                    + zeroAmount (fromAmount :: Scalar u -> u)) @@ dimension x
+
+>data a :/ b  = QDivide { qdivide_amount :: Scalar a,
+>                         qdivide_dividend_unit :: UnitName a,
+>                         qdivide_divisor_unit  :: UnitName b }
+
+>data a :* b = QProduct { qproduct_amount :: Scalar a,
+>                         qproduct_first_unit :: UnitName a,
+>                         qproduct_second_unit :: UnitName b
+>                       }
+>
+>instance (Unit a, Unit b, Scalar a ~ Scalar b) => VectorSpace (a :* b) where
+>   type Scalar (a :* b) = Scalar a
+>   vzero = QProduct 0 fromAmount fromAmount
+>   vnegate (QProduct x s t) = QProduct (negate x) s t
+>   (QProduct d s t) %+ (QProduct d' _ _) = QProduct (d + d') s t
+>   k %* (QProduct d s t) = QProduct (k * d) s t
+
+>instance (Unit a, Unit b, Scalar a ~ Scalar b) => VectorSpace (a :/ b) where
+>   type Scalar (a :/ b) = Scalar a
+>   vzero = QDivide 0 fromAmount fromAmount
+>   vnegate (QDivide x a b) = QDivide (negate x) a b
+>   (QDivide x a b) %+ (QDivide x' _ _) = QDivide (x + x') a b
+>   k %* (QDivide d s t) = QDivide (k * d) s t
+
+>instance (Unit a, Unit b, Show (Scalar a), Scalar a ~ Scalar b) => Unit (a :* b) where
+>   amount = qproduct_amount
+>   unitOf z@(QProduct x _ _) = show (dimension z)
+>   fromAmount d = QProduct d fromAmount fromAmount
+>   fromQuantity q = do
+>     let res = QProduct (value_amount q) fromAmount fromAmount
+>     guard (value_dimension q == dimension res)
+>       <|> invalidDimensions "fromQuantity" (value_dimension q) (dimension res)
+>                                           (value_amount q) (value_amount q)
+>     return res
+>   dimension (QProduct x s t) = unitNameToDimension s + unitNameToDimension t
+
+>instance (Unit a, Unit b, Show (Scalar a), Scalar a ~ Scalar b) => Unit (a :/ b) where
+>   amount = qdivide_amount
+>   unitOf z@(QDivide x _ _) = show (dimension z)
+>   fromAmount d = QDivide d fromAmount fromAmount
+>   fromQuantity q = do
+>      let res = QDivide (value_amount q) fromAmount fromAmount 
+>      guard (value_dimension q == dimension res)
+>        <|> invalidDimensions "fromQuantity" (value_dimension q) (dimension res)
+>                                            (value_amount q) (value_amount q)
+>      return $ res
+>   dimension (QDivide x a b) = unitNameToDimension a - unitNameToDimension b
+
+>instance (Scalar a ~ Scalar b, Unit a, Unit b, Show (Scalar a)) => Show (a :* b) where
+>   show z@(QProduct d s t) = show d ++ " " ++ show (dimension z)
+
+>instance (Scalar a ~ Scalar b, Unit a, Unit b, Show (Scalar a)) => Show (a :/ b) where
+>   show z@(QDivide d s t) = show d ++ " " ++ show (dimension z)
+>    -- show (unitNameToDimension s)
+>      --                             ++ "/(" ++ show (unitNameToDimension t) ++ ")"
+
+>instance Unit Float where
+>   amount x = x
+>   unitOf _ = ""
+>   fromQuantity (x `As` d) = guard (isDimensionless d) >> return x
+>   dimension _ = dimensionless
+>   fromAmount x = x
+
+>instance Unit Double where
+>   amount x = x
+>   unitOf _ = ""
+>   dimension _ = dimensionless
+>   fromQuantity (x `As` d) = guard (isDimensionless d) >> return x
+>   fromAmount x = x
+
+>newtype Dimensionless = Dimensionless { dimensionless_value :: Double }
+> deriving (Read,Eq,Ord)
+>instance Show Dimensionless where { show = show_unit }
+>instance VectorSpace Dimensionless where
+>   type Scalar Dimensionless = Double
+>   vzero = Dimensionless 0
+>   vnegate (Dimensionless x) = Dimensionless (negate x)
+>   (Dimensionless x) %+ (Dimensionless y) = Dimensionless $ x + y
+>   k %* (Dimensionless x) = Dimensionless $ k * x
+
+>instance Unit Dimensionless where
+>   amount = dimensionless_value
+>   unitOf _ = ""
+>   fromAmount = Dimensionless
+>   dimension _ = dimensionless
+>   fromQuantity (x `As` d) = do
+>     guard (isDimensionless d)
+>     return $ Dimensionless x
 
 >newtype Angle = Radians { radians :: Double }
 >   deriving (Read,Eq,Ord)
@@ -20,16 +199,41 @@
 >   (Radians x) %+ (Radians y) = Radians $ x + y
 >   k %* (Radians x) = Radians $ k * x
 
->degreesAngle :: Double -> Angle
->degreesAngle d = Radians $ (d * pi) / 180.0
+>newtype DegreesAngle = Degrees { degrees :: Double }
+>   deriving (Read,Eq,Ord)
 
->degreesCelcius :: Angle -> Double
->degreesCelcius (Radians r) = r * 180.0 / pi
+>instance Show DegreesAngle where { show = show_unit }
+
+>instance VectorSpace DegreesAngle where
+>   type Scalar DegreesAngle = Double
+>   vzero = Degrees 0
+>   vnegate (Degrees x) = Degrees $ negate x
+>   (Degrees x) %+ (Degrees y) = Degrees $ x + y
+>   k %* (Degrees x) = Degrees $ k * x
+
+>degreesAngle :: DegreesAngle -> Angle
+>degreesAngle (Degrees d) = Radians $ (d * pi) / 180.0
+
+>angleDegrees :: Angle -> DegreesAngle
+>angleDegrees (Radians r) = Degrees $ r * 180.0 / pi
+
+>fromQuantityDef :: (Monad m, Alternative m) => Dimension -> (a -> b) -> Quantity a -> m b
+>fromQuantityDef dim ctr (x `As` d) = do { guard (d == dim) ; return $ ctr x }
+
+>instance Unit DegreesAngle where
+>   amount = degrees
+>   fromAmount = Degrees
+>   dimension _ = dimensionless
+>   fromQuantity = fromQuantityDef dimensionless Degrees
+>   unitOf _ = "°"
+>   zeroAmount _ = 0
+>   conversionFactor _ = pi/180.0
 
 >instance Unit Angle where
 >   amount = radians
 >   fromAmount = Radians
 >   dimension _ = dimensionless
+>   fromQuantity = fromQuantityDef dimensionless Radians
 >   unitOf _ = "rad"
 
 >-- | <https://en.wikipedia.org/wiki/Steradian>
@@ -48,13 +252,31 @@
 >   amount = steradians
 >   fromAmount = Steradians
 >   dimension _ = dimensionless
+>   fromQuantity = fromQuantityDef dimensionless Steradians
 >   unitOf _ = "sr"
 
 >show_unit :: (Unit u, Show (Scalar u)) => u -> String
 >show_unit i = show (amount i) ++ " " ++ unitOf i
 
+>newtype SquareLength = SquareMeter { squaremeters :: Double }
+> deriving (Eq,Ord)
+>instance Show SquareLength where { show = show_unit }
+>instance VectorSpace SquareLength where
+>   type Scalar SquareLength = Double
+>   vzero = SquareMeter 0
+>   vnegate (SquareMeter x) = SquareMeter $ negate x
+>   (SquareMeter x) %+ (SquareMeter y) = SquareMeter $ negate x
+>   k %* (SquareMeter x) = SquareMeter $ k * x
+>instance Unit SquareLength where
+>   amount = squaremeters
+>   fromAmount = SquareMeter
+>   fromQuantity = fromQuantityDef squaremeter_dimension SquareMeter
+>   dimension _ = meter_dimension %+ meter_dimension
+>   unitOf _ = "m^2"
+
 >-- types for basic units <https://en.wikipedia.org/wiki/International_System_of_Units>
->newtype Length = Meter { meters :: Double } deriving (Eq,Ord)
+>newtype Length = Meter { meters :: Double }
+> deriving (Eq,Ord)
 >instance Show Length where { show = show_unit }
 >instance VectorSpace Length where
 >   type Scalar Length = Double
@@ -89,6 +311,28 @@
 >   vnegate (Ampere x) = Ampere $ negate x
 >   (Ampere x) %+ (Ampere y) = Ampere $ x + y
 >   k %* (Ampere x) = Ampere $ k * x
+>
+
+
+>newtype DegreesTemperature = Celcius { celciuses :: Double } deriving (Eq,Ord)
+>instance Show DegreesTemperature where { show = show_unit }
+>instance VectorSpace DegreesTemperature where
+>   type Scalar DegreesTemperature = Double
+>   vzero = Celcius 0
+>   vnegate (Celcius x) = Celcius $ negate x
+>   (Celcius x) %+ (Celcius y) = Celcius $ x + y
+>   k %* (Celcius x) = Celcius $ k * x
+>
+>instance Unit DegreesTemperature where
+>   amount = celciuses
+>   fromAmount = Celcius
+>   dimension _ = kelvin_dimension
+>   unitOf _ = "°C"
+>   fromQuantity x
+>     | dimension x == kelvin_dimension = return $ Celcius $ amount (x - (273.15 @@ kelvin_dimension))
+>     | otherwise = invalidDimensions "fromQuantity:DegreesTemperature" (dimension x) kelvin_dimension (amount x) (amount x)
+>   zeroAmount _ = 273.15
+
 >newtype Temperature = Kelvin { kelvins :: Double } deriving (Eq,Ord)
 >instance Show Temperature where { show = show_unit }
 
@@ -292,206 +536,161 @@
 >   amount = katals
 >   fromAmount = Katal
 >   dimension _ = katal_dimension
+>   fromQuantity = fromQuantityDef katal_dimension Katal
 >   unitOf _ = "kat"
 >instance Unit EquivalentDose where
 >   amount = sieverts
 >   fromAmount = Sievert
 >   dimension _ = sievert_dimension
+>   fromQuantity = fromQuantityDef sievert_dimension Sievert
 >   unitOf _ = "Sv"
+>   
+>                                     
 >instance Unit AbsorbedDose where
 >   amount = grays
 >   fromAmount = Gray
 >   dimension _ = gray_dimension
+>   fromQuantity = fromQuantityDef gray_dimension Gray
 >   unitOf _ = "Gy"
+>   
 >instance Unit Radioactivity where
 >   amount = becquerels
 >   fromAmount = Becquerel
 >   dimension _ = becquerel_dimension
+>   fromQuantity = fromQuantityDef becquerel_dimension Becquerel
 >   unitOf _ = "Bq"
 >instance Unit Illuminance where
 >   amount = luxes
 >   fromAmount = Lux
 >   dimension _ = lux_dimension
+>   fromQuantity = fromQuantityDef lux_dimension Lux
 >   unitOf _ = "lx"
 >instance Unit LuminousFlux where
 >   amount = lumens
 >   fromAmount = Lumen
 >   dimension _ = lumen_dimension
+>   fromQuantity = fromQuantityDef lumen_dimension Lumen
 >   unitOf _ = "lm"
 >instance Unit Inductance where
 >   amount = henrys
 >   fromAmount = Henry
 >   dimension _ = henry_dimension
+>   fromQuantity = fromQuantityDef henry_dimension Henry
 >   unitOf _ = "H"
 >instance Unit FluxDensity where
 >   amount = teslas
 >   fromAmount = Tesla
 >   dimension _ = tesla_dimension
+>   fromQuantity = fromQuantityDef tesla_dimension Tesla
 >   unitOf _ = "T"
 >instance Unit Flux where
 >   amount = webers
 >   fromAmount = Weber
 >   dimension _ = weber_dimension
+>   fromQuantity = fromQuantityDef weber_dimension Weber
 >   unitOf _ = "W"
 >instance Unit Conductance where
 >   amount = siemenses
 >   fromAmount = Siemens
 >   dimension _ = siemens_dimension
+>   fromQuantity = fromQuantityDef siemens_dimension Siemens
 >   unitOf _ = "S"
 >instance Unit Resistance where
 >   amount = ohms
 >   fromAmount = Ohm
 >   dimension _ = ohm_dimension
+>   fromQuantity = fromQuantityDef ohm_dimension Ohm
 >   unitOf _ = "Ω"
 >instance Unit Capacitance where
 >   amount = farads
 >   fromAmount = Farad
 >   dimension _ = farad_dimension
+>   fromQuantity = fromQuantityDef farad_dimension Farad
 >   unitOf _ = "F"
 >instance Unit Voltage where
 >   amount = volts
 >   fromAmount = Volt
 >   dimension _ = volt_dimension
+>   fromQuantity = fromQuantityDef volt_dimension Volt
 >   unitOf _ = "V"
 >instance Unit Charge where
 >   amount = coulombs
 >   fromAmount = Coulomb
 >   dimension _ = coulomb_dimension
+>   fromQuantity = fromQuantityDef coulomb_dimension Coulomb
 >   unitOf _ = "C"
 >instance Unit Power where
 >   amount = watts
 >   fromAmount = Watt
 >   dimension _ = watt_dimension
+>   fromQuantity = fromQuantityDef watt_dimension Watt
 >   unitOf _ = "W"
 >instance Unit Energy where
 >   amount = joules
 >   fromAmount = Joule
 >   dimension _ = joule_dimension
+>   fromQuantity = fromQuantityDef joule_dimension Joule
 >   unitOf _ = "J"
 >instance Unit Pressure where
 >   amount = pascals
 >   fromAmount = Pascal
 >   dimension _ = pascal_dimension
+>   fromQuantity = fromQuantityDef pascal_dimension Pascal
 >   unitOf _ = "Pa"
 >instance Unit Force where
 >   amount = newtons
 >   fromAmount = Newton
 >   dimension _ = newton_dimension
+>   fromQuantity = fromQuantityDef newton_dimension Newton
 >   unitOf _ = "N"
 >instance Unit Frequency where
 >   amount = hertzs
 >   fromAmount = Hertz
 >   dimension _ = hertz_dimension
+>   fromQuantity = fromQuantityDef hertz_dimension Hertz
 >   unitOf _ = "Hz"
 >instance Unit Length where
 >   amount = meters
 >   fromAmount = Meter
 >   dimension _ = meter_dimension
+>   fromQuantity = fromQuantityDef meter_dimension Meter
 >   unitOf _ = "m"
 >instance Unit Mass where
 >   amount = kilograms
 >   fromAmount = Kilogram
 >   dimension _ = kilogram_dimension
+>   fromQuantity = fromQuantityDef kilogram_dimension Kilogram
 >   unitOf _ = "kg"
 >instance Unit Time where
 >   amount = seconds
 >   fromAmount = Second
 >   dimension _ = second_dimension
+>   fromQuantity = fromQuantityDef second_dimension Second
 >   unitOf _ = "s"
 >instance Unit Current where
 >   amount = amperes
 >   fromAmount = Ampere
 >   dimension _ = ampere_dimension
+>   fromQuantity = fromQuantityDef ampere_dimension Ampere
 >   unitOf _ = "A"
 >instance Unit Temperature where
 >   amount = kelvins
 >   fromAmount = Kelvin
 >   dimension _ = kelvin_dimension
+>   fromQuantity = fromQuantityDef kelvin_dimension Kelvin
 >   unitOf _ = "K"
+>
+> 
 >instance Unit Substance where
 >   amount = moles
 >   fromAmount = Mole
 >   dimension _ = mol_dimension
+>   fromQuantity = fromQuantityDef mol_dimension Mole
 >   unitOf _ = "mol"
 >instance Unit Intensity where
 >   amount = candelas
 >   fromAmount = Candela
 >   dimension _ = candela_dimension
+>   fromQuantity = fromQuantityDef candela_dimension Candela
 >   unitOf _ = "cd"
 
->-- | <https://en.wikipedia.org/wiki/United_States_customary_units>
->point = (127/360) %* milli meter
->-- | <https://en.wikipedia.org/wiki/United_States_customary_units>
->pica = 12 %* point
->-- | <https://en.wikipedia.org/wiki/United_States_customary_units>
->inch = 6 %* pica
->-- | <https://en.wikipedia.org/wiki/United_States_customary_units>
->foot = 12 %* inch
->-- | <https://en.wikipedia.org/wiki/United_States_customary_units>
->feet = foot
->-- | <https://en.wikipedia.org/wiki/United_States_customary_units>
->yard = 3 %* foot
->-- | <https://en.wikipedia.org/wiki/United_States_customary_units>
->mile = 1760 %* yard
->-- | <https://en.wikipedia.org/wiki/United_States_customary_units>
->link = (33/50) %* foot
->-- | <https://en.wikipedia.org/wiki/United_States_customary_units>
->surveyFoot = (1200/3937) %* meter
->-- | <https://en.wikipedia.org/wiki/United_States_customary_units>
->rod = 25 %* link
->-- | <https://en.wikipedia.org/wiki/United_States_customary_units>
->chain = 4 %* rod
->-- | <https://en.wikipedia.org/wiki/United_States_customary_units>
->furlong = 10 %* chain
->-- | <https://en.wikipedia.org/wiki/United_States_customary_units>
->surveyMile = 8 %* furlong
->-- | <https://en.wikipedia.org/wiki/United_States_customary_units>
->league = 3 %* mile
->-- | <https://en.wikipedia.org/wiki/United_States_customary_units>
->fathom = 2 %* yard
->-- | <https://en.wikipedia.org/wiki/United_States_customary_units>
-
->cable = 120 %* fathom
->-- | <https://en.wikipedia.org/wiki/United_States_customary_units>
->nauticalMile = 1.852 %* kilo meter
-
->-- | <https://en.wikipedia.org/wiki/United_States_customary_units>
->squareSurveyFoot = 144 %* (inch * inch)
->-- | <https://en.wikipedia.org/wiki/United_States_customary_units>
->squareChain = 4356 %* squareSurveyFoot
->-- | <https://en.wikipedia.org/wiki/United_States_customary_units>
->acre = 43560 %* squareSurveyFoot
->-- | <https://en.wikipedia.org/wiki/United_States_customary_units>
->section = 640 %* acre
->-- | <https://en.wikipedia.org/wiki/United_States_customary_units>
->surveyTownship = 36 %* section
->
->-- | <https://en.wikipedia.org/wiki/United_States_customary_units>
->cubicInch = 16.387064 %* milli liter
->-- | <https://en.wikipedia.org/wiki/United_States_customary_units>
->cubicFoot = 28.316846592 %* liter
->-- | <https://en.wikipedia.org/wiki/United_States_customary_units>
->cubicYard = 764.554857984 %* liter
-> 
->-- | <https://en.wikipedia.org/wiki/United_States_customary_units>
->grain = 64.79891 %* milli gram
->-- | <https://en.wikipedia.org/wiki/United_States_customary_units> 
->dram = 1.7718451953125 %* gram
->-- | <https://en.wikipedia.org/wiki/United_States_customary_units>
->ounce = 16 %* dram
->-- | <https://en.wikipedia.org/wiki/United_States_customary_units> 
->pound = 16 %* ounce
->-- | <https://en.wikipedia.org/wiki/United_States_customary_units>
->usHundredWeight = 100 %* pound
->-- | <https://en.wikipedia.org/wiki/United_States_customary_units>
->longHundredWeight = 112 %* pound
->-- | <https://en.wikipedia.org/wiki/United_States_customary_units>
->ton = 2000 %* pound
->-- | <https://en.wikipedia.org/wiki/United_States_customary_units>
->longTon = 2240 %* pound
->-- | <https://en.wikipedia.org/wiki/United_States_customary_units>
->pennyWeight = 24 %* grain
->-- | <https://en.wikipedia.org/wiki/United_States_customary_units>
->troyOunce = 20 %* pennyWeight
->-- | <https://en.wikipedia.org/wiki/United_States_customary_units>
->troyPound = 12 %* troyOunce

@@ -98,7 +98,7 @@
 >instance (Universe row, Universe col, Num a, ConjugateSymmetric a)
 > => InnerProductSpace (((->) row :*: (->) col) a) where
 >   (Matrix m) %. (Matrix n) = sum $
->      [conj (m i j) * (n i j) | i <- all_elements, j <- all_elements]
+>      [(m i j) * conj (n i j) | i <- all_elements, j <- all_elements]
 
 >sumS :: (Num b, Universe a) => (a -> b) -> b
 >sumS f = sum [f i | i <- all_elements]

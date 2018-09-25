@@ -201,6 +201,18 @@ TODO: negative integers?
 
 >type Bot = forall a. a
 
+>andIso :: (Bool,Bool) :==: (Bool,Ordering)
+>andIso = (\(a,b) -> (a && b, compare a b)) <-> \ (x,b) -> case b of
+>               LT -> (x,True)
+>               EQ -> (x,x)
+>               GT -> (True,x)
+>
+>orIso :: (Bool,Bool) :==: (Bool,Ordering)
+>orIso = (\(a,b) -> (a || b, compare a b)) <-> \ (x,b) -> case b of
+>           LT -> (False, x)
+>           EQ -> (x,x)
+>           GT -> (x,False)
+
 >initialIso :: (BiArrow arr, Arrow arr') => arr () (arr' Bot a)
 >initialIso =  (\ () -> proc x -> returnA -< undefined)
 >          <-> const ()
@@ -399,17 +411,6 @@ foldListIso f g h = let self = listIso >>> ((iso f <**> self) <||> iso g) >>> is
 
 >data IsomorphismA arr a b = IsoA { epimorphismA :: arr a b,
 >                                   sectionA :: arr b a }
-
-instance (MonoidalCategory arr) => MonoidalCategory (IsomorphismA arr) where
-   type Prod (IsomorphismA arr) a b = Prod arr a b
-   type MUnit (IsomorphismA arr) = MUnit arr
-   (IsoA f g) -*- (IsoA f' g') = IsoA (f -*- f') (g -*- g')
-   assoc = IsoA assoc deassoc
-   deassoc = IsoA deassoc assoc
-   leftunitor = IsoA leftunitor unleftunitor
-   unleftunitor = IsoA unleftunitor leftunitor
-   rightunitor = IsoA rightunitor unrightunitor
-   unrightunitor = IsoA unrightunitor rightunitor
 
 >instance (Category arr) => Category (IsomorphismA arr) where
 >   id = IsoA id id

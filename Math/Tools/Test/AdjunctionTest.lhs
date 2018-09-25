@@ -12,7 +12,8 @@
 >
 >prop_unit_arrow = unit () `equal_functions` \(x :: Int) -> (x,())
 >prop_counit_arrow = counit ("a",(++"b")) === "ab"
->
+
+
 >$(return [])
 >qcTests = $quickCheckAll
 > 
