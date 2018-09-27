@@ -34,18 +34,7 @@
 
 >prop_median_test = med (pi :: R) (3.141 :: R) (3.242 :: R) `approximately_equal` pi
 
-prop_exp_log_inverses = forAll randomReal $ \r -> log (exp r) `approximately_equal` r
-
-prop_sin_asin_inverses = forAll (realInRange 0 (2*pi)) $ \r -> asin (sin r) `approximately_equal` r
-
 >prop_average_test = average (pi :: R) 0 `approximately_equal` (pi / 2)
-
-prop_sin_90deg = sin (pi / 2 :: R) `approximately_eq` 1 
-prop_cos_90deg = cos (pi / 2 :: R) `approximately_eq` 0 
-prop_sin_360deg = sin (2*pi :: R) `approximately_eq` 0 
-prop_cos_360deg = cos (2*pi :: R) `approximately_eq` 1 
-prop_sin_0deg = sin (0 :: R) `approximately_eq` 0 
-prop_cos_0deg = cos (0 :: R) `approximately_eq` 1 
 
 >derivatetest1 :: Test
 >derivatetest1 = -- True ~? "derivatetest1"
