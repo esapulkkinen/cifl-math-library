@@ -36,6 +36,7 @@
 >import Math.Number.DimensionalAnalysis
 >import Math.Number.TypeRational
 >import Data.Ratio
+>import Math.Number.Real (R)
 
 >-- | Notice that 'Math.Number.DimensionalAnalysis.fromAmount' from Unit class
 >-- has type @(Unit u) => UnitName u@.
@@ -163,6 +164,13 @@
 >   fromAmount x = x
 
 >instance Unit Double where
+>   amount x = x
+>   unitOf _ = ""
+>   dimension _ = dimensionless
+>   fromQuantity (x `As` d) = guard (isDimensionless d) >> return x
+>   fromAmount x = x
+
+>instance Unit R where
 >   amount x = x
 >   unitOf _ = ""
 >   dimension _ = dimensionless

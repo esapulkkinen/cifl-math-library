@@ -575,6 +575,10 @@ instance (Floating a) => NormedSpace [a] where
 >  => InnerProductSpace (v,w) where
 >   (a,b) %. (c,d) = a %. c + b %. d
 
+>-- | <https://en.wikipedia.org/wiki/Lie_algebra>
+>instance (LieAlgebra a, LieAlgebra b, Scalar a ~ Scalar b) => LieAlgebra (a,b) where
+>   (a,b) %<>% (a',b') = (a %<>% a', b %<>% b')
+
 >instance (VectorSpace v, VectorSpace w,VectorSpace u, 
 >  Scalar v ~ Scalar w, Scalar w ~ Scalar u)
 > => VectorSpace (v,w,u) where
@@ -583,6 +587,10 @@ instance (Floating a) => NormedSpace [a] where
 >   vnegate (x,y,z) = (vnegate x, vnegate y,vnegate z)
 >   a %* (x,y,z) = (a %* x, a %* y,a %* z)
 >   (x,y,z) %+ (x',y',z') = (x %+ x', y %+ y',z %+ z')
+
+>instance (LieAlgebra v, LieAlgebra w, LieAlgebra u, Scalar v ~ Scalar w, Scalar w ~ Scalar u)
+>  => LieAlgebra (v,w,u) where
+>   (a,b,c) %<>% (a',b',c') = (a %<>% a', b %<>% b', c %<>% c')
 
 >instance (Scalar v ~ Scalar w, Scalar w ~ Scalar u, Num (Scalar w),
 >          InnerProductSpace v, InnerProductSpace w, InnerProductSpace u)

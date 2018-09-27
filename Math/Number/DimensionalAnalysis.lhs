@@ -3,7 +3,7 @@
 >--   For reference have used <https://en.wikipedia.org/wiki/Dimensional_analysis>
 >--   and <https://en.wikipedia.org/wiki/International_System_of_Units>.
 >--
->--  This module supports run-time checked quanties.
+>--  This module supports run-time checked quantities.
 >--  
 >--  In reality this should be according to the International system of units, but
 >--  I have not used the official standard documents when writing this code.
@@ -45,9 +45,8 @@
 >import Math.Matrix.Interface
 >import Math.Number.Stream (Stream, Limiting(..), Closed(..))
 >import qualified Math.Number.Stream as Stream
-
+>import Math.Number.Real (Infinitesimal(..), ShowPrecision(..))
 >import Math.Number.Group
->import Math.Number.Real
 >import Text.ParserCombinators.ReadPrec
 >import Text.Read
 
@@ -250,9 +249,10 @@
 >instance Group Dimension where
 >   ginvert = vnegate
 
+
 >instance VectorSpace Dimension where
 >   type Scalar Dimension = Rational
->   vzero = Dimension 0 0 0 0 0 0 0 
+>   vzero = dimensionless
 >   vnegate a = mapDimension negate a
 >   a %+ b = zipWithDimension (+) a b
 >   k %* a = mapDimension (k *) a
