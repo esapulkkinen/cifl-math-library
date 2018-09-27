@@ -97,8 +97,8 @@
 >-- | Converts a compile-time checked dimensional unit to run-time checked version
 >-- This often has the effect of reducing the complexity in types.
 >quantity :: (Unit u) => u -> Quantity (Scalar u)
->quantity (x :: u) = (conversionFactor (fromAmount :: Scalar u -> u) * amount x
->                    + zeroAmount (fromAmount :: Scalar u -> u)) @@ dimension x
+>quantity (x :: u) = (conversionFactor (fromAmount :: Scalar u -> u) * (amount x
+>                    + zeroAmount (fromAmount :: Scalar u -> u))) @@ dimension x
 
 >data a :/ b  = QDivide { qdivide_amount :: Scalar a,
 >                         qdivide_dividend_unit :: UnitName a,
@@ -217,9 +217,6 @@
 >angleDegrees :: Angle -> DegreesAngle
 >angleDegrees (Radians r) = Degrees $ r * 180.0 / pi
 
->fromQuantityDef :: (Monad m, Alternative m) => Dimension -> (a -> b) -> Quantity a -> m b
->fromQuantityDef dim ctr (x `As` d) = do { guard (d == dim) ; return $ ctr x }
-
 >instance Unit DegreesAngle where
 >   amount = degrees
 >   fromAmount = Degrees
@@ -257,6 +254,40 @@
 
 >show_unit :: (Unit u, Show (Scalar u)) => u -> String
 >show_unit i = show (amount i) ++ " " ++ unitOf i
+
+>newtype Acceleration = MetersPerSquareSecond { metersPerSquareSecond :: Double }
+>   deriving (Eq,Ord)
+>instance Show Acceleration where { show = show_unit }
+>instance VectorSpace Acceleration where
+>   type Scalar Acceleration = Double
+>   vzero = MetersPerSquareSecond 0
+>   vnegate (MetersPerSquareSecond x) = MetersPerSquareSecond (negate x)
+>   (MetersPerSquareSecond x) %+ (MetersPerSquareSecond y) = MetersPerSquareSecond (x + y)
+>   k %* (MetersPerSquareSecond x) = MetersPerSquareSecond (k %* x)
+
+>instance Unit Acceleration where
+>   amount = metersPerSquareSecond
+>   fromAmount = MetersPerSquareSecond
+>   fromQuantity = fromQuantityDef (meter_dimension %- (second_dimension %+ second_dimension)) MetersPerSquareSecond
+>   dimension _ = meter_dimension %- (second_dimension %+ second_dimension)
+>   unitOf _ = "m/s^2"
+
+>newtype Velocity = MetersPerSecond { metersPerSecond :: Double }
+>   deriving (Eq,Ord)
+>instance Show Velocity where { show = show_unit }
+>instance VectorSpace Velocity where
+>   type Scalar Velocity = Double
+>   vzero = MetersPerSecond 0
+>   vnegate (MetersPerSecond x) = MetersPerSecond (negate x)
+>   (MetersPerSecond x) %+ (MetersPerSecond y) = MetersPerSecond $ x + y
+>   k %* (MetersPerSecond x) = MetersPerSecond (k * x)
+>
+>instance Unit Velocity where
+>   amount = metersPerSecond
+>   fromAmount = MetersPerSecond
+>   fromQuantity = fromQuantityDef (meter_dimension %- second_dimension) MetersPerSecond
+>   dimension _ = meter_dimension %- second_dimension
+>   unitOf _ = "m/s"
 
 >newtype SquareLength = SquareMeter { squaremeters :: Double }
 > deriving (Eq,Ord)
@@ -313,6 +344,25 @@
 >   k %* (Ampere x) = Ampere $ k * x
 >
 
+>-- | <https://en.wikipedia.org/wiki/Fahrenheit>
+>newtype DegreesFahrenheit = Fahrenheit { fahrenheits :: Double } deriving (Eq,Ord)
+>instance Show DegreesFahrenheit where { show = show_unit }
+>instance VectorSpace DegreesFahrenheit where
+>   type Scalar DegreesFahrenheit = Double
+>   vzero = Fahrenheit 0
+>   vnegate (Fahrenheit x) = Fahrenheit $ negate x
+>   (Fahrenheit x) %+ (Fahrenheit y) = Fahrenheit $ x + y
+>   k %* (Fahrenheit x) = Fahrenheit $ k * x
+>instance Unit DegreesFahrenheit where
+>   amount = fahrenheits
+>   fromAmount = Fahrenheit
+>   dimension _ = kelvin_dimension
+>   unitOf _ = "°F"
+>   fromQuantity x
+>     | dimension x == kelvin_dimension = return $ Fahrenheit $ (amount x * (9/5) - 459.67)
+>     | otherwise = invalidDimensions "fromQuantity:DegreesFahrenheit" (dimension x) kelvin_dimension (amount x) (amount x)
+>   zeroAmount _ = 459.67
+>   conversionFactor _ = 5/9
 
 >newtype DegreesTemperature = Celcius { celciuses :: Double } deriving (Eq,Ord)
 >instance Show DegreesTemperature where { show = show_unit }

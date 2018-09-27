@@ -110,11 +110,14 @@
 >   fromQuantity :: (Alternative m, Monad m) => Quantity (Scalar u) -> m u
 >   unitOf :: u -> String
 >   dimension :: u -> Dimension
->   -- | zeroAmount is amount of zero in the amount used by Quantity.
 >   zeroAmount :: (Scalar u -> u) -> Scalar u
 >   conversionFactor :: (Scalar u -> u) -> Scalar u
 >   zeroAmount _ = 0
 >   conversionFactor _ = 1
+
+>fromQuantityDef :: (Monad m, Alternative m, Show a) => Dimension -> (a -> b) -> Quantity a -> m b
+>fromQuantityDef dim ctr (x `As` d) = do { guard (d == dim) ; return $ ctr x }
+>                                <|> invalidDimensionsM "fromQuantityDef" d dim x x
 
 
 >instance (Closed a, Show a) => Closed (Quantity a) where
@@ -537,12 +540,13 @@
 >   norm (x `As` _) = x
 
 >show_dimension :: Dimension -> String
->show_dimension (Dimension a b c d e f g) = showz "m" a ++ showz "kg" b ++ showz "s" c ++ showz "A" d ++ showz "K" e ++ showz "cd" f ++ showz "mol" g 
-> where  showz u 0 = ""
->        showz u 1 = u
->        showz u 2 = u ++ "^2"
->        showz u 3 = u ++ "^3"
->        showz u i = u ++ "^(" ++ show i ++ ")"
+>show_dimension (Dimension a b c d e f g) = if str /= "" then take (length str - 1) str else ""
+> where str = showz "A" d ++ showz "kg" b ++ showz "m" a ++  showz "s" c ++ showz "K" e ++ showz "cd" f ++ showz "mol" g
+>       showz u 0 = ""
+>       showz u 1 = u ++ " "
+>       showz u i
+>           | denominator i == 1 = u ++ "^" ++ show (numerator i) ++ " "
+>           | otherwise = u ++ "^(" ++ show i ++ ") "
 
 >full_dimension_table :: [(Dimension,String)]
 >full_dimension_table = res4
@@ -605,6 +609,7 @@ order in the table is significant
 
 >dimensionless :: Dimension
 >dimensionless = Dimension 0 0 0 0 0 0 0 
+
 
 >instance PpShow Dimension where
 >   pp z@(Dimension a b c d e f g) = maybe (def z) id $ foldl check Nothing full_dimension_table
