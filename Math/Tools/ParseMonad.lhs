@@ -1,7 +1,7 @@
->{-# LANGUAGE GADTs,TypeFamilies, FlexibleInstances, MultiParamTypeClasses #-}
+>{-# LANGUAGE Trustworthy, GADTs,TypeFamilies, FlexibleInstances, MultiParamTypeClasses #-}
 >module Math.Tools.ParseMonad where
->import Debug.Trace
 >import Math.Tools.PrettyP
+>import Debug.Trace
 >import Control.Applicative
 >import Control.Monad.Except
 >import Control.Monad.Reader

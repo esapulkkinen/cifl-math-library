@@ -4,6 +4,10 @@
 >--  HaXML is (c) Malcolm Wallace and licensed under LGPL.
 >--  The Math.Graph.XML.GXL is generated using HaXML.
 >--
+>--  To enable HaXML support, please use -fHaXML option to cabal.
+>--  (WARNING: since some time ago, HaXml has conflicted with base package).
+>--  Until those are resolved, compiling with HaXml may be difficult.
+>-- 
 >--  JSON uses Text.JSON package from <https://hackage.haskell.org/package/json>
 >-- 
 >--  Please see HaXML web page, <https://hackage.haskell.org/package/HaXml>

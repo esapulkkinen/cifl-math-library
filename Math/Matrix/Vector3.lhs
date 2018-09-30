@@ -38,7 +38,7 @@
 >   zcoord3 :: s }
 >       deriving (Eq)
 
-
+>type ComplexVector3 a = (Vector3 :*: Complex) a
 
 >instance Unfoldable Vector3 where
 >   unfoldF f = f >>= \a -> f >>= \b -> f >>= \c -> return $ Vector3 a b c

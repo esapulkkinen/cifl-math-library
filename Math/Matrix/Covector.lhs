@@ -1,8 +1,15 @@
 >-- -*- coding: utf-8 -*-
 >{-# LANGUAGE Safe,GADTs,MultiParamTypeClasses,FlexibleContexts, TypeOperators, UndecidableInstances, TypeFamilies, UnicodeSyntax #-}
->-- | <http://theoreticalminimum.com/courses/advanced-quantum-mechanics/2013/fall/lecture-1>
+>-- |
+>-- Module: Math.Matrix.Covector
+>-- Description: Covectors
+>-- Copyright: (c) Esa Pulkkinen, 2018
+>-- Maintainer: esa.pulkkinen@iki.fi
+>-- License: LGPL
+>--
+>-- For background material, see K. Chandrasekhara Rao: Functional Analysis.
 >-- 
->-- <https://en.wikipedia.org/wiki/Eigenvalue_algorithm>
+>-- See also: <http://theoreticalminimum.com/courses/advanced-quantum-mechanics/2013/fall/lecture-1>
 >module Math.Matrix.Covector where
 >import Data.Complex
 >import Prelude hiding (id,(.))
@@ -13,8 +20,7 @@
 >import Math.Matrix.Interface
 >import Math.Matrix.Matrix
 
->-- | see K. Chandrasekhara Rao: Functional Analysis
-
+>-- | Data type for dual vectors.
 >data Dual v = Covector { bracket :: v -> Scalar v }
 
 >-- | <https://en.wikipedia.org/wiki/Curl_(mathematics)>
@@ -41,7 +47,6 @@
 >(∇·∇) = laplace
 
 >-- | <https://en.wikipedia.org/wiki/Dual_space#Injection_into_the_double-dual>
-
 >class (VectorSpace v) => FiniteDimensional v where
 >   finite :: (Dual :*: Dual) v -> v
 
@@ -81,8 +86,8 @@
 >natural_double_dual :: v -> (Dual :*: Dual) v
 >natural_double_dual v = Matrix $ Covector $ \ dv -> dv `bracket` v
 
->kernel :: (Num (Scalar v), Eq (Scalar v)) => Dual v -> v -> Bool
->kernel (Covector f) x = f x == 0
+>covector_kernel :: (Num (Scalar v), Eq (Scalar v)) => Dual v -> v -> Bool
+>covector_kernel (Covector f) x = f x == 0
 
 >-- | would like to make 'adjoint' as instance of CoFunctor,
 >-- but the constraint prevents. Instead we declare VectorSpaceMap.
@@ -105,8 +110,11 @@
 >operator_map :: ((v -> Scalar v) -> w -> Scalar w) -> Dual v -> Dual w
 >operator_map f (Covector g) = Covector (f g)
 
->class (Num (Scalar v), VectorSpace v) => NumSpace v where
->class (Fractional (Scalar v), NumSpace v) => FractionalSpace v where
+>-- | vector space with scalars in Num class
+>class (Num (Scalar v), VectorSpace v) => NumSpace v 
+
+>-- | vector space with fractional scalars
+>class (Fractional (Scalar v), NumSpace v) => FractionalSpace v 
 
 >instance (StandardBasis v, Show (Scalar v)) => Show (Dual v) where
 >   show (Covector f) = "dual[" ++ (show $ map f $ unit_vectors) ++ "]"

@@ -1,4 +1,5 @@
 >{-# LANGUAGE TypeOperators #-}
+>{-# OPTIONS_HADDOCK hide, prune #-}
 >module Math.Tools.Action where
 >import Prelude hiding (id,(.))
 >import Control.Category

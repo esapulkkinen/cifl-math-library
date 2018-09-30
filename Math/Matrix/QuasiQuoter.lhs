@@ -1,10 +1,10 @@
 >{-# LANGUAGE LambdaCase, TypeOperators, FlexibleInstances, TemplateHaskell, ScopedTypeVariables, GADTs, FlexibleContexts, Trustworthy #-}
 >-- | This module provides QuasiQuoter syntactic sugar for matrices.
 >-- The syntax is:
->--  
->--   @[mat3x4|1 2 3 4;3 4 5 6;5 6 7 8|] :: (Vector3 :*: Vector4) Integer@
 >-- 
->--   @[double2x2|3.4 5.6;6.7 8.8|] :: (Vector2 :*: Vector2) Double@
+>-- @[mat3x4|1 2 3 4;3 4 5 6;5 6 7 8|] :: (Vector3 :*: Vector4) Integer@
+>-- 
+>-- @[double2x2|3.4 5.6;6.7 8.8|] :: (Vector2 :*: Vector2) Double@
 >--
 >-- The semicolons can be replaced with new line character to produce
 >-- the matrix layout in the code, e.g.:
@@ -13,12 +13,15 @@
 >-- >          2 2 2 2
 >-- >          3 3 3 3
 >-- >          4 4 4 4|]
->--
+>-- 
 >-- The code supports matrices up to 4x4 matrices.
 >-- For larger matrices, you should provide a vector type,
 >-- and use e.g.
+>-- 
 >-- @mat7x3 = parseMat (const () :: Vec 7 (Vec 3 Integer) -> ())@
+>-- 
 >-- @dbl7x2 = parseDbl (const () :: Vec 13 (Vec 2 Integer) -> ())@
+>-- 
 >module Math.Matrix.QuasiQuoter where
 >import Control.Monad
 >import Math.Tools.Lexer
@@ -36,8 +39,9 @@
 >import qualified Language.Haskell.TH.Quote as Quote
 >import Language.Haskell.TH.Syntax
 
-
+>notQuote :: b -> Q a
 >notQuote = const $ fail "not supported"
+>quoter :: (String -> Q Exp) -> Quote.QuasiQuoter
 >quoter f = Quote.QuasiQuoter f notQuote notQuote notQuote
 
 >intmat :: Quote.QuasiQuoter
@@ -46,23 +50,30 @@
 >quoteExpr :: String -> Q Exp
 >quoteExpr s = parseNumberMatrix s >>= lift
 
+>-- | Quasiquoters for various matrix sizes
+>mat1x1,mat2x1,mat3x1,mat4x1 :: Quote.QuasiQuoter
 >mat1x1 = quoter parse1x1mat
 >mat2x1 = quoter parse2x1mat
 >mat3x1 = quoter parse3x1mat
 >mat4x1 = quoter parse4x1mat
+>-- | Quasiquoters for various matrix sizes
+>mat1x2,mat2x2,mat3x2,mat4x2 :: Quote.QuasiQuoter
 >mat1x2 = quoter parse1x2mat
 >mat2x2 = quoter parse2x2mat
 >mat3x2 = quoter parse3x2mat
 >mat4x2 = quoter parse4x2mat
+>-- | Quasiquoters for various matrix sizes
+>mat1x3,mat2x3,mat3x3,mat4x3 :: Quote.QuasiQuoter
 >mat1x3 = quoter parse1x3mat
 >mat2x3 = quoter parse2x3mat
 >mat3x3 = quoter parse3x3mat
 >mat4x3 = quoter parse4x3mat
+>-- | Quasiquoters for various matrix sizes
+>mat1x4,mat2x4,mat3x4,mat4x4 :: Quote.QuasiQuoter
 >mat1x4 = quoter parse1x4mat 
 >mat2x4 = quoter parse2x4mat 
 >mat3x4 = quoter parse3x4mat 
 >mat4x4 = quoter parse4x4mat 
-
 
 >double1x1 = quoter parse1x1dbl
 >double2x1 = quoter parse2x1dbl

@@ -1,3 +1,4 @@
+>{-# LANGUAGE Safe #-}
 >module Math.Tools.Expression where
 >import Math.Tools.Id
 

@@ -1,3 +1,4 @@
+>{-# OPTIONS_HADDOCK hide,prune #-}
 >module Math.Tools.Closure where
 >import Data.Monoid
 >import Math.Tools.FixedPoint

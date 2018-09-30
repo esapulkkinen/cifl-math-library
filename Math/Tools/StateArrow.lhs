@@ -1,4 +1,5 @@
 >{-# LANGUAGE MultiParamTypeClasses, FlexibleInstances #-}
+>{-# OPTIONS_HADDOCK hide #-}
 >module Math.Tools.StateArrow where
 >import Prelude hiding (id,(.))
 >import Control.Category

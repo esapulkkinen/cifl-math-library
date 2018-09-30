@@ -1,48 +1,51 @@
->{-# LANGUAGE GADTs, QuasiQuotes #-}
+>{-# LANGUAGE Safe, GADTs, QuasiQuotes #-}
+>{-# OPTIONS_HADDOCK not-home #-}
+>-- |
+>-- Module: Math.Matrix
+>-- Description: Matrix computations
+>-- Copyright: (c) Esa Pulkkinen, 2000..2018
+>-- License: LGPL
+>-- Maintainer: esa.pulkkinen@iki.fi
+>-- Stability: experimental
 >module Math.Matrix (
->-- | Matrix interface type classes
+>-- * Matrix interface type classes
 >   module Math.Matrix.Interface,
->-- | Matrix syntactic sugar
+>-- * Matrix syntactic sugar
 >   module Math.Matrix.QuasiQuoter,
->-- | Matrix data structure
+>-- ** Matrix data structure
 >   module Math.Matrix.Matrix,
->-- | one dimensional vector
+>-- * one dimensional vector
 >   module Math.Matrix.Vector1,
->-- | two dimensional vector
+>-- * two dimensional vector
 >   module Math.Matrix.Vector2,
->-- | three dimensional vector
+>-- * three dimensional vector
 >   module Math.Matrix.Vector3,
->-- | four dimensional vector
+>-- * four dimensional vector
 >   module Math.Matrix.Vector4,
->-- | arbitrary dimensional vector
+>-- * arbitrary dimensional vector
 >   module Math.Matrix.Simple,
->-- | vectors optimized for SIMD
+>-- ** vectors optimized for SIMD
 >   module Math.Matrix.SIMD,
->-- | Dual vector
+>-- * Dual vector
 >   module Math.Matrix.Covector, 
->-- | data structure for linear arrows
+>-- ** data structure for linear arrows
 >   module Math.Matrix.Linear,
->-- | operations on Indexable class
->   module Math.Matrix.Indexable,
->-- | alternative impl of "Math.Matrix.Covector"
->   module Math.Matrix.Bracket,
->-- | unicode syntax
+>-- ** unicode syntax
 >   module Math.Matrix.Unicode,
->-- | commutator and characteristic polynomials
->   module Math.Matrix.Instances) where
->import Math.Matrix.Interface hiding (unit)
+>-- ** commutator and characteristic polynomials
+>   module Math.Matrix.Instances
+>  ) where
+>import Math.Matrix.Interface 
 >import Math.Matrix.Matrix
->import Math.Matrix.Covector hiding (kernel)
+>import Math.Matrix.Covector 
 >import Math.Matrix.Vector1
 >import Math.Matrix.Vector2
 >import Math.Matrix.Vector3
 >import Math.Matrix.Vector4
 >import Math.Matrix.Simple
 >import Math.Matrix.Instances
->import qualified Math.Matrix.Bracket
 >import Math.Matrix.Transpose
 >import Math.Matrix.Linear
->import qualified Math.Matrix.Indexable
 >import Math.Matrix.QuasiQuoter
 >import Math.Matrix.Unicode
 >import Math.Matrix.SIMD

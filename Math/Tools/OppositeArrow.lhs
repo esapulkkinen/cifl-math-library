@@ -1,4 +1,5 @@
 >{-# LANGUAGE MultiParamTypeClasses, FlexibleInstances, Arrows, TypeFamilies, RankNTypes, Safe #-}
+>{-# OPTIONS_HADDOCK hide, prune #-}
 >module Math.Tools.OppositeArrow where
 >import Prelude hiding (id,(.))
 >import Control.Category
@@ -48,11 +49,11 @@
 >   unrightunitor = OpA $ proc z -> case z of { (Left x)  -> returnA -< x }
 >   leftunitor = OpA $ proc z -> returnA -< (Right z)
 >   rightunitor = OpA $ proc z -> returnA -< (Left z)
->   assoc = OpA $ proc z -> case z of
+>   monoidal_assoc = OpA $ proc z -> case z of
 >      (Left x) -> returnA -< Left (Left x)
 >      (Right (Left y)) -> returnA -< Left (Right y)
 >      (Right (Right z)) -> returnA -< Right z
->   deassoc = OpA $ proc z -> case z of
+>   monoidal_deassoc = OpA $ proc z -> case z of
 >       (Left (Left x)) -> returnA -< Left x
 >       (Left (Right y)) -> returnA -< Right (Left y)
 >       (Right z) -> returnA -< Right (Right z)

@@ -1,0 +1,84 @@
+\haddockmoduleheading{Math.Graph.Interface}
+\label{module:Math.Graph.Interface}
+\haddockbeginheader
+{\haddockverb\begin{verbatim}
+module Math.Graph.Interface (
+    LabeledGraphMonad(gfind, glabelOf), 
+    GraphArrow(glinksA,
+               gedgesEndingToA,
+               gedgesStartingFromA,
+               gedgesA,
+               gverticesA,
+               gelementsA,
+               gtargetA,
+               gsourceA,
+               gisVertexA), 
+    ReversibleGraphArrow(greversibleLinksA, ginverseA), 
+    GraphMonad(glinks,
+               gedgesEndingTo,
+               gedgesStartingFrom,
+               gedges,
+               gvertices,
+               gelements,
+               gtarget,
+               gsource,
+               gisVertex), 
+    ReversibleGraphMonad(greversibleLinks, ginverse)
+  ) where\end{verbatim}}
+\haddockendheader
+
+\begin{haddockdesc}
+\item[\begin{tabular}{@{}l}
+class\ GraphMonad\ m\ e\ =>\ LabeledGraphMonad\ m\ lbl\ e\ where
+\end{tabular}]\haddockbegindoc
+\haddockpremethods{}\textbf{Methods}
+\end{haddockdesc}
+\begin{haddockdesc}
+\item[\begin{tabular}{@{}l}
+instance\ (Monad\ m,\ Ord\ e,\ GraphMonoid\ mon)\ =>\ LabeledGraphMonad\ (ReaderT\ (LGraph\ lbl\ mon\ e)\ m)\ lbl\ e\\instance\ (Monad\ m,\ Ord\ e,\ GraphMonoid\ mon)\ =>\ LabeledGraphMonad\ (InLGraphM\ mon\ lbl\ e\ m)\ lbl\ e
+\end{tabular}]
+\end{haddockdesc}
+\begin{haddockdesc}
+\item[\begin{tabular}{@{}l}
+class\ Arrow\ arr\ =>\ GraphArrow\ arr\ e\ where
+\end{tabular}]\haddockbegindoc
+\haddockpremethods{}\textbf{Methods}
+\end{haddockdesc}
+\begin{haddockdesc}
+\item[\begin{tabular}{@{}l}
+instance\ (Ord\ a,\ GraphMonoid\ m)\ =>\ GraphArrow\ (InGraphA\ m\ a)\ a
+\end{tabular}]
+\end{haddockdesc}
+\begin{haddockdesc}
+\item[\begin{tabular}{@{}l}
+class\ GraphArrow\ arr\ e\ =>\ ReversibleGraphArrow\ arr\ e\ where
+\end{tabular}]\haddockbegindoc
+\haddockpremethods{}\textbf{Methods}
+\end{haddockdesc}
+\begin{haddockdesc}
+\item[\begin{tabular}{@{}l}
+instance\ (Ord\ a,\ ReversibleGraphMonoid\ m)\ =>\ ReversibleGraphArrow\ (InGraphA\ m\ a)\ a
+\end{tabular}]
+\end{haddockdesc}
+\begin{haddockdesc}
+\item[\begin{tabular}{@{}l}
+class\ Monad\ m\ =>\ GraphMonad\ m\ e\ where
+\end{tabular}]\haddockbegindoc
+\haddockpremethods{}\textbf{Methods}
+\end{haddockdesc}
+\begin{haddockdesc}
+\item[\begin{tabular}{@{}l}
+instance\ (Monad\ m,\ Ord\ e,\ GraphMonoid\ mon)\ =>\ GraphMonad\ (ReaderT\ (Graph\ mon\ e)\ m)\ e\\instance\ (Monad\ m,\ Ord\ e,\ GraphMonoid\ mon)\ =>\ GraphMonad\ (ReaderT\ (LGraph\ lbl\ mon\ e)\ m)\ e\\instance\ (GraphMonoid\ mon,\ Monad\ m,\ Ord\ e)\ =>\ GraphMonad\ (InGraphM\ mon\ e\ m)\ e\\instance\ (Ord\ e,\ Monad\ m,\ GraphMonoid\ mon)\ =>\ GraphMonad\ (InLGraphM\ mon\ lbl\ e\ m)\ e
+\end{tabular}]
+\end{haddockdesc}
+\begin{haddockdesc}
+\item[\begin{tabular}{@{}l}
+class\ GraphMonad\ m\ e\ =>\ ReversibleGraphMonad\ m\ e\ where
+\end{tabular}]\haddockbegindoc
+\haddockpremethods{}\textbf{Methods}
+\end{haddockdesc}
+\begin{haddockdesc}
+\item[\begin{tabular}{@{}l}
+instance\ (Monad\ m,\ Ord\ e,\ ReversibleGraphMonoid\ mon)\ =>\ ReversibleGraphMonad\ (ReaderT\ (Graph\ mon\ e)\ m)\ e\\instance\ (Monad\ m,\ Ord\ e,\ ReversibleGraphMonoid\ mon)\ =>\ ReversibleGraphMonad\ (ReaderT\ (LGraph\ lbl\ mon\ e)\ m)\ e\\instance\ (ReversibleGraphMonoid\ mon,\ Monad\ m,\ Ord\ e)\ =>\ ReversibleGraphMonad\ (InGraphM\ mon\ e\ m)\ e\\instance\ (Ord\ e,\ Monad\ m,\ ReversibleGraphMonoid\ mon)\ =>\ ReversibleGraphMonad\ (InLGraphM\ mon\ lbl\ e\ m)\ e
+\end{tabular}]
+\end{haddockdesc}

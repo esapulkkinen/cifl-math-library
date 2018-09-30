@@ -1,4 +1,6 @@
+>{-# OPTIONS_HADDOCK hide, prune #-}
 >module Math.Tools.Enumeration where
+
 
 >-- ^ This is a variant of idea presented in:
 >-- <http://math.andrej.com/2008/11/21/a-haskell-monad-for-infinite-search-in-finite-time/>

@@ -1,5 +1,5 @@
 >{-# LANGUAGE FlexibleInstances, FlexibleContexts #-}
->-- | This graph representation is based on the book "Lawvere: Sets for mathematics".
+>-- | This graph representation is based on the book Lawvere: Sets for mathematics.
 >-- vertices are such edges where @e `act` gdom == e == e `act` gcod@
 >-- 
 >-- Note it's probably better to use 'Math.Graph.Reversible' instead.

@@ -3,6 +3,11 @@
 >             TupleSections,  TypeOperators, AllowAmbiguousTypes, Arrows,TypeFamilies,
 >             LambdaCase
 > #-}
+>-- |
+>-- Module: Math.Tools.Arrow
+>-- License: LGPL
+>-- Copyright: Esa Pulkkinen, 2018
+>--
 >module Math.Tools.Arrow where
 >import System.IO.Error
 >import Control.Monad.Trans.Except
@@ -20,20 +25,18 @@
 >   monoidA :: m -> arr a a
 
 >-- | <https://en.wikipedia.org/wiki/Monoidal_category>
-
 >class (Category arr) => MonoidalCategory arr where
 >   type Prod arr a b
 >   type MUnit arr
 >   (-*-)   :: arr a b -> arr a' b' -> arr (Prod arr a a') (Prod arr b b')
->   assoc   :: arr (Prod arr (Prod arr a b) c) (Prod arr a (Prod arr b c))
->   deassoc :: arr (Prod arr a (Prod arr b c)) (Prod arr (Prod arr a b) c)
+>   monoidal_assoc   :: arr (Prod arr (Prod arr a b) c) (Prod arr a (Prod arr b c))
+>   monoidal_deassoc :: arr (Prod arr a (Prod arr b c)) (Prod arr (Prod arr a b) c)
 >   leftunitor :: arr (Prod arr (MUnit arr) a) a
 >   unleftunitor :: arr a (Prod arr (MUnit arr) a)
 >   rightunitor :: arr (Prod arr a (MUnit arr)) a
 >   unrightunitor :: arr a (Prod arr a (MUnit arr))
 
-https://en.wikipedia.org/wiki/Braided_monoidal_category
-
+>-- <https://en.wikipedia.org/wiki/Braided_monoidal_category>
 >class (MonoidalCategory arr) => BraidedCategory arr where
 >   braiding :: arr (Prod arr a b) (Prod arr b a)
 
@@ -163,13 +166,12 @@ https://en.wikipedia.org/wiki/Braided_monoidal_category
 >                         returnA -< (c':cr')
 
 >-- | <https://en.wikipedia.org/wiki/Monoidal_category>
-
 >instance MonoidalCategory (->) where
 >   type Prod (->) a b = (a,b)
 >   type MUnit (->) = ()
 >   (-*-) = (***)
->   assoc ((a,b),c) = (a,(b,c))
->   deassoc (a,(b,c)) = ((a,b),c)
+>   monoidal_assoc ((a,b),c) = (a,(b,c))
+>   monoidal_deassoc (a,(b,c)) = ((a,b),c)
 >   leftunitor ((),a) = a
 >   unleftunitor a = ((),a)
 >   rightunitor (a,()) = a

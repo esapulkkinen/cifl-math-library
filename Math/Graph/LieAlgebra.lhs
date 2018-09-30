@@ -1,3 +1,4 @@
+>{-# OPTIONS_HADDOCK hide #-}
 >module Math.Graph.LieAlgebra where
 >import Data.Set
 >import Data.Monoid

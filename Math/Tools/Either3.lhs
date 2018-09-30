@@ -1,4 +1,5 @@
 >{-# LANGUAGE TypeFamilies, LambdaCase #-}
+>{-# OPTIONS_HADDOCK hide, prune #-}
 >module Math.Tools.Either3 where
 >import Math.Tools.Visitor
 

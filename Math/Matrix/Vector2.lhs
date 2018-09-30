@@ -21,6 +21,8 @@
 >data Vector2 s = Vector2 { xcoord2 :: s, ycoord2 :: s }
 >   deriving (Eq)
 
+>type ComplexVector2 a = (Vector2 :*: Complex) a
+
 >-- | <https://en.wikipedia.org/wiki/Conjugate_transpose>
 >instance (ConjugateSymmetric a) => ConjugateSymmetric ((Vector2 :*: Vector2) a) where
 >   conj = fmap conj . transpose

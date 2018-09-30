@@ -1,4 +1,4 @@
->{-# LANGUAGE CPP,GeneralizedNewtypeDeriving, TypeOperators #-}
+>{-# LANGUAGE Safe, CPP, TypeOperators #-}
 >{-# LANGUAGE ExistentialQuantification, TypeFamilies,GADTs, RankNTypes, UnicodeSyntax #-}
 >{-# LANGUAGE ScopedTypeVariables, StandaloneDeriving, FlexibleContexts #-}
 >-- | This module contains auxiliary definitions related to dimensional analysis.

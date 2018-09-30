@@ -1,24 +1,25 @@
->{-# LANGUAGE GADTs, QuasiQuotes #-}
+>{-# LANGUAGE Safe, GADTs, QuasiQuotes #-}
+>{-# OPTIONS_HADDOCK not-home #-}
 >module Math.Number (
->-- | real numbers
+>-- * real numbers
 >   module Math.Number.Real,
->-- | infinite dimensional vector
+>-- * infinite dimensional vector
 >   module Math.Number.Stream,
->-- | infinite dimensional vector to two directions
+>-- ** infinite dimensional vector to two directions
 >   module Math.Number.BiStream,
->-- | dimensional analysis
+>-- * dimensional analysis
 >   module Math.Number.DimensionalAnalysis,
->-- | type level rational numbers
+>-- ** type level rational numbers
 >   module Math.Number.TypeRational,
->-- | type level dimensional analysis
+>-- ** type level dimensional analysis
 >   module Math.Number.TypeUnits,
->-- | unit-specific newtypes for performance optimization of dimensional analysis
+>-- * unit-specific newtypes for performance optimization of dimensional analysis
 >   module Math.Number.Units,
->-- | US customary units
+>-- ** US customary units
 >   module Math.Number.USCustomaryUnits,
->-- | complex number tools
+>-- * complex number tools
 >   module Math.Number.Complex,
->-- | symbolic expressions
+>-- ** symbolic expressions
 >   module Math.Number.NumericExpression
 > ) where
 >import Math.Number.Real
@@ -26,7 +27,7 @@
 >import Math.Number.BiStream
 >import Math.Number.DimensionalAnalysis
 >import Math.Number.Units
->import qualified Math.Number.USCustomaryUnits
+>import Math.Number.USCustomaryUnits
 >import Math.Number.NumericExpression
 >import Math.Number.Complex
 >import Math.Number.TypeRational

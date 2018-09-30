@@ -1,4 +1,5 @@
 >{-# LANGUAGE GADTs #-}
+>{-# OPTIONS_HADDOCK hide, prune #-}
 >module Math.Tools.EitherF where
 
 >data PairF f g a = PairF (f a) (g a)

@@ -1,4 +1,6 @@
 >{-# LANGUAGE FlexibleInstances, TypeOperators #-}
+>{-# OPTIONS_HADDOCK hide #-}
+>-- | Module provides action set category
 >module Math.Graph.ActionSet where
 >import Prelude hiding ((.),id)
 >import Math.Graph

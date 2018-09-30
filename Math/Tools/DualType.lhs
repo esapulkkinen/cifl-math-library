@@ -1,5 +1,7 @@
 >{-# LANGUAGE UndecidableInstances, RankNTypes, TypeFamilies, FlexibleInstances #-}
+>{-# OPTIONS_HADDOCK hide, prune #-}
 >module Math.Tools.DualType where
+
 
 >type family Dual a
 

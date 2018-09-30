@@ -1,4 +1,5 @@
 >{-# LANGUAGE Arrows, MultiParamTypeClasses, GADTs, FlexibleInstances #-}
+>{-# OPTIONS_HADDOCK hide, prune #-}
 >module Math.Tools.DebugArrow where
 >import Prelude hiding ((.),id)
 >import Control.Category

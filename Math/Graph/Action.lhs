@@ -1,4 +1,10 @@
+>{-# OPTIONS_HADDOCK hide #-}
 >{-# LANGUAGE Safe,FlexibleInstances, MultiParamTypeClasses, TypeOperators #-}
+>-- | Module: Math.Graph.Action
+>--   Copyright: Esa Pulkkinen, 2018
+>--   License: LGPL
+>-- 
+>-- actions as contravariant functor
 >module Math.Graph.Action where
 >import Prelude hiding ((.),id)
 >import Control.Category
@@ -9,7 +15,7 @@
 >import Math.Matrix.Interface
 >import Math.Tools.Prop
 
->-- | See "Lawvere&Rosebrugh: Sets for mathematics"
+>-- | See Lawvere,Rosebrugh: Sets for mathematics
 >newtype Action x a = Action { runAction :: a -> x }
 
 >(=*=) :: Action x b -> (a -> b) -> Action x a
@@ -60,13 +66,11 @@
 >(!==) :: (Eq a) => Action a x -> Action a x -> Action Bool x
 >(!==) (Action f) (Action g) = Action $ \e -> f e == g e
 
->-- | performance problem if 'a' is large!
-
+>-- | performance problem if @a@ in @Action x a@ is large!
 >(!==!) :: (Universe a, Eq x) => Action x a -> Action x a -> Action Bool ()
 >(!==!) (Action f) (Action g) = Action $ \ () -> and $ map (\a -> f a == g a) all_elements
   
 >-- | separator f g
-
 >instance (Universe a, Eq x) => Eq (Action x a) where
 >   x == y = runAction (x !==! y) ()
 

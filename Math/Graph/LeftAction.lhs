@@ -1,3 +1,4 @@
+>{-# OPTIONS_HADDOCK hide #-}
 >module Math.Graph.LeftAction where
 >import Data.Set (Set)
 >import qualified Data.Set as Set

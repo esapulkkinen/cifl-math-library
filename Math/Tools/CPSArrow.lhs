@@ -1,4 +1,5 @@
 >{-# LANGUAGE RankNTypes, FlexibleInstances, MultiParamTypeClasses, Arrows #-}
+>{-# OPTIONS_HADDOCK hide, prune #-}
 >module Math.Tools.CPSArrow where
 >import Prelude hiding (id,(.))
 >import Control.Category

@@ -1,4 +1,5 @@
 >{-# LANGUAGE Arrows, MultiParamTypeClasses #-}
+>{-# OPTIONS_HADDOCK hide, prune #-}
 >module Math.Tools.Assert where
 >import Control.Arrow
 >import Math.Tools.Arrow

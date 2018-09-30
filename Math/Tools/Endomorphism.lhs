@@ -1,4 +1,5 @@
 >{-# LANGUAGE FlexibleInstances, Trustworthy #-}
+>{-# OPTIONS_HADDOCK hide #-}
 >module Math.Tools.Endomorphism where
 >import Data.Monoid
 >import Math.Tools.Isomorphism
@@ -10,13 +11,6 @@
 >   isSource :: x -> Bool
 >   isTarget :: x -> Bool
 >   isIdentity :: x -> Bool
-
->{-# RULES
->    "action/source" mappend source target = source
->  #-}
->{-# RULES
->    "action/target" mappend target source = target
->  #-}
 
 >class (GraphAction x) => ReversibleGraphAction x where
 >   invert   :: x
@@ -57,7 +51,7 @@
 >inverse_image_endo f (Endo g) = Endo (g . f)
 
 >iso_map_endo :: Iso a b -> Endo a -> Endo b
->iso_map_endo i (Endo f) = Endo (epimorphism i . f . section i)
+>iso_map_endo i (Endo f) = Endo (isomorphism_epimorphism i . f . isomorphism_section i)
 
 >identityE :: Endo a
 >identityE = Endo id -- == mempty

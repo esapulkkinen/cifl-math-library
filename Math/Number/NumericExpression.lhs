@@ -43,9 +43,9 @@
 >
 >varIso :: IsoA Var a b -> Var a :==: Var b
 >varIso v = iso v <-> iso (invertA v)
->  where iso v = \case { (Var n i) -> Var (epimorphism (var_nameIso v) n)
->                                         (epimorphism (var_indexIso v) i) ;
->                         (Val x) -> Val (epimorphism (var_valIso v) x) }
+>  where iso v = \case { (Var n i) -> Var (isomorphism_epimorphism (var_nameIso v) n)
+>                                         (isomorphism_epimorphism (var_indexIso v) i) ;
+>                         (Val x) -> Val (isomorphism_epimorphism (var_valIso v) x) }
 
 >instance (PpShow a) => PpShow (Var a) where
 >   pp (Var x i) = pp x <> pp '@' <> pp i
@@ -140,7 +140,7 @@
 >           (VScalar x w) -> VScalar ((vscalar_1_iso v) `appIsoF` x)
 >                                    ((vscalar_2_iso v) `appIsoF` w)
 >           (VVectorVar w) -> VVectorVar ((vvector_1_iso v) `appIsoF` w)
->           (VPrim x) -> VPrim ((vprim_iso v) `epimorphism` x)
+>           (VPrim x) -> VPrim ((vprim_iso v) `isomorphism_epimorphism` x)
 
 >instance BiArrow (IsoA VectorSpaceExpr) where
 >   f <-> g = VectorSpaceIso (f <-> g) (f <-> g) (f <-> g)
@@ -259,7 +259,7 @@ instance Expression VectorSpaceExpr VectorCtx a where
 >          (Abs x) -> Abs ((numAbsIso v) `appIsoF` x)
 >          (Signum x) -> Signum ((signumIso v) `appIsoF` x)
 >          (NumPrim x) -> NumPrim ((numPrimIso v) `appIsoF` x)
->          (FromInteger i) -> FromInteger ((fromIntegerIso v) `epimorphism` i)
+>          (FromInteger i) -> FromInteger ((fromIntegerIso v) `isomorphism_epimorphism` i)
 >          (InnerProduct x y) -> InnerProduct ((innerProductIso_1 v) `appIsoF` x)
 >                                             ((innerProductIso_2 v) `appIsoF` y)
 

@@ -1,12 +1,19 @@
 >{-# Language Trustworthy,UndecidableInstances, ExistentialQuantification, FlexibleInstances, MultiParamTypeClasses, MagicHash, TypeOperators, FlexibleContexts, Arrows, TypeFamilies #-}
 >-- |
+>--  Module: Math.Number.Stream
+>--  Description: Stream implementation
+>--  Copyright: (c) Esa Pulkkinen, 2018
+>--  License: LGPL
+>--  Maintainer: esa.pulkkinen@iki.fi
+>--  Stability: experimental
+>-- 
 >-- This module implements lazy infinite streams,
 >-- stream generating functions and lots of operations on the lazy streams.
 >-- some examples for use of this module:
 >-- 
->-- @fib = 1 `div` (1 - z - z*z)@
+>-- @fib = 1 \`div\` (1 - z - z*z)@
 >-- 
->-- @pascal_triangle = Matrix $ 1 `div` (1 - z - z2*z)@
+>-- @pascal_triangle = Matrix $ 1 \`div\` (1 - z - z2*z)@
 >-- 
 >-- @take 4 fib == [1,1,2,3]@
 >-- 
@@ -399,6 +406,7 @@ instance (Num a) => Matrix.VectorSpace ((Stream :*: Stream) a) where
 >   signum = liftA signum
 >   x * y = fmap sum_seq $ codiagonals_seq $ matrix (*) x y
 >   fromInteger i = Pre (fromInteger i) zero
+
 
 >sum_seq :: (Num a) => Seq a -> a
 >sum_seq = foldr (+) 0
@@ -1668,3 +1676,4 @@ the suffix computation on Seq is constant time rather than linear.
 
 >instance (Closed a) => Closed (Complex a) where
 >   accumulation_point (ComplexClosure (ca :+ ci)) = accumulation_point ca :+ accumulation_point ci
+

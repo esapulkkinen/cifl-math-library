@@ -1,4 +1,5 @@
 >{-# LANGUAGE Safe #-}
+>{-# OPTIONS_HADDOCK hide #-}
 >module Math.Graph.Regexp where
 >instance Data.Monoid
 

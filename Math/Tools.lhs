@@ -1,3 +1,5 @@
+>{-# LANGUAGE Safe #-}
+>{-# OPTIONS_HADDOCK not-home #-}
 >module Math.Tools (
 >   module Math.Tools.Adjunction,
 >   module Math.Tools.Arrow,
@@ -35,7 +37,7 @@
 > ) where
 
 >import Math.Tools.Adjunction
->import Math.Tools.Arrow hiding (assoc)
+>import Math.Tools.Arrow
 >import Math.Tools.Category
 >import Math.Tools.CoFunctor hiding (terminal)
 >import Math.Tools.CoMonad

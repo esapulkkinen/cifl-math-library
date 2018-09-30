@@ -19,7 +19,7 @@ install_dependencies :
 	$(CABAL) $(CABALOPTS) $(CABALFLAGS) install HUnit
 
 configure :
-	$(CABAL) $(CABALOPTS) $(CABALFLAGS) new-configure --enable-tests
+	$(CABAL) $(CABALOPTS) $(CABALFLAGS) new-configure --enable-tests --enable-documentation
 
 force-configure :
 	$(CABAL) $(CABALOPTS) $(CABALFLAGS) new-configure --enable-tests --force-reinstall --upgrade-dependencies --reinstall --only-dependencies
@@ -28,7 +28,7 @@ force-configure :
 
 
 build : 
-	$(CABAL) $(CABALOPTS) $(CABALFLAGS) new-build -j4 
+	$(CABAL) $(CABALOPTS) $(CABALFLAGS) new-build -j4 --enable-documentation 
 
 build-llvm:
 	$(CABAL) $(CABALOPTS) $(CABALFLAGS) new-build -j4 --ghc-options="-fllvm"
@@ -45,15 +45,18 @@ test :
 	@grep -h Counts dist-newstyle/build/*/*/*/*/unit-tests/test/*.log
 
 dependencegraph :
-	mkdir -p dist/doc/html/cifl-math-library
+	mkdir -p dist-newstyle/doc/html/cifl-math-library
 	dependencies/draw_graph.sh Tools
 	dependencies/draw_graph.sh Graph
 	dependencies/draw_graph.sh Matrix
 	dependencies/draw_graph.sh Number
-	mv dependencies-*.ps dependencies-*.pdf dist/doc/html/cifl-math-library/
+	mv dependencies-*.ps dependencies-*.pdf dist-newstyle/doc/html/cifl-math-library/
 
 document : 
-	cabal $(CABALOPTS) $(CABALFLAGS) new-haddock --haddock-options="--title=cifl-math-library" --ghc-options="+RTS -M786M -RTS" --verbose=0 --haddock-all --haddock-hyperlink-source > dist/haddock-output
+	cabal $(CABALOPTS) $(CABALFLAGS) new-haddock --enable-documentation --haddock-options="--title=cifl-math-library --html --no-print-missing-docs" --ghc-options="-DWITH_HAXML +RTS -M786M -RTS" --haddock-all > dist-newstyle/haddock-output
+
+latex-document :
+	cabal $(CABALOPTS) $(CABALFLAGS) new-haddock --enable-documentation --haddock-options="--title=cifl-math-library --latex" --haddock-all
 
 publish_document : dependencegraph document hscolor
 	cp -r dist-newstyle/build/*/ghc-*/cifl-math-library-*/doc/html/cifl-math-library/* docs/

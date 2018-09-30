@@ -1,4 +1,5 @@
 >{-# LANGUAGE RankNTypes,MultiParamTypeClasses #-}
+>{-# OPTIONS_HADDOCK hide, prune #-}
 >module Math.Tools.Generics (module Data.Generics,
 >		  GenericMT(..),
 >		  everywhereM_ctx, -- GenericQ (GenericMT m) -> GenericM m -> GenericM m

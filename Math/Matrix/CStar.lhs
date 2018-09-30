@@ -1,4 +1,5 @@
 >{-# LANGUAGE GADTs, MultiParamTypeClasses #-}
+>{-# OPTIONS_HADDOCK hide, prune #-}
 >module Math.Matrix.CStar where
 >import Data.Complex
 >import Math.Matrix.Interface

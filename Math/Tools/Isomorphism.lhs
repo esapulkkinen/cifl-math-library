@@ -22,8 +22,8 @@
 >-- combinator library using isomorphisms. This is some sort of
 >-- implementation of that idea.
 
->data a :==: b = Iso { epimorphism :: a -> b,
->                     section     :: b -> a }
+>data a :==: b = Iso { isomorphism_epimorphism :: a -> b,
+>                     isomorphism_section     :: b -> a }
 
 >type Iso a b = a :==: b
 >type Aut a = a :==: a
@@ -32,19 +32,19 @@
 >-- Note that since isomorphisms do not need to be equalities,
 >-- this function need not produce identity.
 >leftIdempotent :: a :==: b -> a -> a
->leftIdempotent i = section i . epimorphism i
+>leftIdempotent i = isomorphism_section i . isomorphism_epimorphism i
 
 >-- | <https://en.wikipedia.org/Galois_Connection>
 >-- Note that since isomorphisms do not need to be equalities,
 >-- this function need not produce an identity.
 >rightIdempotent :: a :==: b -> b -> b
->rightIdempotent i = epimorphism i . section i
+>rightIdempotent i = isomorphism_epimorphism i . isomorphism_section i
 
 >inverseEndo :: Endo a -> Endo a -> Aut a
 >inverseEndo (Endo f) (Endo g) = f <-> g
 
 >visit_iso :: (ComposableVisitor v) => v :==: a -> v -> a
->visit_iso = visit . embed . epimorphism
+>visit_iso = visit . embed . isomorphism_epimorphism
 
 >class (BiArrow arr, Groupoid arr) => Isomorphic arr where
 >   iso :: arr a b -> a :==: b
@@ -54,7 +54,7 @@
 >   transformIso :: IsoA f a b -> f a :==: f b
 
 >appIsoF :: (IsomorphicFunctor f) => IsoA f a b -> f a -> f b
->appIsoF = epimorphism . transformIso
+>appIsoF = isomorphism_epimorphism . transformIso
 
 >instance (Arrow arr) => ArrowTransformation (:==:) arr where
 >   mapA = mapA . runIso

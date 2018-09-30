@@ -1,4 +1,5 @@
 >{-# LANGUAGE GADTs #-}
+>{-# OPTIONS_HADDOCK hide, prune #-}
 >module Math.Tools.Lambda where
 >import Math.Tools.PrettyP
 

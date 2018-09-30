@@ -1,4 +1,5 @@
 >{-# LANGUAGE MultiParamTypeClasses, FlexibleInstances #-}
+>{-# OPTIONS_HADDOCK hide #-}
 >module Math.Graph.Invertible where
 
 >class Convertible a b where

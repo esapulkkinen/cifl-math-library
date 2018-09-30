@@ -1,0 +1,3 @@
+:def hoogle \s -> return $ ":! hoogle --count=15 \"" ++ s ++ "\""
+:def emacs \s -> return $ ":! emacs \"" ++ s ++ "\" &"
+:set prompt "λ: "

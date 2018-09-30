@@ -1,4 +1,5 @@
 >{-# LANGUAGE RankNTypes #-}
+>{-# OPTIONS_HADDOCK hide, prune #-}
 >module Math.Tools.Equality where
 >import Prelude hiding (EQ)
 

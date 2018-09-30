@@ -1,3 +1,4 @@
+>{-# LANGUAGE Safe #-}
 >{-# LANGUAGE DeriveDataTypeable #-}
 >module Math.Tools.Id where
 >import Data.Typeable
@@ -8,7 +9,7 @@
 >import Math.Tools.Universe
 
 >data Id = MkId { idName :: String, idInfo :: !LineInfo }
->   deriving (Typeable,Data)
+>   deriving (Typeable)
 
 >mkId :: String -> LineInfo -> Id
 >mkId = MkId

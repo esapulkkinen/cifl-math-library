@@ -1,4 +1,5 @@
 >{-# LANGUAGE RankNTypes, GADTs #-}
+>{-# OPTIONS_HADDOCK hide, prune #-}
 >-- | This is based on Wadler at
 >-- <http://homepages.inf.ed.ac.uk/wadler/papers/free-rectypes/free-rectypes.txt>
 >module Math.Tools.Fold where

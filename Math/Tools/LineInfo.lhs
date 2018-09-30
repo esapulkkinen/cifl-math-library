@@ -1,8 +1,8 @@
+>{-# LANGUAGE Safe #-}
 >{-# LANGUAGE DeriveDataTypeable #-}
 >module Math.Tools.LineInfo where
 >import Data.Monoid
 >import Data.Typeable
->import Data.Generics
 >import qualified Math.Tools.PrettyP as PrettyP
 >import Math.Tools.PrettyP
 >import Math.Tools.Isomorphism
@@ -11,7 +11,7 @@
 >			    li_row  :: Int,
 >			    li_column :: Int }
 >              | NoLineInfo
->   deriving (Eq,Ord,Data,Typeable)
+>   deriving (Eq,Ord,Typeable)
 
 >lineinfoIso :: Iso LineInfo (Either (String,Int,Int) ())
 >lineinfoIso = Iso openli closeli
