@@ -4,7 +4,7 @@
 >-- To use these, use emacs "Options/Select input method" and choose 'TeX'.
 >-- Then enter the symbol by using backslash and the indicated name.
 >-- for prefix operators, it's necessary to use parenthesis in applications.
->-- ctrl-\ changes whether expansions occur.
+>-- ctrl-\\ changes whether expansions occur.
 >module Math.Matrix.Unicode where
 >
 >import Math.Matrix.Interface

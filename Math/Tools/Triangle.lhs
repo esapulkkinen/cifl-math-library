@@ -1,3 +1,4 @@
+>{-# OPTIONS_HADDOCK hide,prune #-}
 >module Math.Tools.Triangle where
 >import Control.Arrow
 >import Math.Number.Stream

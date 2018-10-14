@@ -1,3 +1,4 @@
+>{-# OPTIONS_HADDOCK hide #-}
 >module Math.Matrix.Measurable where
 >import Prelude hiding (id,(.))
 >import Control.Category

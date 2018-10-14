@@ -1,4 +1,5 @@
 >{-# LANGUAGE FlexibleInstances, FlexibleContexts #-}
+>{-# OPTIONS_HADDOCK hide #-}
 >-- | This graph representation is based on the book Lawvere: Sets for mathematics.
 >-- vertices are such edges where @e `act` gdom == e == e `act` gcod@
 >-- 

@@ -12,4 +12,6 @@ Compilation requires the following additional software:
    cabal <https://www.haskell.org/cabal/>
    sed <https://www.gnu.org/software/sed/>
 
+Many modules from hackage.haskell.org are used.
+
 For SIMD support, GHC >= 8.0, clang and llvm are needed.

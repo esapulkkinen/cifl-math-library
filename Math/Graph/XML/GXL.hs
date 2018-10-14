@@ -1,4 +1,5 @@
 {-# LANGUAGE CPP #-}
+{-# OPTIONS_HADDOCK hide, prune #-}
 module Math.Graph.XML.GXL where
 
 #ifdef WITH_HAXML

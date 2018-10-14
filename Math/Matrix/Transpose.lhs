@@ -1,4 +1,5 @@
 >{-# LANGUAGE Safe,MultiParamTypeClasses, FlexibleInstances #-}
+>{-# OPTIONS_HADDOCK hide, prune #-}
 >module Math.Matrix.Transpose where
 >import Math.Tools.CoFunctor
 >import Math.Matrix.Interface

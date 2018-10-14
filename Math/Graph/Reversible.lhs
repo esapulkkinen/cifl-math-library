@@ -111,12 +111,21 @@ graph_representation (Endo f) (Endo g) = Endo $ f . g
 >                                  e2 = action_endomorphism g2 m `appEndo` z
 >                               in if e1 == e2 then e1 else error "intersectionG: ambiguous"
 
+>complementG :: (ReversibleGraphMonoid m) => Graph m a -> Graph m a
+>complementG (Graph e act) = Graph e ract
+>   where ract m = act (m `mappend` gnot)
+
 >instance (Ord a, Show a) => Semigroup (Graph m a) where
 >   (<>) = unionG
 
 >instance (Ord a, Show a) => Monoid (Graph m a) where
 >   mempty = emptyG
 >   mappend = unionG
+
+>instance (Ord a, Show a, ReversibleGraphMonoid m) => SetLike (Graph m a) where
+>   sintersection = intersectionG
+>   sunion = unionG
+>   scomplement = complementG
 
 >unionG :: (Ord a, Show a) => Graph m a -> Graph m a -> Graph m a
 >unionG g1 g2 = Graph ee (Endo . f)

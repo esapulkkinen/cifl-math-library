@@ -20,7 +20,7 @@
 >-- 
 >-- @mat7x3 = parseMat (const () :: Vec 7 (Vec 3 Integer) -> ())@
 >-- 
->-- @dbl7x2 = parseDbl (const () :: Vec 13 (Vec 2 Integer) -> ())@
+>-- @dbl7x2 = parseDbl (const () :: Vec 13 (Vec 2 Double) -> ())@
 >-- 
 >module Math.Matrix.QuasiQuoter where
 >import Control.Monad

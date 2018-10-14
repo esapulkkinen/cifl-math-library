@@ -1,4 +1,5 @@
 >{-# LANGUAGE GADTs #-}
+>{-# OPTIONS_HADDOCK hide, prune #-}
 >module Math.Matrix.Linear where
 >import Prelude hiding (id,(.))
 >import Control.Category

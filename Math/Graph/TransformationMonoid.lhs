@@ -1,4 +1,5 @@
 >{-# LANGUAGE Safe #-}
+>{-# OPTIONS_HADDOCK hide, prune #-}
 >module Math.Graph.TransformationMonoid where
 >import Math.Tools.CoFunctor
 >import Data.Monoid

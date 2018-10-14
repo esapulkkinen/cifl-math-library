@@ -801,14 +801,14 @@ order in the table is significant
 >fromCelsius :: (Show a, Fractional a) => a -> Quantity a
 >fromCelsius x = x @@ kelvin_dimension + (273.15 @@ kelvin_dimension)
 
->fromFarenheit :: (Fractional a, Show a) => a -> Quantity a
->fromFarenheit x = ((x + 459.67) * (5/9)) @@ kelvin_dimension
+>fromFahrenheit :: (Fractional a, Show a) => a -> Quantity a
+>fromFahrenheit x = ((x + 459.67) * (5/9)) @@ kelvin_dimension
 
->toFarenheit :: (Monad m, Fractional a,VectorSpace a)
+>toFahrenheit :: (Monad m, Fractional a,VectorSpace a)
 > => Quantity a -> m a
->toFarenheit x
+>toFahrenheit x
 >   | dimension x == kelvin_dimension = return $ (amount x * (9/5)) - 459.67
->   | otherwise = fail "Cannot convert to farenheit"
+>   | otherwise = fail "Cannot convert to fahrenheit"
 
 >toCelsius :: (Fractional a, Show a, VectorSpace a) => Quantity a -> a
 >toCelsius x = amount (x - 273.15 @@ kelvin_dimension)
@@ -1030,7 +1030,7 @@ order in the table is significant
 >   ("w", week),
 >   ("y", year),
 >   ("°C", fromCelsius 1),
->   ("°F", fromFarenheit 1),
+>   ("°F", fromFahrenheit 1),
 >   ("°", degree),
 >   ("lm", lumen),
 >   ("lx", lux),
@@ -1084,7 +1084,7 @@ order in the table is significant
 >siZeros = [
 >    ("°C", fromCelsius 0),
 >    ("℃", fromCelsius 0),
->    ("°F", fromFarenheit 0),
->    ("℉", fromFarenheit 0)
+>    ("°F", fromFahrenheit 0),
+>    ("℉", fromFahrenheit 0)
 >   ]
 
