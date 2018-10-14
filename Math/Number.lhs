@@ -3,6 +3,8 @@
 >module Math.Number (
 >-- * real numbers
 >   module Math.Number.Real,
+>-- * alternative implementation of reals
+>   module Math.Number.R,
 >-- * infinite dimensional vector
 >   module Math.Number.Stream,
 >-- ** infinite dimensional vector to two directions
@@ -22,7 +24,8 @@
 >-- ** symbolic expressions
 >   module Math.Number.NumericExpression
 > ) where
->import Math.Number.Real
+>import qualified Math.Number.Real
+>import qualified Math.Number.R
 >import Math.Number.Stream
 >import Math.Number.BiStream
 >import Math.Number.DimensionalAnalysis

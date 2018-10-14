@@ -23,7 +23,7 @@ install_dependencies :
 	$(CABAL) $(CABALOPTS) $(CABALFLAGS) install HUnit
 
 configure :
-	$(CABAL) $(CABALOPTS) $(CABALFLAGS) new-configure --enable-tests --enable-documentation
+	$(CABAL) $(CABALOPTS) $(CABALFLAGS) new-configure --enable-tests
 
 force-configure :
 	$(CABAL) $(CABALOPTS) $(CABALFLAGS) new-configure --enable-tests --force-reinstall --upgrade-dependencies --reinstall --only-dependencies
@@ -32,7 +32,7 @@ force-configure :
 
 
 build : 
-	$(CABAL) $(CABALOPTS) $(CABALFLAGS) new-build -j4 --enable-documentation 
+	$(CABAL) $(CABALOPTS) $(CABALFLAGS) new-build -j4 
 
 build-llvm:
 	$(CABAL) $(CABALOPTS) $(CABALFLAGS) new-build -j4 --ghc-options="-fllvm"
