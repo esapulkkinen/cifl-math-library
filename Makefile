@@ -8,7 +8,11 @@ CABALOPTS ?=
 
 CABAL=cabal
 
+
 unit : build test
+
+.PHONY: unit all build test all_with_install install_dependencies configure force-configure document hscolor dependencegraph build-llvm test-llvm interpreter latex-document publish_document install clean
+
 
 all : configure build test dependencegraph document hscolor
 
@@ -53,7 +57,7 @@ dependencegraph :
 	mv dependencies-*.ps dependencies-*.pdf dist-newstyle/doc/html/cifl-math-library/
 
 document : 
-	cabal $(CABALOPTS) $(CABALFLAGS) new-haddock --offline --enable-documentation --haddock-options="--title=cifl-math-library --html --haddock-hyperlink-source --source-base=https://github.com/esapulkkinen/cifl-math-library/blob/master/ --source-module=https://github.com/esapulkkinen/cifl-math-library/blob/master/%M.html --source-entity=https://github.com/esapulkkinen/cifl-math-library/blob/master/%M.html#%N --no-print-missing-docs" --ghc-options="+RTS -M786M -RTS" --haddock-internal  > dist-newstyle/haddock-output
+	cabal $(CABALOPTS) $(CABALFLAGS) new-haddock --offline --enable-documentation --haddock-options="--title=cifl-math-library --html --source-base=https://raw.githubusercontent.com/esapulkkinen/cifl-math-library/master/ --source-module=https://raw.githubusercontent.com/esapulkkinen/cifl-math-library/master/%F --source-entity=https://raw.githubusercontent.com/esapulkkinen/cifl-math-library/master/%F#%N --no-print-missing-docs" --ghc-options="+RTS -M786M -RTS" --haddock-internal  > dist-newstyle/haddock-output
 
 latex-document :
 	cabal $(CABALOPTS) $(CABALFLAGS) new-haddock --enable-documentation --haddock-options="--title=cifl-math-library --latex" --haddock-all
