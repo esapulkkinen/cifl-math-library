@@ -53,7 +53,7 @@ dependencegraph :
 	mv dependencies-*.ps dependencies-*.pdf dist-newstyle/doc/html/cifl-math-library/
 
 document : 
-	cabal $(CABALOPTS) $(CABALFLAGS) new-haddock --enable-documentation --haddock-options="--title=cifl-math-library --html --no-print-missing-docs" --ghc-options="-DWITH_HAXML +RTS -M786M -RTS" --haddock-all > dist-newstyle/haddock-output
+	cabal $(CABALOPTS) $(CABALFLAGS) new-haddock --offline --enable-documentation --haddock-options="--title=cifl-math-library --html --haddock-hyperlink-source --source-base=https://github.com/esapulkkinen/cifl-math-library/blob/master/ --source-module=https://github.com/esapulkkinen/cifl-math-library/blob/master/%M.html --source-entity=https://github.com/esapulkkinen/cifl-math-library/blob/master/%M.html#%N --no-print-missing-docs" --ghc-options="+RTS -M786M -RTS" --haddock-internal  > dist-newstyle/haddock-output
 
 latex-document :
 	cabal $(CABALOPTS) $(CABALFLAGS) new-haddock --enable-documentation --haddock-options="--title=cifl-math-library --latex" --haddock-all

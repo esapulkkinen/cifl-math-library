@@ -7,6 +7,7 @@
 >import Math.Number.Stream (Stream, naturals, nonzero_naturals, stream_diagonal)
 >import qualified Math.Number.Stream as Stream
 
+>-- | This data type is a bidirectional version of a stream.
 >data BiStream a = BiStream { bifst :: Stream a, bisnd :: Stream a }
 
 >instance PpShowF BiStream where
@@ -35,6 +36,10 @@
 >   
 >fromIntegerStream :: (Integer -> a) -> BiStream a
 >fromIntegerStream f = fmap f integers_bistream
+
+>bistream_index :: BiStream a -> Integer -> a
+>bistream_index (BiStream x r) i | i < 0 = Stream.shead (Stream.drop (abs (succ i)) x)
+>                                | otherwise = Stream.shead (Stream.drop i r)
 
 >bistream_diagonal :: (BiStream :*: BiStream) a -> BiStream a
 >bistream_diagonal (Matrix x) = BiStream (stream_diagonal nn) (stream_diagonal pp)

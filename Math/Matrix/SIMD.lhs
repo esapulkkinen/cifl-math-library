@@ -18,11 +18,12 @@
 >  (SVec4,SVec8,SVec16,FVec4,FVec2, -- hide constructors
 >   Optimal(..),Optimized(..),
 >   makeSVec4,makeSVec8,makeSVec16, makeFVec4,
->   fromInt32Vector4,toInt32Vector4, to2x2Matrix,
+>   fromInt32Vector4,toInt32Vector4, 
 >   fromInt16Vector8, toInt16Vector8,
 >   fromInt8Vector16, toInt8Vector16,
 >   fromDoubleVector2, toDoubleVector2,
 >   fromFloatVector4, toFloatVector4,
+>   from2x2Matrix, to2x2Matrix,
 >   from2x2FloatVector4,to2x2FloatVector4,
 >   transposeFloatVector4,
 >   eqSVec4,eqSVec8,eqSVec16,
@@ -162,6 +163,11 @@
 >toInt32Vector4 :: SVec4 Int32 -> Vector4 Int32
 >toInt32Vector4 (Int32SVec4 x) = let (# a,b,c,d #) = unpackInt32X4# x
 >                           in Vector4 (I32# a) (I32# b) (I32# c) (I32# d)
+
+>from2x2Matrix :: (Vector2 :*: Vector2) Int32 -> SVec4 Int32
+>from2x2Matrix (Matrix (Vector2 (Vector2 (I32# a) (I32# b))
+>                               (Vector2 (I32# c) (I32# d))))
+>   = Int32SVec4 (packInt32X4# (# a,b,c,d #))
 
 >-- | convert a SIMD optimized SVec4 Int32 to a 2x2 matrix
 >to2x2Matrix :: SVec4 Int32 -> (Vector2 :*: Vector2) Int32
@@ -477,6 +483,9 @@
 >to2x2Matrix :: SVec4 Int32 -> (Vector2 :*: Vector2) Int32
 >to2x2Matrix (SVec4 a b c d) = Matrix $ Vector2 (Vector2 a b) (Vector2 c d)
 
+>from2x2Matrix :: (Vector2 :*: Vector2) Int32 -> SVec4 Int32
+>from2x2Matrix (Matrix (Vector2 (Vector2 a b) (Vector2 c d))) = SVec4 a b c d
+
 >svec16_1 :: SVec16 Int8 -> Int8
 >svec16_2 :: SVec16 Int8 -> Int8
 >svec16_3 :: SVec16 Int8 -> Int8
@@ -754,6 +763,7 @@
 >   Optimized ((Vector4 :*: Vector2) Int16) = SVec8 Int16
 >   Optimized ((Vector4 :*: Vector4) Int8) = SVec16 Int8
 >   Optimized ((Vector2 :*: Vector2) Float) = FVec4 Float
+>   Optimized ((Vector2 :*: Vector2) Int32) = SVec4 Int32
 
 >instance Optimal (Vector2 Double) where
 >   toO = fromDoubleVector2
@@ -796,6 +806,13 @@
 >   zipO = zipSVec16
 >   mapO = mapSVec16
 >   constantO = constantSVec16
+
+>instance Optimal ((Vector2 :*: Vector2) Int32) where
+>   toO = from2x2Matrix
+>   fromO = to2x2Matrix
+>   zipO = zipSVec4
+>   mapO = mapSVec4
+>   constantO = constantSVec4
 
 >instance Optimal ((Vector2 :*: Vector2) Float) where
 >   toO = from2x2FloatVector4

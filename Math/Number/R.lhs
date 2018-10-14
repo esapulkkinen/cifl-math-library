@@ -49,6 +49,15 @@
 >epsilon :: R
 >epsilon = real id
 
+>liftR :: (Rational -> Rational) -> R -> R
+>liftR g (Limit (Endo f)) = real $ g . f
+
+>liftR2 :: (Rational -> Rational -> Rational) -> R -> R -> R
+>liftR2 h (Limit f) (Limit g) = real $ \eps -> h (f `appEndo` eps) (g `appEndo` eps)
+
+>inverseImage :: (Rational -> Rational) -> R -> R
+>inverseImage g (Limit (Endo f)) = real $ f . g
+
 >-- | approx_compose will use the second real as the level
 >--   of approximation to compute the first.
 >approximate_as :: R -> R -> R
@@ -58,23 +67,19 @@
 >limit_compose  g (Limit f) = real $
 > \eps -> approximate_endo (g (f `appEndo` eps)) `appEndo` eps
 
->inverseImage :: (Rational -> Rational) -> R -> R
->inverseImage g (Limit (Endo f)) = real $ g . f
 
 >inverseImageEndo :: Endo Rational -> Endo R
 >inverseImageEndo g = Endo $ \ (Limit f) -> real $ appEndo g . appEndo f
 
->liftR2 :: (Rational -> Rational -> Rational) -> R -> R -> R
->liftR2 h (Limit f) (Limit g) = real $ \eps -> h (f `appEndo` eps) (g `appEndo` eps)
 
 >instance Num R where
 >   (+) = liftR2 (+)
 >   (-) = liftR2 (-)
 >   (Limit f) * (Limit g) = real $ \eps -> f `appEndo` (eps / 2)
 >                                        * g `appEndo` (eps / 2)
->   negate = inverseImage negate
->   abs = inverseImage abs
->   signum = inverseImage signum
+>   negate = liftR negate
+>   abs = liftR abs
+>   signum = liftR signum
 >   fromInteger i = real $ const (fromInteger i)
 
 
@@ -92,7 +97,7 @@
 >instance VectorSpace R where
 >   type Scalar R = Rational
 >   vzero = real $ const 0
->   vnegate = inverseImage negate
+>   vnegate = liftR negate
 >   (Limit f) %+ (Limit g) = real $ \eps -> f `appEndo` eps + g `appEndo` eps
 >   x %* (Limit f) = real $ \eps -> x %* f `appEndo` (eps / x)
 

@@ -1,4 +1,4 @@
->{-# Language Trustworthy,UndecidableInstances, ExistentialQuantification, FlexibleInstances, MultiParamTypeClasses, MagicHash, TypeOperators, FlexibleContexts, Arrows, TypeFamilies #-}
+>{-# LANGUAGE Trustworthy,UndecidableInstances, ExistentialQuantification, FlexibleInstances, MultiParamTypeClasses, MagicHash, TypeOperators, FlexibleContexts, Arrows, TypeFamilies #-}
 >-- |
 >--  Module: Math.Number.Stream
 >--  Description: Stream implementation

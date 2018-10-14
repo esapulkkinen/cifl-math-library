@@ -102,6 +102,8 @@ library
   build-depends: graphviz >= 2999.18.1.2, text >= 1.2.2.1
   build-depends: json >= 0.9.1, parallel >= 3.2.0.6
   build-depends: binary >= 0.7.5.0, template-haskell, ghc-prim
+  build-depends: colour >= 2.3.4, dlist >= 0.8.0.5
+  build-depends: erf >= 2.0.0.0, base-compat >= 0.10.4
   
   -- Directories containing source files.
   -- hs-source-dirs:      
