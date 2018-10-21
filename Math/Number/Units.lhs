@@ -1,4 +1,5 @@
->{-# LANGUAGE Safe, CPP, TypeOperators #-}
+>{-# LANGUAGE Trustworthy, CPP, TypeOperators #-}
+>{-# LANGUAGE GeneralizedNewtypeDeriving, DerivingStrategies #-}
 >{-# LANGUAGE ExistentialQuantification, TypeFamilies,GADTs, RankNTypes, UnicodeSyntax #-}
 >{-# LANGUAGE ScopedTypeVariables, StandaloneDeriving, FlexibleContexts #-}
 >-- | This module contains auxiliary definitions related to dimensional analysis.
@@ -31,7 +32,9 @@
 >module Math.Number.Units where
 >import Control.Monad (guard)
 >import Control.Applicative
+>import Data.Binary
 >import Data.Ratio
+>import Data.Complex
 >import Math.Matrix.Interface
 >import Math.Number.DimensionalAnalysis
 >import Math.Number.TypeRational
@@ -178,7 +181,8 @@
 >   fromAmount x = x
 
 >newtype Dimensionless = Dimensionless { dimensionless_value :: Double }
-> deriving (Read,Eq,Ord)
+> deriving (Eq,Ord)
+> deriving newtype (Binary)
 >instance Show Dimensionless where { show = show_unit }
 >instance VectorSpace Dimensionless where
 >   type Scalar Dimensionless = Double
@@ -196,8 +200,46 @@
 >     guard (isDimensionless d)
 >     return $ Dimensionless x
 
+>newtype Information = Bits { number_of_bits :: Double }
+>  deriving (Eq,Ord) deriving newtype (Binary)
+>instance Show Information where { show = show_unit }
+>instance VectorSpace Information where
+>   type Scalar Information = Double
+>   vzero = Bits 0
+>   vnegate (Bits x) = Bits (negate x)
+>   (Bits x) %+ (Bits y) = Bits $ x + y
+>   k %* (Bits x) = Bits (k * x)
+
+>instance Unit Information where
+>   amount = number_of_bits
+>   fromAmount = Bits
+>   dimension _ = dimensionless
+>   fromQuantity = fromQuantityDef dimensionless Bits
+>   unitOf _ = "b"
+
+>newtype SoundLevel = SoundAmplitude { sound_amplitude :: Double }
+>  deriving (Eq, Ord)
+>  deriving newtype (Binary)
+
+>instance Show SoundLevel where { show = show_unit }
+>-- | NOTE: additive operations mapped to multiplicative.
+>instance VectorSpace SoundLevel where
+>   type Scalar SoundLevel = Double
+>   vzero = SoundAmplitude 1
+>   vnegate (SoundAmplitude x) = SoundAmplitude (1/x)
+>   (SoundAmplitude x) %+ (SoundAmplitude y) = SoundAmplitude (x * y)
+>   k %* (SoundAmplitude x) = SoundAmplitude (x ** k)
+
+>instance Unit SoundLevel where
+>   amount x = log (sound_amplitude x) / log 10
+>   fromAmount = SoundAmplitude . (10.0 **)
+>   dimension _ = dimensionless
+>   fromQuantity = fromQuantityDef dimensionless fromAmount
+>   unitOf _ = "dB"
+
 >newtype Angle = Radians { radians :: Double }
->   deriving (Read,Eq,Ord)
+>   deriving (Eq,Ord)
+>   deriving newtype (Binary)
 >instance Show Angle where { show = show_unit }
 
 >instance VectorSpace Angle where
@@ -207,8 +249,18 @@
 >   (Radians x) %+ (Radians y) = Radians $ x + y
 >   k %* (Radians x) = Radians $ k * x
 
+>exp_angle :: Angle -> Complex Double
+>exp_angle (Radians x) = (cos x :+ sin x)
+>
+>fromPolar :: Length -> Angle -> Complex Length
+>fromPolar r (Radians alfa) = (cos alfa %* r :+ sin alfa %* r)
+
+>toPolar :: Complex Length -> (Length, Angle)
+>toPolar ((Meter a) :+ (Meter b)) = (Meter $ sqrt (a*a %+ b*b), Radians $ atan2 b a)
+
 >newtype DegreesAngle = Degrees { degrees :: Double }
->   deriving (Read,Eq,Ord)
+>   deriving (Eq,Ord)
+>   deriving newtype (Binary)
 
 >instance Show DegreesAngle where { show = show_unit }
 
@@ -243,7 +295,8 @@
 
 >-- | <https://en.wikipedia.org/wiki/Steradian>
 >newtype SolidAngle = Steradians { steradians :: Double }
->   deriving (Read,Eq,Ord)
+>   deriving (Eq,Ord)
+>   deriving newtype (Binary)
 
 >instance Show SolidAngle where { show = show_unit }
 >instance VectorSpace SolidAngle where
@@ -265,6 +318,7 @@
 
 >newtype Acceleration = MetersPerSquareSecond { metersPerSquareSecond :: Double }
 >   deriving (Eq,Ord)
+>   deriving newtype (Binary)
 >instance Show Acceleration where { show = show_unit }
 >instance VectorSpace Acceleration where
 >   type Scalar Acceleration = Double
@@ -282,6 +336,7 @@
 
 >newtype Velocity = MetersPerSecond { metersPerSecond :: Double }
 >   deriving (Eq,Ord)
+>   deriving newtype (Binary)
 >instance Show Velocity where { show = show_unit }
 >instance VectorSpace Velocity where
 >   type Scalar Velocity = Double
@@ -299,6 +354,7 @@
 
 >newtype SquareLength = SquareMeter { squaremeters :: Double }
 > deriving (Eq,Ord)
+> deriving newtype (Binary)
 >instance Show SquareLength where { show = show_unit }
 >instance VectorSpace SquareLength where
 >   type Scalar SquareLength = Double
@@ -316,6 +372,7 @@
 >-- types for basic units <https://en.wikipedia.org/wiki/International_System_of_Units>
 >newtype Length = Meter { meters :: Double }
 > deriving (Eq,Ord)
+> deriving newtype (Binary)
 >instance Show Length where { show = show_unit }
 >instance VectorSpace Length where
 >   type Scalar Length = Double
@@ -324,7 +381,9 @@
 >   (Meter x) %+ (Meter y) = Meter $ x + y
 >   k %* (Meter x) = Meter $ k * x
 
->newtype Mass = Kilogram { kilograms :: Double } deriving (Eq,Ord)
+>newtype Mass = Kilogram { kilograms :: Double }
+>  deriving (Eq,Ord)
+>  deriving newtype (Binary)
 >instance Show Mass where { show = show_unit }
 >instance VectorSpace Mass where
 >   type Scalar Mass = Double
@@ -332,7 +391,9 @@
 >   vnegate (Kilogram x) = Kilogram $ negate x
 >   (Kilogram x) %+ (Kilogram y) = Kilogram $ x + y
 >   k %* (Kilogram x) = Kilogram $ k * x
->newtype Time = Second { seconds :: Double } deriving (Eq,Ord)
+>newtype Time = Second { seconds :: Double }
+> deriving (Eq,Ord)
+> deriving newtype (Binary)
 >instance Show Time where { show = show_unit }
 
 >instance VectorSpace Time where
@@ -341,7 +402,9 @@
 >   vnegate (Second x) = Second $ negate x
 >   (Second x) %+ (Second y) = Second $ x + y
 >   k %* (Second x) = Second $ k * x
->newtype Current = Ampere { amperes :: Double } deriving (Eq,Ord)
+>newtype Current = Ampere { amperes :: Double }
+>  deriving (Eq,Ord)
+>  deriving newtype (Binary)
 >instance Show Current where { show = show_unit }
 
 >instance VectorSpace Current where
@@ -353,7 +416,9 @@
 >
 
 >-- | <https://en.wikipedia.org/wiki/Fahrenheit>
->newtype DegreesFahrenheit = Fahrenheit { fahrenheits :: Double } deriving (Eq,Ord)
+>newtype DegreesFahrenheit = Fahrenheit { fahrenheits :: Double }
+> deriving (Eq,Ord)
+> deriving newtype (Binary)
 >instance Show DegreesFahrenheit where { show = show_unit }
 >instance VectorSpace DegreesFahrenheit where
 >   type Scalar DegreesFahrenheit = Double
@@ -372,7 +437,9 @@
 >   zeroAmount _ = 459.67
 >   conversionFactor _ = 5/9
 
->newtype DegreesTemperature = Celcius { celciuses :: Double } deriving (Eq,Ord)
+>newtype DegreesTemperature = Celcius { celciuses :: Double }
+> deriving (Eq,Ord)
+> deriving newtype (Binary)
 >instance Show DegreesTemperature where { show = show_unit }
 >instance VectorSpace DegreesTemperature where
 >   type Scalar DegreesTemperature = Double
@@ -391,7 +458,9 @@
 >     | otherwise = invalidDimensions "fromQuantity:DegreesTemperature" (dimension x) kelvin_dimension (amount x) (amount x)
 >   zeroAmount _ = 273.15
 
->newtype Temperature = Kelvin { kelvins :: Double } deriving (Eq,Ord)
+>newtype Temperature = Kelvin { kelvins :: Double }
+> deriving (Eq,Ord)
+> deriving newtype (Binary)
 >instance Show Temperature where { show = show_unit }
 
 >instance VectorSpace Temperature where
@@ -400,7 +469,9 @@
 >   vnegate (Kelvin x) = Kelvin $ negate x
 >   (Kelvin x) %+ (Kelvin y) = Kelvin $ x + y
 >   k %* (Kelvin x) = Kelvin $ k * x
->newtype Substance = Mole { moles :: Double } deriving (Eq,Ord)
+>newtype Substance = Mole { moles :: Double }
+> deriving (Eq,Ord)
+> deriving newtype (Binary)
 >instance Show Substance where { show = show_unit }
 
 >instance VectorSpace Substance where
@@ -409,7 +480,9 @@
 >   vnegate (Mole x) = Mole $ negate x
 >   (Mole x) %+ (Mole y) = Mole $ x + y
 >   k %* (Mole x) = Mole $ k * x
->newtype Intensity = Candela { candelas :: Double } deriving (Eq,Ord)
+>newtype Intensity = Candela { candelas :: Double }
+> deriving (Eq,Ord)
+> deriving newtype (Binary)
 >instance Show Intensity where { show = show_unit }
 
 >instance VectorSpace Intensity where
@@ -418,7 +491,9 @@
 >   vnegate (Candela x) = Candela $ negate x
 >   (Candela x) %+ (Candela y) = Candela $ x + y
 >   k %* (Candela x) = Candela $ k * x
->newtype Frequency = Hertz { hertzs :: Double } deriving (Eq,Ord)
+>newtype Frequency = Hertz { hertzs :: Double }
+> deriving (Eq,Ord)
+> deriving newtype (Binary)
 >instance Show Frequency where { show = show_unit }
 
 >instance VectorSpace Frequency where
@@ -427,7 +502,9 @@
 >   vnegate (Hertz x) = Hertz $ negate x
 >   (Hertz x) %+ (Hertz y) = Hertz $ x + y
 >   k %* (Hertz x) = Hertz $ k * x
->newtype Force = Newton { newtons :: Double } deriving (Eq,Ord)
+>newtype Force = Newton { newtons :: Double }
+> deriving (Eq,Ord)
+> deriving newtype (Binary)
 >instance Show Force where { show = show_unit }
 
 >instance VectorSpace Force where
@@ -436,7 +513,9 @@
 >   vnegate (Newton x) = Newton $ negate x
 >   (Newton x) %+ (Newton y) = Newton $ x + y
 >   k %* (Newton x) = Newton $ k * x
->newtype Pressure = Pascal { pascals :: Double } deriving (Eq,Ord)
+>newtype Pressure = Pascal { pascals :: Double }
+> deriving (Eq,Ord)
+> deriving newtype (Binary)
 >instance Show Pressure where { show = show_unit }
 
 >instance VectorSpace Pressure where
@@ -445,7 +524,9 @@
 >   vnegate (Pascal x) = Pascal $ negate x
 >   (Pascal x) %+ (Pascal y) = Pascal $ x + y
 >   k %* (Pascal x) = Pascal $ k * x
->newtype Energy = Joule { joules :: Double } deriving (Eq,Ord)
+>newtype Energy = Joule { joules :: Double }
+> deriving (Eq,Ord)
+> deriving newtype (Binary)
 >instance Show Energy where { show = show_unit }
 
 >instance VectorSpace Energy where
@@ -454,7 +535,9 @@
 >   vnegate (Joule x) = Joule $ negate x
 >   (Joule x) %+ (Joule y) = Joule $ x + y
 >   k %* (Joule x) = Joule $ k * x
->newtype Power = Watt { watts :: Double } deriving (Eq,Ord)
+>newtype Power = Watt { watts :: Double }
+> deriving (Eq,Ord)
+> deriving newtype (Binary)
 >instance Show Power where { show = show_unit }
 
 >instance VectorSpace Power where
@@ -463,7 +546,9 @@
 >   vnegate (Watt x) = Watt $ negate x
 >   (Watt x) %+ (Watt y) = Watt $ x + y
 >   k %* (Watt x) = Watt $ k * x
->newtype Charge = Coulomb { coulombs :: Double } deriving (Eq,Ord)
+>newtype Charge = Coulomb { coulombs :: Double }
+> deriving (Eq,Ord)
+> deriving newtype (Binary)
 >instance Show Charge where { show = show_unit }
 
 >instance VectorSpace Charge where
@@ -472,7 +557,9 @@
 >   vnegate (Coulomb x) = Coulomb $ negate x
 >   (Coulomb x) %+ (Coulomb y) = Coulomb $ x + y
 >   k %* (Coulomb x) = Coulomb $ k * x
->newtype Voltage = Volt { volts :: Double } deriving (Eq,Ord)
+>newtype Voltage = Volt { volts :: Double }
+> deriving (Eq,Ord)
+> deriving newtype (Binary)
 >instance Show Voltage where { show = show_unit }
 
 >instance VectorSpace Voltage where
@@ -481,7 +568,8 @@
 >   vnegate (Volt x) = Volt $ negate x
 >   (Volt x) %+ (Volt y) = Volt $ x + y
 >   k %* (Volt x) = Volt $ k * x
->newtype Capacitance = Farad { farads :: Double } deriving (Eq,Ord)
+>newtype Capacitance = Farad { farads :: Double }
+> deriving (Eq,Ord) deriving newtype (Binary)
 >instance Show Capacitance where { show = show_unit }
 
 >instance VectorSpace Capacitance where
@@ -490,7 +578,9 @@
 >   vnegate (Farad x) = Farad $ negate x
 >   (Farad x) %+ (Farad y) = Farad $ x + y
 >   k %* (Farad x) = Farad $ k * x
->newtype Resistance = Ohm { ohms :: Double } deriving (Eq,Ord)
+>newtype Resistance = Ohm { ohms :: Double }
+> deriving (Eq,Ord)
+> deriving newtype (Binary)
 >instance Show Resistance where { show = show_unit }
 
 >instance VectorSpace Resistance where
@@ -499,7 +589,8 @@
 >   vnegate (Ohm x) = Ohm $ negate x
 >   (Ohm x) %+ (Ohm y) = Ohm $ x + y
 >   k %* (Ohm x) = Ohm $ k * x
->newtype Conductance = Siemens { siemenses :: Double } deriving (Eq,Ord)
+>newtype Conductance = Siemens { siemenses :: Double }
+> deriving (Eq,Ord) deriving newtype (Binary)
 >instance Show Conductance where { show = show_unit }
 
 >instance VectorSpace Conductance where
@@ -508,7 +599,8 @@
 >   vnegate (Siemens x) = Siemens $ negate x
 >   (Siemens x) %+ (Siemens y) = Siemens $ x + y
 >   k %* (Siemens x) = Siemens $ k * x
->newtype Flux = Weber { webers :: Double } deriving (Eq,Ord)
+>newtype Flux = Weber { webers :: Double }
+> deriving (Eq,Ord) deriving newtype (Binary)
 >instance Show Flux where { show = show_unit }
 
 >instance VectorSpace Flux where
@@ -517,7 +609,8 @@
 >   vnegate (Weber x) = Weber $ negate x
 >   (Weber x) %+ (Weber y) = Weber $ x + y
 >   k %* (Weber x) = Weber $ k * x
->newtype FluxDensity = Tesla { teslas :: Double } deriving (Eq,Ord)
+>newtype FluxDensity = Tesla { teslas :: Double }
+> deriving (Eq,Ord) deriving newtype (Binary)
 >instance Show FluxDensity where { show = show_unit }
 
 >instance VectorSpace FluxDensity where
@@ -526,7 +619,9 @@
 >   vnegate (Tesla x) = Tesla $ negate x
 >   (Tesla x) %+ (Tesla y) = Tesla $ x + y
 >   k %* (Tesla x) = Tesla $ k * x
->newtype Inductance  = Henry { henrys :: Double } deriving (Eq,Ord)
+>newtype Inductance  = Henry { henrys :: Double }
+> deriving (Eq,Ord)
+> deriving newtype (Binary)
 >instance Show Inductance where { show = show_unit }
 
 >instance VectorSpace Inductance where
@@ -535,7 +630,8 @@
 >   vnegate (Henry x) = Henry $ negate x
 >   (Henry x) %+ (Henry y) = Henry $ x + y
 >   k %* (Henry x) = Henry $ k * x
->newtype LuminousFlux = Lumen { lumens :: Double } deriving (Eq,Ord)
+>newtype LuminousFlux = Lumen { lumens :: Double }
+> deriving (Eq,Ord) deriving newtype (Binary)
 >instance Show LuminousFlux where { show = show_unit }
 
 >instance VectorSpace LuminousFlux where
@@ -544,7 +640,9 @@
 >   vnegate (Lumen x) = Lumen $ negate x
 >   (Lumen x) %+ (Lumen y) = Lumen $ x + y
 >   k %* (Lumen x) = Lumen $ k * x
->newtype Illuminance = Lux { luxes :: Double } deriving (Eq,Ord)
+>newtype Illuminance = Lux { luxes :: Double }
+> deriving (Eq,Ord)
+> deriving newtype (Binary)
 >instance Show Illuminance where { show = show_unit }
 
 >instance VectorSpace Illuminance where
@@ -553,7 +651,9 @@
 >   vnegate (Lux x) = Lux $ negate x
 >   (Lux x) %+ (Lux y) = Lux $ x + y
 >   k %* (Lux x) = Lux $ k * x
->newtype Radioactivity = Becquerel { becquerels :: Double } deriving (Eq,Ord)
+>newtype Radioactivity = Becquerel { becquerels :: Double }
+> deriving (Eq,Ord)
+> deriving newtype (Binary)
 >instance Show Radioactivity where { show = show_unit }
 
 >instance VectorSpace Radioactivity where
@@ -562,7 +662,9 @@
 >   vnegate (Becquerel x) = Becquerel $ negate x
 >   (Becquerel x) %+ (Becquerel y) = Becquerel $ x + y
 >   k %* (Becquerel x) = Becquerel $ k * x
->newtype AbsorbedDose  = Gray { grays :: Double } deriving (Eq,Ord)
+>newtype AbsorbedDose  = Gray { grays :: Double }
+> deriving (Eq,Ord)
+> deriving newtype (Binary)
 >instance Show AbsorbedDose where { show = show_unit }
 
 >instance VectorSpace AbsorbedDose where
@@ -571,7 +673,10 @@
 >   vnegate (Gray x) = Gray $ negate x
 >   (Gray x) %+ (Gray y) = Gray $ x + y
 >   k %* (Gray x) = Gray $ k * x
->newtype EquivalentDose = Sievert { sieverts :: Double } deriving (Eq,Ord)
+>newtype EquivalentDose = Sievert { sieverts :: Double }
+> deriving (Eq,Ord)
+> deriving newtype (Binary)
+
 >instance Show EquivalentDose where { show = show_unit }
 
 >instance VectorSpace EquivalentDose where
@@ -581,7 +686,9 @@
 >   (Sievert x) %+ (Sievert y) = Sievert $ x + y
 >   k %* (Sievert x) = Sievert $ k * x
 
->newtype CatalyticActivity = Katal { katals :: Double } deriving (Eq,Ord)
+>newtype CatalyticActivity = Katal { katals :: Double }
+> deriving (Eq,Ord)
+> deriving newtype (Binary)
 >instance Show CatalyticActivity where { show = show_unit }
 
 >instance VectorSpace CatalyticActivity where

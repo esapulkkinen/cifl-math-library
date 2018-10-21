@@ -34,15 +34,19 @@
 >  laplace    :: Dual v -> Dual v    -- (Del^2 f)(v)
 >  laplace = divergence . grad
 
+>-- | unicode support for gradient. Use with parenthesis.
 >(∇) :: (VectorDerivative v) => Dual v -> v -> v
 >(∇) = grad
 > 
+>-- | unicode support for divergence. Use with parenthesis.
 >(∇·) :: (VectorDerivative v) => (v -> v) -> Dual v
 >(∇·) = divergence
 > 
+>-- | unicode support for curl. Use with parenthesis.
 >(∇×) :: (VectorDerivative v) => (v -> v) -> v -> v
 >(∇×) = curl
 > 
+>-- | unicode support for laplace. Use with parenthesis.
 >(∇·∇) :: (VectorDerivative v) => Dual v -> Dual v
 >(∇·∇) = laplace
 

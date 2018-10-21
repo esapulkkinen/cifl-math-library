@@ -3,6 +3,7 @@
 >import Data.Monoid hiding (Dual)
 >import Data.Complex
 >import Data.Sequence (Seq, (<|))
+>import qualified Data.Binary as Bin
 >import qualified Data.Sequence as Seq
 >import Control.Applicative
 >import Math.Tools.Functor
@@ -20,6 +21,10 @@
 
 >data Vector2 s = Vector2 { xcoord2 :: s, ycoord2 :: s }
 >   deriving (Eq)
+
+>instance (Bin.Binary s) => Bin.Binary (Vector2 s) where
+>   put (Vector2 x y) = Bin.put x >> Bin.put y 
+>   get = do { x <- Bin.get ; y <- Bin.get ; return (Vector2 x y) }
 
 >type ComplexVector2 a = (Vector2 :*: Complex) a
 

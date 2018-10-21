@@ -36,6 +36,7 @@
 >import Data.Typeable
 >import Data.Ratio
 >import Data.Char
+>import qualified Data.Binary as Binary
 >import Control.Monad (guard, mplus, foldM)
 >import Control.Applicative (Alternative(many,some,(<|>)))
 >import Control.Exception
@@ -54,6 +55,10 @@
 >   value_amount :: r,
 >   value_dimension :: Dimension }
 >  deriving (Eq, Typeable)
+
+>instance (Binary.Binary r) => Binary.Binary (Quantity r) where
+>   put (x `As` d) = Binary.put x >> Binary.put d
+>   get = do { x <- Binary.get ; d <- Binary.get ; return (x `As` d) }
 
 >type Prefix r = Quantity r -> Quantity r
 
@@ -205,6 +210,20 @@
 >   luminosity_power  :: Rational,
 >   substance_power   :: Rational }
 >  deriving (Eq, Typeable, Ord)
+
+>instance Binary.Binary Dimension where
+>   put (Dimension l w t c te lu su) = do
+>     Binary.put l >> Binary.put w >> Binary.put t >> Binary.put c
+>     >> Binary.put te >> Binary.put lu >> Binary.put su
+>   get = do
+>     l <- Binary.get
+>     w <- Binary.get
+>     t <- Binary.get
+>     c <- Binary.get
+>     te <- Binary.get
+>     lu <- Binary.get
+>     su <- Binary.get
+>     return $ Dimension l w t c te lu su
 
 >dimension_basis :: [Dimension]
 >dimension_basis = [meter_dimension, kilogram_dimension, second_dimension,

@@ -32,7 +32,7 @@
 >                      if r `approximately_equal` r' && r' `approximately_equal` r''
 >                       then r `approximately_equal` r'' else True)
 
->prop_median_test = med (pi :: R) (3.141 :: R) (3.242 :: R) `approximately_equal` pi
+prop_median_test = med (pi :: R) (3.141 :: R) (3.242 :: R) `approximately_equal` pi
 
 >prop_average_test = average (pi :: R) 0 `approximately_equal` (pi / 2)
 

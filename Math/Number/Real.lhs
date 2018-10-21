@@ -203,8 +203,10 @@ max_convergence_ratio = fmap (foldl1 max) . cauchy
 >average :: R -> R -> R
 >average (Limit x) (Limit y) = Limit $ liftA2 (\x y -> (x+y)/2) x y
 
->instance MedianAlgebra R where
->   med (Limit x) (Limit y) (Limit z) = Limit $ med x y z
+
+would require Ord constraint
+instance MedianAlgebra R where
+   med (Limit x) (Limit y) (Limit z) = Limit $ med x y z
 
 >instance ConjugateSymmetric R where { conj = id }
   
@@ -260,11 +262,12 @@ lowerbound set = Characteristic $ \x -> and $ map (x <=) set
 
 >-- | <http://en.wikipedia.org/wiki/Least-upper-bound_property Least upper bound property>
 >-- | note this is really undecidable.
->supremum :: [R] -> R
->supremum [x] = x
->supremum (Limit ~(Pre c cr):lst) = Limit $ Pre c $ rest
->   where rest = liftA2 max cr $ approximate $ supremum lst
->supremum [] = negative_infinity
+
+supremum :: [R] -> R
+supremum [x] = x
+supremum (Limit ~(Pre c cr):lst) = Limit $ Pre c $ rest
+   where rest = liftA2 max cr $ approximate $ supremum lst
+supremum [] = negative_infinity
 
 >supremum_gen :: (Fractional a, Ord a, Limiting a)
 >             => [Closure a] -> Closure a
@@ -277,8 +280,8 @@ lowerbound set = Characteristic $ \x -> and $ map (x <=) set
 >negate_limit :: (Limiting a, Num a) => Closure a -> Closure a
 >negate_limit = cmap negate
 
->infimum :: [Closure R] -> Closure R
->infimum = negate_limit . supremum_gen . map negate_limit
+infimum :: [Closure R] -> Closure R
+infimum = negate_limit . supremum_gen . map negate_limit
 
 >infimum_gen :: (Fractional a, Ord a, Limiting a) => [Closure a] -> Closure a
 >infimum_gen = negate_limit . supremum_gen . map negate_limit
@@ -521,19 +524,16 @@ Requires: lim[x->0]curve(x) = 0 /\ lim[i->INF] dx_i = 0
 gamma :: R -> Closure R  
 gamma z = integral (close 0,infinity_gen) $ \t -> exp (negate t) * (t ** (z-1))
     
->instance Eq R where
->  xs == ys = error "equality of constructive reals is undecidable"
+instance Eq R where
+  xs == ys = error "equality of constructive reals is undecidable"
 
->instance Ord R where
->   x <= y = error "ordering of constructive reals is undecidable"
+instance Ord R where
+   x <= y = error "ordering of constructive reals is undecidable"
 
 >instance Limiting Bool where
 >   data Closure Bool = BoolClosure { runBoolClosure :: Stream Bool }
 >   limit s = BoolClosure s
 >   approximations (BoolClosure s) = s
-
->metric_equality :: (MetricSpace a) => a -> a -> Bool
->metric_equality x y = distance x y < runRClosure epsilon
 > 
 >approximately_equal :: R -> R -> Bool
 >approximately_equal x y = show_at_precision x 30 == show_at_precision y 30
@@ -591,16 +591,16 @@ gamma z = integral (close 0,infinity_gen) $ \t -> exp (negate t) * (t ** (z-1))
 >   where signcorr r = if signum a == 0 && signum_real b 30 == -1 then "-" else ""
 >         decs = if a == 0 then decimals_str2 (abs b) i
 >                          else decimals (abs (b `at_precision` i)) i
->         (a,b) = properFraction r
+>         (a,b) = properFraction_real r
 >         decimals x 0 = ""
 >         decimals x i
->             | (a',b') <- properFraction (x*10), r <- decimals b' (pred i) = show a' ++ r
+>             | (a',b') <- properFraction_real (x*10), r <- decimals b' (pred i) = show a' ++ r
 >         decimals_str2 x i = case decimals2 x i of
 >           (0,res) -> decimals (res `at_precision` i) i 
 >           (j,res) -> decimals (res `at_precision` i) i 
 >                        ++ "e" ++ show j
 >         decimals2 x 0 = (0,x)
->         decimals2 x i = let (a',b') = properFraction (x*10) 
+>         decimals2 x i = let (a',b') = properFraction_real (x*10) 
 >                           in case a' of
 >                             0 -> let (res,res2) = decimals2 b' (pred i) in (pred res,res2)
 >                             _ -> (0,x)
@@ -612,27 +612,29 @@ gamma z = integral (close 0,infinity_gen) $ \t -> exp (negate t) * (t ** (z-1))
 >    pp s = pp (show_at_precision s 10)
 
 
->instance Real R where -- needs Ord instance
->    toRational = shead . approximate . (`at_precision` 5)
+instance Real R where -- needs Ord instance
+    toRational = shead . approximate . (`at_precision` 5)
 
->instance RealFrac R where
->    -- ^ not really computable for reals, since 'floor' is undecidable
->    -- according to <http://www.win.tue.nl/~hzantema/hg2.pdf Geuvers: Stream representations of real numbers>
->    -- we implement this using approximations nonetheless because
->    -- this is used for printing the real number.
->    -- Note that two distinct representations of the _same_ real number
->    -- may produce different result, e.g.
->    -- 0.9999999.. == 1.0000000.. , but:
->    -- fst (properFraction 0.9999...) == 0 != 1 == fst (properFraction 1.00..)
->    -- however, since comparing constructive reals is noncomputable,
->    -- we couldn't possibly declare that 0.9999.. == 1.000000..
->    properFraction r = (fromIntegral wholepart,lift_real (snd . properFraction) r)
+instance RealFrac R where
+    -- ^ not really computable for reals, since 'floor' is undecidable
+    -- according to <http://www.win.tue.nl/~hzantema/hg2.pdf Geuvers: Stream representations of real numbers>
+    -- we implement this using approximations nonetheless because
+    -- this is used for printing the real number.
+    -- Note that two distinct representations of the _same_ real number
+    -- may produce different result, e.g.
+    -- 0.9999999.. == 1.0000000.. , but:
+    -- fst (properFraction 0.9999...) == 0 != 1 == fst (properFraction 1.00..)
+    -- however, since comparing constructive reals is noncomputable,
+    -- we couldn't possibly declare that 0.9999.. == 1.000000..
+    floor = fst . properFraction
+    round = floor . (+ 0.5)
+
+>properFraction_real r = (fromIntegral wholepart,lift_real (snd . properFraction) r)
 >      where rat = shead $ approximate $ r `at_precision` 2
 >            wholepart = sign * ((abs $ numerator rat)
 >                                `div` (abs $ denominator rat))
 >            sign = signum (numerator rat) * signum (denominator rat)
->    floor = fst . properFraction
->    round = floor . (+ 0.5)
+
 
 >-- | Enum instance for reals is undecidable with respect to end of
 >-- real intervals, since comparison of two real numbers is undecidable.
@@ -753,35 +755,35 @@ gamma z = integral (close 0,infinity_gen) $ \t -> exp (negate t) * (t ** (z-1))
 >instance (Fractional a, Limiting a) => Infinitesimal (Stream a) where
 >  epsilon_stream = cells stream_epsilon
 
->instance RealFloat R where
->   floatRadix  x = 10
->   -- WARNING: floatDigits would want to use real comparison.
->   floatDigits x = if shead (approximate x) < 0 then 30 else negate 30
->   floatRange  x = (-30000,30000)
->   decodeFloat x = decodeInBase 10 30 x  
->   encodeFloat m n = (fromInteger m :: R) * 10^^n
->   isNegativeZero _ = False
->   isInfinite _ = False
->   isNaN x = False
->   isDenormalized _ = False
->   isIEEE _ = False
->   -- | <http://en.wikipedia.org/wiki/Atan2 Atan2>
->   atan2 y x = 2 * atan ((sqrt (x*x+y*y) - x) / y)
+instance RealFloat R where
+   floatRadix  x = 10
+   -- WARNING: floatDigits would want to use real comparison.
+   floatDigits x = if shead (approximate x) < 0 then 30 else negate 30
+   floatRange  x = (-30000,30000)
+   decodeFloat x = decodeInBase 10 30 x  
+   encodeFloat m n = (fromInteger m :: R) * 10^^n
+   isNegativeZero _ = False
+   isInfinite _ = False
+   isNaN x = False
+   isDenormalized _ = False
+   isIEEE _ = False
+   -- | <http://en.wikipedia.org/wiki/Atan2 Atan2>
+   atan2 y x = 2 * atan ((sqrt (x*x+y*y) - x) / y)
 
->decodeInBase :: Integer -> Int -> R -> (Integer,Int)
->decodeInBase base p x = iter start
->     where start = floor ((x*fromIntegral base^p) `at_precision` 1)
->           iter x | abs x >= base^(p-1) && abs x < base^p = (x,negate p)
->                  | x >= base^p,
->                       (a,b) <- iter (x `div` base) = (a,b+1)
->                  | x <= negate (base^p),
->                      (a,b) <- iter (x `div` base) = (a,b+1)
->                  | x < base^(p-1)  && x > 0,
->                      (a,b) <- iter (x*base) = (a,b-1)
->                  | x > negate (base^(p-1)) && x < 0
->                       , (a,b) <- iter (x*base) = (a,b-1)
->                  | x == 0 = (0,0)
->                  | otherwise = error $ "iter base for:" ++ show x
+decodeInBase :: Integer -> Int -> R -> (Integer,Int)
+decodeInBase base p x = iter start
+     where start = floor ((x*fromIntegral base^p) `at_precision` 1)
+           iter x | abs x >= base^(p-1) && abs x < base^p = (x,negate p)
+                  | x >= base^p,
+                       (a,b) <- iter (x `div` base) = (a,b+1)
+                  | x <= negate (base^p),
+                      (a,b) <- iter (x `div` base) = (a,b+1)
+                  | x < base^(p-1)  && x > 0,
+                      (a,b) <- iter (x*base) = (a,b-1)
+                  | x > negate (base^(p-1)) && x < 0
+                       , (a,b) <- iter (x*base) = (a,b-1)
+                  | x == 0 = (0,0)
+                  | otherwise = error $ "iter base for:" ++ show x
 
 >encodeInBase :: Integer -> Integer -> Int -> R
 >encodeInBase base m n = (fromInteger m :: R) * (fromIntegral base)^^n
@@ -910,14 +912,14 @@ it means there are always two adjacent equal elements.
 >    acosh x = log $ x + sqrt (x*x-1)
 >    atanh x = log ((1 + x)/(1-x)) / 2
 
->mandelbrot_polynomial :: Complex R -> Complex R -> Complex R
->mandelbrot_polynomial c z = z*z + c
+mandelbrot_polynomial :: Complex R -> Complex R -> Complex R
+mandelbrot_polynomial c z = z*z + c
 
->mandelbrot_stream :: Complex R -> Stream (Complex R)
->mandelbrot_stream c = iterate_stream (mandelbrot_polynomial c) 0
+mandelbrot_stream :: Complex R -> Stream (Complex R)
+mandelbrot_stream c = iterate_stream (mandelbrot_polynomial c) 0
 
->mandelbrot :: Complex R -> Closure (Complex R)
->mandelbrot c = limit (mandelbrot_stream c)
+mandelbrot :: Complex R -> Closure (Complex R)
+mandelbrot c = limit (mandelbrot_stream c)
 
 >instance MetricSpace (Ratio Integer) where
 >   distance x y = fromRational $ abs (x - y)

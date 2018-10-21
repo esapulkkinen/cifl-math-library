@@ -1,4 +1,5 @@
 >{-# LANGUAGE FlexibleContexts, TypeOperators, TemplateHaskell, QuasiQuotes, GADTs #-}
+>{-# OPTIONS_HADDOCK hide #-}
 >module Math.Matrix.QuantumMechanics where
 >import Control.Applicative
 >import Data.Complex
@@ -32,17 +33,8 @@ momentum :: (Infinitesimal a, Closed a, RealFloat a)
 >hbar :: (Show a, Floating a) => Quantity a
 >hbar = 6.62607004081e-34 * joule * second
 
-momentum :: (VectorDerivative v, Scalar v ~ Complex (Energy :* Time))
-         => Dual v -> v -> v
-
-momentum f x = ((vzero :+ quantity reduced_planck_constant) * grad f x)
-
-
-hamiltonian :: (Vector4 a -> 
-hamiltonian v m psi = negate (reduced_planck_constant^2)/(2*m)*laplace psi + v psi
 
 >-- <http://en.wikipedia.org/wiki/Matrix_representation_of_Maxwell's_equations>
-
 >riemann_silberstein_plus ::
 >   (Scalar b ~ Complex v, RealFloat v, VectorSpace b)
 > => Dual (Vector4 (Complex v))
@@ -50,7 +42,6 @@ hamiltonian v m psi = negate (reduced_planck_constant^2)/(2*m)*laplace psi + v p
 > -> (Vector4 (Complex v) -> b)
 > -> (Vector4 (Complex v) -> b)
 > -> Vector4 (Complex v) -> b
-
 >riemann_silberstein_plus permit permea e b rt = (1 / sqrt 2) %* (sqrt(permit `bracket` rt) %* e rt)
 >     %+ ((0 :+ 1) / (sqrt(permea `bracket` rt))) %* b rt
 
@@ -149,12 +140,12 @@ hamiltonian v m psi = negate (reduced_planck_constant^2)/(2*m)*laplace psi + v p
 >   %- ((∇·∇) phi) %+ (((m*m*c*c)/(hbar*hbar)) %* phi)
 
 >-- | <https://en.wikipedia.org/wiki/Schr%C3%B6dinger_equation>
->schrodinger :: (RealFloat a, Show a, Closed a, Infinitesimal a)
+>schrodinger :: (Show a, RealFloat a, Closed a, Infinitesimal a)
 >            => Quantity (Complex a)
 >            -> Dual (Vector4 (Quantity (Complex a)))
 >            -> Dual (Vector4 (Quantity (Complex a)))
 >            -> Dual (Vector4 (Quantity (Complex a)))
 >schrodinger mu phi v = Covector $ \ rt ->
 >   ((0:+1) %* hbar) * derivate4t phi `bracket` rt
->  + (1 / (2*mu)) * hbar * hbar * ((∇·∇) phi `bracket` rt)
->  - v `bracket` rt * phi `bracket` rt
+>  %+ (1 / (2*mu)) * hbar * hbar * ((∇·∇) phi `bracket` rt)
+>  %- v `bracket` rt * phi `bracket` rt

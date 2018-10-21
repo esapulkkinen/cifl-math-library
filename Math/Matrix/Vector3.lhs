@@ -7,6 +7,7 @@
 >import Control.Monad
 >import Data.Complex
 >import Data.Sequence (Seq)
+>import Data.Binary
 >import qualified Data.Sequence as Seq
 >import qualified Data.Monoid as Mon
 >import Math.Tools.Functor
@@ -37,6 +38,10 @@
 >   ycoord3 :: s,
 >   zcoord3 :: s }
 >       deriving (Eq)
+
+>instance (Binary s) => Binary (Vector3 s) where
+>   put (Vector3 x y z) = put x >> put y >> put z
+>   get = do { x <- get ; y <- get ; z <- get ; return (Vector3 x y z) }
 
 >type ComplexVector3 a = (Vector3 :*: Complex) a
 
@@ -733,8 +738,8 @@ deriving instance (Show a) => Show (Codiagonal Vector3 a)
 >  (Vector1 x) <*>> (Matrix m) = x %* fmap vector_element m
 >  (Matrix (Vector3 (Vector1 x) (Vector1 y) (Vector1 z))) <<*> (Vector3 a b c) = Vector1 (x*a+y*b+z*c) 
 
->instance NumSpace (Vector3 (Complex R)) where
->instance FractionalSpace (Vector3 (Complex R)) where
+instance NumSpace (Vector3 (Complex R)) where
+instance FractionalSpace (Vector3 (Complex R)) where
 
 >-- | 1 x 3 matrices:
 

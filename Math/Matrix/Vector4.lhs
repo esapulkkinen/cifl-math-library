@@ -13,6 +13,7 @@ import Math.Matrix.Dimension
 >import Math.Tools.Isomorphism
 >import Math.Tools.Orthogonal
 >import Math.Matrix.Interface
+>import qualified Data.Binary as Bin
 >import qualified Math.Matrix.Covector as Covector
 >import Math.Matrix.Covector
 >import Math.Tools.Median
@@ -33,6 +34,16 @@ import Math.Matrix.Dimension
 >  zcoord4 :: s
 > }
 >    deriving (Eq)
+
+>instance (Bin.Binary s) => Bin.Binary (Vector4 s) where
+>   put (Vector4 x y z t) = Bin.put x >> Bin.put y >> Bin.put z >> Bin.put t
+>   get = do
+>     x <- Bin.get
+>     y <- Bin.get
+>     z <- Bin.get
+>     t <- Bin.get
+>     return (Vector4 x y z t)
+
 
 >instance (Num a) => Num (Vector4 a) where
 >   v1 + v2 = pure (+) <*> v1 <*> v2
@@ -163,8 +174,8 @@ import Math.Matrix.Dimension
 >instance SplittableVector Vector2 Vector2 where
 >  vsplit (Vector4 x y z t) = (Vector2 x y, Vector2 z t)
 
->instance NumSpace (Vector4 (Complex R))
->instance FractionalSpace (Vector4 (Complex R))
+instance NumSpace (Vector4 (Complex R))
+instance FractionalSpace (Vector4 (Complex R))
 
 >instance (Ord a) => Ord (Vector4 a) where
 >  (Vector4 x y z t) <= (Vector4 x' y' z' t') = x <= x' && y <= y' && z <= z' && t <= t'
@@ -622,7 +633,6 @@ laplace4_units f = divergence4_units (grad4_units f)
 >matrix_indices4 = matrix (,) vector_indices4 vector_indices4
 
 >-- | <https://en.wikipedia.org/wiki/Invertible_matrix>
-
 >inverse4 :: (Fractional a) => Matrix4 a -> Matrix4 a
 >inverse4 m = (1 / determinant m) %* adjucate4 m
 
@@ -639,6 +649,9 @@ laplace4_units f = divergence4_units (grad4_units f)
 >        det3 =          determinant3 $ Matrix $ fmap (inverseRotate . removey4) v
 >        det4 = negate $ determinant3 $ Matrix $ fmap removez4 v
 >        v = Vector3 v1 v2 v3
+
+>cross4_vec :: (Num a) => Vector3 (Vector4 a) -> Vector4 a
+>cross4_vec (Vector3 a b c) = cross4 a b c
 
 >determinant4 :: (Num a) => Matrix4 a -> a
 >determinant4 (Matrix m) = combine $ pure (*) <*> tcoord4 m <*> amv  

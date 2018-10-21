@@ -4,6 +4,7 @@
 >import Data.Monoid hiding (Dual)
 >import Data.Complex
 >import Data.Sequence (Seq)
+>import qualified Data.Binary as Bin
 >import qualified Data.Sequence as Seq
 >import Math.Tools.I
 >import Math.Tools.CoMonad
@@ -17,6 +18,10 @@
 
 >data Vector1 a = Vector1 { vector_element :: a }
 >  deriving (Eq, Ord)
+
+>instance (Bin.Binary s) => Bin.Binary (Vector1 s) where
+>   put (Vector1 x) = Bin.put x
+>   get = do { x <- Bin.get ; return (Vector1 x) }
 
 >instance (ConjugateSymmetric a) => ConjugateSymmetric (Vector1 a) where
 >   conj = fmap conj
