@@ -4,11 +4,16 @@
 >import qualified Data.Foldable as F
 >import Data.Traversable
 >import Data.List
+>import Data.Binary
 >import Control.Monad
 >import Math.Tools.Visitor
 
 >data Tree e n = Node { root_label :: n, children :: [(e,Tree e n)] }
 >  deriving (F.Foldable, Traversable)
+
+>instance (Binary e, Binary n) => Binary (Tree e n) where
+>   put (Node x lst) = put x >> put lst
+>   get = do { x <- get ; lst <- get ; return (Node x lst) }
 
 >type Path e = [e]
 >type Forest n e = [Tree e n]
@@ -30,6 +35,11 @@
 >   data Fold (Tree e n) a = TreeFold (n -> [a] -> a) (e -> a -> a)
 >   visit z@(TreeFold n e) (Node l lst) = n l visited_edges
 >      where visited_edges = map (\ (edge,st) -> e edge (visit z st)) lst
+
+>instance Builder (Tree e n) where
+>   data Unfold (Tree e n) a = TreeUnfold (a -> (n,[(e,a)]))
+>   build z@(TreeUnfold m) x = let (n,r) = m x in Node n $
+>           map (\(a,b) -> (a, build z b)) r
 
 >map_edges :: (e -> e') -> Tree e n -> Tree e' n
 >map_edges f = map_tree f id

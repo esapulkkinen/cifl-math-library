@@ -89,7 +89,6 @@
 >   recip (Limit f) = real $ \eps -> recip (f `appEndo` (recip eps))
 >   fromRational x  = real $ const x
 
-
 >instance ConjugateSymmetric R where
 >   conj = id
 
@@ -123,7 +122,7 @@
 >   sum_stream $ liftA2 (/) (index_powers (constant xappr)) factorial
 
 >-- | Using Simon Plouffe's BPP digit extraction algorithm for computing pi.
->-- See <https://secure.wikimedia.org/wikipedia/en/wiki/Pi> for details.
+>-- See <https://secure.wikimedia.org/wikipedia/en/wiki/Pi Pi> for details.
 >pi_r :: R
 >pi_r = lim $ sum_stream $ do
 >   k <- naturals
@@ -143,6 +142,18 @@
 >   let x' = x `approximate` eps
 >       y' = y `approximate` eps
 >    in eps * sum (map ((`approximate` eps) . f . fromRational) [x',x'+eps..y'])
+
+>-- | <https://en.wikipedia.org/wiki/Inverse_trigonometric_functions>
+>asin_r :: R -> R
+>asin_r x = integral (0,x) (\z -> 1 / sqrt(1 - z*z))
+>
+>-- | <https://en.wikipedia.org/wiki/Inverse_trigonometric_functions>
+>acos_r :: R -> R
+>acos_r x = (pi_r / 2) - asin_r x
+>
+>-- | <https://en.wikipedia.org/wiki/Inverse_trigonometric_functions>
+>atan_r :: R -> R
+>atan_r x = integral (0,x) (\z -> (1 / (z*z+1)))
 
 
 >-- | <http://en.wikipedia.org/wiki/Trigonometric_functions trigonometric functions>
@@ -169,6 +180,10 @@
 >   x ** y = exp (y * log x)
 >   sin = sin_by_series
 >   cos = cos_by_series
+>   tan x = sin x / cos x
+>   asin = asin_r
+>   acos = acos_r
+>   atan = atan_r
 >   sinh x = (exp x - exp (negate x)) / 2
 >   cosh x = (exp x + exp (negate x)) / 2
 >   tanh x = sinh x / cosh x

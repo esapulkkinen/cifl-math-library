@@ -31,13 +31,12 @@
 >   (LogPolar3 r a b) %. (LogPolar3 r' a' b')
 >     = exp (r + r') * (cos a * cos a' + cos (b-b')*sin a * sin a')
 
-| degree to radian conversion
+>-- | degree to radian conversion
   
 > fromDegree ∷ (Floating a) => a → a
 > fromDegree x = x * pi / 180
   
-| radian to degrees conversion
-  
+>-- | radian to degrees conversion
 > degrees∷(Floating a) ⇒ a → a
 > degrees x = x * 180 / pi
   

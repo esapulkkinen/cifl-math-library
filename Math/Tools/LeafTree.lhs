@@ -9,9 +9,17 @@
 >import Data.List hiding (zipWith)
 >import Math.Tools.Orthogonal
 >import Data.Monoid
+>import Data.Binary
 
 >data LeafTree a = Leaf { leaf :: a } 
 >                | SubTree { subtrees :: [LeafTree a] }
+
+>instance (Binary a) => Binary (LeafTree a) where
+>   put (Leaf x) = put True >> put x
+>   put (SubTree lst) = put False >> put lst
+>   get = do s <- get
+>            if s then get >>= (return . Leaf)
+>                 else get >>= (return . SubTree)
 
 >instance Applicative LeafTree where
 >  pure x = Leaf x

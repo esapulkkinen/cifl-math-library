@@ -91,19 +91,20 @@ library
   other-modules: Math.Tools.Category
   other-modules: Math.Tools.FunctorM
   other-modules: Math.Tools.NaturalAPI
-  build-depends: base >= 4.11.1, ghc-prim >= 0.5.2, random >=1.1 && <1.2
-  build-depends: mtl >=2.2 && <2.3, arrows >=0.4 && <0.5
+  build-depends: base, ghc-prim >= 0.5.2, random >=1.1 && <1.2
+  build-depends: mtl >=2.2 && <2.3
   build-depends: array >= 0.5.1.0, template-haskell >= 2.10.0.0
   build-depends: time >= 1.5.0.1, containers >= 0.5.6.2
   build-depends: transformers >= 0.4.2.0, pretty >= 1.1.2.0
   build-depends: syb >= 0.5.1, stm >= 2.4.4.1
   build-depends: parallel >= 3.2.0.6, unix >= 2.7.1.0
-  build-depends: bytestring >= 0.10.6.0, fgl >= 5.5.3.0
+  build-depends: bytestring >= 0.10.6.0, fgl, temporary, random
   build-depends: graphviz >= 2999.18.1.2, text >= 1.2.2.1
   build-depends: json >= 0.9.1, parallel >= 3.2.0.6
   build-depends: binary >= 0.7.5.0, template-haskell, ghc-prim
-  build-depends: colour >= 2.3.4, dlist >= 0.8.0.5
-  build-depends: erf >= 2.0.0.0, base-compat >= 0.10.4
+  build-depends: erf >= 2.0.0.0, base-compat >= 0.10.4, exceptions
+  build-depends: json
+  build-depends: arrows, Stream, lazysmallcheck
   
   -- Directories containing source files.
   -- hs-source-dirs:      
@@ -144,7 +145,7 @@ Test-Suite unit-tests
         other-modules: Math.Matrix.Vector4, Math.Matrix.Vector4
         other-modules: Math.Tools.LineInfo
         other-modules: Math.Tools.ParseMonad, Math.Tools.ParserInterface
-        build-depends: base, containers >= 0.5.6.2, random >= 1.1, pretty >= 1.1.2.0, array >= 0.5.1.0, transformers >= 0.4.2.0, syb >= 0.5.1, QuickCheck >= 2.8.1, mtl >= 2.2.1, arrows >= 0.4.4.1, fgl >= 5.5.3.0, text >= 1.2.2.1, graphviz >= 2999.18.1.2, json >= 0.9.1, parallel >= 3.2.0.6, binary >= 0.7.5.0, bytestring >= 0.10.6.0, HUnit, template-haskell
+        build-depends: base, containers >= 0.5.6.2, random >= 1.1, pretty >= 1.1.2.0, array >= 0.5.1.0, transformers >= 0.4.2.0, syb >= 0.5.1, mtl >= 2.2.1, fgl >= 5.5.3.0, text >= 1.2.2.1, graphviz >= 2999.18.1.2, json, parallel >= 3.2.0.6, binary >= 0.7.5.0, bytestring >= 0.10.6.0, HUnit, template-haskell, QuickCheck 
         default-language: Haskell2010
         ghc-options: -j2 -fPIC -msse2 -threaded -feager-blackholing -dynamic +RTS -M768M -c -qa -N -RTS
 

@@ -7,7 +7,7 @@ CABALOPTS ?=
 #CABALOPTS ?= --config-file=$(CABAL_CONFIG) --with-compiler ghc-$(GHC_VERSION)
 
 CABAL=cabal
-
+STACK=stack
 
 unit : build test
 
@@ -33,6 +33,9 @@ force-configure :
 
 build : 
 	$(CABAL) $(CABALOPTS) $(CABALFLAGS) new-build -j4 
+
+build-stack :
+	$(STACK) build
 
 build-llvm:
 	$(CABAL) $(CABALOPTS) $(CABALFLAGS) new-build -j4 --ghc-options="-fllvm"
