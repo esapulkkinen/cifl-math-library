@@ -68,7 +68,7 @@ dependencegraph :
 	dependencies/draw_graph.sh Graph
 	dependencies/draw_graph.sh Matrix
 	dependencies/draw_graph.sh Number
-	mv dependencies-*.ps dependencies-*.pdf dist-newstyle/doc/html/cifl-math-library/
+	mv dependencies-*.pdf dist-newstyle/doc/html/cifl-math-library/
 
 document : document-cabal
 

@@ -62,8 +62,9 @@
 >default_tolerance :: (Floating a) => a
 >default_tolerance = 0.00000001
 
->instance (Floating r) => Eq (Quantity r) where
->   (x `As` d) == (y `As` d') = d == d' && abs (x-y)) < default_tolerance
+>instance (Floating r, Show r, Ord r) => Eq (Quantity r) where
+>   (x `As` d) == (y `As` d') | d == d' = abs (x-y) < default_tolerance
+>                       | otherwise = invalidDimensions "==" d d' x y
 
 >data Dimension = Dimension {
 >   length_power :: Rational,
@@ -453,19 +454,19 @@
 >   acosh = require_dimensionless "acosh" acosh
 >   atanh = require_dimensionless "atanh" atanh
 
->instance (Ord r, Show r) => Ord (Quantity r) where
+>instance (Ord r, Floating r,Show r) => Ord (Quantity r) where
 >   compare (x `As` r) (y `As` r')
->     | r == r' = compare x y
+>     | r == r' = compare (x-y) default_tolerance
 >     | otherwise = invalidDimensions "compare" r r' x y
 
->instance (Show r,RealFrac r) => RealFrac (Quantity r) where
+>instance (Show r,Floating r,RealFrac r) => RealFrac (Quantity r) where
 >   properFraction (x `As` r) = let (b,c) = properFraction x in (b,c `As` r)
 >   round (x `As` r) = round x
 >   truncate (x `As` r) = truncate x
 >   ceiling (x `As` r) = ceiling x
 >   floor (x `As` r) = floor x
 
->instance (Show r, Real r) => Real (Quantity r) where
+>instance (Show r, Floating r, Real r) => Real (Quantity r) where
 >   toRational (x `As` r) = toRational x
 
 >readprefix :: ReadPrec (Quantity Double -> Quantity Double)
@@ -532,7 +533,7 @@
 >     | r == r'   = invalidDimensions "enumFromThenTo" r r'' a c
 >     | otherwise = invalidDimensions "enumFromThenTo" r r' a b
 
->instance (Integral r, Show r) => Integral (Quantity r) where
+>instance (Integral r, Floating r,Show r) => Integral (Quantity r) where
 >   quot (a `As` r) (b `As` r') = (a `quot` b) `As` (r %- r')
 >   rem (a `As` r) (b `As` r') = (a `rem` b) `As` (r %- r')
 >   div (a `As` r) (b `As` r') = (a `div` b) `As` (r %- r')
