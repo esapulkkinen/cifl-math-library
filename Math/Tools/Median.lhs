@@ -6,7 +6,7 @@
 
 >-- | Rules expected of MedianAlgebra.
 >--
->-- From TAOCP section 7.1.1 <http://www-cs-faculty.stanford.edu/~uno/taocp.html>
+>-- From "Knuth: The Art of Computer Programming" section 7.1.1 <http://www-cs-faculty.stanford.edu/~uno/taocp.html>
 >-- 
 >-- === "median/majority"
 >--

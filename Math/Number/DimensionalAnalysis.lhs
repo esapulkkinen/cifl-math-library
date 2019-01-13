@@ -135,6 +135,7 @@
 >    where (a `As` d) = numerator  r
 >          (b `As` d') = denominator r
 
+
 >-- | the Unit class should be defined by any newtype based
 >-- types that should interact well with the dimensional analysis mechanism.
 >-- 

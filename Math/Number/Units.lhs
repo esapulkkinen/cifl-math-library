@@ -70,7 +70,7 @@
 >-- to convert to run-time representation after using this, because the result type
 >-- accumulates new parts with each use without considering what the total
 >-- dimension of the result is. This can produce excessively complicated types, because
->-- the type reprsents the structure of the expression rather than the structure of
+>-- the type represents the structure of the expression rather than the structure of
 >-- the result.
 >(/%) :: (Fractional (Scalar u), Unit u, Unit w, Scalar u ~ Scalar w)
 >     => u -> w -> u :/ w

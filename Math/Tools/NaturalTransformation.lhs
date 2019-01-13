@@ -1,5 +1,11 @@
 >{-# LANGUAGE RankNTypes, MultiParamTypeClasses, TypeOperators, Arrows, Safe #-}
 >module Math.Tools.NaturalTransformation where
+>-- ^ Basic support for natural transformations.
+>-- This is very basic concept from category theory.
+>-- For reference I've used:
+>-- <https://en.wikipedia.org/wiki/Natural_transformation>
+>-- <https://ncatlab.org/nlab/show/natural+transformation>
+>-- Roy L. Crole: Categories for Types.
 >import Prelude hiding ((.),id)
 >import Math.Tools.I
 >import Control.Monad
