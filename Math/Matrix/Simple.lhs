@@ -50,8 +50,6 @@
 >type SMatrix4 elem = (FourD :&: FourD) elem
 >type InfMatrix elem = (Integer :&: Integer) elem
 
-
-
 >instance (Universe a) => PpShowF ((->) a) where
 >   ppf f = (hsep $ take 10 lst) <> if null lst2 then Tools.PrettyP.empty else pp ".." 
 >     where lst = [pp (f i) | i <- all_elements]
@@ -275,13 +273,13 @@
 >sapply = smatrix id id id
 >
 >(#) :: (row :&: col) a -> (row,col) -> a
->f # ~(i,j) = f `cells` i $ j
+>f # (i,j) = f `cells` i $ j
 
 >index3S :: Matrix3S row col dep elem -> (row,col,dep) -> elem
->index3S m ~(i,j,k) = m `cells` i `cells` j $ k
+>index3S m (i,j,k) = m `cells` i `cells` j $ k
 
 >index4S :: Matrix4S row col dep tim elem -> (row, col,dep,tim) -> elem
->index4S m ~(i,j,k,t) = m `cells` i `cells` j `cells` k $ t
+>index4S m (i,j,k,t) = m `cells` i `cells` j `cells` k $ t
 >
 >indexA :: (ArrowApply arr) => MatrixA arr row col a -> arr (row,col) a
 >indexA (Matrix f) = proc (i,j) -> do { r <- f -< i ; r -<< j }

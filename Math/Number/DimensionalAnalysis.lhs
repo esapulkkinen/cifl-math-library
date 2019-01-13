@@ -1,4 +1,7 @@
->{-# LANGUAGE Safe, GADTs, TypeFamilies, FlexibleContexts, FlexibleInstances, TypeOperators, DataKinds, UnicodeSyntax, MultiParamTypeClasses #-}
+>-- -*- mode: haskell ; coding: utf-8 -*-
+>{-# LANGUAGE Safe, GADTs, TypeFamilies, FlexibleContexts #-}
+>{-# LANGUAGE FlexibleInstances, TypeOperators, DataKinds #-}
+>{-# LANGUAGE UnicodeSyntax, MultiParamTypeClasses #-}
 >-- | This module provides dimensional analysis according to SI system of units.
 >--   For reference have used <https://en.wikipedia.org/wiki/Dimensional_analysis>
 >--   and <https://en.wikipedia.org/wiki/International_System_of_Units>.
@@ -54,7 +57,36 @@
 >data Quantity r = As {
 >   value_amount :: r,
 >   value_dimension :: Dimension }
->  deriving (Eq, Typeable)
+>  deriving (Typeable)
+
+>default_tolerance :: (Floating a) => a
+>default_tolerance = 0.00000001
+
+>instance (Floating r) => Eq (Quantity r) where
+>   (x `As` d) == (y `As` d') = d == d' && abs (x-y)) < default_tolerance
+
+>data Dimension = Dimension {
+>   length_power :: Rational,
+>   weight_power :: Rational,
+>   time_power   :: Rational,
+>   current_power :: Rational,
+>   temperature_power :: Rational,
+>   luminosity_power  :: Rational,
+>   substance_power   :: Rational }
+>  deriving (Eq, Typeable, Ord)
+
+>instance Applicative Quantity where
+>  pure x = x `As` dimensionless
+>  (f `As` d) <*> (x `As` d')
+>    | d == d' = f x `As` d
+>    | otherwise = error $ "invalidDimensions: <*>: " ++ show d ++ " != " ++ show d'
+
+>-- | isFractionalDimensional checks if a dimension is fractional dimensional
+>isFractionalDimensional :: Dimension -> Bool
+>isFractionalDimensional (Dimension l w t c te lu su)
+>  = denominator l /= 1 || denominator w /= 1 || denominator t /= 1 ||
+>    denominator c /= 1 || denominator te /= 1 || denominator lu /= 1 ||
+>    denominator su /= 1
 
 >instance (Binary.Binary r) => Binary.Binary (Quantity r) where
 >   put (x `As` d) = Binary.put x >> Binary.put d
@@ -201,15 +233,6 @@
 >   | dimension x == dimension d = return (amount x / amount d)
 >   | otherwise = invalidDimensionsM "convert" (dimension x) (dimension d) x d
 
->data Dimension = Dimension {
->   length_power :: Rational,
->   weight_power :: Rational,
->   time_power   :: Rational,
->   current_power :: Rational,
->   temperature_power :: Rational,
->   luminosity_power  :: Rational,
->   substance_power   :: Rational }
->  deriving (Eq, Typeable, Ord)
 
 >instance Binary.Binary Dimension where
 >   put (Dimension l w t c te lu su) = do
@@ -362,6 +385,12 @@
 >(=-=) :: (VectorSpace v) => v -> v -> v
 >x =-= y = x %+ vnegate y
 
+>instance Foldable Quantity where
+>   foldMap f (x `As` d) = f x
+
+>instance Traversable Quantity where
+>   traverse f (fa `As` d) = (`As` d) <$> f fa
+
 >instance (Show r) => Stream.Limiting (Quantity r) where
 >   data Closure (Quantity r) = QuantityClosure (Stream r) Dimension
 >   limit z@(Stream.Pre (x `As` d) r@(Stream.Pre (y `As` d') _))
@@ -469,16 +498,12 @@
 >            unitdivider = (readunit >>= (\x -> whitespace >> string "/" >> unitdivider >>= \xr -> (return (x:xr))))
 >                           <++ (readunit >>= (\x -> return [x]))
 >                           <++ parens chooseunits
- 
->instance (ShowPrecision r, Floating r) => Show (Quantity r) where
->  show (x `As` d)
->   | d == kelvin_dimension = show_at_precision (x-273.15) 10 ++ " ⁰C"
->   | otherwise = show_at_precision x 10 ++ " " ++ show d
+  
+>instance (ShowPrecision r) => Show (Quantity r) where
+>  show (x `As` d) = show_at_precision x 10 ++ " " ++ show d
 
->instance (ShowPrecision r, Floating r) => PpShow (Quantity r) where
->  pp (x `As` d)
->   | d == kelvin_dimension = pp (show_at_precision (x - 273.15) 10) <+> pp "⁰C"
->   | otherwise = pp (show_at_precision x 10) <+> pp d
+>instance (ShowPrecision r) => PpShow (Quantity r) where
+>  pp (x `As` d) = pp (show_at_precision x 10) <+> pp d
 
 
 >invalidDimensions :: (Show b, Show c) => String -> Dimension -> Dimension -> b -> c -> a
@@ -873,6 +898,7 @@ order in the table is significant
 >planck_temperature = 1.41683385e32 %* kelvin
 
 >-- | <https://en.wikipedia.org/wiki/Physical_constant>
+>-- | Warning: don't confuse with stefan_boltzmann_constant.
 >boltzmann_constant :: (Floating a) => Quantity a
 >boltzmann_constant = 1.3806485279e-23 @@ (joule_dimension %- kelvin_dimension)
 
@@ -985,13 +1011,22 @@ order in the table is significant
 >atomic_mass_constant :: (Floating a) => Quantity a
 >atomic_mass_constant = 1.66053904020e-27 %* kilogram
 
-
+>faraday_constant :: (Floating a, Show a) => Quantity a
 >faraday_constant = 96485.3328959 %* (coulomb / mole)
+
+>first_radiation_constant :: (Floating a, Show a) => Quantity a
 >first_radiation_constant = 1.19104295315e-16 %* (watt * meter * meter)
+>loschmidt_constant :: (Floating a) => Quantity a
 >loschmidt_constant = 2.686781115e25 @@ ((-3) %* meter_dimension)
+>gas_constant :: (Floating a, Show a) => Quantity a
 >gas_constant = 8.314459848 %* (joule / (mole * kelvin))
+>molar_planck_constant :: (Floating a, Show a) => Quantity a
 >molar_planck_constant = 3.990312711018e-10 %* (joule * second / mole)
+>second_radiation_constant :: (Floating a, Show a) => Quantity a
 >second_radiation_constant = 1.4387773683e-2 %* (meter * kelvin)
+
+>-- | Warning: don't confuse with boltzmann_constant.
+>stefan_boltzmann_constant :: (Floating a, Show a) => Quantity a
 >stefan_boltzmann_constant = 5.67036713e-8 %* (watt / (meter^2 * kelvin^4))
 
 >-- | <https://en.wikipedia.org/wiki/Physical_constant>
@@ -1106,4 +1141,6 @@ order in the table is significant
 >    ("°F", fromFahrenheit 0),
 >    ("℉", fromFahrenheit 0)
 >   ]
+
+
 

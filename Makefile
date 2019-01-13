@@ -22,7 +22,11 @@ all_with_install : all install
 install_dependencies :
 	$(CABAL) $(CABALOPTS) $(CABALFLAGS) install HUnit
 
-configure :
+configure : configure-stack
+
+configure-stack :
+
+configure-cabal :
 	$(CABAL) $(CABALOPTS) $(CABALFLAGS) new-configure --enable-tests
 
 force-configure :
@@ -30,8 +34,9 @@ force-configure :
 
 #--enable-shared --enable-executable-dynamic
 
+build : build-stack
 
-build : 
+build-cabal : 
 	$(CABAL) $(CABALOPTS) $(CABALFLAGS) new-build -j4 
 
 build-stack :
@@ -47,7 +52,13 @@ interpreter :
 	cabal $(CABALOPTS) $(CABALFLAGS) new-configure -flibrary-only
 	cabal $(CABALOPTS) $(CABALFLAGS) new-repl --ghc-option="-dynamic" --ghc-option="-fobject-code"
 
-test : 
+test : test-stack
+
+test-stack :
+	$(STACK) test
+
+
+test-cabal : 
 	cabal $(CABALOPTS) $(CABALFLAGS) new-test -j4 --ghc-options="+RTS -M786M -RTS"
 	@grep -h Counts dist-newstyle/build/*/*/*/*/unit-tests/test/*.log
 
@@ -59,7 +70,12 @@ dependencegraph :
 	dependencies/draw_graph.sh Number
 	mv dependencies-*.ps dependencies-*.pdf dist-newstyle/doc/html/cifl-math-library/
 
-document : 
+document : document-cabal
+
+document-stack :
+	$(STACK) haddock
+
+document-cabal : 
 	cabal $(CABALOPTS) $(CABALFLAGS) new-haddock --offline --enable-documentation --haddock-options="--title=cifl-math-library --html --source-base=https://raw.githubusercontent.com/esapulkkinen/cifl-math-library/master/ --source-module=https://raw.githubusercontent.com/esapulkkinen/cifl-math-library/master/%F --source-entity=https://raw.githubusercontent.com/esapulkkinen/cifl-math-library/master/%F#%N --no-print-missing-docs" --ghc-options="-DWITH_HAXML +RTS -M786M -RTS" --haddock-internal  > dist-newstyle/haddock-output
 
 latex-document :

@@ -3,6 +3,7 @@
 >module Math.Tools.LineInfo where
 >import Data.Monoid
 >import Data.Typeable
+>import Data.Binary
 >import qualified Math.Tools.PrettyP as PrettyP
 >import Math.Tools.PrettyP
 >import Math.Tools.Isomorphism
@@ -12,6 +13,10 @@
 >			    li_column :: Int }
 >              | NoLineInfo
 >   deriving (Eq,Ord,Typeable)
+
+>instance Binary LineInfo where
+>   put (LineInfo f r c) = put f >> put r >> put c
+>   get = do { f <- get ; r <- get ; c <- get ; return (LineInfo f r c) }
 
 >lineinfoIso :: Iso LineInfo (Either (String,Int,Int) ())
 >lineinfoIso = Iso openli closeli

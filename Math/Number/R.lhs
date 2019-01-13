@@ -13,7 +13,7 @@
 
 >instance Limiting R where
 >   data Closure R = RClosure { runRClosure :: R }
->   limit (Pre x (Pre y z)) = RClosure $ real $ \eps ->
+>   limit (Pre x z@(Pre y _)) = RClosure $ real $ \eps ->
 >       if abs (y `approximate` eps - x `approximate` eps) < eps
 >         then y `approximate` eps
 >         else runRClosure (limit z) `approximate` eps
@@ -49,14 +49,23 @@
 >epsilon :: R
 >epsilon = real id
 
+>-- | this propagates accuracy without changing it.
 >liftR :: (Rational -> Rational) -> R -> R
 >liftR g (Limit (Endo f)) = real $ g . f
 
+>-- | this propagates accuracy without changing it
 >liftR2 :: (Rational -> Rational -> Rational) -> R -> R -> R
 >liftR2 h (Limit f) (Limit g) = real $ \eps -> h (f `appEndo` eps) (g `appEndo` eps)
 
+>-- | inverseImage transforms accuracy computation of the real.
 >inverseImage :: (Rational -> Rational) -> R -> R
 >inverseImage g (Limit (Endo f)) = real $ f . g
+
+>-- | The first argument is the function lifted. The second argument
+>-- describes change in accuracy by the function.
+>liftWithAccuracy :: (Rational -> Rational) -> (Rational -> Rational) -> R -> R
+>liftWithAccuracy f acc r = liftR f (inverseImage acc r)
+
 
 >-- | approx_compose will use the second real as the level
 >--   of approximation to compute the first.
@@ -83,6 +92,8 @@
 >   fromInteger i = real $ const (fromInteger i)
 
 
+
+
 >instance Fractional R where
 >   (Limit f) / (Limit g) = real $ \eps -> f `appEndo` (eps / 2)
 >                                        / g `appEndo` (eps / 2)
@@ -98,7 +109,17 @@
 >   vzero = real $ const 0
 >   vnegate = liftR negate
 >   (Limit f) %+ (Limit g) = real $ \eps -> f `appEndo` eps + g `appEndo` eps
->   x %* (Limit f) = real $ \eps -> x %* f `appEndo` (eps / x)
+>   x %* (Limit f) = real $ \df -> x %* f `appEndo` df
+
+>-- | This lifts a rational function to a real function.
+>-- This computes accuracy using the formula @dx = df / f'(x)@.
+>-- The accuracy behaves badly when @f'(x) = 0@ due to divide-by-zero.
+>differentialLiftR :: (Rational -> Rational) -> R -> R
+>differentialLiftR f (Limit (Endo g)) = Limit $ Endo $ \df -> f $ g (1 / (derivate_rational df f (g df)))
+
+>-- | derivate for rational functions. The first argument is epsilon.
+>derivate_rational :: Rational -> (Rational -> Rational) -> Rational -> Rational
+>derivate_rational eps f i = (f (i + eps) - f (i - eps)) / (2*eps)
 
 >derivate :: (R -> R) -> R -> R
 >derivate f (Limit x) = real $ \eps ->
@@ -139,8 +160,9 @@
 
 >integral :: (R,R) -> (R -> R) -> R
 >integral (x,y) f = real $ \eps ->
->   let x' = x `approximate` eps
->       y' = y `approximate` eps
+>   let accuracy z = derivate_rational eps (\i -> f (fromRational i) `approximate` eps) z
+>       x' = x `approximate` (eps / accuracy (x `approximate` eps))
+>       y' = y `approximate` (eps / accuracy (y `approximate` eps))
 >    in eps * sum (map ((`approximate` eps) . f . fromRational) [x',x'+eps..y'])
 
 >-- | <https://en.wikipedia.org/wiki/Inverse_trigonometric_functions>

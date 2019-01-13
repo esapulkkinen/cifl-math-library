@@ -12,7 +12,6 @@
 >import qualified Data.Set
 >import Control.Applicative
 >import Control.Monad.Fix (fix)
->import Control.Parallel
 >import Math.Tools.PrettyP
 >import Math.Tools.Visitor
 >import Math.Tools.FixedPoint

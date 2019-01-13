@@ -2,6 +2,7 @@
 >module Math.Tools.Isomorphism where
 >import Prelude hiding ((.),id)
 >import Data.Map (Map)
+>import Data.Complex
 >import Data.Monoid
 >import qualified Data.Map as Map
 >import Control.Category
@@ -29,19 +30,19 @@
 >type Aut a = a :==: a
 
 >-- | <https://en.wikipedia.org/Galois_Connection>
->-- Note that since isomorphisms do not need to be equalities,
+>-- Note that since we don't check the equations for isomorphisms,
 >-- this function need not produce identity.
->leftIdempotent :: a :==: b -> a -> a
->leftIdempotent i = isomorphism_section i . isomorphism_epimorphism i
+>leftIdempotent :: a :==: b -> Endo a
+>leftIdempotent i = Endo $ isomorphism_section i . isomorphism_epimorphism i
 
 >-- | <https://en.wikipedia.org/Galois_Connection>
->-- Note that since isomorphisms do not need to be equalities,
+>-- Note that since we don't check the equations for isomorphisms,
 >-- this function need not produce an identity.
->rightIdempotent :: a :==: b -> b -> b
->rightIdempotent i = isomorphism_epimorphism i . isomorphism_section i
+>rightIdempotent :: a :==: b -> Endo b 
+>rightIdempotent i = Endo $ isomorphism_epimorphism i . isomorphism_section i
 
->inverseEndo :: Endo a -> Endo a -> Aut a
->inverseEndo (Endo f) (Endo g) = f <-> g
+>automorphism :: Endo a -> Endo a -> Aut a
+>automorphism (Endo f) (Endo g) = f <-> g
 
 >visit_iso :: (ComposableVisitor v) => v :==: a -> v -> a
 >visit_iso = visit . embed . isomorphism_epimorphism
@@ -81,18 +82,12 @@
 >runIso :: a :==: b -> a -> b
 >runIso (Iso f _) = f
 
-yonedaIso :: (Functor f) => ((a -> r) -> f r) :==: f a
-
-yonedaIso :: (CoFunctor p) => (forall r. (a -> r) -> p r) :==: p a
-
-yonedaIso :: (CoFunctor p) => FRepresentable p a :==: p a
-yonedaIso = (\f -> f id) <-> (flip inverse_image)
-
 >type FRepresentable f a = forall r. (a -> r) -> f r
 >type FCorepresentable f a = forall r. (r -> a) -> f r
 
 >representable :: FRepresentable f a -> f a
 >representable f = f id
+
 >corepresentable :: FCorepresentable f a -> f a
 >corepresentable f = f id
 
@@ -101,10 +96,6 @@ yonedaIso = (\f -> f id) <-> (flip inverse_image)
 
 >coinverse_representable :: (CoFunctor f) => f a -> FCorepresentable f a
 >coinverse_representable fa = \g -> inverse_image g fa
-
-yonedaIso :: (Functor f) => FRepresentable f a :==: f a
-yonedaIso = Iso representable inverse_representable
-
 
 >(=<) :: a :==: b -> a -> b
 >(=<) = runIso
@@ -188,6 +179,9 @@ TODO: negative integers?
 >             <-> (\ (a,b) -> (sqrt(abs a*abs b),
 >                              sqrt(abs a / abs b)))
 
+
+>polarIso :: (RealFloat a) => Complex a :==: (a,a)
+>polarIso = polar <-> (uncurry mkPolar)
 
 >ratioIso :: (Integral a) => (a,a) :==: (Ratio a,a)
 >ratioIso =  (\ (x,y) -> ((x % y), gcd x y))

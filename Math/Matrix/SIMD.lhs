@@ -1,5 +1,5 @@
 >{-# LANGUAGE CPP #-}
->{-# LANGUAGE GADTs, FlexibleInstances, TypeFamilies, DeriveFunctor #-}
+>{-# LANGUAGE GADTs, FlexibleInstances, TypeFamilies, DeriveFunctor, FlexibleContexts #-}
 >{-# LANGUAGE ScopedTypeVariables, TypeOperators #-}
 >{-# LANGUAGE MagicHash, UnboxedTuples #-}
 >{-# LANGUAGE Trustworthy #-}
@@ -34,7 +34,8 @@
 >   svec4_x,svec4_y,svec4_z,svec4_t,
 >   svec8_1,svec8_2,svec8_3,svec8_4,svec8_5,svec8_6,svec8_7,svec8_8,
 >   svec16_1,svec16_2,svec16_3,svec16_4,svec16_5,svec16_6,svec16_7,svec16_8,
->   svec16_9,svec16_10,svec16_11,svec16_12,svec16_13,svec16_14,svec16_15,svec16_16
+>   svec16_9,svec16_10,svec16_11,svec16_12,svec16_13,svec16_14,svec16_15,svec16_16,
+>   fast_multiply4_float
 >  )
 > where
 >
@@ -53,17 +54,64 @@
 
 
 >data SVec4 a where
->   Int32SVec4 :: Int32X4# -> SVec4 Int32
+>   Int32SVec4 :: !Int32X4# -> SVec4 Int32
 >data SVec8 a where
->   Int16SVec8 :: Int16X8# -> SVec8 Int16
+>   Int16SVec8 :: !Int16X8# -> SVec8 Int16
 >data SVec16 a where
->   Int8SVec16  :: Int8X16# -> SVec16 Int8
+>   Int8SVec16  :: !Int8X16# -> SVec16 Int8
 
 >data FVec4 a where
->   FloatFVec4 :: FloatX4# -> FVec4 Float
+>   FloatFVec4 :: !FloatX4# -> FVec4 Float
 >
 >data FVec2 a where
->   DoubleFVec2 :: DoubleX2# -> FVec2 Double
+>   DoubleFVec2 :: !DoubleX2# -> FVec2 Double
+
+>instance Num (FVec4 Float) where
+>  (FloatFVec4 x) + (FloatFVec4 y) = FloatFVec4 (plusFloatX4# x y)
+>  (FloatFVec4 x) - (FloatFVec4 y) = FloatFVec4 (minusFloatX4# x y)
+>  (FloatFVec4 x) * (FloatFVec4 y) = FloatFVec4 (timesFloatX4# x y)
+>  negate (FloatFVec4 x) = FloatFVec4 (negateFloatX4# x)
+>  abs  = mapFVec4 abs
+>  signum = mapFVec4 signum
+>  fromInteger i = FloatFVec4 (broadcastFloatX4# f)
+>    where F# f = fromInteger i
+
+>instance Num (FVec2 Double) where
+>  (DoubleFVec2 x) + (DoubleFVec2 y) = DoubleFVec2 (plusDoubleX2# x y)
+>  (DoubleFVec2 x) - (DoubleFVec2 y) = DoubleFVec2 (minusDoubleX2# x y)
+>  (DoubleFVec2 x) * (DoubleFVec2 y) = DoubleFVec2 (timesDoubleX2# x y)
+>  negate (DoubleFVec2 x) = DoubleFVec2 (negateDoubleX2# x)
+>  abs = mapFVec2 abs
+>  signum = mapFVec2 signum
+>  fromInteger i = DoubleFVec2 (broadcastDoubleX2# f)
+>    where F# f = fromInteger i
+
+>instance Num (SVec4 Int32) where
+>  (Int32SVec4 x) + (Int32SVec4 y) = Int32SVec4 (plusInt32X4# x y)
+>  (Int32SVec4 x) - (Int32SVec4 y) = Int32SVec4 (minusInt32X4# x y)
+>  (Int32SVec4 x) * (Int32SVec4 y) = Int32SVec4 (timesInt32X4# x y)
+>  abs = mapSVec4 abs
+>  signum = mapSVec4 signum
+>  fromInteger i = Int32SVec4 (broadcastInt32X4# ii)
+>    where I32# ii = fromInteger i
+
+>instance Num (SVec8 Int16) where
+>  (Int16SVec8 x) + (Int16SVec8 y) = Int16SVec8 (plusInt32X4# x y)
+>  (Int16SVec8 x) - (Int16SVec8 y) = Int16SVec8 (minusInt32X4# x y)
+>  (Int16SVec8 x) * (Int16SVec8 y) = Int16SVec8 (timesInt32X4# x y)
+>  abs = mapSVec8 abs
+>  signum = mapSVec8 signum
+>  fromInteger i = Int16SVec8 (broadcastInt16X8# ii)
+>    where (I16# ii) = fromInteger i
+>instance Num (SVec16 Int8) where
+>  (Int8SVec16 x) + (Int8SVec16 y) = Int8SVec16 (plusInt8X16# x y)
+>  (Int8SVec16 x) - (Int8SVec16 y) = Int8SVec16 (minusInt8X16# x y)
+>  (Int8SVec16 x) * (Int8SVec16 y) = Int8SVec16 (timesInt8X16# x y)
+>  abs = mapSVec16 abs
+>  signum = mapSVec16 signum
+>  fromInteger i = Int8SVec16 (broadcastInt8X16# ii)
+>    where (I8# ii) = fromInteger i
+
 
 >eqSVec4 :: SVec4 Int32 -> SVec4 Int32 -> Bool
 >eqSVec4 (Int32SVec4 x) (Int32SVec4 y) = case unpackInt32X4# (minusInt32X4# x y) of
@@ -451,20 +499,20 @@
 >import GHC.Int
 
 >data SVec4 a where
->   SVec4 :: Int32 -> Int32 -> Int32 -> Int32 -> SVec4 Int32
+>   SVec4 :: !Int32 -> !Int32 -> !Int32 -> !Int32 -> SVec4 Int32
 >data SVec8 a where
->   SVec8 :: Int16 -> Int16 -> Int16 -> Int16 -> Int16 -> Int16 -> Int16 -> Int16 -> SVec8 Int16
+>   SVec8 :: !Int16 -> !Int16 -> !Int16 -> !Int16 -> !Int16 -> !Int16 -> !Int16 -> !Int16 -> SVec8 Int16
 >data SVec16 a where
->   SVec16 :: Int8 -> Int8 -> Int8 -> Int8
->          -> Int8 -> Int8 -> Int8 -> Int8
->          -> Int8 -> Int8 -> Int8 -> Int8
->          -> Int8 -> Int8 -> Int8 -> Int8
+>   SVec16 :: !Int8 -> !Int8 -> !Int8 -> !Int8
+>          -> !Int8 -> !Int8 -> !Int8 -> !Int8
+>          -> !Int8 -> !Int8 -> !Int8 -> !Int8
+>          -> !Int8 -> !Int8 -> !Int8 -> !Int8
 >          -> SVec16 Int8
 >data FVec2 a where
->   FVec2 :: Double -> Double -> FVec2 Double
+>   FVec2 :: !Double -> !Double -> FVec2 Double
 
 >data FVec4 a where
->   FVec4 :: Float -> Float -> Float -> Float -> FVec4 Float
+>   FVec4 :: !Float -> !Float -> !Float -> !Float -> FVec4 Float
 
 >eqSVec4 :: SVec4 Int32 -> SVec4 Int32 -> Bool
 >eqSVec4 (SVec4 a b c d) (SVec4 a' b' c' d') = a == a' && b == b' && c == c' && d == d'
@@ -579,6 +627,52 @@
 >                          a a a a
 >                          a a a a
 >                          a a a a
+
+>instance Num (SVec16 Int8) where
+>  (+) = zipSVec16 (+)
+>  (-) = zipSVec16 (-)
+>  (*) = zipSVec16 (*)
+>  negate = mapSVec16 negate
+>  abs = mapSVec16 abs
+>  signum = mapSVec16 signum
+>  fromInteger i = constantSVec16 (fromInteger i)
+
+
+>instance Num (SVec8 Int16) where
+>  (+) = zipSVec8 (+)
+>  (-) = zipSVec8 (-)
+>  (*) = zipSVec8 (*)
+>  negate = mapSVec8 negate
+>  abs = mapSVec8 abs
+>  signum = mapSVec8 signum
+>  fromInteger i = constantSVec8 (fromInteger i)
+
+>instance Num (SVec4 Int32) where
+>  (+) = zipSVec4 (+)
+>  (-) = zipSVec4 (-)
+>  (*) = zipSVec4 (*)
+>  negate = mapSVec4 negate
+>  abs = mapSVec4 abs
+>  signum = mapSVec4 signum
+>  fromInteger i = constantSVec4 (fromInteger i)
+
+>instance Num (FVec4 Float) where
+>  (+) = zipFVec4 (+)
+>  (-) = zipFVec4 (-)
+>  (*) = zipFVec4 (*)
+>  negate = mapFVec4 negate
+>  abs = mapFVec4 abs
+>  signum = mapFVec4 signum
+>  fromInteger i = constantFVec4 (fromInteger i)
+
+>instance Num (FVec2 Double) where
+>  (+) = zipFVec2 (+)
+>  (-) = zipFVec2 (-)
+>  (*) = zipFVec2 (*)
+>  negate = mapFVec2 negate
+>  abs = mapFVec2 abs
+>  signum = mapFVec2 signum
+>  fromInteger i = constantFVec2 (fromInteger i)
 
 >svec8_1 :: SVec8 Int16 -> Int16
 >svec8_2 :: SVec8 Int16 -> Int16
@@ -747,25 +841,16 @@
 >                ++ show (svec16_15 v) ++ "," ++ show (svec16_16 v) ++
 >                ")"
 
->class Optimal a where
+>class (VectorSpace a) => Optimal a where
+>   type Optimized a
 >   toO :: a -> Optimized a
 >   fromO :: Optimized a -> a
 >   zipO :: (Scalar a -> Scalar a -> Scalar a) -> Optimized a -> Optimized a -> Optimized a
 >   mapO :: (Scalar a -> Scalar a) -> Optimized a -> Optimized a
 >   constantO :: Scalar a -> Optimized a
 
->type family Optimized a where
->   Optimized (Vector4 Int32) = SVec4 Int32
->   Optimized (Vector4 Float) = FVec4 Float
->   Optimized (Vector2 Double) = FVec2 Double
->   Optimized (Vector4 Int16, Vector4 Int16) = SVec8 Int16
->   Optimized ((Vector2 :*: Vector4) Int16) = SVec8 Int16
->   Optimized ((Vector4 :*: Vector2) Int16) = SVec8 Int16
->   Optimized ((Vector4 :*: Vector4) Int8) = SVec16 Int8
->   Optimized ((Vector2 :*: Vector2) Float) = FVec4 Float
->   Optimized ((Vector2 :*: Vector2) Int32) = SVec4 Int32
-
 >instance Optimal (Vector2 Double) where
+>   type Optimized (Vector2 Double) = FVec2 Double
 >   toO = fromDoubleVector2
 >   fromO = toDoubleVector2
 >   zipO = zipFVec2
@@ -773,6 +858,7 @@
 >   constantO = constantFVec2
 
 >instance Optimal ((Vector4 :*: Vector2) Int16) where
+>   type Optimized ((Vector4 :*: Vector2) Int16) = SVec8 Int16
 >   toO (Matrix v) = fromInt16Vector8 (fmap xcoord2 v) (fmap ycoord2 v)
 >   fromO x = let (a,b) = toInt16Vector8 x in Matrix (liftA2 Vector2 a b)
 >   zipO = zipSVec8
@@ -780,6 +866,7 @@
 >   constantO = constantSVec8
 
 >instance Optimal ((Vector2 :*: Vector4) Int16) where
+>   type Optimized ((Vector2 :*: Vector4) Int16) = SVec8 Int16
 >   toO (Matrix (Vector2 x y)) = fromInt16Vector8 x y
 >   fromO x = let (a,b) = toInt16Vector8 x in Matrix (Vector2 a b)
 >   zipO = zipSVec8
@@ -787,6 +874,7 @@
 >   constantO = constantSVec8
 
 >instance Optimal (Vector4 Int16, Vector4 Int16) where
+>   type Optimized (Vector4 Int16, Vector4 Int16) = SVec8 Int16
 >   toO (a,b) = fromInt16Vector8 a b
 >   fromO = toInt16Vector8
 >   zipO = zipSVec8
@@ -794,6 +882,7 @@
 >   constantO = constantSVec8
 
 >instance Optimal (Vector4 Int32) where
+>   type Optimized (Vector4 Int32) = SVec4 Int32
 >   toO = fromInt32Vector4
 >   fromO = toInt32Vector4
 >   zipO = zipSVec4
@@ -801,6 +890,7 @@
 >   constantO = constantSVec4
 
 >instance Optimal ((Vector4 :*: Vector4) Int8) where
+>   type Optimized ((Vector4 :*: Vector4) Int8) = SVec16 Int8
 >   toO = toInt8Vector16
 >   fromO = fromInt8Vector16
 >   zipO = zipSVec16
@@ -808,6 +898,7 @@
 >   constantO = constantSVec16
 
 >instance Optimal ((Vector2 :*: Vector2) Int32) where
+>   type Optimized ((Vector2 :*: Vector2) Int32) = SVec4 Int32
 >   toO = from2x2Matrix
 >   fromO = to2x2Matrix
 >   zipO = zipSVec4
@@ -815,6 +906,7 @@
 >   constantO = constantSVec4
 
 >instance Optimal ((Vector2 :*: Vector2) Float) where
+>   type Optimized ((Vector2 :*: Vector2) Float) = FVec4 Float
 >   toO = from2x2FloatVector4
 >   fromO = to2x2FloatVector4
 >   zipO = zipFVec4
@@ -822,8 +914,18 @@
 >   constantO = constantFVec4
 
 >instance Optimal (Vector4 Float) where
+>   type Optimized (Vector4 Float) = FVec4 Float
 >   toO = fromFloatVector4
 >   fromO = toFloatVector4
 >   zipO = zipFVec4
 >   mapO = mapFVec4
 >   constantO = constantFVec4
+
+>fast_multiply4_float :: Matrix4 Float -> Vector4 Float -> Vector4 Float
+>fast_multiply4_float (Matrix (Vector4 a b c d)) v = Vector4
+>   (sum_components4 $ fromO $ zipO' (*) (toO a) v')
+>   (sum_components4 $ fromO $ zipO' (*) (toO b) v')
+>   (sum_components4 $ fromO $ zipO' (*) (toO c) v')
+>   (sum_components4 $ fromO $ zipO' (*) (toO d) v')
+>  where v' = toO v
+>        zipO' = zipFVec4

@@ -1,3 +1,4 @@
+>-- -*- coding: utf-8 -*-
 >{-# LANGUAGE Trustworthy, CPP, TypeOperators #-}
 >{-# LANGUAGE GeneralizedNewtypeDeriving, DerivingStrategies #-}
 >{-# LANGUAGE ExistentialQuantification, TypeFamilies,GADTs, RankNTypes, UnicodeSyntax #-}
@@ -112,7 +113,6 @@
 >                         qproduct_first_unit :: UnitName a,
 >                         qproduct_second_unit :: UnitName b
 >                       }
->
 >instance (Unit a, Unit b, Scalar a ~ Scalar b) => VectorSpace (a :* b) where
 >   type Scalar (a :* b) = Scalar a
 >   vzero = QProduct 0 fromAmount fromAmount
@@ -315,6 +315,26 @@
 
 >show_unit :: (Unit u, Show (Scalar u)) => u -> String
 >show_unit i = show (amount i) ++ " " ++ unitOf i
+
+>newtype Percentage = Percentage { percentages :: Double }
+>  deriving (Eq,Ord)
+>  deriving newtype (Binary)
+
+>instance Show Percentage where { show = show_unit }
+>instance VectorSpace Percentage where
+>   type Scalar Percentage = Double
+>   vzero = Percentage 0
+>   vnegate (Percentage i) = Percentage $ negate i
+>   (Percentage x) %+ (Percentage y) = Percentage $ x + y
+>   k %* (Percentage x) = Percentage (k * x)
+>
+>instance Unit Percentage where
+>  amount = percentages
+>  fromAmount = Percentage
+>  fromQuantity = fromQuantityDef dimensionless (Percentage . (100.0*))
+>  dimension _ = dimensionless
+>  unitOf _ = "%"
+>  conversionFactor _ = 0.01
 
 >newtype Acceleration = MetersPerSquareSecond { metersPerSquareSecond :: Double }
 >   deriving (Eq,Ord)

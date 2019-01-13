@@ -28,12 +28,17 @@ import Math.Matrix.Dimension
 >import Math.Number.Stream (Stream(..),Limiting(..), Closed(..))
 
 >data Vector4 s = Vector4 {
->  tcoord4 :: s,
->  xcoord4 :: s,
->  ycoord4 :: s,
->  zcoord4 :: s
+>  tcoord4 :: !s,
+>  xcoord4 :: !s,
+>  ycoord4 :: !s,
+>  zcoord4 :: !s
 > }
 >    deriving (Eq)
+
+>instance (ShowPrecision s) => ShowPrecision (Vector4 s) where
+>  show_at_precision (Vector4 t x y z) p =
+>    "(" ++ show_at_precision t p ++ "," ++ show_at_precision x p ++ "," ++
+>    show_at_precision y p ++ "," ++ show_at_precision z p ++ ")"
 
 >instance (Bin.Binary s) => Bin.Binary (Vector4 s) where
 >   put (Vector4 x y z t) = Bin.put x >> Bin.put y >> Bin.put z >> Bin.put t
@@ -279,6 +284,7 @@ instance FractionalSpace (Vector4 (Complex R))
 >             (z1*x+z2*y+z3*z+z4*t)
 >             (t1*x+t2*y+t3*z+t4*t)
 
+
 >matrix_multiply4 :: (Num a) => Matrix4 a -> Matrix4 a -> Matrix4 a
 >matrix_multiply4 (Matrix v) w | Matrix wt <- transpose4 w = Matrix $ outer dot4 v wt
 
@@ -323,48 +329,37 @@ instance FractionalSpace (Vector4 (Complex R))
 >index4 2 = ycoord4
 >index4 3 = zcoord4
 
+>index4_dual :: Int -> Covector.Dual (Vector4 a)
+>index4_dual = Covector.Covector . index4
+
 >vector4_to_vec4 :: Vector4 a -> FourD -> a
 >vector4_to_vec4 (Vector4 x y z t) = svec4 x y z t
 
 >diagonal4 :: (Vector4 :*: Vector4) a -> Vector4 a
->diagonal4 (Matrix x) = diagonal_projections4 <*> x
+>diagonal4 (Matrix x) = diagonal_projections <*> x
 
->diagonal_projections4 :: Vector4 (Vector4 a -> a)
->diagonal_projections4 = Vector4 tcoord4 xcoord4 ycoord4 zcoord4
+>diagonal_projections4 :: Vector4 (Covector.Dual (Vector4 a))
+>diagonal_projections4 = Vector4 (Covector tcoord4)
+>                                (Covector xcoord4)
+>                                (Covector ycoord4)
+>                                (Covector zcoord4)
 
 >partial_derivate4x :: (Infinitesimal a, Closed a)
 >   => (Vector4 a -> a) -> Vector4 a -> a
 >partial_derivate4x = partial_derivate ch
 >   where ch eps (Vector4 x y z t) = Vector4 (x+eps*x) y z t
 
-partial_derivate4x_units :: (Unit a, Unit c, Infinitesimal a, Closed a)
-                         => (Vector4 a -> c) -> Vector4 a -> c :/ a
-partial_derivate4x_units = partial_derivate_units ch
-   where ch eps (Vector4 x y z t) = Vector4 (x+eps) y z t
-
 >partial_derivate4y :: (Infinitesimal a, Closed a) => (Vector4 a -> a) -> Vector4 a -> a
 >partial_derivate4y = partial_derivate ch
 >   where ch eps (Vector4 x y z t) = Vector4 x (y+eps*y) z t
-
-partial_derivate4y_units :: (Unit a, Unit c, Infinitesimal a, Closed a)
-                         => (Vector4 a -> c) -> Vector4 a -> c :/ a
-partial_derivate4y_units = partial_derivate_units ch
-   where ch eps (Vector4 x y z t) = Vector4 x (y+eps) z t
-
 
 >partial_derivate4z :: (Infinitesimal a, Closed a) => (Vector4 a -> a) -> Vector4 a -> a
 >partial_derivate4z = partial_derivate ch
 >   where ch eps (Vector4 x y z t) = Vector4 x y (z+eps*z) t
 
-partial_derivate4z_units :: (Unit a, Unit c, Infinitesimal a, Closed a)
-                         => (Vector4 a -> c) -> Vector4 a -> c :/ a
-partial_derivate4z_units = partial_derivate_units ch
-   where ch eps (Vector4 x y z t) = Vector4 x y (z+eps) t
-
 >partial_derivate4t :: (Infinitesimal a, Closed a) => (Vector4 a -> a) -> Vector4 a -> a
 >partial_derivate4t = partial_derivate ch 
 >   where ch eps (Vector4 x y z t) = Vector4 x y z (t+ eps * t)
-
 
 >derivate4t_squared :: (Closed a, Infinitesimal a)
 >     => Covector.Dual (Vector4 a) -> Covector.Dual (Vector4 a)
@@ -386,13 +381,6 @@ partial_derivate4z_units = partial_derivate_units ch
 >  Covector.Dual (Vector4 a) -> Covector.Dual (Vector4 a)
 >derivate4z = operator_map partial_derivate4z
 
-
-partial_derivate4t_units :: (Unit a, Unit c, Infinitesimal a)
-                         => (Vector4 a -> c) -> Vector4 a -> c :/ a
-partial_derivate4t_units = partial_derivate_units ch
-   where ch eps (Vector4 t x y z) = Vector4 (t+eps) x y z 
-
-
 >del4_ = Vector4 derivate4t derivate4x derivate4y derivate4z
 
 >del4 :: (Infinitesimal a, Closed a) => Vector4 ((Vector4 a -> a) -> Vector4 a -> a)
@@ -400,19 +388,35 @@ partial_derivate4t_units = partial_derivate_units ch
 >               partial_derivate4z
 
 >grad4 :: (Infinitesimal a, Closed a) => Covector.Dual (Vector4 a) -> Vector4 a -> Vector4 a
->grad4 (Covector f) x = Vector4 (partial_derivate4t f x)
->                       (partial_derivate4x f x)
->                       (partial_derivate4y f x)
->                       (partial_derivate4z f x)
+>grad4 (Covector f) x = Vector4
+>    (partial_derivate4t f x)
+>    (partial_derivate4x f x)
+>    (partial_derivate4y f x)
+>    (partial_derivate4z f x)
 
-
-
-grad4_units :: (Unit a, Unit b, Infinitesimal a, Closed a)
-            => (Vector4 a -> b) -> Vector4 a -> Vector4 (b :/ a)
-grad4_units f x = Vector4 (partial_derivate4t_units f x)
-                          (partial_derivate4x_units f x)
-                          (partial_derivate4y_units f x)
-                          (partial_derivate4z_units f x)
+>curl4 :: (Infinitesimal a, Closed a) => Vector4 (Covector.Dual (Vector4 a))
+>                                    -> Vector4 a
+>                                    -> (Vector4 :*: Vector4) a
+>curl4 (Vector4 (Covector ft) (Covector fx) (Covector fy) (Covector fz))
+>    v@(Vector4 t x y z) = Matrix $ Vector4
+>               (Vector4 0
+>                        (partial_derivate4x ft v - partial_derivate4t fx v)
+>                        (partial_derivate4y ft v - partial_derivate4t fy v)
+>                        (partial_derivate4z ft v - partial_derivate4t fz v))
+> 
+>               (Vector4 (partial_derivate4t fx v - partial_derivate4x ft v)
+>                        0
+>                        (partial_derivate4y fx v - partial_derivate4x fy v)
+>                        (partial_derivate4z fx v - partial_derivate4x fz v))
+>               (Vector4 (partial_derivate4t fy v - partial_derivate4y ft v)
+>                        (partial_derivate4x fy v - partial_derivate4y fx v)
+>                        0
+>                        (partial_derivate4z fy v - partial_derivate4y fz v))
+>               (Vector4 (partial_derivate4t fz v - partial_derivate4z ft v)
+>                        (partial_derivate4x fz v - partial_derivate4z fx v)
+>                        (partial_derivate4y fz v - partial_derivate4z fy v)
+>                        0)
+>         
 
 >instance (Num a, Closed a, Infinitesimal a) => VectorDerivative (Vector4 a) where
 >   divergence = divergence4
@@ -425,24 +429,12 @@ grad4_units f x = Vector4 (partial_derivate4t_units f x)
 >                                partial_derivate4y (ycoord4 . f) z +
 >                                partial_derivate4z (zcoord4 . f) z
 
-
-divergence4_units :: (Unit a, Unit b, Infinitesimal a, Closed a)
-                  => (Vector4 a -> Vector4 b) -> Vector4 a -> b :/ a
-divergence4_units f z
-   = partial_derivate4t_units (tcoord4 . f) z =+=
-     partial_derivate4x_units (xcoord4 . f) z =+=
-     partial_derivate4y_units (ycoord4 . f) z =+=
-     partial_derivate4z_units (zcoord4 . f) z
-
-
 >laplace4 :: (Infinitesimal a, Closed a) => Covector.Dual (Vector4 a) -> Covector.Dual (Vector4 a)
 >laplace4 f = divergence4 (grad4 f)
 
 laplace4_units :: (Unit a, Unit b, Infinitesimal a, Closed a)
                => (Vector4 a -> b) -> Vector4 a -> (b :/ a) :/ a
 laplace4_units f = divergence4_units (grad4_units f)
-
-
 
 
 >-- | 1 x 4 matrices:
@@ -555,7 +547,7 @@ laplace4_units f = divergence4_units (grad4_units f)
 
 
 >transpose4 :: Matrix4 a -> Matrix4 a
->transpose4 (Matrix m) = matrix ($) diagonal_projections4 m
+>transpose4 (Matrix m) = matrix ($) diagonal_projections m
 
 >-- | 4 x 4 matrices
 >instance (Floating a, ConjugateSymmetric a) => NormedSpace ((Vector4 :*: Vector4) a) where
@@ -578,7 +570,7 @@ laplace4_units f = divergence4_units (grad4_units f)
 >identity4 = diagonal_matrix (constant4 1)
 
 >diagonal4x :: Matrix4 a -> Vector4 a
->diagonal4x (Matrix x) = diagonal_projections4 <*> x
+>diagonal4x (Matrix x) = diagonal_projections <*> x
 
 >zero_codiagonal4 :: (Num a) => Codiagonal Vector4 a
 >zero_codiagonal4 = Codiagonal4 (constant3 0) (constant3 0) (zero_codiagonal3)
@@ -663,7 +655,3 @@ laplace4_units f = divergence4_units (grad4_units f)
 >   adjucate = adjucate4
 >   cofactor = cofactor4
 
-
--- | <https://en.wikipedia.org/wiki/Levi-Civita_symbol>
-leviCivita4 :: (Num a) => (Vector4 :*: Vector4 :*: Vector4 :*: Vector4) a
-leviCivita4 = 

@@ -16,7 +16,7 @@
 >import Math.Number.Stream
 >import Math.Number.Real
 
->data Vector1 a = Vector1 { vector_element :: a }
+>data Vector1 a = Vector1 { vector_element :: !a }
 >  deriving (Eq, Ord)
 
 >instance (Bin.Binary s) => Bin.Binary (Vector1 s) where
@@ -35,6 +35,9 @@
 
 >instance Foldable Vector1 where
 >   foldMap f (Vector1 x) = f x
+
+>instance Traversable Vector1 where
+>   traverse f (Vector1 x) = Vector1 <$> f x
 
 >instance ProjectionSpace Vector1 Vector1 where
 >   data (Vector1 \\\ Vector1) a = S11Vector

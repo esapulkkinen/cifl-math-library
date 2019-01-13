@@ -34,9 +34,9 @@
 
 >-- | Three element vector
 >data Vector3 s = Vector3 { 
->   xcoord3 :: s,
->   ycoord3 :: s,
->   zcoord3 :: s }
+>   xcoord3 :: !s,
+>   ycoord3 :: !s,
+>   zcoord3 :: !s }
 >       deriving (Eq)
 
 >instance (Binary s) => Binary (Vector3 s) where
@@ -248,6 +248,12 @@
 >   epsilon_stream Stream.>>!= \y ->
 >   epsilon_stream Stream.>>!= \z ->
 >   return $ Vector3 x y z
+
+>instance (ShowPrecision s) => ShowPrecision (Vector3 s) where
+>   show_at_precision (Vector3 x y z) p =
+>     "(" ++ show_at_precision x p ++ "," ++
+>            show_at_precision y p ++ "," ++
+>            show_at_precision z p ++ ")"
 
 >instance (Show (f a)) => Show ((Vector3 :*: f) a) where
 >  show (Matrix (Vector3 a b c))

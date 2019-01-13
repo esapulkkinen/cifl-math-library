@@ -25,7 +25,6 @@
 >import qualified Data.Foldable
 >import qualified Control.Category as C
 >import Control.Applicative
->import Control.Parallel
 >import qualified Prelude as P
 >import Prelude hiding (zip,unzip, zipWith,cycle,take,filter,drop,zipWith3,sin,cos,either,takeWhile,dropWhile,span,splitAt)
 >import Math.Tools.Orthogonal
@@ -40,6 +39,7 @@
 >import Math.Tools.PrettyP hiding (empty)
 >import Math.Tools.FixedPoint (Rec(..))
 >import Math.Tools.Adjunction hiding (swap)
+>import Math.Tools.Isomorphism
 >import Math.Tools.Integer hiding (square_root)
 >import qualified Math.Tools.Queue as Q
 >import Data.Sequence (Seq, (<|), (|>))
@@ -183,7 +183,8 @@ import qualified Model.Nondeterminism as Nondet
 >   accumulation_point = approximations . stream_limit
 
 >instance (Applicative f, Traversable f,Applicative g, Traversable g, Limiting a) => Limiting ((f :*: g) a) where
->   data Closure ((f :*: g) a) = MatrixClosure { runMatrixClosure :: (f :*: g) (Closure a) }
+>   data Closure ((f :*: g) a) = MatrixClosure {
+>      runMatrixClosure :: (f :*: g) (Closure a) }
 >   limit z@(Pre x xr) = MatrixClosure $ fmap limit $ sequenceA z
 >   approximations = sequenceA . fmap approximations . runMatrixClosure
 
@@ -267,6 +268,13 @@ instance (Num a) => Matrix.VectorSpace ((Stream :*: Stream) a) where
 >     where codiag = (zero,zero) `Pre` codiag
 >  diagonal = stream_diagonal
 >  diagonal_matrix = stream_diagonal_matrix
+
+>-- | This implementation of infinite identity matrix requires
+>-- Integral constraint.
+>-- it is not as efficient as 'identity', but is implemented using
+>-- generating functions.
+>stream_identity_matrix :: (Integral a) => (Stream :*: Stream) a
+>stream_identity_matrix = Matrix $ 1 `div` (1 - z*z2)
 
 >-- | stream_diagonal is the "depth-first" traversal over two-dimensional streams,
 >-- where the choice always goes to diagonal elements.
@@ -407,6 +415,10 @@ instance (Num a) => Matrix.VectorSpace ((Stream :*: Stream) a) where
 >   x * y = fmap sum_seq $ codiagonals_seq $ matrix (*) x y
 >   fromInteger i = Pre (fromInteger i) zero
 
+>adjusted_sequence_product x y = fmap average_seq $ codiagonals_seq $ matrix (*) x y
+
+>average_seq :: (Fractional a) => Seq a -> a
+>average_seq s = sum_seq s / fromIntegral (Seq.length s)
 
 >sum_seq :: (Num a) => Seq a -> a
 >sum_seq = foldr (+) 0
@@ -432,8 +444,10 @@ instance (Num a) => Matrix.VectorSpace ((Stream :*: Stream) a) where
 >                       -> Stream ((g :*: f) (Matrix.Scalar (h a)))
 >matrix_convolution x y = fmap Matrix.vsum $ codiagonals_seq $ matrix (Matrix.%*%) x y
 
->matrix_convolution_product :: (Num a, ConjugateSymmetric a) => (Stream :*: Stream) a -> (Stream :*: Stream) a -> (Stream :*: Stream) a
->matrix_convolution_product x y = Matrix $ fmap sum $ codiagonals_seq $ matrix (*) (cells x) (cells $ conj y)
+matrix_convolution_product :: (Num a) => (Stream :*: Stream) a -> (Stream :*: Stream) a -> (Stream :*: Stream) a
+
+>matrix_convolution_product :: (Fractional a, ConjugateSymmetric a) => (Stream :*: Stream) a -> (Stream :*: Stream) a -> (Stream :*: Stream) a
+>matrix_convolution_product x y = Matrix $ fmap average_seq $ codiagonals_seq $ matrix (*) (cells x) (cells $ conj y)
 
 >-- | @distance_product a b@ computes @l_k = sqrt(sum[a_i*conj(b_j) | i + j = k])@.
 >distance_product :: (Floating a, ConjugateSymmetric a) => Stream a -> Stream a -> Stream a
@@ -1130,7 +1144,7 @@ the suffix computation on Seq is constant time rather than linear.
 >--
 >-- prop> reciprocal s * s == unit_product
 >reciprocal :: (Fractional a) => Stream a -> Stream a
->reciprocal ~z'@(Pre c cr) = c `par` self
+>reciprocal ~z'@(Pre c cr) = self
 >    where self = fmap (/c) $ Pre 1 (negate (cr * self))
 
 >-- | see <http://en.wikipedia.org/wiki/Formal_power_series>
@@ -1650,9 +1664,25 @@ the suffix computation on Seq is constant time rather than linear.
 >      where (a,b) = funzip str
 >  approximations (PairClosure (x,y)) = approximations x <&> approximations y
 
+>instance (Limiting a, Limiting b, Limiting c) => Limiting (a,b,c) where
+>  data Closure (a,b,c) = TripleClosure (Closure a, Closure b, Closure c)
+>  limit str = TripleClosure (limit a, limit b, limit c)
+>    where (a,b,c) = funzip3 str
+>  approximations (TripleClosure (x,y,z)) = liftA3 (,,) (approximations x) (approximations y) (approximations z)
+>
+>instance (Closed a, Closed b, Closed c) => Closed (a,b,c) where
+>  accumulation_point (TripleClosure (a,b,c)) = (accumulation_point a,
+>                                                accumulation_point b,
+>                                                accumulation_point c)
+
 >instance (Closed a, Closed b) => Closed (a,b) where
 >   accumulation_point (PairClosure (s,s')) = (accumulation_point s,
 >                                              accumulation_point s')
+
+>instance Limiting (a :==: a) where
+>  data Closure (a :==: a) = IsoClosure { runIsoClosure :: Stream (a :==: a) }
+>  limit (Pre x xr) = IsoClosure $ Pre x $ fmap (x >>>) $ runIsoClosure $ limit xr
+>  approximations = runIsoClosure
 
 >instance Limiting a => Limiting (Complex a) where
 >  data Closure (Complex a) = ComplexClosure { runComplexClosure :: Complex (Closure a) }

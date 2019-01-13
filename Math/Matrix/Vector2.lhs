@@ -6,10 +6,12 @@
 >import qualified Data.Binary as Bin
 >import qualified Data.Sequence as Seq
 >import Control.Applicative
+>import Math.Tools.Arrow
 >import Math.Tools.Functor
 >import Math.Matrix.Matrix
 >import Math.Tools.PrettyP
 >import Math.Tools.Median
+>import Math.Tools.Isomorphism
 >import Math.Matrix.Interface
 >import Math.Matrix.Covector
 >import Math.Tools.Visitor
@@ -19,7 +21,7 @@
 >import Math.Number.Real
 >import Math.Number.Stream
 
->data Vector2 s = Vector2 { xcoord2 :: s, ycoord2 :: s }
+>data Vector2 s = Vector2 { xcoord2 :: !s, ycoord2 :: !s }
 >   deriving (Eq)
 
 >instance (Bin.Binary s) => Bin.Binary (Vector2 s) where
@@ -37,6 +39,9 @@
 
 >j2 :: (Num a) => Vector2 a
 >j2 = identity <!> (ycoord2,id)
+
+>vector2Iso :: Vector2 a :==: Complex a
+>vector2Iso = (\ (Vector2 a b) -> a :+ b) <-> (\(a :+ b) -> Vector2 a b)
 
 >instance ProjectionSpace Vector2 Vector1 where
 >   data (Vector2 \\\ Vector1) a = S21Vector (Vector1 a)

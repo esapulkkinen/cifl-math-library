@@ -25,11 +25,15 @@
 >import Control.Monad.Reader
 >import Control.Monad.Writer
 >import Control.Applicative
+>import Control.Monad.Trans.Class
 >import Math.Graph.GraphMonoid
 >import Math.Graph.Interface
 >import Math.Graph.Reversible
 
 >newtype InGraphM mon e m a = InGraphM { runInGraphM :: ReaderT (Graph mon e) m a }
+
+>instance MonadTrans (InGraphM mon e) where
+>   lift x = InGraphM $ lift x
 
 >instance (Functor m) => Functor (InGraphM mon e m) where
 >   fmap f (InGraphM mr) = InGraphM $ fmap f mr

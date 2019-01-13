@@ -89,6 +89,12 @@ graph_representation (Endo f) (Endo g) = Endo $ f . g
 >vertexG :: a -> Graph m a
 >vertexG x = Graph (Set.singleton x) vertexEndo
 
+>verticesFromSetG :: Set a -> Graph m a
+>verticesFromSetG s = Graph s vertexEndo
+
+>verticesG :: (Ord a) => [a] -> Graph m a
+>verticesG lst = Graph (Set.fromList lst) vertexEndo
+
 >edgeG :: (Ord a) => a -> a -> a -> Graph Three a
 >edgeG e x y = Graph (Set.fromList [e,x,y]) (edgesEndo [(e,(x,y))])
 
