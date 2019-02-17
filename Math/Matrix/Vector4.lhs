@@ -24,6 +24,7 @@ import Math.Matrix.Dimension
 >import Math.Matrix.Vector3
 >import Math.Matrix.Simple
 >import Math.Number.Real
+>import Math.Number.Group
 >import qualified Math.Number.Stream as Stream
 >import Math.Number.Stream (Stream(..),Limiting(..), Closed(..))
 
@@ -257,8 +258,8 @@ instance FractionalSpace (Vector4 (Complex R))
 >     (a',b',c',t') <- fzip4 (approximations a) (approximations b) (approximations c) (approximations t)
 >     return $ Vector4 a' b' c' t'
 
->sum_components4 :: (Num a) => Vector4 a -> a
->sum_components4 (Vector4 a b c d) = a + b + c + d
+>sum_coordinates4 :: (Num a) => Vector4 a -> a
+>sum_coordinates4 (Vector4 a b c d) = a + b + c + d
 
 >instance Applicative Vector4 where
 >  pure x = Vector4 x x x x
@@ -272,7 +273,7 @@ instance FractionalSpace (Vector4 (Complex R))
 >  x %+ y = pure (+) <*> x <*> y
 
 >left_multiply4 :: (Num a) => Vector4 a -> Matrix4 a -> Vector4 a
->left_multiply4 v (Matrix w) = (sum_components4 . (pure (*) <*> v <*>)) <$> w
+>left_multiply4 v (Matrix w) = (sum_coordinates4 . (pure (*) <*> v <*>)) <$> w
 
 >right_multiply4 :: (Num a) => Matrix4 a -> Vector4 a -> Vector4 a
 >right_multiply4 (Matrix (Vector4 (Vector4 x1 y1 z1 t1)
@@ -289,7 +290,7 @@ instance FractionalSpace (Vector4 (Complex R))
 >matrix_multiply4 (Matrix v) w | Matrix wt <- transpose4 w = Matrix $ outer dot4 v wt
 
 >dot4 :: (Num a) => Vector4 a -> Vector4 a -> a
->dot4 x y = sum_components4 $ pure (*) <*> x <*> y
+>dot4 x y = sum_coordinates4 $ pure (*) <*> x <*> y
 
 >instance (Num a) => LinearTransform Vector4 Vector4 a where
 >   (<*>>) = left_multiply4
@@ -300,7 +301,7 @@ instance FractionalSpace (Vector4 (Complex R))
 >  norm v = sqrt (v %. v)
 
 >instance (Num a, ConjugateSymmetric a) => InnerProductSpace (Vector4 a) where
->  v %. w = sum_components4 $ pure (*) <*> v <*> (conj <$> w)
+>  v %. w = sum_coordinates4 $ pure (*) <*> v <*> (conj <$> w)
 
 
 
@@ -627,6 +628,9 @@ laplace4_units f = divergence4_units (grad4_units f)
 >-- | <https://en.wikipedia.org/wiki/Invertible_matrix>
 >inverse4 :: (Fractional a) => Matrix4 a -> Matrix4 a
 >inverse4 m = (1 / determinant m) %* adjucate4 m
+
+>instance (Fractional a, ConjugateSymmetric a) => Group ((Vector4 :*: Vector4) a) where
+>   ginvert = inverse4
 
 >-- | Generalization of cross product to four dimensions
 >-- This is computed using formal determinant representation of cross product

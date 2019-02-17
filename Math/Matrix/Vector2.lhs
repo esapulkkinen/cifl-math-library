@@ -18,6 +18,7 @@
 >import Math.Tools.CoMonad
 >import Math.Matrix.Vector1
 >import Math.Matrix.Simple hiding (determinant2)
+>import Math.Number.Group
 >import Math.Number.Real
 >import Math.Number.Stream
 
@@ -254,6 +255,9 @@ curl2 f z = Vector2 (partial_derivate2y (xcoord2 . f) z)
 >instance (Show a) => Show (Vector2 a) where
 >  show (Vector2 x y) = "[" ++ show x ++ "," ++ show y ++ "]"
 
+>instance (Fractional a, ConjugateSymmetric a) => Group ((Vector2 :*: Vector2) a) where
+>   ginvert = inverse
+
 >instance (Num a) => CoordinateSpace (Vector2 a) where
 >  type Coordinate (Vector2 a) = Int
 >  index = index_vector2
@@ -261,11 +265,52 @@ curl2 f z = Vector2 (partial_derivate2y (xcoord2 . f) z)
 >  dimension_size _ = 2
 >  coordinates _ = [0,1,2]
 
+
+>instance (Fractional a) => InvertibleMatrix Vector2 a where
+>   cofactor = cofactor2
+>   adjucate = adjucate2
+>   inverse = inverse2
+
 >instance Foldable Vector2 where
 >   foldMap f (Vector2 x y) = f x `mappend` f y
 
 >instance Traversable Vector2 where
 >   traverse f (Vector2 x y) = Vector2 <$> f x <*> f y
+
+>instance (Fractional a, ConjugateSymmetric a) => Fractional ((Vector2 :*: Vector2) a) where
+>   recip = inverse
+>   fromRational = diagonal_matrix . constant2 . fromRational
+
+>removex2 :: Vector2 a -> Vector1 a
+>removex2 (Vector2 _ y) = Vector1 y
+>removey2 :: Vector2 a -> Vector1 a
+>removey2 (Vector2 x _) = Vector1 x
+
+>remove2 :: Vector2 (Vector2 a -> Vector1 a)
+>remove2 = Vector2 removex2 removey2
+
+>remove_index2 :: Matrix2 a -> Matrix2 (Matrix1 a)
+>remove_index2 (Matrix m) = matrix app remove2 remove2
+>  where app f g = Matrix $ f $ fmap g m
+
+>cofactor2 :: (Num a) => Matrix2 a -> Matrix2 a
+>cofactor2 m = pure (*) <*> fmap fromIntegral signs2 <*> fmap determinant (remove_index2 m)
+
+>adjucate2 :: (Num a) => Matrix2 a -> Matrix2 a
+>adjucate2 = transpose . cofactor2
+>
+>inverse2 :: (Fractional a) => Matrix2 a -> Matrix2 a
+>inverse2 m = (1/determinant m) %* adjucate2 m
+
+
+>vector_indices2 :: Vector2 Integer
+>vector_indices2 = Vector2 1 2
+
+>matrix_indices2 :: (Vector2 :*: Vector2) (Integer,Integer)
+>matrix_indices2 = matrix (,) vector_indices2 vector_indices2
+
+>signs2 :: (Vector2 :*: Vector2) Integer
+>signs2 = fmap (\ (i,j) -> ((i+j+1) `mod` 2) * 2 - 1) matrix_indices2
 
 >instance (Num a, ConjugateSymmetric a) => Num ((Vector2 :*: Vector2) a) where
 >   (Matrix v) + (Matrix v') = Matrix $ v + v'
@@ -274,7 +319,7 @@ curl2 f z = Vector2 (partial_derivate2y (xcoord2 . f) z)
 >   negate (Matrix v) = Matrix $ negate v
 >   abs (Matrix v) = Matrix (abs v)
 >   signum (Matrix v) = Matrix $ signum v
->   fromInteger i = diagonal_matrix $ constant2 $ fromInteger i
+>   fromInteger = diagonal_matrix . constant2 . fromInteger
 
 >instance (Num a, ConjugateSymmetric a) => LieAlgebra ((Vector2 :*: Vector2) a) where
 >   (%<>%) = matrix_commutator
@@ -330,6 +375,8 @@ curl2 f z = Vector2 (partial_derivate2y (xcoord2 . f) z)
 
 >determinate_swap :: (Num a) => Vector2 a -> Vector2 a
 >determinate_swap (Vector2 x y) = Vector2 y (negate x)
+
+
 
 >instance (Num a) => Num (Vector2 a) where
 >  (Vector2 x y) + (Vector2 x' y') = Vector2 (x+x') (y+y')

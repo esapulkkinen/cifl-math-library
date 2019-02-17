@@ -312,6 +312,9 @@ linear f (Vector3 x y z) = (x %* f xid) %+ (y %* f yid) %+ (z %* f zid)
 >instance (Num s) => Group (Vector3 s) where
 >   ginvert (Vector3 x y z) = Vector3 (negate x) (negate y) (negate z)
 
+>instance (Fractional a, ConjugateSymmetric a) => Group ((Vector3 :*: Vector3) a) where
+>   ginvert = inverse
+
 >instance (Limiting a) => Limiting (Vector3 a) where
 >  data Closure (Vector3 a) = Vector3Closure (Vector3 (Closure a))
 >  limit str = Vector3Closure $ Vector3
@@ -494,7 +497,11 @@ grad3 f x = Vector3 (partial_derivate3x f x)
 >  negate (Matrix v) = Matrix (negate v)
 >  abs (Matrix v) = Matrix (abs v)
 >  signum (Matrix v) = Matrix (signum v)
->  fromInteger i = diagonal_matrix (constant3 (fromInteger i))
+>  fromInteger = diagonal_matrix . constant3 . fromInteger
+
+>instance (Fractional a, ConjugateSymmetric a) => Fractional ((Vector3 :*: Vector3) a) where
+>   recip = inverse
+>   fromRational = diagonal_matrix . constant3 . fromRational
 
 >instance (Num a) => Num (Vector3 a) where
 >  (Vector3 x y z) + (Vector3 x' y' z') = Vector3 (x+x') (y+y') (z+z')
@@ -838,7 +845,6 @@ instance FractionalSpace (Vector3 (Complex R)) where
 >   adjucate = adjucate3
 >   inverse = inverse3
 >
-
 >-- | <https://en.wikipedia.org/wiki/Levi-Civita_symbol>
 >levi_civita3 :: (Vector3 :*: Vector3 :*: Vector3) Int
 >levi_civita3 = matrix m (matrix (,) indexable_indices indexable_indices) indexable_indices

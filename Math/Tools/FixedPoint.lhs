@@ -6,6 +6,8 @@
 
 >type Coalgebra f a = a -> f a
 
+>-- | These are standard definitions of final coalgebra and initial
+>--  algebra from category theory.
 >class (Functor f) => FinalCoalgebra f a | a -> f where
 >      unDestroy :: f a -> a
 >      unfold_gen :: (b -> f b) -> b -> a -- a.k.a. "count_iterations"
@@ -19,8 +21,7 @@
 >      fold_gen phi = phi . fmap (fold_gen phi) . unCreate
 
 
-======== PRIMITIVES FOR RECURSIVE DATA STRUCTURES  ===============
-
+>-- | PRIMITIVES FOR RECURSIVE DATA STRUCTURES
 >data Rec f = In ! (f (Rec f))     -- recursion (least fixed point)
 >data CoRec f = CoIn (f (CoRec f)) -- corecursion (greatest fixed point)
 
@@ -30,21 +31,22 @@
 >unStrictIn :: CoRec f -> f (CoRec f)
 >unStrictIn (CoIn x) = x
 
+>-- | fold over arbitrary functor, using standard definition.
 >fold :: (Functor f) => (f a -> a) -> Rec f -> a
 >fold phi = phi . fmap (fold phi) . unIn
 
+>-- | unfold over arbitrary functor, using standard definition.
 >unfold :: (Functor f) => (a -> f a) -> a -> Rec f -- a.k.a. "count_iterations"
 >unfold psi = In . fmap (unfold psi) . psi
 
 >transform :: Functor f => (b -> f b) -> (f a -> a) -> b -> a
 >transform divide combine = fold combine . unfold divide
 
-Note the builder and visitor for Rec f allows every level of the
-recursion to be done by different function. This allows distinctions
-by level to be implemented easily as nested RecFold data structures.
-Otherwise this distinction would have to be included in the function
-itself (using fmap).
-
+>-- | Note the builder and visitor for Rec f allows every level of the
+>-- recursion to be done by different function. This allows distinctions
+>-- by level to be implemented easily as nested RecFold data structures.
+>-- Otherwise this distinction would have to be included in the function
+>-- itself (using fmap).
 >instance (Functor f) => Visitor (Rec f) where
 >   data Fold (Rec f) a = forall b.RecFold (f b -> a) (Fold (Rec f) b)
 >   visit (RecFold f z) (In x) = f (fmap (visit z) x)
@@ -79,8 +81,7 @@ itself (using fmap).
 >fold_coerce alfa = recfold (In . alfa)
 
 
-============= STRICT foldl =============
-
+>-- | strict foldl
 >foldl' :: (a -> b -> a) -> a -> [b] -> a
 >foldl' _ a [] = a
 >foldl' f a (x:xs) = (foldl' f $! f a x) xs
@@ -96,6 +97,10 @@ itself (using fmap).
 
 >while :: (a -> a) -> (a -> Bool) -> a -> [a]
 >f `while` p = takeWhile p . iterate f
+
+>whileM :: (Monad m) => (a -> m a) -> (a -> Bool) -> a -> m [a]
+>(f `whileM` p) x | p x = do { v <- f x ; w <- (f `whileM` p) v ; return (v:w) }
+>                 | otherwise = return []
 
 >instance Show (Rec Maybe) where
 >  show x = "Natural[" ++ show (count_just x) ++ "]"

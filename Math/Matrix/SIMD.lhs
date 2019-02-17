@@ -5,6 +5,7 @@
 >{-# LANGUAGE Trustworthy #-}
 >{-# LANGUAGE TypeFamilies #-}
 >{-# LANGUAGE AllowAmbiguousTypes #-}
+>{-# LANGUAGE MultiParamTypeClasses #-}
 >-- | This modules provides SIMD optimized versions of vectors.
 >-- Relies heavily on GHC SIMD support. SIMD works only when using LLVM and
 >-- GHC 8.x
@@ -84,7 +85,7 @@
 >  abs = mapFVec2 abs
 >  signum = mapFVec2 signum
 >  fromInteger i = DoubleFVec2 (broadcastDoubleX2# f)
->    where F# f = fromInteger i
+>    where D# f = fromInteger i
 
 >instance Num (SVec4 Int32) where
 >  (Int32SVec4 x) + (Int32SVec4 y) = Int32SVec4 (plusInt32X4# x y)
@@ -96,9 +97,9 @@
 >    where I32# ii = fromInteger i
 
 >instance Num (SVec8 Int16) where
->  (Int16SVec8 x) + (Int16SVec8 y) = Int16SVec8 (plusInt32X4# x y)
->  (Int16SVec8 x) - (Int16SVec8 y) = Int16SVec8 (minusInt32X4# x y)
->  (Int16SVec8 x) * (Int16SVec8 y) = Int16SVec8 (timesInt32X4# x y)
+>  (Int16SVec8 x) + (Int16SVec8 y) = Int16SVec8 (plusInt16X8# x y)
+>  (Int16SVec8 x) - (Int16SVec8 y) = Int16SVec8 (minusInt16X8# x y)
+>  (Int16SVec8 x) * (Int16SVec8 y) = Int16SVec8 (timesInt16X8# x y)
 >  abs = mapSVec8 abs
 >  signum = mapSVec8 signum
 >  fromInteger i = Int16SVec8 (broadcastInt16X8# ii)
@@ -923,9 +924,23 @@
 
 >fast_multiply4_float :: Matrix4 Float -> Vector4 Float -> Vector4 Float
 >fast_multiply4_float (Matrix (Vector4 a b c d)) v = Vector4
->   (sum_components4 $ fromO $ zipO' (*) (toO a) v')
->   (sum_components4 $ fromO $ zipO' (*) (toO b) v')
->   (sum_components4 $ fromO $ zipO' (*) (toO c) v')
->   (sum_components4 $ fromO $ zipO' (*) (toO d) v')
+>   (sum_coordinates4 $ fromO $ zipO' (*) (toO a) v')
+>   (sum_coordinates4 $ fromO $ zipO' (*) (toO b) v')
+>   (sum_coordinates4 $ fromO $ zipO' (*) (toO c) v')
+>   (sum_coordinates4 $ fromO $ zipO' (*) (toO d) v')
 >  where v' = toO v
 >        zipO' = zipFVec4
+
+>fast_multiply2_double :: Matrix2 Double -> Vector2 Double -> Vector2 Double
+>fast_multiply2_double (Matrix (Vector2 a b)) v = Vector2
+>   (sum_coordinates2 $ fromO $ zipFVec2 (*) (toO a) v')
+>   (sum_coordinates2 $ fromO $ zipFVec2 (*) (toO b) v')
+>  where v' = toO v
+
+>instance LinearTransform Vector2 Vector2 Double where
+>   (<<*>) = fast_multiply2_double
+>   v <*>> m = fast_multiply2_double (transpose m) v
+
+>instance LinearTransform Vector4 Vector4 Float where
+>   (<<*>) = fast_multiply4_float
+>   v <*>> m = fast_multiply4_float (transpose m) v

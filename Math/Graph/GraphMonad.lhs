@@ -35,8 +35,8 @@
 >target :: (Monad m, GraphMonoid mon, Ord a) => Graph mon a -> a -> m a
 >target g = actionM g gcod
 
->inverse :: (Monad m, ReversibleGraphMonoid mon, Ord a) => Graph mon a -> a -> m a
->inverse g = actionM g gnot
+>inverseGM :: (Monad m, ReversibleGraphMonoid mon, Ord a) => Graph mon a -> a -> m a
+>inverseGM g = actionM g gnot
 
 
 >actMG :: g -> GraphM g ()

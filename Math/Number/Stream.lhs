@@ -1,4 +1,4 @@
->{-# LANGUAGE Trustworthy,UndecidableInstances, ExistentialQuantification, FlexibleInstances, MultiParamTypeClasses, MagicHash, TypeOperators, FlexibleContexts, Arrows, TypeFamilies #-}
+>{-# LANGUAGE Safe,UndecidableInstances, ExistentialQuantification, FlexibleInstances, MultiParamTypeClasses, MagicHash, TypeOperators, FlexibleContexts, Arrows, TypeFamilies, ScopedTypeVariables #-}
 >-- |
 >--  Module: Math.Number.Stream
 >--  Description: Stream implementation
@@ -48,6 +48,7 @@
 >import Control.Arrow
 >import Data.Ratio
 
+
 import qualified Model.Nondeterminism as Nondet
 
 >import qualified Math.Tools.Nondeterministic as Nondeterministic
@@ -56,10 +57,12 @@ import qualified Model.Nondeterminism as Nondet
 >import qualified Math.Matrix.Interface as Matrix
 >import Math.Matrix.Interface hiding ((|>))
 >import Math.Matrix.Matrix
->import Math.Matrix.Simple
 >import qualified Data.Set as Set
 
 >infixr 5 `Pre`
+
+>default ()
+
 
 >-- | Data structure of infinite lazy streams.
 >data Stream a = Pre { shead :: a, stail_strict :: Stream a }
@@ -78,7 +81,7 @@ import qualified Model.Nondeterminism as Nondet
 >                      VectorSpace ((g :*: g) a), Scalar (g a) ~ a)
 >   => (g :*: g) a -> Stream ((g :*: g) a)
 >matrix_exponential_stream x = sum_stream str
->  where str = liftA2 (\x kf -> (1 / kf) %* x) (matrix_powers x) factorial
+>  where str = liftA2 (\x' kf -> (1 / kf) %* x') (matrix_powers x) factorial
 
 >-- | <https://en.wikipedia.org/wiki/Matrix_exponential>
 >matrix_exponential :: (Fractional (Scalar ((g :*: g) a)),
@@ -124,7 +127,7 @@ import qualified Model.Nondeterminism as Nondet
 
 >instance Closed Double where
 >   accumulation_point (DoubleClosure (Pre x (Pre y yr)))
->     | abs (y - x) <= 1 / (fromInteger $ (floatRadix 0) ^ (floatDigits 0 - 1)) = x
+>     | abs (y - x) <= 1 / (fromInteger $ (floatRadix (0 :: Double)) ^ (floatDigits (0 :: Double) - 1)) = x
 >     | otherwise = accumulation_point (DoubleClosure yr)
 
 >instance Limiting () where
@@ -748,7 +751,7 @@ matrix_convolution_product :: (Num a) => (Stream :*: Stream) a -> (Stream :*: St
 
 >instance Indexable Stream where
 >   diagonal_projections = Pre shead $ fmap (\a -> a . stail) diagonal_projections
->   indexable_indices = fmap fromIntegral naturals
+>   indexable_indices = fmap fromIntegral (naturals :: Stream Integer)
 
 >zipList :: ([a] -> b) -> [Stream a] -> Stream b
 >zipList f lst = Pre (f (map shead lst)) (zipList f (map stail lst))
@@ -1365,8 +1368,18 @@ the suffix computation on Seq is constant time rather than linear.
 >        => Complex a -> Stream (Complex a) -> Stream (Complex a)
 >fourier_ w s = substitute s $ constant $ exp (negate (0:+1) * w)
 
+>exp_generating_function :: (Floating a, Eq a) => Stream a
 >exp_generating_function = z*(z+1)*exp z
 
+>-- <https://en.wikipedia.org/wiki/Generating_function>
+>-- $exponential_generating_function(sum{k=0..inf}(a_k*z^k)) = sum{k=0..inf}(a_k*z^k/(k!)$.
+>exponential_generating_function :: (Fractional a) => Stream a -> Stream a
+>exponential_generating_function a = liftA2 (/) a factorial
+
+>-- <https://en.wikipedia.org/wiki/Generating_function>
+>poisson_generating_function :: (Eq a, Floating a) => Stream a -> Stream a
+>poisson_generating_function a = exponential_generating_function $
+>   liftA2 (*) (exp (negate z)) a
 
 >pre_subst :: (Num a) => Stream a -> Stream a -> Stream [a]
 >pre_subst a b = codiagonals $ Matrix $ liftA2 multiply a $ cells $ powers b
@@ -1421,8 +1434,8 @@ the suffix computation on Seq is constant time rather than linear.
 
 >exp_approx :: (Fractional a) => a -> Stream a
 >exp_approx x = fmap (\ ~(j,lst) -> let m = x / j in 
->       sum $ map (\ ~(i,c) -> fromIntegral c * m^^i) lst) $
->       liftA2 (,) naturals $ fmap (List.zip [0..]) $ binomial_coefficients
+>       sum $ map (\ ~(i,c :: Integer) -> fromIntegral c * m^^i) lst) $
+>       liftA2 (,) naturals $ fmap (List.zip [(0 :: Integer)..]) $ binomial_coefficients
 
 
 >-- | computes (a + b)^n for all n, using binomial coefficients.
@@ -1431,7 +1444,7 @@ the suffix computation on Seq is constant time rather than linear.
 >--   Note: stream_powers can sometimes be a more efficient alternative.
 >polynomial_powers :: (Integral a) => a -> a -> Stream a
 >polynomial_powers a b = fmap (sum . map mapper) coeffs
->   where mapper (k,(a',b')) = k * (a ^ a') * (b ^ b')
+>   where mapper (k,(a' :: Integer,b' :: Integer)) = k * (a ^ a') * (b ^ b')
 >         coeffs = codiagonals $ liftA2 (,) pascal_triangle_diag
 >                              $ matrix (,) naturals naturals
 
@@ -1444,10 +1457,10 @@ the suffix computation on Seq is constant time rather than linear.
 >-- | Triangular numbers. <https://en.wikipedia.org/wiki/Generating_function>
 >-- @1,3,6,10,15,21,28,36,...@
 >triangular_numbers :: (Integral a) => Stream a
->triangular_numbers = 1 `div` (1 - z)^3
+>triangular_numbers = 1 `div` (1 - z)^(3 :: Int)
 
 >squares :: (Integral a) => Stream a
->squares = z*(z+1)`div` (1-z)^3
+>squares = z*(z+1)`div` (1-z)^(3 :: Int)
 
 >-- | @1.0,-1.0,1.0,-1.0,...@
 >alternating_signs :: (Fractional a) => Stream a
@@ -1467,8 +1480,8 @@ the suffix computation on Seq is constant time rather than linear.
 >odd_integers_ :: (Integral a) => Stream a
 >odd_integers_ = 1 `div` (1 - 3*z + 4*z*z `div` (1 + z))
 
->-- | This is an ideal of the set of integers, usually denoted nZ,
->-- e.g. set of integers divisible by 'n'.
+>-- | This is an ideal of the set of positive integers, usually denoted nZ^+,
+>-- e.g. set of positive integers divisible by 'n'.
 
 >integers_divisible_by :: Integer -> Stream Integer
 >integers_divisible_by n = Pre n $ fmap (+n) $ integers_divisible_by n
@@ -1517,6 +1530,7 @@ the suffix computation on Seq is constant time rather than linear.
 >-- <https://en.wikipedia.org/wiki/Falling_and_rising_factorials?wprof=sfla1>
 >--
 >-- Be careful about indices here, could cause off-by-one error!
+>falling_factorial_powers_diag :: (Integral a) => (Stream :*: Stream) a
 >falling_factorial_powers_diag = Matrix $ liftA2 (liftA2 (*)) (fmap constant factorial) (cells pascal_triangle_diag)
 
 >falling_factorial_powers :: (Eq a,Num a) => (Stream :*: Stream) a
@@ -1651,8 +1665,11 @@ the suffix computation on Seq is constant time rather than linear.
 
 >-- | <http://en.wikipedia.org/wiki/Formula_for_primes>
 
+>gcd_primes_diff :: (Integral a) => Stream a
 >gcd_primes_diff = gcd_primes - z*gcd_primes
+>gcd_primes :: (Integral a) => Stream a
 >gcd_primes = fmap gcd_prime_gen naturals
+>gcd_prime_gen :: (Integral a) => a -> a
 >gcd_prime_gen 0 = 0
 >gcd_prime_gen 1 = 7
 >gcd_prime_gen n = p + gcd n p

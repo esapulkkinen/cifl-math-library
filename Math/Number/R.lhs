@@ -1,8 +1,9 @@
->{-# LANGUAGE TypeFamilies #-}
+>{-# LANGUAGE TypeFamilies, FlexibleInstances #-}
 >module Math.Number.R where
 >import Control.Applicative
 >import Data.Ratio
 >import Data.Monoid
+>import Data.Complex
 >import Math.Tools.PrettyP
 >import Math.Matrix.Interface
 >import Math.Number.Stream
@@ -48,6 +49,9 @@
 
 >epsilon :: R
 >epsilon = real id
+
+>infinite :: R
+>infinite = liftR (1/) epsilon
 
 >-- | this propagates accuracy without changing it.
 >liftR :: (Rational -> Rational) -> R -> R
@@ -127,6 +131,7 @@
 >      - f (real $ \eps'' -> x `appEndo` eps'' - eps))
 >     `approximate` eps)/(2*eps)
 
+> 
 >newtons_method :: (R -> R) -> R -> R
 >newtons_method f x = lim $ iterate_stream iteration x 
 >  where iteration z' = z' - f z' / derivate f z'
@@ -159,11 +164,23 @@
 >     return $ (1 / (2 * fromIntegral n + 1))*a'^(2*n+1))
 
 >integral :: (R,R) -> (R -> R) -> R
->integral (x,y) f = real $ \eps ->
->   let accuracy z = derivate_rational eps (\i -> f (fromRational i) `approximate` eps) z
->       x' = x `approximate` (eps / accuracy (x `approximate` eps))
->       y' = y `approximate` (eps / accuracy (y `approximate` eps))
->    in eps * sum (map ((`approximate` eps) . f . fromRational) [x',x'+eps..y'])
+>integral (x,y) f = foldable_integral acc f
+>   where acc = map fromRational . integral_accuracy f x y
+
+>foldable_integral :: (Foldable t, Functor t) => (Rational -> t b) -> (b -> R) -> R
+>foldable_integral border f = real $ \eps ->
+>   foldable_simple_integral border ((`approximate` eps) . f) eps
+
+>foldable_simple_integral :: (Num a, Foldable t, Functor t) =>
+>  (a -> t b) -> (b -> a) -> a -> a
+>foldable_simple_integral border f eps = eps * (sum $ fmap f $ border eps)
+
+>integral_accuracy :: (Fractional t) => (t -> R) -> R -> R -> Rational -> [Rational]
+>integral_accuracy f x y eps = [x',x'+eps..y']
+>  where accuracy z = derivate_rational eps (\i -> f (fromRational i) `approximate` eps) z
+>        x' = x `approximate` (eps / accuracy (x `approximate` eps))
+>        y' = y `approximate` (eps / accuracy (y `approximate` eps))
+
 
 >-- | <https://en.wikipedia.org/wiki/Inverse_trigonometric_functions>
 >asin_r :: R -> R

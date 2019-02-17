@@ -48,6 +48,14 @@
 >-- | <https://en.wikipedia.org/wiki/Lie_algebra>
 >class (VectorSpace m) => LieAlgebra m where
 >  (%<>%) ::  m -> m -> m  -- [x,y]
+
+>compose_matrix_with :: (Transposable g n, Functor m) =>
+> (f a -> g b -> c) -> (m :*: f) a -> (g :*: n) b -> (m :*: n) c
+>compose_matrix_with f m1 m2 = matrix f (cells m1) (cells $ transpose m2)
+
+>lie_compose :: (LieAlgebra (g a), Transposable g n, Functor m)
+>  => (m :*: g) a -> (g :*: n) a -> (m :*: n) (g a)
+>lie_compose m1 m2 = matrix (%<>%) (cells m1) (cells $ transpose m2)
 >  
 >  -- (a %* x %+ b %* y) %<>% z == a %* (x %<>% z) + b %* (y %<>% z)  [bilinearity]
 >  -- x %<>% x == 0   [alternativity]
@@ -57,6 +65,11 @@
 
 >class (VectorSpace m) => NormedSpace m where
 >  norm :: m -> Scalar m
+
+>-- | This computes norm of each row, then computes the norm of the resulting column vector.
+>matrix_norm :: (Functor f, NormedSpace (g a), NormedSpace (f (Scalar (g a))))
+>  => (f :*: g) a -> Scalar (f (Scalar (g a)))
+>matrix_norm = norm . fmap norm . cells
 
 >class CompleteSpace m where
 

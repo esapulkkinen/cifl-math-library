@@ -49,14 +49,14 @@ Monoid action is really a functor F : M -> Set.
 >target :: MGraph a -> a -> a
 >target g x = maction g targetF x
 
->inverse :: MGraph a -> a -> a
->inverse g x = maction g inverseF x
+>inverseM :: MGraph a -> a -> a
+>inverseM g x = maction g inverseF x
 
 >isLoop :: (Eq a) => MGraph a -> a -> Bool
 >isLoop g x = source g x == target g x
 
 >isOneLaneLoop :: (Eq a) => MGraph a -> a -> Bool
->isOneLaneLoop g x = inverse g x == x
+>isOneLaneLoop g x = inverseM g x == x
 
 >isVertex :: (Eq a) => MGraph a -> a -> Bool
 >isVertex g x = source g x == x

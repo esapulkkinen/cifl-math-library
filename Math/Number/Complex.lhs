@@ -1,12 +1,16 @@
 >{-# LANGUAGE TypeOperators, FlexibleInstances #-}
 >module Math.Number.Complex where
 >import Data.Complex
->import Math.Number.Stream
+>import qualified Math.Number.Stream as S
 >import Math.Matrix.Interface
+>import qualified Math.Number.R as R
 >
 >-- | <https://en.wikipedia.org/wiki/Trigonometric_functions>
 >complex_sin :: (Floating a) => Complex a -> Complex a
 >complex_sin (a :+ b) = sin a * cosh b :+ cos a * sinh b
+
+>complex_pi_ :: (Floating a) => Complex a
+>complex_pi_ = pi :+ 0
 
 >-- | <https://en.wikipedia.org/wiki/Trigonometric_functions>
 >complex_cos :: (Floating a) => Complex a -> Complex a
@@ -20,10 +24,18 @@
 >complex_exp :: (Floating a) => Complex a -> Complex a
 >complex_exp (a :+ b) = (exp a :+ 0) `complex_mul` (cos b :+ sin b)
 
+>complex_integral :: (Foldable t, Functor t) => (Rational -> t (Complex R.R))
+> -> (Complex R.R -> Complex R.R) -> Complex R.R
+>complex_integral b f = res f :+ resi f
+>  where res f = R.real $ \eps -> eps * sum (fmap ((`R.approximate` eps) . realPart . f) (b eps))
+>        resi f = R.real $ \eps -> eps * sum (fmap ((`R.approximate` eps) . imagPart . f) (b eps))
 
->type ComplexStream a = (Stream :*: Complex) a
+>fourier :: (Foldable t, Functor t) => (Rational -> t (Complex R.R)) -> (Complex R.R -> Complex R.R) -> Complex R.R -> Complex R.R
+>fourier b f t = complex_integral b (\x -> f x `complex_mul` complex_exp ((0 :+ 1) `complex_mul` complex_pi_ `complex_mul` x `complex_mul` t))
 
->instance (RealFloat a) => Num ((Stream :*: Complex) a) where
+>type ComplexStream a = (S.Stream :*: Complex) a
+
+>instance (RealFloat a) => Num ((S.Stream :*: Complex) a) where
 >   (Matrix x) + (Matrix y) = Matrix $ x + y
 >   (Matrix x) - (Matrix y) = Matrix $ x - y
 >   (Matrix x) * (Matrix y) = Matrix $ x * y
@@ -31,12 +43,12 @@
 >   abs (Matrix x) = Matrix (abs x)
 >   signum (Matrix x) = Matrix (signum x)
 >   fromInteger i = Matrix $ fromInteger i
->instance (RealFloat a) => Fractional ((Stream :*: Complex) a) where
+>instance (RealFloat a) => Fractional ((S.Stream :*: Complex) a) where
 >   (Matrix x) / (Matrix y) = Matrix $ x / y
 >   recip (Matrix x) = Matrix $ recip x
 >   fromRational x = Matrix $ fromRational x
 
->instance (RealFloat a) => Floating ((Stream :*: Complex) a) where
+>instance (RealFloat a) => Floating ((S.Stream :*: Complex) a) where
 >   pi = Matrix $ pi
 >   exp = Matrix . exp . cells
 >   log = Matrix . log . cells
@@ -50,4 +62,4 @@
 >   atanh = Matrix . atanh . cells
 
 >instance (Show a) => Show (ComplexStream a) where
->   show (Matrix (Pre x xr)) = show x ++ "," ++ show xr
+>   show (Matrix (S.Pre x xr)) = show x ++ "," ++ show xr
