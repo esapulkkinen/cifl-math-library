@@ -52,9 +52,6 @@
 >-- the action_endomorphism is then used to convert it to actual operation.
 >data Graph m a = Graph { elements :: Set a, action_endomorphism :: m -> Endo a }
 
-graph_representation :: Endo a -> Endo a -> Endo a
-graph_representation (Endo f) (Endo g) = Endo $ f . g
-
 >action :: Graph m a -> a -> m -> a
 >action g x m = action_endomorphism g m `appEndo` x
 
@@ -97,6 +94,29 @@ graph_representation (Endo f) (Endo g) = Endo $ f . g
 
 >edgeG :: (Ord a) => a -> a -> a -> Graph Three a
 >edgeG e x y = Graph (Set.fromList [e,x,y]) (edgesEndo [(e,(x,y))])
+
+>-- | <https://en.wikipedia.org/wiki/Module_(mathematics)>
+>scalarVectorG :: (VectorSpace v) => Set v -> Graph (Scalar v) v
+>scalarVectorG g = binopG g (%*)
+
+>-- graph whose actions insert elements to the list
+>listG :: [a] -> Graph a [a]
+>listG lst = binopG (Set.singleton lst) (:)
+
+>plusVectorG :: (VectorSpace v) => Graph v v
+>plusVectorG = binopG (Set.singleton vzero) (%+)
+
+>integerG :: (Num a) => Graph a a
+>integerG = binopG (Set.singleton 0) (+)
+
+>vectorG :: (LinearTransform v v a) => Set (v a) -> Graph ((v :*: v) a) (v a)
+>vectorG v = Graph v $ \m -> Endo $ \w -> m <<*> w
+
+>appG :: Set a -> Graph (a -> a) a
+>appG p = Graph p Endo
+
+>binopG :: Set b -> (a -> b -> b) -> Graph a b
+>binopG x op = Graph x $ \i -> Endo $ \j -> op i j
 
 >outerG :: (Ord a, Ord b) => Graph m a -> Graph n b -> Graph (m,n) (a,b)
 >outerG (Graph e act) (Graph e' act') = Graph ee ract

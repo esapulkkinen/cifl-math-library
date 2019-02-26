@@ -2,9 +2,9 @@
 >module Math.Tools.BDD where
 >import Math.Tools.Visitor
 
-Idea for BDD is from Knuth, volume 4
-Every level in BDD tree represents one variable.
-
+>-- | Idea for BDD is from
+>-- Knuth: The Art of Computer Programming, volume 4, fascicle 1, pg. 70-148.
+>-- Every level in BDD tree represents one variable.
 >data BDD = BBead { btrue      :: BDD,   -- the BDD corresponding to \v_i -> f(true,v_1,...,v_n)
 >                   bfalse     :: BDD }  -- the BDD corresponding to \v_i -> f(false,v_1,...,v_n)
 >         | BTrue  -- BDD corresponding to \_ -> True

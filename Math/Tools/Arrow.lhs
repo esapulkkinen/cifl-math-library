@@ -8,6 +8,8 @@
 >-- License: LGPL
 >-- Copyright: Esa Pulkkinen, 2018
 >--
+>-- Arrows were originally described by "Paterson R.: A New notation for arrows, 2001" <http://www.staff.city.ac.uk/~ross/papers/notation.html>
+>-- 
 >module Math.Tools.Arrow where
 >import System.IO.Error
 >import Control.Monad.Trans.Except
