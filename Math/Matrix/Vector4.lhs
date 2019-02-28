@@ -58,7 +58,7 @@ import Math.Matrix.Dimension
 >   negate = fmap negate
 >   abs = fmap abs
 >   signum = fmap signum
->   fromInteger i = Vector4 (fromInteger i) (fromInteger i) (fromInteger i) (fromInteger i)
+>   fromInteger i = error "fromInteger: Vector4 requires 4 components"
 
 >instance Unfoldable Vector4 where
 >   unfoldF f = f >>= \a -> f >>= \b -> f >>= \c -> f >>= \d ->

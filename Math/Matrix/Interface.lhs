@@ -19,7 +19,8 @@
 >import Math.Tools.I
 
 >infixl 7 %.%
->infixl 7 %*
+>infix 7 %*
+>infix 7 %.
 >infixl 6 %+
 >infixl 6 %-
 >infixl 5 :*:

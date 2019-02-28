@@ -12,7 +12,8 @@
 >--  I have not used the official standard documents when writing this code.
 >--  However it is recognized that any major deviation from
 >--  the standard would be considered a bug in this code.
->--
+>--  And definitely the International system of units is basis for this code.
+>-- 
 >-- For official references, see e.g. "ISO80000-1:2009:Quantities and Units" and
 >--           "NIST Special Publication 330, 2008: The International system of units".
 >--
@@ -51,6 +52,7 @@
 >import qualified Math.Number.Stream as Stream
 >import Math.Number.Real (Infinitesimal(..), ShowPrecision(..))
 >import Math.Number.Group
+>import Math.Number.Interface
 >import Text.ParserCombinators.ReadPrec
 >import Text.Read
 
@@ -62,9 +64,14 @@
 >default_tolerance :: (Floating a) => a
 >default_tolerance = 0.00000001
 
->instance (Floating r, Show r, Ord r) => Eq (Quantity r) where
->   (x `As` d) == (y `As` d') | d == d' = abs (x-y) < default_tolerance
+>instance (Show r, Ord r) => Eq (Quantity r) where
+>   (x `As` d) == (y `As` d') | d == d' = x == y
 >                       | otherwise = invalidDimensions "==" d d' x y
+
+>equal_up_to :: (Floating a, Show a, Ord a) => a -> Quantity a -> Quantity a -> Bool
+>equal_up_to tolerance (x `As` d) (y `As` d')
+>   | d == d' = abs (x-y) < tolerance
+>   | otherwise = invalidDimensions "equal_up_to" d d' x y
 
 >data Dimension = Dimension {
 >   length_power :: Rational,
@@ -167,7 +174,6 @@
 >data Level r = Level {
 >   reference_value :: Quantity r,
 >   base_of_logarithm :: r }
-
 
 >level :: (Show a, Floating a, Real a) => Quantity a -> Level a -> Quantity a
 >level x (Level q b) = log (x / q) / (log b `As` dimensionless)
@@ -455,19 +461,19 @@
 >   acosh = require_dimensionless "acosh" acosh
 >   atanh = require_dimensionless "atanh" atanh
 
->instance (Ord r, Floating r,Show r) => Ord (Quantity r) where
+>instance (Ord r, Num r, Show r) => Ord (Quantity r) where
 >   compare (x `As` r) (y `As` r')
->     | r == r' = compare (x-y) default_tolerance
+>     | r == r' = compare (x-y) 0
 >     | otherwise = invalidDimensions "compare" r r' x y
 
->instance (Show r,Floating r,RealFrac r) => RealFrac (Quantity r) where
+>instance (Show r,RealFrac r) => RealFrac (Quantity r) where
 >   properFraction (x `As` r) = let (b,c) = properFraction x in (b,c `As` r)
 >   round (x `As` r) = round x
 >   truncate (x `As` r) = truncate x
 >   ceiling (x `As` r) = ceiling x
 >   floor (x `As` r) = floor x
 
->instance (Show r, Floating r, Real r) => Real (Quantity r) where
+>instance (Show r, Real r) => Real (Quantity r) where
 >   toRational (x `As` r) = toRational x
 
 >readprefix :: ReadPrec (Quantity Double -> Quantity Double)
@@ -534,7 +540,7 @@
 >     | r == r'   = invalidDimensions "enumFromThenTo" r r'' a c
 >     | otherwise = invalidDimensions "enumFromThenTo" r r' a b
 
->instance (Integral r, Floating r,Show r) => Integral (Quantity r) where
+>instance (Integral r, Show r) => Integral (Quantity r) where
 >   quot (a `As` r) (b `As` r') = (a `quot` b) `As` (r %- r')
 >   rem (a `As` r) (b `As` r') = (a `rem` b) `As` (r %- r')
 >   div (a `As` r) (b `As` r') = (a `div` b) `As` (r %- r')
@@ -747,30 +753,40 @@ order in the table is significant
 >steradian_dimension :: Dimension
 >steradian_dimension = (2 %* meter_dimension) %- (2 %* meter_dimension)
 
+>steradian :: (Floating a) => Quantity a
 >steradian = 1 @@ steradian_dimension
+>becquerel_dimension :: Dimension
 >becquerel_dimension = 0 %- second_dimension
+>becquerel :: (Floating a) => Quantity a
 >becquerel = 1 @@ becquerel_dimension
-
+>gray_dimension :: Dimension
 >gray_dimension = (2 %* meter_dimension) %- (2 %* second_dimension)
+>gray :: (Floating a) => Quantity a
 >gray = 1 @@ gray_dimension
 >lux_dimension = candela_dimension %- (2 %* meter_dimension)
+>lux :: (Floating a) => Quantity a
 >lux = 1 @@ lux_dimension
 
 >lumen_dimension :: Dimension
 >lumen_dimension = candela_dimension %+ steradian_dimension
+>lumen :: (Floating a) => Quantity a
 >lumen = 1 @@ lumen_dimension
+>kelvin_quantity :: (Floating a) => Quantity a
 >kelvin_quantity = 1 @@ kelvin_dimension
 
+>siemens :: (Floating a) => Quantity a
 >siemens = 1 @@ siemens_dimension
 
 >second :: (Floating a) => Quantity a
 >second = 1.0 @@ second_dimension
+
 >meter :: (Floating a) => Quantity a
 >meter = 1.0 @@ meter_dimension
 >
 >kilogram :: (Floating a) => Quantity a
 >kilogram = 1.0 @@ kilogram_dimension
 >
+>gram :: (Floating a) => Quantity a
 >gram = milli kilogram
 > 
 >mole :: (Floating a) => Quantity a
@@ -837,8 +853,9 @@ order in the table is significant
 
 >radian :: (Floating a) => Quantity a
 >radian = 1.0 @@ radian_dimension
-
+>katal_dimension :: Dimension
 >katal_dimension = mol_dimension %- second_dimension
+>katal :: (Floating a) => Quantity a
 >katal = 1.0 @@ katal_dimension
 
 >-- | conversion from degrees celcius.
@@ -870,6 +887,7 @@ order in the table is significant
 
 >hertz_dimension :: Dimension
 >hertz_dimension = dimensionless %- second_dimension
+>hertz :: (Floating a) => Quantity a
 >hertz = 1.0 @@ hertz_dimension
 
 >squaremeter_dimension :: Dimension
@@ -1143,6 +1161,3 @@ order in the table is significant
 >    ("°F", fromFahrenheit 0),
 >    ("℉", fromFahrenheit 0)
 >   ]
-
-
-

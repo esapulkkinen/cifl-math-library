@@ -5,6 +5,8 @@
 >import Math.Matrix.Interface
 >import GHC.TypeLits
 
+>-- | See <https://blog.jle.im/entry/fixed-length-vector-types-in-haskell.html>
+>-- for another approach on finite vectors.
 >data Vec :: Nat -> * -> * where
 >  Empty :: Vec 0 a 
 >  Cons :: a -> Vec n a -> Vec (1 + n) a
@@ -68,6 +70,11 @@ Doesn't typecheck in GHC 7.10.3, "Could not deduce (n1 ~ n) from the context
 >instance (Show a) => Show (EncVec a) where
 >  show (EncVec Empty) = ""
 >  show (EncVec (Cons x xr)) = show x ++ " " ++ show (EncVec xr)
+
+>encvecLength :: EncVec a -> Integer
+>encvecLength (EncVec Empty) = 0
+>encvecLength (EncVec (Cons x xr)) = 1 + encvecLength (EncVec xr)
+>encvecLength (EncVec (Assoc f)) = encvecLength (EncVec f)
 
 >fromList :: [a] -> EncVec a
 >fromList [] = EncVec Empty

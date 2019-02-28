@@ -445,6 +445,14 @@ grad3 f x = Vector3 (partial_derivate3x f x)
 >sum_coordinates3 :: (Num a) => Vector3 a -> a
 >sum_coordinates3 (Vector3 x y z) = x + y + z
 
+>-- | cube root of a sum of cubes.
+>cube_norm3 :: (Floating a) => Vector3 a -> a
+>cube_norm3 (Vector3 x y z) = let n = 3 in (x**n + y**n + z**n)**(1/n)
+
+>-- | nth root of a sum of nth powers
+>nth_norm3 :: (Floating a) => a -> Vector3 a -> a
+>nth_norm3 n (Vector3 x y z) = (x**n + y**n + z**n)**(1/n)
+
 >instance Summable Vector3 where
 >  sum_coordinates = sum_coordinates3
 
@@ -510,7 +518,7 @@ grad3 f x = Vector3 (partial_derivate3x f x)
 >  negate (Vector3 x y z) = Vector3 (negate x) (negate y) (negate z)
 >  abs (Vector3 x y z) = Vector3 (abs x) (abs y) (abs z)
 >  signum (Vector3 x y z) = Vector3 (signum x) (signum y) (signum z)
->  fromInteger i = Vector3 (fromInteger i) (fromInteger 0) (fromInteger 0)
+>  fromInteger i = error "fromInteger: Vector3 requires 3 components"
 
 >index3 :: Vector3 (Vector3 a -> a)
 >index3 = Vector3 xcoord3 ycoord3 zcoord3

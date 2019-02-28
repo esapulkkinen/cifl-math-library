@@ -385,7 +385,7 @@ curl2 f z = Vector2 (partial_derivate2y (xcoord2 . f) z)
 >  negate (Vector2 x y) = Vector2 (negate x) (negate y)
 >  abs (Vector2 x y) = Vector2 (abs x) (abs y)
 >  signum (Vector2 x y) = Vector2 (signum x) (signum y)
->  fromInteger i = Vector2 (fromInteger i) (fromInteger 0)
+>  fromInteger i = error "fromInteger: Vector2 requires 2 components"
 
 >left_multiply2 :: (Num a) => Vector2 a -> Matrix2 a -> Vector2 a
 >left_multiply2 (Vector2 x y) (Matrix (Vector2 (Vector2 x1 y1)

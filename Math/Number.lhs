@@ -1,6 +1,8 @@
 >{-# LANGUAGE Safe, GADTs, QuasiQuotes #-}
 >{-# OPTIONS_HADDOCK not-home #-}
 >module Math.Number (
+>-- * interface definitions for numbers
+>   module Math.Number.Interface,
 >-- * real numbers
 >   module Math.Number.Real,
 >-- * alternative implementation of reals
@@ -35,3 +37,4 @@
 >import Math.Number.Complex
 >import Math.Number.TypeRational
 >import Math.Number.TypeUnits
+>import Math.Number.Interface
