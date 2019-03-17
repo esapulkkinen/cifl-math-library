@@ -33,6 +33,7 @@
 >import Control.Applicative
 >import Control.Category
 >import Control.Arrow
+>import Data.Complex
 >import Math.Tools.Universe
 >import Math.Tools.PrettyP as Tools.PrettyP
 >import Math.Tools.CoMonad
@@ -79,7 +80,6 @@
 >
 >instance (Universe row, Universe col, Universe dep, Universe tim, PpShow elem) => Show (Matrix4S row col dep tim elem) where
 >   show (Matrix m) = render $ ppf_vertical m
-
 
 >instance (Num a, Universe row, Universe col) => LinearTransform ((->) row) ((->) col) a where
 >   colv <*>> (Matrix m) = \i -> sum [colv j * m i j | j <- all_elements]

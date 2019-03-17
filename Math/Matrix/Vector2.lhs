@@ -29,6 +29,18 @@
 >   put (Vector2 x y) = Bin.put x >> Bin.put y 
 >   get = do { x <- Bin.get ; y <- Bin.get ; return (Vector2 x y) }
 
+>instance (Read a) => Read (Vector2 a) where
+>  readsPrec i str = do pre <- char '[' str
+>                       (x,xr) <- readsPrec 0 pre
+>                       xr_ <- char ',' xr
+>                       (y,yr) <- readsPrec 0 xr_
+>                       yr_ <- char ']' yr 
+>                       return (Vector2 x y,yr_)
+>   where char ch (ch2:cr) | ch == ch2 = return cr
+>                          | otherwise = []
+>         char ch [] = []
+
+
 >type ComplexVector2 a = (Vector2 :*: Complex) a
 
 >-- | <https://en.wikipedia.org/wiki/Conjugate_transpose>

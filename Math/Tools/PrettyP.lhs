@@ -129,6 +129,10 @@ instance PpShow (f (Rec f)) => PpShow (Rec f) where
 >instance (PpShow a, Num a, Ord a) => PpShow (Complex a) where
 >  pp (x :+ y) = pp x <> (if y >= 0 then pp '+' else pp '-') <> pp (abs y) <> pp 'i'
 
+>instance PpShowF Complex where
+>  ppf (x :+ y) = pp x <+> pp ":+" <+> pp y
+
+
 >instance (Integral a,PpShow a) => PpShow (Ratio a) where
 >  pp r = pp (numerator r) <> pp '/' <> pp (denominator r)
 

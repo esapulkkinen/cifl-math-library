@@ -11,6 +11,8 @@
 >   module Math.Number.Stream,
 >-- ** infinite dimensional vector to two directions
 >   module Math.Number.BiStream,
+>-- ** two dimensional transformation
+>   module Math.Number.Transform2D,
 >-- * dimensional analysis
 >   module Math.Number.DimensionalAnalysis,
 >-- ** type level rational numbers
@@ -38,3 +40,4 @@
 >import Math.Number.TypeRational
 >import Math.Number.TypeUnits
 >import Math.Number.Interface
+>import Math.Number.Transform2D

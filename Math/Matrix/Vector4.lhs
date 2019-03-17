@@ -50,6 +50,7 @@ import Math.Matrix.Dimension
 >     t <- Bin.get
 >     return (Vector4 x y z t)
 
+>instance (RealFloat a) => ComplexVectorSpace ((Vector4 :*: Complex) a) a
 
 >instance (Num a) => Num (Vector4 a) where
 >   v1 + v2 = pure (+) <*> v1 <*> v2
@@ -198,7 +199,23 @@ instance FractionalSpace (Vector4 (Complex R))
 
 
 >instance (Show a) => Show (Vector4 a) where
->  show (Vector4 x y z t) = "(" ++ show x ++ "," ++ show y ++ "," ++ show z ++ "," ++ show t ++ ")"
+>  show (Vector4 x y z t) = "[" ++ show x ++ "," ++ show y ++ "," ++ show z ++ "," ++ show t ++ "]"
+
+>instance (Read a) => Read (Vector4 a) where
+>  readsPrec i str = do pre <- char '[' str
+>                       (x,xr) <- readsPrec 0 pre
+>                       xr_ <- char ',' xr
+>                       (y,yr) <- readsPrec 0 xr_
+>                       yr_ <- char ',' yr
+>                       (z,zr) <- readsPrec 0 yr_
+>                       zr_ <- char ',' zr
+>                       (t,tr) <- readsPrec 0 zr_
+>                       zt_ <- char ']' tr
+>                       return (Vector4 x y z t,zt_)
+>   where char ch (ch2:cr) | ch == ch2 = return cr
+>                          | otherwise = []
+>         char ch [] = []
+
 
 >instance (Show (f a)) => Show ((Vector4 :*: f) a) where
 >  show (Matrix (Vector4 a b c d)) = show a ++ "\n" ++ show b ++ "\n" ++ show c ++ "\n" ++ show d

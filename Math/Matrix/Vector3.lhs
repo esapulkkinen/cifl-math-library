@@ -266,6 +266,19 @@
 >instance (Show a) => Show (Vector3 a) where
 >  show (Vector3 x y z) = "[" ++ show x ++ "," ++ show y ++ "," ++ show z ++ "]"
 
+>instance (Read a) => Read (Vector3 a) where
+>  readsPrec i str = do pre <- char '[' str
+>                       (x,xr) <- readsPrec 0 pre
+>                       xr_ <- char ',' xr
+>                       (y,yr) <- readsPrec 0 xr_
+>                       yr_ <- char ',' yr
+>                       (z,zr) <- readsPrec 0 yr_
+>                       zr_ <- char ']' zr 
+>                       return (Vector3 x y z,zr_)
+>   where char ch (ch2:cr) | ch == ch2 = return cr
+>                          | otherwise = []
+>         char ch [] = []
+
 >instance (PpShow a) => PpShow (Vector3 a) where
 >  pp (Vector3 x y z) = vcat $ liftA2 nest [0,25,50] (map pp [x,y,z])
 

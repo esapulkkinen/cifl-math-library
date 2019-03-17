@@ -105,6 +105,16 @@ http://en.wikipedia.org/wiki/Bra%E2%80%93ket_notation
 >ket :: (Functor m) => m a -> (m :*: Vector1) a
 >ket = vertical
 
+>instance (Read a) => Read (Vector1 a) where
+>  readsPrec i str = do pre <- char '[' str
+>                       (x,xr) <- readsPrec 0 pre
+>                       xr_ <- char ']' xr 
+>                       return (Vector1 x,xr_)
+>   where char ch (ch2:cr) | ch == ch2 = return cr
+>                          | otherwise = []
+>         char ch [] = fail "no match"
+
+
 >(%<|>%) :: (Functor v, RealFloat a, Transposable v Vector1,
 >            Scalar (v (Complex a)) ~ Complex a,             
 >            InnerProductSpace (v (Complex a))) => 

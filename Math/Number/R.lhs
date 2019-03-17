@@ -1,6 +1,8 @@
->{-# LANGUAGE TypeFamilies, FlexibleInstances #-}
+>{-# LANGUAGE TypeFamilies, FlexibleInstances, ScopedTypeVariables #-}
 >module Math.Number.R where
 >import Control.Applicative
+>import Control.Monad
+>import Data.Char
 >import Data.Ratio
 >import Data.Monoid
 >import Data.Complex

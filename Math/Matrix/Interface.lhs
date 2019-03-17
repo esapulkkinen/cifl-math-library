@@ -30,6 +30,11 @@
 >-- If you want to use numeric indices, use 'Math.Matrix.Simple'. 
 >data (f :*: g) a = Matrix { cells :: f (g a) }
 
+>-- | This method of matrix construction is especially nice.
+>matrix :: (Functor m, Functor n) => (a -> b -> c) -> m a -> n b -> (m :*: n) c
+>matrix f x y = Matrix $ flip fmap x $ \a -> 
+>                        flip fmap y $ \b -> f a b
+
 >-- | <https://en.wikipedia.org/wiki/Matrix_%28mathematics%29>
 >class (Num (Scalar v)) => VectorSpace v where
 >  type Scalar v
@@ -177,11 +182,6 @@ data Codiagonal m n a = Codiagonal {
 >  listVector :: [Scalar v] -> v  -- convert list to vector
 >  dimension_size :: v -> Int
 >  coordinates :: v -> [Coordinate v]
-
->matrix :: (Functor m, Functor n) => (a -> b -> c) -> m a -> n b -> (m :*: n) c
->matrix f x y = Matrix $ flip fmap x $ \a -> 
->                        flip fmap y $ \b -> f a b
-
 
 >matrixM :: (Traversable f, Traversable g, Monad m) => 
 >           (a -> b -> m c) -> f a -> g b -> m ((f :*: g) c)
@@ -651,3 +651,24 @@ instance (Functor m) => Unital (:*:) m where
 >-- | <https://en.wikipedia.org/wiki/Norm_(mathematics)>
 >is_inside_unit_circle :: (NormedSpace v, Ord (Scalar v)) => v -> Bool
 >is_inside_unit_circle v = norm v <= 1
+
+>instance VectorSpace (f (Complex a)) => VectorSpace ((f :*: Complex) a) where
+>  type Scalar ((f :*: Complex) a) = Scalar (f (Complex a))
+>  vzero = Matrix vzero
+>  vnegate (Matrix v) = Matrix (vnegate v)
+>  (Matrix v) %+ (Matrix w) = Matrix (v %+ w)
+>  c %* (Matrix v) = Matrix (c %* v)
+
+>instance (VectorSpace (f (Complex a)), Scalar (f (Complex a)) ~ Complex a) => ComplexVectorSpace ((f :*: Complex) a) a
+
+>instance (Functor f) => Transposable f Complex where
+>  transpose (Matrix m) = Matrix $ fmap realPart m :+ fmap imagPart m
+
+>instance (Applicative f) => Transposable Complex f where
+>  transpose (Matrix (m :+ n)) = Matrix $ liftA2 (:+) m n
+
+>instance (Show (f a)) => Show ((Complex :*: f) a) where
+>  show (Matrix (a :+ b)) = show a ++ " :+ " ++ show b
+
+>instance PpShowVerticalF Complex where
+>  ppf_vertical (x :+ y) = pp x $$ pp ":+" <+> pp y
