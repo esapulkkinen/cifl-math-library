@@ -84,7 +84,7 @@ latex-document :
 publish_document : dependencegraph document hscolor
 	cp -r dist-newstyle/build/*/ghc-*/cifl-math-library-*/doc/html/cifl-math-library/* docs/
 	sed -i 's+COPYRIGHT">COPYRIGHT+COPYRIGHT" rel="license">COPYRIGHT+g' docs/index.html
-	sed -i 's+<head><meta+<head><link href="https://github.com/esapulkkinen/cifl-math-library/blob/master/COPYRIGHT" rel="license"/><link href="https://www.gnu.org/licenses/lgpl-3.0.txt" rel="license"/><link href="https://github.com/esapulkkinen/cifl-math-library/blob/master/AUTHORS" rel="author"/><meta+g' docs/*.html
+	sed -i "s+<head><meta+<head>$$(cat metadata.txt | tr '\n' ' ')<meta+g" docs/*.html
 
 hscolor :
 
