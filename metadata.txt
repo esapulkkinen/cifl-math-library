@@ -1,0 +1,8 @@
+<meta property="og:url" content="https://esapulkkinen.github.io/cifl-math-library"/>
+<meta property="og:title" content="CIFL math library"/>
+<meta property="og:description" content="Haskell library for linear algebra"/>
+<meta name="twitter:card" content="summary"/>
+<meta name="twitter:creator" content="@PulkkinenEsa"/>
+<link href="https://github.com/esapulkkinen/cifl-math-library/blob/master/COPYRIGHT" rel="license"/>
+<link href="https://www.gnu.org/licenses/lgpl-3.0.txt" rel="license"/>
+<link href="https://github.com/esapulkkinen/cifl-math-library/blob/master/AUTHORS" rel="author"/>
