@@ -1,6 +1,7 @@
 >{-# LANGUAGE Safe,FlexibleInstances, ScopedTypeVariables #-}
 >-- | The module contains only Show and PpShow instances for graphs.
 >module Math.Graph.Show where
+>import Text.PrettyPrint (empty, (<+>), punctuate)
 >import Data.Monoid hiding ((<>))
 >import qualified Data.Set as Set
 >import qualified Math.Tools.PrettyP as PrettyP
@@ -38,5 +39,5 @@
 >  pp g = maybe (pp "[]") (\ (v,e) -> pp "(" <> (PrettyP.pp_list v <+> pp ";" <+> PrettyP.pp_list e) <> pp ')') $ inGraphM g $ do
 >                edges <- reversibleLinksM
 >                vertices <- verticesM
->                return $ (Set.toList vertices,(map (\ ((e,re),(x,y)) -> pp e <+> (if (e /= re) then (pp "/" <+> pp re) else PrettyP.empty) <+> pp '=' <+> pp x <+> pp "<->" <+> pp y) $ Set.toList edges))
+>                return $ (Set.toList vertices,(map (\ ((e,re),(x,y)) -> pp e <+> (if (e /= re) then (pp "/" <+> pp re) else empty) <+> pp '=' <+> pp x <+> pp "<->" <+> pp y) $ Set.toList edges))
 

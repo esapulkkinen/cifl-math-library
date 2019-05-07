@@ -1,6 +1,8 @@
 >{-# LANGUAGE Safe #-}
 >{-# LANGUAGE DeriveDataTypeable #-}
 >module Math.Tools.Id where
+>import Text.PrettyPrint (fcat, (<+>))
+>import qualified Text.PrettyPrint as Pretty
 >import Data.Typeable
 >import Data.Data
 >import Data.Monoid
@@ -39,7 +41,7 @@
 >instance Ord Id where
 >	  (MkId x _) <= (MkId y _) = x <= y
 
->lineDesc :: Id -> Doc
+>lineDesc :: Id -> Pretty.Doc
 >lineDesc i = pp "Line" <+> (pp (location_of i) <> pp ':')
 
 >lineOf :: Id -> Int

@@ -12,6 +12,7 @@
 >import Math.Tools.Orthogonal
 >import Math.Tools.Adjunction
 >import Math.Tools.Visitor
+>import qualified Text.PrettyPrint as Pretty
 >import Math.Tools.PrettyP hiding (empty)
 >import Math.Tools.FixedPoint
 >import Math.Tools.Arrow
@@ -219,7 +220,7 @@ matrix_commutator :: (Applicative h, Transposable h h, InnerProductSpace (h a), 
 >   ppf ary = ppf [ary Array.! i | i <- Array.range (Array.bounds ary) ]
 
 >instance (Array.Ix i) => PpShowVerticalF (Array i) where
->   ppf_vertical ary = vcat [pp (ary Array.! i) | i <- Array.range (Array.bounds ary) ]
+>   ppf_vertical ary = Pretty.vcat [pp (ary Array.! i) | i <- Array.range (Array.bounds ary) ]
 
 >instance (Functor f, Functor g) => Builder ((g :*: f) a) where
 >   data Unfold ((g :*: f) a) b = forall c d. MatrixUnfold (c -> d -> a)

@@ -1,6 +1,9 @@
->{-# LANGUAGE Safe,FlexibleInstances, MultiParamTypeClasses, TypeOperators #-}
+>{-# LANGUAGE Safe,FlexibleInstances, MultiParamTypeClasses, TypeOperators, DeriveGeneric, DeriveDataTypeable #-}
 >module Math.Graph.GraphMonoid where
 >import Control.Arrow
+>import GHC.Generics
+>import Data.Typeable
+>import Data.Data
 >import Math.Tools.Isomorphism
 >import Math.Tools.Arrow
 >import Math.Tools.Universe
@@ -51,7 +54,7 @@
 >         | x == gcod = "target"
 >         | x == gnot = "invert"
 
->data Three = TId | TDom | TCod deriving (Eq,Show,Ord)
+>data Three = TId | TDom | TCod deriving (Eq,Show,Ord, Typeable, Data, Generic)
 
 >three_action :: (g -> g) -> (g -> g) -> (g -> g) -> Three -> Endo g
 >three_action a _ _ TId  = Endo a
@@ -80,7 +83,7 @@
 >   gdom = TDom
 >   gcod = TCod
 
->data Four = FId | FDom | FCod | FNot deriving (Eq,Show, Ord)
+>data Four = FId | FDom | FCod | FNot deriving (Eq,Show, Ord, Typeable, Data, Generic)
 
 >three_to_four :: Three -> Four
 >three_to_four TId = FId

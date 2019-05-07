@@ -33,6 +33,8 @@
 >import Control.Applicative
 >import Control.Category
 >import Control.Arrow
+>import Text.PrettyPrint (empty, vcat,hsep,(<+>))
+>import qualified Text.PrettyPrint as Pretty
 >import Data.Complex
 >import Math.Tools.Universe
 >import Math.Tools.PrettyP as Tools.PrettyP
@@ -40,6 +42,9 @@
 >import Math.Tools.NaturalTransformation
 >import Math.Matrix.Interface
 >import Math.Matrix.Matrix
+>import Math.Matrix.Covector
+>import Math.Number.Real
+>import Math.Number.Stream hiding (drop, take)
 
 >type (row :&: col) elem = (((->) row) :*: ((->) col)) elem
 >type Matrix3S row col dep elem = (((->) row) :*: (((->) col) :*: ((->) dep))) elem
@@ -52,7 +57,7 @@
 >type InfMatrix elem = (Integer :&: Integer) elem
 
 >instance (Universe a) => PpShowF ((->) a) where
->   ppf f = (hsep $ take 10 lst) <> if null lst2 then Tools.PrettyP.empty else pp ".." 
+>   ppf f = (hsep $ take 10 lst) <> if null lst2 then Pretty.empty else pp ".." 
 >     where lst = [pp (f i) | i <- all_elements]
 >           lst2 = drop 10 lst
 
@@ -69,7 +74,7 @@
 >dimensionFlip m = m <!> (matrix,flip)
 
 >instance (Universe a) => PpShowVerticalF ((->) a) where
->   ppf_vertical f = vcat $ (take 10 $ lst) ++ [if null (drop 10 lst) then Tools.PrettyP.empty else pp ".."]
+>   ppf_vertical f = vcat $ (take 10 $ lst) ++ [if null (drop 10 lst) then Pretty.empty else pp ".."]
 >     where lst = [pp (f j) | j <- all_elements]
 >
 >instance (Universe row, Universe col, PpShow elem) => Show ((row :&: col) elem) where
@@ -90,6 +95,36 @@
 >
 >instance Transposable ((->) row) ((->) col) where
 >   transpose (Matrix f) = Matrix $ \i j -> f j i
+
+>index_delta :: (Eq ind, Num a) => ind -> a -> (ind -> a) -> (ind -> a)
+>index_delta ind eps v = \ind' -> if ind == ind' then eps + v ind else v ind
+
+>partial_derivate_ind :: (Closed a, Infinitesimal a, Eq ind)
+>   => ind -> (Dual (ind -> a) -> Dual (ind -> a))
+>partial_derivate_ind ind (Covector f) = Covector $ partial_derivate (index_delta ind) f
+
+>partial_derivate_list :: (Closed a, Infinitesimal a, Eq ind, Universe ind)
+>   => [Dual (ind -> a) -> Dual (ind -> a)]
+>partial_derivate_list = map partial_derivate_ind all_elements
+
+>divergence_index :: (Closed b, Infinitesimal b, Eq ind, Universe a, Universe ind)
+> => ((ind -> b) -> a -> b) -> Dual (ind -> b)
+>divergence_index f = sum (partial_derivate_list <*> flst)
+>   where flst = map (\i -> Covector (($ i) . f)) all_elements
+
+>grad_index :: (Closed a, Infinitesimal a, Eq ind)
+>  => Dual (ind -> a) -> (ind -> a) -> (ind -> a)
+>grad_index f z = \ind -> partial_derivate_ind ind f `bracket` z
+
+>laplace_index :: (Closed a, Infinitesimal a, Eq ind, Universe ind)
+>  => Dual (ind -> a) -> Dual (ind -> a)
+>laplace_index f = divergence_index (grad_index f)
+
+>instance (Closed b, Infinitesimal b, Eq a, Universe a)
+> => VectorDerivative (a -> b) where
+>  grad = grad_index
+>  divergence = divergence_index
+>  laplace = laplace_index
 
 >-- | https://en.wikipedia.org/wiki/Frobenius_inner_product
 

@@ -13,6 +13,7 @@
 >import Math.Tools.Arrow
 >import qualified Math.Tools.List as LL
 >import Math.Tools.Visitor
+>import qualified Text.PrettyPrint as Pretty
 >import qualified Math.Tools.PrettyP as PP
 >import Math.Tools.PrettyP hiding (empty)
 >import Math.Tools.Nondeterministic
@@ -85,11 +86,11 @@ This version of queue is not a comonad, since empty queue is possible.
 
 >instance (PpShow a) => PpShow (Queue a) where
 >   pp (MakeQueue x y) = pp "queue{" 
->        <> cat (punctuate (pp ',') $ map pp x)
->        <> (if null x then PP.empty else pp ',')
+>        <> Pretty.cat (Pretty.punctuate (pp ',') $ map pp x)
+>        <> (if null x then Pretty.empty else pp ',')
 >        <> pp "!"
->        <> (if null y then PP.empty else pp ',')
->        <> cat (punctuate (pp ',') $ map pp (L.reverse y))
+>        <> (if null y then Pretty.empty else pp ',')
+>        <> Pretty.cat (Pretty.punctuate (pp ',') $ map pp (L.reverse y))
 >        <> pp '}'                 
 
 cat (punctuate (pp ',') $ map pp (x ++ L.reverse y)) <> pp '}'

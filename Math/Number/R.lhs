@@ -1,4 +1,5 @@
 >{-# LANGUAGE TypeFamilies, FlexibleInstances, ScopedTypeVariables #-}
+>{-# LANGUAGE TypeOperators #-}
 >module Math.Number.R where
 >import Control.Applicative
 >import Control.Monad
@@ -7,7 +8,9 @@
 >import Data.Monoid
 >import Data.Complex
 >import Math.Tools.PrettyP
+>import Math.Matrix.Covector
 >import Math.Matrix.Interface
+>import Math.Number.Interface
 >import Math.Number.Stream
 >import qualified Control.Monad.Fix
 >
@@ -22,6 +25,9 @@
 >         else runRClosure (limit z) `approximate` eps
 >   approximations (RClosure r) = fmap f $ fmap (1 /) $ power 10
 >      where f p = real $ \eps -> r `approximate` min p eps
+
+>instance Closed R where
+>   accumulation_point = runRClosure
 
 >lim :: Stream R -> R
 >lim = runRClosure . limit
@@ -127,13 +133,22 @@
 >derivate_rational :: Rational -> (Rational -> Rational) -> Rational -> Rational
 >derivate_rational eps f i = (f (i + eps) - f (i - eps)) / (2*eps)
 
->derivate :: (R -> R) -> R -> R
->derivate f (Limit x) = real $ \eps ->
+>derivate_r :: (R -> R) -> R -> R
+>derivate_r f (Limit x) = real $ \eps ->
 >    ((f (real $ \eps' -> x `appEndo` eps' + eps)
 >      - f (real $ \eps'' -> x `appEndo` eps'' - eps))
 >     `approximate` eps)/(2*eps)
 
-> 
+>instance DifferentiallyClosed R where
+>   derivate = derivate_r
+>   integral = integral_r
+
+>taylor :: (R -> R) -> R -> (Stream :*: Stream) R
+>taylor f a = Matrix $ sum_stream $ fmap mapper sub_powers
+>  where mapper p = liftA3 (\a b c -> (a*c)/b) der factorial p
+>        der = derivates f <*> constant a
+>        sub_powers = cells $ stream_powers (z - fromNum a)
+
 >newtons_method :: (R -> R) -> R -> R
 >newtons_method f x = lim $ iterate_stream iteration x 
 >  where iteration z' = z' - f z' / derivate f z'
@@ -165,8 +180,8 @@
 >     n <- naturals
 >     return $ (1 / (2 * fromIntegral n + 1))*a'^(2*n+1))
 
->integral :: (R,R) -> (R -> R) -> R
->integral (x,y) f = foldable_integral acc f
+>integral_r :: (R,R) -> (R -> R) -> R
+>integral_r (x,y) f = foldable_integral acc f
 >   where acc = map fromRational . integral_accuracy f x y
 
 >foldable_integral :: (Foldable t, Functor t) => (Rational -> t b) -> (b -> R) -> R
@@ -182,7 +197,6 @@
 >  where accuracy z = derivate_rational eps (\i -> f (fromRational i) `approximate` eps) z
 >        x' = x `approximate` (eps / accuracy (x `approximate` eps))
 >        y' = y `approximate` (eps / accuracy (y `approximate` eps))
-
 
 >-- | <https://en.wikipedia.org/wiki/Inverse_trigonometric_functions>
 >asin_r :: R -> R

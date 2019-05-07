@@ -1,5 +1,8 @@
->{-# LANGUAGE LambdaCase #-}
+>{-# LANGUAGE LambdaCase, DeriveDataTypeable, DeriveGeneric #-}
 >module Math.Tools.Lexer where
+>import GHC.Generics
+>import Data.Data
+>import Data.Typeable
 >import Data.Char
 >import Math.Tools.ParseMonad
 >import Math.Tools.LineInfo
@@ -18,6 +21,7 @@
 >           | OpenBrace | CloseBrace
 >           | OpenBracket | CloseBracket
 >           | OpenParenthesis | CloseParenthesis
+>   deriving (Eq, Typeable, Data, Generic)
 
 >tokenLexer :: t -> Int -> (t -> ParseM a) -> ParseM a
 >tokenLexer tok len cont = ParseM $ \r li -> runParseM (cont tok) r (add_to_column len li)

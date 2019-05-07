@@ -4,6 +4,7 @@
 >import Test.QuickCheck
 >import Test.HUnit
 >import Math.Tools.Median
+>import Math.Number.Interface
 >import Math.Number.Real
 >import Math.Number.Stream
 >import Math.Test.Common
@@ -38,7 +39,7 @@ prop_median_test = med (pi :: R) (3.141 :: R) (3.242 :: R) `approximately_equal`
 
 >derivatetest1 :: Test
 >derivatetest1 = -- True ~? "derivatetest1"
->  accumulation_point (derivate (\(x :: R) -> x*x) 4.0) `approximately_equal` 8.0 ~? "derivatetest1"
+>  (derivate (\(x :: R) -> x*x) 4.0) `approximately_equal` 8.0 ~? "derivatetest1"
 
 >$(return [])
 >qcTests = $quickCheckAll

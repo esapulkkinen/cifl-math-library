@@ -1,5 +1,8 @@
->{-# LANGUAGE TypeFamilies #-}
+>{-# LANGUAGE TypeFamilies, DeriveGeneric, DeriveDataTypeable #-}
 >module Math.Tools.BDD where
+>import Data.Typeable
+>import GHC.Generics
+>import Data.Data
 >import Math.Tools.Visitor
 
 >-- | Idea for BDD is from
@@ -9,6 +12,7 @@
 >                   bfalse     :: BDD }  -- the BDD corresponding to \v_i -> f(false,v_1,...,v_n)
 >         | BTrue  -- BDD corresponding to \_ -> True
 >         | BFalse -- BDD corresponding to \_ -> False
+>  deriving (Data,Typeable,Generic)
 
 >var = BBead BTrue BFalse
 

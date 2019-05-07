@@ -164,7 +164,7 @@
 >floatLitP (FloatNumber v) = return v
 >floatLitP (Number v) = return (fromInteger v)
 >floatLitP _ = fail "Matrix element is not a floating point number"
->         
+
 >parseNumberMatrix :: (Monad m) => String -> m (([] :*: []) Integer)
 >parseNumberMatrix = parseToMatrix numberP 
 

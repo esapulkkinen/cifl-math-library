@@ -1,12 +1,19 @@
->{-# LANGUAGE Safe #-}
+>{-# LANGUAGE Safe, DeriveGeneric, DeriveDataTypeable #-}
 >{-# OPTIONS_HADDOCK hide #-}
 >module Math.Graph.Regexp where
->instance Data.Monoid
-
+>import Data.Monoid
+>import Data.Typeable
+>import Data.Data
+>import GHC.Generics
+> 
 >data RegExp = RStar RegExp
 >            | RAlts [RegExp]
 >            | RSeq  [RegExp]
 >            | RLetter Char
+>  deriving (Eq, Ord, Typeable, Data, Generic)
+
+>instance Semigroup RegExp where
+>   (<>) = mappend
 
 >instance Monoid RegExp where
 >   mempty = RSeq []

@@ -1,4 +1,4 @@
->{-# LANGUAGE Safe,FlexibleContexts, FlexibleInstances, MultiParamTypeClasses, FunctionalDependencies, TypeOperators, TypeFamilies #-}
+>{-# LANGUAGE Safe,FlexibleContexts, FlexibleInstances, MultiParamTypeClasses, FunctionalDependencies, TypeOperators, TypeFamilies, DeriveGeneric, DeriveDataTypeable #-}
 >-- | Graph representation as a set with action of a monoid.
 >-- See Lawvere,Rosebrugh: Sets for Mathematics for details.
 >--
@@ -21,6 +21,8 @@
 >import Control.Arrow hiding ((<+>))
 >import Control.Monad.Reader
 >import qualified Data.Graph.Inductive.Graph as HGraph
+>import Data.Typeable
+>import GHC.Generics hiding ((:*:), (:+:))
 >import Data.Map (Map)
 >import qualified Data.Map as Map
 >import Data.Monoid
@@ -39,7 +41,8 @@
 
 >import qualified Math.Graph.Action as Action
 >import Math.Matrix.Interface
->import Math.Tools.PrettyP (PpShow,pp, (<+>), pPrint)
+>import Text.PrettyPrint ((<+>))
+>import Math.Tools.PrettyP (PpShow,pp, pPrint)
 >import qualified Math.Tools.PrettyP as PrettyP
 
 >-- | Graph representation containing a set of elements.
@@ -51,6 +54,7 @@
 >-- Note that the monoid data structure contains only names of the monoid elements -
 >-- the action_endomorphism is then used to convert it to actual operation.
 >data Graph m a = Graph { elements :: Set a, action_endomorphism :: m -> Endo a }
+>  deriving (Typeable, Generic)
 
 >action :: Graph m a -> a -> m -> a
 >action g x m = action_endomorphism g m `appEndo` x

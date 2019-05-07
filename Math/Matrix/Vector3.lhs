@@ -1,10 +1,14 @@
 >{-# LANGUAGE Safe,MultiParamTypeClasses, TypeSynonymInstances #-}
 >{-# LANGUAGE FlexibleInstances, FlexibleContexts, TypeOperators #-}
 >{-# LANGUAGE TypeFamilies, PatternGuards, DataKinds, LambdaCase #-}
->{-# LANGUAGE StandaloneDeriving #-}
+>{-# LANGUAGE StandaloneDeriving, DeriveGeneric, DeriveDataTypeable #-}
 >module Math.Matrix.Vector3 where
+>import Text.PrettyPrint (sep,vcat,nest, Doc)
 >import Control.Applicative
 >import Control.Monad
+>import GHC.Generics hiding ((:*:), (:+:), R)
+>import Data.Data
+>import Data.Typeable
 >import Data.Complex
 >import Data.Sequence (Seq)
 >import Data.Binary
@@ -28,7 +32,7 @@
 >import Math.Matrix.Simple
 >import Math.Matrix.FiniteVector
 >import qualified Math.Number.Stream as Stream
->import Math.Number.Stream (Limiting(..), Stream(..), Closed(..))
+>import Math.Number.Stream (Limiting(..), Infinitesimal(..), Stream(..), Closed(..))
 >import Math.Number.Real
 
 
@@ -37,7 +41,7 @@
 >   xcoord3 :: !s,
 >   ycoord3 :: !s,
 >   zcoord3 :: !s }
->       deriving (Eq)
+>       deriving (Eq, Typeable, Data, Generic)
 
 >instance (Binary s) => Binary (Vector3 s) where
 >   put (Vector3 x y z) = put x >> put y >> put z
@@ -392,6 +396,8 @@ grad3 f x = Vector3 (partial_derivate3x f x)
 >instance (Infinitesimal a, Closed a) => VectorDerivative (Vector3 a) where
 >  divergence = divergence3
 >  grad = grad3
+
+>instance (Infinitesimal a, Closed a) => VectorCrossProduct (Vector3 a) where
 >  curl = curl3
 
 >-- | <https://en.wikipedia.org/wiki/Divergence>
@@ -548,7 +554,7 @@ grad3 f x = Vector3 (partial_derivate3x f x)
 >splity (Vector3 x y z) = (Vector2 z x, Vector1 y)
 
 >trace3 :: (Num a) => Matrix3 a -> a
->trace3 t | Vector3 x y z <- diagonal3x t = x + y + z
+>trace3 = sum_coordinates3 . diagonal3
 
 >vector3 :: [a] -> Vector3 a
 >vector3 [x,y,z] = Vector3 x y z
@@ -561,9 +567,15 @@ grad3 f x = Vector3 (partial_derivate3x f x)
 >instance (Num a, ConjugateSymmetric a) => LieAlgebra ((Vector3 :*: Vector3) a) where
 >   (%<>%) = matrix_commutator
 
+>-- | <https://en.wikipedia.org/wiki/Cross_product>
 >cross_product :: (Num a) => Vector3 a -> Vector3 a -> Vector3 a
 >cross_product (Vector3 u1 u2 u3) (Vector3 v1 v2 v3) =
 >      Vector3 (u2*v3 - u3*v2) (u3*v1 - u1*v3) (u1*v2 - u2*v1)
+
+>-- | cross_product3 computes the three dimensional vector that
+>-- is orthogonal to both rows of the 2x3 vector.
+>cross_product3 :: (Num a) => (Vector2 :*: Vector3) a -> Vector3 a
+>cross_product3 (Matrix (Vector2 a b)) = cross_product a b
 
 >xid,yid,zid :: (Num a) => Vector3 a
 >xid = Vector3 1 0 0
@@ -603,10 +615,10 @@ grad3 f x = Vector3 (partial_derivate3x f x)
 >dot3 x y = sum_coordinates3 $ liftA2 (*) x y
 
 >left_multiply3 :: (Num a) => Vector3 a -> Matrix3 a -> Vector3 a
->left_multiply3 v (Matrix m) = fmap (sum_coordinates3 . liftA2 (*) v) m
+>left_multiply3 v (Matrix m) = fmap (dot3 v) m
 
 >right_multiply3 :: (Num a) => Matrix3 a -> Vector3 a -> Vector3 a
->right_multiply3 (Matrix m) v = fmap (sum_coordinates3 . liftA2 (*) v) m
+>right_multiply3 (Matrix m) v = fmap (dot3 v) m
              
 >transpose3 :: Matrix3 a -> Matrix3 a
 >transpose3 (Matrix m) = matrix ($) diagonal_projections3 m

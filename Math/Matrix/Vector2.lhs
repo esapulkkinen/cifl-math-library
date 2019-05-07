@@ -1,8 +1,12 @@
->{-# LANGUAGE Safe,FlexibleInstances, MultiParamTypeClasses, FlexibleContexts, TypeOperators, TypeFamilies, PatternGuards, ScopedTypeVariables, StandaloneDeriving #-}
+>{-# LANGUAGE Safe,FlexibleInstances, MultiParamTypeClasses, FlexibleContexts, TypeOperators, TypeFamilies, PatternGuards, ScopedTypeVariables, StandaloneDeriving, DeriveGeneric, DeriveDataTypeable #-}
 >module Math.Matrix.Vector2 where
+>import Text.PrettyPrint (vcat,nest,(<+>))
 >import Data.Monoid hiding (Dual)
 >import Data.Complex
 >import Data.Sequence (Seq, (<|))
+>import GHC.Generics hiding ((:*:), (:+:))
+>import Data.Data
+>import Data.Typeable
 >import qualified Data.Binary as Bin
 >import qualified Data.Sequence as Seq
 >import Control.Applicative
@@ -23,7 +27,7 @@
 >import Math.Number.Stream
 
 >data Vector2 s = Vector2 { xcoord2 :: !s, ycoord2 :: !s }
->   deriving (Eq)
+>   deriving (Eq, Typeable, Data, Generic)
 
 >instance (Bin.Binary s) => Bin.Binary (Vector2 s) where
 >   put (Vector2 x y) = Bin.put x >> Bin.put y 
@@ -186,6 +190,7 @@ deriving instance (Show a) => Show (Codiagonal Vector2 a)
 >  type (Vector2 :+: Stream) = Stream
 >  (Vector2 x y) |> s = x `Pre` y `Pre` s
 
+
 >instance SplittableVector Vector1 Vector1 where
 >  vsplit (Vector2 x y) = (Vector1 x, Vector1 y)
 
@@ -204,7 +209,6 @@ deriving instance (Show a) => Show (Codiagonal Vector2 a)
 >instance (Infinitesimal a, Closed a) => VectorDerivative (Vector2 a) where
 >   divergence = divergence2
 >   grad = grad2
->   curl = curl2
 
 >divergence2 :: (Infinitesimal a, Closed a) => (Vector2 a -> Vector2 a) -> Dual (Vector2 a)
 >divergence2 f = partial_derivate2x (Covector (xcoord2 . f))
@@ -385,9 +389,14 @@ curl2 f z = Vector2 (partial_derivate2y (xcoord2 . f) z)
 >instance Functor Vector2 where 
 >   fmap f (Vector2 x y) = Vector2 (f x) (f y)
 
->determinate_swap :: (Num a) => Vector2 a -> Vector2 a
->determinate_swap (Vector2 x y) = Vector2 y (negate x)
+>cross_product_scalar2 :: (Num a) => Vector2 a -> Vector2 a -> a
+>cross_product_scalar2 (Vector2 x y) (Vector2 x' y') = (x*y') - (y*x')
 
+>orthogonal_vector2 :: (Num a) => Vector2 a -> Vector2 a
+>orthogonal_vector2 (Vector2 x y) = Vector2 y (negate x)
+
+>cross_product2 :: (Num a) => (Vector1 :*: Vector2) a -> Vector2 a
+>cross_product2 (Matrix (Vector1 v)) = orthogonal_vector2 v
 
 
 >instance (Num a) => Num (Vector2 a) where

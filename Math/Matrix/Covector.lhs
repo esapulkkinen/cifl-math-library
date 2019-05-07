@@ -1,5 +1,5 @@
 >-- -*- coding: utf-8 -*-
->{-# LANGUAGE Safe,GADTs,MultiParamTypeClasses,FlexibleContexts, TypeOperators, UndecidableInstances, TypeFamilies, UnicodeSyntax #-}
+>{-# LANGUAGE Safe,GADTs,MultiParamTypeClasses,FlexibleContexts, TypeOperators, UndecidableInstances, TypeFamilies, UnicodeSyntax, DeriveGeneric, DeriveDataTypeable #-}
 >-- |
 >-- Module: Math.Matrix.Covector
 >-- Description: Covectors
@@ -12,7 +12,10 @@
 >-- See also: <http://theoreticalminimum.com/courses/advanced-quantum-mechanics/2013/fall/lecture-1>
 >module Math.Matrix.Covector where
 >import Data.Complex
+>import Data.Monoid hiding (Dual)
 >import Prelude hiding (id,(.))
+>import Data.Typeable
+>import GHC.Generics hiding ((:*:))
 >import Control.Category
 >import Math.Tools.CoFunctor
 >import Math.Tools.CoMonad
@@ -22,6 +25,7 @@
 
 >-- | Data type for dual vectors.
 >data Dual v = Covector { bracket :: v -> Scalar v }
+>  deriving (Typeable, Generic)
 
 >-- | <https://en.wikipedia.org/wiki/Curl_(mathematics)>
 >--   <https://en.wikipedia.org/wiki/Laplace_operator>
@@ -30,9 +34,11 @@
 >class (VectorSpace v) => VectorDerivative v where
 >  divergence :: (v -> v) -> Dual v  -- (Del %. f)(v)
 >  grad       :: Dual v -> v -> v    -- (Del f)(v)
->  curl       :: (v -> v) -> v -> v  -- (Del * f)(v)
 >  laplace    :: Dual v -> Dual v    -- (Del^2 f)(v)
 >  laplace = divergence . grad
+
+>class (VectorDerivative v) => VectorCrossProduct v where
+>  curl       :: (v -> v) -> v -> v  -- (Del * f)(v)
 
 >-- | unicode support for gradient. Use with parenthesis.
 >(∇) :: (VectorDerivative v) => Dual v -> v -> v
@@ -43,12 +49,31 @@
 >(∇·) = divergence
 > 
 >-- | unicode support for curl. Use with parenthesis.
->(∇×) :: (VectorDerivative v) => (v -> v) -> v -> v
+>(∇×) :: (VectorCrossProduct v) => (v -> v) -> v -> v
 >(∇×) = curl
 > 
 >-- | unicode support for laplace. Use with parenthesis.
 >(∇·∇) :: (VectorDerivative v) => Dual v -> Dual v
 >(∇·∇) = laplace
+
+>differential_commutator :: (VectorDerivative v, Scalar v ~ v)
+>                        => Dual v -> Dual v -> v -> v
+>differential_commutator g f x = (∇) g (f `bracket` x)
+>                              %- g `bracket` ((∇) f x)
+
+>differential_commutator_endo :: (VectorDerivative v, Scalar v ~ v)
+>                             => Dual v -> Dual v -> Endo v
+>differential_commutator_endo g f = Endo $ differential_commutator g f
+
+
+>curl_endo :: (VectorCrossProduct v) => Endo v -> Endo v
+>curl_endo (Endo f) = Endo (curl f)
+
+>grad_endo :: (VectorDerivative v) => Dual v -> Endo v
+>grad_endo f = Endo (grad f)
+>
+>divergence_endo :: (VectorDerivative v) => Endo v -> Dual v
+>divergence_endo (Endo f) = divergence f
 
 >-- | <https://en.wikipedia.org/wiki/Dual_space#Injection_into_the_double-dual>
 >class (VectorSpace v) => FiniteDimensional v where
@@ -134,7 +159,7 @@
 >   (Covector f) %. (Covector g) = sum [f x * g x | x <- unit_vectors]
 
 >instance (VectorSpace v) => LieAlgebra (Dual v) where
->   f %<>% g = f*g - g*f
+>  f %<>% g = f*g - g*f
 
 >instance (VectorSpace v) => Num (Dual v) where
 >  (Covector f) + (Covector g) = Covector $ \a -> f a + g a

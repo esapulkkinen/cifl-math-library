@@ -4,6 +4,7 @@
 >import Data.Monoid
 >import Data.Typeable
 >import Data.Binary
+>import qualified Text.PrettyPrint as Pretty
 >import qualified Math.Tools.PrettyP as PrettyP
 >import Math.Tools.PrettyP
 >import Math.Tools.Isomorphism
@@ -43,8 +44,8 @@
 >   show (LineInfo f r c) = show f ++ ":" ++ show r ++ ":" ++ show c
 
 >instance PpShow LineInfo where
->         pp NoLineInfo = PrettyP.empty
->	  pp (LineInfo f r c) = fcat [pp f,pp ':', pp r, pp ':', pp c]
+>         pp NoLineInfo = Pretty.empty
+>	  pp (LineInfo f r c) = Pretty.fcat [pp f,pp ':', pp r, pp ':', pp c]
 
 >emptyLineInfo :: LineInfo
 >emptyLineInfo = NoLineInfo

@@ -1,5 +1,7 @@
 >{-# LANGUAGE TypeOperators #-}
 >module Math.Number.BiStream where
+>import Text.PrettyPrint (punctuate,hsep, (<+>), vcat)
+>import qualified Text.PrettyPrint as Pretty
 >import Math.Tools.PrettyP
 >import Math.Tools.CoMonad
 >import Data.List (intersperse, reverse)

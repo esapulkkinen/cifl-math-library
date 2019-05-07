@@ -1,9 +1,12 @@
+>{-# LANGUAGE DeriveGeneric, DeriveDataTypeable #-}
 >module Math.Tools.Cmdline where
 >import Control.Monad
 >import Control.Monad.IO.Class
 >import Control.Exception.Base
 >import Control.Applicative
 >import Data.Typeable
+>import Data.Data
+>import GHC.Generics
 >import Data.Map (Map)
 >import qualified Data.Map as Map
 >import Math.Tools.Map
@@ -13,7 +16,7 @@
 >data ParseExceptions = CannotParseException String
 >                     | IncompleteParseException String String
 >                     | AmbiguousParseException [(String,String)]
->  deriving (Show,Typeable)
+>  deriving (Show, Typeable, Data, Generic)
 
 
 >instance Exception ParseExceptions
@@ -34,7 +37,7 @@
 >   (CmdlineParsingMT f) <*> (CmdlineParsingMT x) = CmdlineParsingMT $ \m -> f m <*> x m
 
 >data LookupExceptions = NotFoundException String
->  deriving (Show,Typeable)
+>  deriving (Show,Typeable, Data, Generic)
 
 >instance Exception LookupExceptions
 
@@ -70,7 +73,7 @@
 
 >data CommandLineException = MissingCommandLineArgument String
 >                          | InvalidCommandLineArgument String
->   deriving (Show, Typeable)
+>   deriving (Show, Typeable, Data, Generic)
 
 >instance Exception CommandLineException
 

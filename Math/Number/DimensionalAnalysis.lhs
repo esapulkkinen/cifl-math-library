@@ -1,7 +1,8 @@
 >-- -*- mode: haskell ; coding: utf-8 -*-
 >{-# LANGUAGE Safe, GADTs, TypeFamilies, FlexibleContexts #-}
 >{-# LANGUAGE FlexibleInstances, TypeOperators, DataKinds #-}
->{-# LANGUAGE UnicodeSyntax, MultiParamTypeClasses #-}
+>{-# LANGUAGE UnicodeSyntax, MultiParamTypeClasses, DeriveGeneric #-}
+>{-# LANGUAGE DeriveDataTypeable #-}
 >-- | This module provides dimensional analysis according to SI system of units.
 >--   For reference have used <https://en.wikipedia.org/wiki/Dimensional_analysis>
 >--   and <https://en.wikipedia.org/wiki/International_System_of_Units>.
@@ -36,8 +37,11 @@
 >--
 >-- @convert lightyear (kilo meter) == return 9.4607304725808e12@
 >module Math.Number.DimensionalAnalysis where
+>import Text.PrettyPrint (vcat,nest, (<+>), empty)
 >import Data.Complex
 >import Data.Typeable
+>import GHC.Generics
+>import Data.Data
 >import Data.Ratio
 >import Data.Char
 >import qualified Data.Binary as Binary
@@ -48,9 +52,9 @@
 >import Math.Tools.List (interleave)
 >import Math.Tools.Show
 >import Math.Matrix.Interface
->import Math.Number.Stream (Stream, Limiting(..), Closed(..))
+>import Math.Number.Stream (Stream, Limiting(..), Closed(..), Infinitesimal(..))
 >import qualified Math.Number.Stream as Stream
->import Math.Number.Real (Infinitesimal(..), ShowPrecision(..))
+>import Math.Number.Real ( ShowPrecision(..))
 >import Math.Number.Group
 >import Math.Number.Interface
 >import Text.ParserCombinators.ReadPrec
@@ -59,7 +63,16 @@
 >data Quantity r = As {
 >   value_amount :: r,
 >   value_dimension :: Dimension }
->  deriving (Typeable)
+>  deriving (Typeable, Data, Generic)
+
+>instance (Show r, DifferentiallyClosed r, VectorSpace r) => DifferentiallyClosed (Quantity r) where
+>  derivate f (x `As` d) = derivate (\x' -> value_amount $ f (x' `As` d)) x
+>                     `As` (dimension (f (x `As` d)) - d)
+>  integral (a `As` da,b `As` db) f
+>     | da == db =
+>         integral (a,b) (\x -> value_amount (f (x `As` da)))
+>         `As` ((dimension $ f (a `As` da)) %+ da)
+>     | otherwise = error $ "integral: invalid dimensions: " ++ show da ++ " != " ++ show db
 
 >default_tolerance :: (Floating a) => a
 >default_tolerance = 0.00000001
@@ -74,14 +87,14 @@
 >   | otherwise = invalidDimensions "equal_up_to" d d' x y
 
 >data Dimension = Dimension {
->   length_power :: Rational,
->   weight_power :: Rational,
->   time_power   :: Rational,
->   current_power :: Rational,
->   temperature_power :: Rational,
->   luminosity_power  :: Rational,
->   substance_power   :: Rational }
->  deriving (Eq, Typeable, Ord)
+>   length_power :: !Rational,
+>   weight_power :: !Rational,
+>   time_power   :: !Rational,
+>   current_power :: !Rational,
+>   temperature_power :: !Rational,
+>   luminosity_power  :: !Rational,
+>   substance_power   :: !Rational }
+>  deriving (Eq, Typeable, Ord, Data, Generic)
 
 >instance Applicative Quantity where
 >  pure x = x `As` dimensionless
@@ -114,7 +127,7 @@
 >instance Exception DimensionException
 
 >instance (Show r, Infinitesimal r) => Infinitesimal (Quantity r) where
->   epsilon = limit $ fmap (`As` dimensionless) epsilon_stream
+>   epsilon_closure = limit $ fmap (`As` dimensionless) epsilon_stream
 
 >instance (Show r, InnerProductSpace r, Scalar (Quantity r) ~ Scalar r) => InnerProductSpace (Quantity r) where
 >   (x `As` d) %. (y `As` d') | d == d' = x %. y

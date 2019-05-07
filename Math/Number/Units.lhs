@@ -2,7 +2,7 @@
 >{-# LANGUAGE Trustworthy, CPP, TypeOperators #-}
 >{-# LANGUAGE GeneralizedNewtypeDeriving, DerivingStrategies #-}
 >{-# LANGUAGE ExistentialQuantification, TypeFamilies,GADTs, RankNTypes, UnicodeSyntax #-}
->{-# LANGUAGE ScopedTypeVariables, StandaloneDeriving, FlexibleContexts #-}
+>{-# LANGUAGE ScopedTypeVariables, StandaloneDeriving, FlexibleContexts, DeriveGeneric, DeriveDataTypeable #-}
 >-- | This module contains auxiliary definitions related to dimensional analysis.
 >--   This is based on the SI system of units.
 >--   This module supports compile-time checking for dimensional units.
@@ -33,6 +33,9 @@
 >module Math.Number.Units where
 >import Control.Monad (guard)
 >import Control.Applicative
+>import Data.Typeable
+>import Data.Data
+>import GHC.Generics hiding (R)
 >import Data.Binary
 >import Data.Ratio
 >import Data.Complex
@@ -108,11 +111,14 @@
 >data a :/ b  = QDivide { qdivide_amount :: Scalar a,
 >                         qdivide_dividend_unit :: UnitName a,
 >                         qdivide_divisor_unit  :: UnitName b }
+>   deriving (Typeable, Generic)
 
 >data a :* b = QProduct { qproduct_amount :: Scalar a,
 >                         qproduct_first_unit :: UnitName a,
 >                         qproduct_second_unit :: UnitName b
 >                       }
+>   deriving (Typeable, Generic)
+>
 >instance (Unit a, Unit b, Scalar a ~ Scalar b) => VectorSpace (a :* b) where
 >   type Scalar (a :* b) = Scalar a
 >   vzero = QProduct 0 fromAmount fromAmount
@@ -181,7 +187,7 @@
 >   fromAmount x = x
 
 >newtype Dimensionless = Dimensionless { dimensionless_value :: Double }
-> deriving (Eq,Ord)
+> deriving (Eq,Ord, Typeable, Data, Generic)
 > deriving newtype (Binary)
 >instance Show Dimensionless where { show = show_unit }
 >instance VectorSpace Dimensionless where
@@ -201,7 +207,7 @@
 >     return $ Dimensionless x
 
 >newtype Information = Bits { number_of_bits :: Double }
->  deriving (Eq,Ord) deriving newtype (Binary)
+>  deriving (Eq,Ord, Data,Generic, Typeable) deriving newtype (Binary)
 >instance Show Information where { show = show_unit }
 >instance VectorSpace Information where
 >   type Scalar Information = Double
@@ -218,7 +224,7 @@
 >   unitOf _ = "b"
 
 >newtype SoundLevel = SoundAmplitude { sound_amplitude :: Double }
->  deriving (Eq, Ord)
+>  deriving (Eq, Ord, Typeable, Data, Generic)
 >  deriving newtype (Binary)
 
 >instance Show SoundLevel where { show = show_unit }
@@ -238,7 +244,7 @@
 >   unitOf _ = "dB"
 
 >newtype Angle = Radians { radians :: Double }
->   deriving (Eq,Ord)
+>   deriving (Eq,Ord, Typeable, Data, Generic)
 >   deriving newtype (Binary)
 >instance Show Angle where { show = show_unit }
 
@@ -259,7 +265,7 @@
 >toPolar ((Meter a) :+ (Meter b)) = (Meter $ sqrt (a*a %+ b*b), Radians $ atan2 b a)
 
 >newtype DegreesAngle = Degrees { degrees :: Double }
->   deriving (Eq,Ord)
+>   deriving (Eq,Ord, Typeable, Data, Generic)
 >   deriving newtype (Binary)
 
 >instance Show DegreesAngle where { show = show_unit }
@@ -295,7 +301,7 @@
 
 >-- | <https://en.wikipedia.org/wiki/Steradian>
 >newtype SolidAngle = Steradians { steradians :: Double }
->   deriving (Eq,Ord)
+>   deriving (Eq,Ord, Typeable, Data, Generic)
 >   deriving newtype (Binary)
 
 >instance Show SolidAngle where { show = show_unit }
@@ -317,7 +323,7 @@
 >show_unit i = show (amount i) ++ " " ++ unitOf i
 
 >newtype Percentage = Percentage { percentages :: Double }
->  deriving (Eq,Ord)
+>  deriving (Eq,Ord, Typeable, Data, Generic)
 >  deriving newtype (Binary)
 
 >instance Show Percentage where { show = show_unit }
@@ -337,7 +343,7 @@
 >  conversionFactor _ = 0.01
 
 >newtype Acceleration = MetersPerSquareSecond { metersPerSquareSecond :: Double }
->   deriving (Eq,Ord)
+>   deriving (Eq,Ord, Typeable, Data, Generic)
 >   deriving newtype (Binary)
 >instance Show Acceleration where { show = show_unit }
 >instance VectorSpace Acceleration where
@@ -355,7 +361,7 @@
 >   unitOf _ = "m/s^2"
 
 >newtype Velocity = MetersPerSecond { metersPerSecond :: Double }
->   deriving (Eq,Ord)
+>   deriving (Eq,Ord, Typeable, Data, Generic)
 >   deriving newtype (Binary)
 >instance Show Velocity where { show = show_unit }
 >instance VectorSpace Velocity where
@@ -373,7 +379,7 @@
 >   unitOf _ = "m/s"
 
 >newtype SquareLength = SquareMeter { squaremeters :: Double }
-> deriving (Eq,Ord)
+> deriving (Eq,Ord, Typeable, Data, Generic)
 > deriving newtype (Binary)
 >instance Show SquareLength where { show = show_unit }
 >instance VectorSpace SquareLength where
@@ -391,7 +397,7 @@
 
 >-- types for basic units <https://en.wikipedia.org/wiki/International_System_of_Units>
 >newtype Length = Meter { meters :: Double }
-> deriving (Eq,Ord)
+> deriving (Eq,Ord, Typeable, Data, Generic)
 > deriving newtype (Binary)
 >instance Show Length where { show = show_unit }
 >instance VectorSpace Length where
@@ -402,7 +408,7 @@
 >   k %* (Meter x) = Meter $ k * x
 
 >newtype Mass = Kilogram { kilograms :: Double }
->  deriving (Eq,Ord)
+>  deriving (Eq,Ord, Typeable, Data, Generic)
 >  deriving newtype (Binary)
 >instance Show Mass where { show = show_unit }
 >instance VectorSpace Mass where
@@ -412,7 +418,7 @@
 >   (Kilogram x) %+ (Kilogram y) = Kilogram $ x + y
 >   k %* (Kilogram x) = Kilogram $ k * x
 >newtype Time = Second { seconds :: Double }
-> deriving (Eq,Ord)
+> deriving (Eq,Ord, Typeable, Data, Generic)
 > deriving newtype (Binary)
 >instance Show Time where { show = show_unit }
 
@@ -423,7 +429,7 @@
 >   (Second x) %+ (Second y) = Second $ x + y
 >   k %* (Second x) = Second $ k * x
 >newtype Current = Ampere { amperes :: Double }
->  deriving (Eq,Ord)
+>  deriving (Eq,Ord, Typeable, Data, Generic)
 >  deriving newtype (Binary)
 >instance Show Current where { show = show_unit }
 
@@ -437,7 +443,7 @@
 
 >-- | <https://en.wikipedia.org/wiki/Fahrenheit>
 >newtype DegreesFahrenheit = Fahrenheit { fahrenheits :: Double }
-> deriving (Eq,Ord)
+> deriving (Eq,Ord, Typeable, Data, Generic)
 > deriving newtype (Binary)
 >instance Show DegreesFahrenheit where { show = show_unit }
 >instance VectorSpace DegreesFahrenheit where
@@ -458,7 +464,7 @@
 >   conversionFactor _ = 5/9
 
 >newtype DegreesTemperature = Celcius { celciuses :: Double }
-> deriving (Eq,Ord)
+> deriving (Eq,Ord, Typeable, Data, Generic)
 > deriving newtype (Binary)
 >instance Show DegreesTemperature where { show = show_unit }
 >instance VectorSpace DegreesTemperature where
@@ -479,7 +485,7 @@
 >   zeroAmount _ = 273.15
 
 >newtype Temperature = Kelvin { kelvins :: Double }
-> deriving (Eq,Ord)
+> deriving (Eq,Ord, Typeable, Data, Generic)
 > deriving newtype (Binary)
 >instance Show Temperature where { show = show_unit }
 
@@ -490,7 +496,7 @@
 >   (Kelvin x) %+ (Kelvin y) = Kelvin $ x + y
 >   k %* (Kelvin x) = Kelvin $ k * x
 >newtype Substance = Mole { moles :: Double }
-> deriving (Eq,Ord)
+> deriving (Eq,Ord, Typeable, Data, Generic)
 > deriving newtype (Binary)
 >instance Show Substance where { show = show_unit }
 
@@ -501,7 +507,7 @@
 >   (Mole x) %+ (Mole y) = Mole $ x + y
 >   k %* (Mole x) = Mole $ k * x
 >newtype Intensity = Candela { candelas :: Double }
-> deriving (Eq,Ord)
+> deriving (Eq,Ord, Typeable, Data, Generic)
 > deriving newtype (Binary)
 >instance Show Intensity where { show = show_unit }
 
@@ -512,7 +518,7 @@
 >   (Candela x) %+ (Candela y) = Candela $ x + y
 >   k %* (Candela x) = Candela $ k * x
 >newtype Frequency = Hertz { hertzs :: Double }
-> deriving (Eq,Ord)
+> deriving (Eq,Ord, Typeable, Data, Generic)
 > deriving newtype (Binary)
 >instance Show Frequency where { show = show_unit }
 
@@ -523,7 +529,7 @@
 >   (Hertz x) %+ (Hertz y) = Hertz $ x + y
 >   k %* (Hertz x) = Hertz $ k * x
 >newtype Force = Newton { newtons :: Double }
-> deriving (Eq,Ord)
+> deriving (Eq,Ord, Typeable, Data, Generic)
 > deriving newtype (Binary)
 >instance Show Force where { show = show_unit }
 
@@ -534,7 +540,7 @@
 >   (Newton x) %+ (Newton y) = Newton $ x + y
 >   k %* (Newton x) = Newton $ k * x
 >newtype Pressure = Pascal { pascals :: Double }
-> deriving (Eq,Ord)
+> deriving (Eq,Ord, Typeable, Data, Generic)
 > deriving newtype (Binary)
 >instance Show Pressure where { show = show_unit }
 
@@ -545,7 +551,7 @@
 >   (Pascal x) %+ (Pascal y) = Pascal $ x + y
 >   k %* (Pascal x) = Pascal $ k * x
 >newtype Energy = Joule { joules :: Double }
-> deriving (Eq,Ord)
+> deriving (Eq,Ord, Typeable, Data, Generic)
 > deriving newtype (Binary)
 >instance Show Energy where { show = show_unit }
 
@@ -556,7 +562,7 @@
 >   (Joule x) %+ (Joule y) = Joule $ x + y
 >   k %* (Joule x) = Joule $ k * x
 >newtype Power = Watt { watts :: Double }
-> deriving (Eq,Ord)
+> deriving (Eq,Ord, Typeable, Data, Generic)
 > deriving newtype (Binary)
 >instance Show Power where { show = show_unit }
 
@@ -567,7 +573,7 @@
 >   (Watt x) %+ (Watt y) = Watt $ x + y
 >   k %* (Watt x) = Watt $ k * x
 >newtype Charge = Coulomb { coulombs :: Double }
-> deriving (Eq,Ord)
+> deriving (Eq,Ord, Typeable, Data, Generic)
 > deriving newtype (Binary)
 >instance Show Charge where { show = show_unit }
 
@@ -578,7 +584,7 @@
 >   (Coulomb x) %+ (Coulomb y) = Coulomb $ x + y
 >   k %* (Coulomb x) = Coulomb $ k * x
 >newtype Voltage = Volt { volts :: Double }
-> deriving (Eq,Ord)
+> deriving (Eq,Ord, Typeable, Data, Generic)
 > deriving newtype (Binary)
 >instance Show Voltage where { show = show_unit }
 
@@ -589,7 +595,7 @@
 >   (Volt x) %+ (Volt y) = Volt $ x + y
 >   k %* (Volt x) = Volt $ k * x
 >newtype Capacitance = Farad { farads :: Double }
-> deriving (Eq,Ord) deriving newtype (Binary)
+> deriving (Eq,Ord, Typeable, Data, Generic) deriving newtype (Binary)
 >instance Show Capacitance where { show = show_unit }
 
 >instance VectorSpace Capacitance where
@@ -599,7 +605,7 @@
 >   (Farad x) %+ (Farad y) = Farad $ x + y
 >   k %* (Farad x) = Farad $ k * x
 >newtype Resistance = Ohm { ohms :: Double }
-> deriving (Eq,Ord)
+> deriving (Eq,Ord, Typeable, Data, Generic)
 > deriving newtype (Binary)
 >instance Show Resistance where { show = show_unit }
 
@@ -610,7 +616,7 @@
 >   (Ohm x) %+ (Ohm y) = Ohm $ x + y
 >   k %* (Ohm x) = Ohm $ k * x
 >newtype Conductance = Siemens { siemenses :: Double }
-> deriving (Eq,Ord) deriving newtype (Binary)
+> deriving (Eq,Ord, Typeable, Data, Generic) deriving newtype (Binary)
 >instance Show Conductance where { show = show_unit }
 
 >instance VectorSpace Conductance where
@@ -620,7 +626,7 @@
 >   (Siemens x) %+ (Siemens y) = Siemens $ x + y
 >   k %* (Siemens x) = Siemens $ k * x
 >newtype Flux = Weber { webers :: Double }
-> deriving (Eq,Ord) deriving newtype (Binary)
+> deriving (Eq,Ord, Typeable, Data, Generic) deriving newtype (Binary)
 >instance Show Flux where { show = show_unit }
 
 >instance VectorSpace Flux where
@@ -630,7 +636,7 @@
 >   (Weber x) %+ (Weber y) = Weber $ x + y
 >   k %* (Weber x) = Weber $ k * x
 >newtype FluxDensity = Tesla { teslas :: Double }
-> deriving (Eq,Ord) deriving newtype (Binary)
+> deriving (Eq,Ord, Typeable, Data, Generic) deriving newtype (Binary)
 >instance Show FluxDensity where { show = show_unit }
 
 >instance VectorSpace FluxDensity where
@@ -640,7 +646,7 @@
 >   (Tesla x) %+ (Tesla y) = Tesla $ x + y
 >   k %* (Tesla x) = Tesla $ k * x
 >newtype Inductance  = Henry { henrys :: Double }
-> deriving (Eq,Ord)
+> deriving (Eq,Ord, Typeable, Data, Generic)
 > deriving newtype (Binary)
 >instance Show Inductance where { show = show_unit }
 
@@ -651,7 +657,7 @@
 >   (Henry x) %+ (Henry y) = Henry $ x + y
 >   k %* (Henry x) = Henry $ k * x
 >newtype LuminousFlux = Lumen { lumens :: Double }
-> deriving (Eq,Ord) deriving newtype (Binary)
+> deriving (Eq,Ord, Typeable, Data, Generic) deriving newtype (Binary)
 >instance Show LuminousFlux where { show = show_unit }
 
 >instance VectorSpace LuminousFlux where
@@ -661,7 +667,7 @@
 >   (Lumen x) %+ (Lumen y) = Lumen $ x + y
 >   k %* (Lumen x) = Lumen $ k * x
 >newtype Illuminance = Lux { luxes :: Double }
-> deriving (Eq,Ord)
+> deriving (Eq,Ord, Typeable, Data, Generic)
 > deriving newtype (Binary)
 >instance Show Illuminance where { show = show_unit }
 
@@ -672,7 +678,7 @@
 >   (Lux x) %+ (Lux y) = Lux $ x + y
 >   k %* (Lux x) = Lux $ k * x
 >newtype Radioactivity = Becquerel { becquerels :: Double }
-> deriving (Eq,Ord)
+> deriving (Eq,Ord, Typeable, Data, Generic)
 > deriving newtype (Binary)
 >instance Show Radioactivity where { show = show_unit }
 
@@ -683,7 +689,7 @@
 >   (Becquerel x) %+ (Becquerel y) = Becquerel $ x + y
 >   k %* (Becquerel x) = Becquerel $ k * x
 >newtype AbsorbedDose  = Gray { grays :: Double }
-> deriving (Eq,Ord)
+> deriving (Eq,Ord, Typeable, Data, Generic)
 > deriving newtype (Binary)
 >instance Show AbsorbedDose where { show = show_unit }
 
@@ -694,7 +700,7 @@
 >   (Gray x) %+ (Gray y) = Gray $ x + y
 >   k %* (Gray x) = Gray $ k * x
 >newtype EquivalentDose = Sievert { sieverts :: Double }
-> deriving (Eq,Ord)
+> deriving (Eq,Ord, Typeable, Data, Generic)
 > deriving newtype (Binary)
 
 >instance Show EquivalentDose where { show = show_unit }
@@ -707,7 +713,7 @@
 >   k %* (Sievert x) = Sievert $ k * x
 
 >newtype CatalyticActivity = Katal { katals :: Double }
-> deriving (Eq,Ord)
+> deriving (Eq,Ord, Typeable, Data, Generic)
 > deriving newtype (Binary)
 >instance Show CatalyticActivity where { show = show_unit }
 

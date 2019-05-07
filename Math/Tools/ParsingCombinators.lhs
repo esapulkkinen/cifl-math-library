@@ -4,8 +4,11 @@
 >import Control.Monad.Fix (fix)
 >import Math.Tools.Isomorphism
 >import Math.Tools.LineInfo
+>import qualified Text.PrettyPrint as Pretty
 >import Math.Tools.PrettyP
 >import Math.Tools.Arrow
+
+>type Doc = Pretty.Doc
 
 >errorMessage :: ParseResult a -> Maybe Doc
 >errorMessage (Parsed _ _ (Right d)) = Just d

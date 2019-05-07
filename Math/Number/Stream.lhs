@@ -1,4 +1,4 @@
->{-# LANGUAGE Safe,UndecidableInstances, ExistentialQuantification, FlexibleInstances, MultiParamTypeClasses, MagicHash, TypeOperators, FlexibleContexts, Arrows, TypeFamilies, ScopedTypeVariables #-}
+>{-# LANGUAGE Safe,UndecidableInstances, ExistentialQuantification, FlexibleInstances, MultiParamTypeClasses, MagicHash, TypeOperators, FlexibleContexts, Arrows, TypeFamilies, ScopedTypeVariables, DeriveGeneric, DeriveDataTypeable #-}
 >-- |
 >--  Module: Math.Number.Stream
 >--  Description: Stream implementation
@@ -44,10 +44,13 @@
 >import qualified Math.Tools.Queue as Q
 >import Data.Sequence (Seq, (<|), (|>))
 >import qualified Data.Sequence as Seq
+>import Text.PrettyPrint (Doc,vcat,(<+>),fcat)
 >import Math.Tools.Queue (Queue)
 >import Control.Arrow
 >import Data.Ratio
-
+>import GHC.Generics hiding ((:+:),(:*:))
+>import Data.Typeable
+>import Data.Data
 
 import qualified Model.Nondeterminism as Nondet
 
@@ -63,9 +66,12 @@ import qualified Model.Nondeterminism as Nondet
 
 >default ()
 
-
 >-- | Data structure of infinite lazy streams.
 >data Stream a = Pre { shead :: a, stail_strict :: Stream a }
+>  deriving (Typeable, Data, Generic)
+
+>(!) :: Stream a -> Integer -> a
+>(!) s i = shead (drop i s)
 
 >stail :: Stream a -> Stream a
 >stail ~(Pre _ xr) = xr
@@ -109,6 +115,15 @@ import qualified Model.Nondeterminism as Nondet
 
 >class (Limiting a) => Closed a where
 >  accumulation_point :: Closure a -> a
+
+>class (Fractional a,Limiting a) => Infinitesimal a where
+>  epsilon_closure :: Closure a
+>  epsilon_stream :: Stream a
+>  epsilon_closure = limit epsilon_stream
+>  epsilon_stream = approximations epsilon_closure
+
+>ε :: (Infinitesimal a) => Closure a
+>ε = epsilon_closure
 
 >instance Limiting Integer where
 >   data Closure Integer = IntegerClosure { runIntegerClosure :: Stream Integer }
@@ -401,13 +416,15 @@ instance (Num a) => Matrix.VectorSpace ((Stream :*: Stream) a) where
 >instance (Eq a) => Eq (Stream a) where
 >  (Pre x xr) == (Pre y yr) = x == y && xr == yr
 
->-- | Interpretation of a stream as a polynomial (its generating function)
+>-- | Interpretation of a stream as a polynomial (its ordinary generating function)
+>-- \[OGF_{s}(z) = \sum_{i=0}^{\infty}s_iz^i\]
 >-- Good exposition exists in http://en.wikipedia.org/wiki/Formal_power_series
 >--
->-- the (*) operation is specific to generating function interpretation.
+>-- the (*) operation is specific to ordinary generating function interpretation, i.e.
 >-- convolution/Cauchy product
 >--
->-- prop> (x * y)_k == sum [x_i * y_j | i+j==k]
+>-- \[(xy)_k = \sum_{i+j=k}x_iy_j\]
+>-- \[OGF_{xy}(z) = \sum_{k=0}^{\infty}\sum_{i+j=k}x_iy_jz^k\]
 >-- 
 >instance (Num a) => Num (Stream a) where
 >   (+) = liftA2 (+)
@@ -452,7 +469,7 @@ matrix_convolution_product :: (Num a) => (Stream :*: Stream) a -> (Stream :*: St
 >matrix_convolution_product :: (Fractional a, ConjugateSymmetric a) => (Stream :*: Stream) a -> (Stream :*: Stream) a -> (Stream :*: Stream) a
 >matrix_convolution_product x y = Matrix $ fmap average_seq $ codiagonals_seq $ matrix (*) (cells x) (cells $ conj y)
 
->-- | @distance_product a b@ computes @l_k = sqrt(sum[a_i*conj(b_j) | i + j = k])@.
+>-- | @distance_product a b@ computes \[l_k = \sqrt{\sum_{i+j=k}a_ib_j^{*}}\].
 >distance_product :: (Floating a, ConjugateSymmetric a) => Stream a -> Stream a -> Stream a
 >distance_product a b = fmap (sqrt . sum) $ codiagonals_seq $ matrix (*) a (conj b)
 
@@ -590,7 +607,7 @@ matrix_convolution_product :: (Num a) => (Stream :*: Stream) a -> (Stream :*: St
 >fromIntegerSeq :: (Integer -> a) -> Stream a
 >fromIntegerSeq f = fmap f naturals
 
->-- | prop> sumSeq f i == Sum[n=i..Infinity](f(n))
+>-- | \[sumSeq(f)(n) = \sum_{i=n}^{\infty}f(i)\]
 >sumSeq :: (Num b, Num a, Ord a) => (a -> b) -> a -> Stream b
 >sumSeq f i = sum_stream $ fmap f $ naturals_starting_from i
 
@@ -658,13 +675,13 @@ matrix_convolution_product :: (Num a) => (Stream :*: Stream) a -> (Stream :*: St
 >stream_sum :: (Num a) => Fold (Stream a) (Integer -> a)
 >stream_sum = limit_fold (+)
 
->-- | product_stream produce from a stream @[a0,a1,a2,...]@ a stream
->-- @[a0,a0*a1,a0*a1*a2,a0*a1*a2*a3,...]@
+>-- | product_stream produce from a stream \([a_0,a_1,a_2,...]\) a stream
+>-- \([a_0,a_0a_1,a_0a_1a_2,a_0a_1a_2a_3,...]\)
 >product_stream :: (Num a) => Stream a -> Stream a
 >product_stream = liftStream2 (*)
 
->-- | sum_stream will produce from a stream @[a0,a1,a2,...]@ a stream
->-- @[a0,a0+a1,a0+a1+a2,...]@.
+>-- | sum_stream will produce from a stream \([a_0,a_1,a_2,...]\) a stream
+>-- \([a_0,a_0+a_1,a_0+a_1+a_2,...]\).
 
 >sum_stream :: (Num a) => Stream a -> Stream a
 >sum_stream = liftStream2 (+)
@@ -806,10 +823,10 @@ the suffix computation on Seq is constant time rather than linear.
 
 
 >-- | The 'codiagonals' function will divide a two-dimensional
->-- stream of streams (where elements are @e_(i,j)@ into a stream of
+>-- stream of streams (where elements are \(e_{(i,j)}\) into a stream of
 >-- lists
 >-- 
->--   @l_k@ where @l_k = [e_(i,j) | i <- naturals, j <- naturals, i+j == k]@
+>--   \(l_k\) where \(l_k = [e_{(i,j)} | i \leftarrow naturals, j \leftarrow naturals, i+j = k]\)
 >-- 
 >-- The indices in the streams are closely related to "Cantor pairing
 >-- function" (which is a bijection)
@@ -925,7 +942,7 @@ the suffix computation on Seq is constant time rather than linear.
 >-- | cojoin is "better" version of join for streams. cojoin does not
 >-- satisfy monad laws (Right identity and associativity do not hold.).
 >-- It eventually produces every element of the original two-dimensional
->-- stream. It first produces all elements e_(i,j) where i+j=k and k
+>-- stream. It first produces all elements \(e_{(i,j)}\) where \(i+j=k\) and \(k\)
 >-- increasing.
 
 
@@ -1044,13 +1061,15 @@ the suffix computation on Seq is constant time rather than linear.
 >stream_log :: (Integral a) => Stream a -> Stream a
 >stream_log s = liftA2 div s factorial
 
->-- | For a stream of terms @a=[a0,a1,a2,...]@, and @x=[x0,x1,x2,...]@,
+>-- | For a stream of terms \(a=[a_0,a_1,a_2,...]\), and \(x=[x_0,x_1,x_2,...]\),
 >-- 'approximate_sums a x' computes
->-- @\\n -> Sum[i=0..n]{a_i*x_i^i}@, where n is the index to the result stream.
+>-- \[\sum_{i=0}^n{a_ix_i^i}\], where n is the index to the result stream.
 
 >approximate_sums :: (Fractional a) => Stream a -> Stream a -> Stream a
 >approximate_sums gen x = diagonal $ Matrix $ fmap sum_stream $ cells $ matrix (*) gen (index_powers x)
 
+>-- | exponential_stream computes \(s_{i} = {{1}\over{i!}}\).
+>-- notice that euler's constant \(e = \sum_{i=0}^{\infty}{1\over{i!}}\).
 >exponential_stream :: (Fractional a) => Stream a
 >exponential_stream = Pre 1 $ fmap (1/) factorial
 
@@ -1270,7 +1289,7 @@ the suffix computation on Seq is constant time rather than linear.
 >   where cycler (e,r) = Pre e (cycle_queue (Q.enqueue e r))
 
 >-- | stirling numbers are the numbers obtained from
->-- z * (z+1) * ... * (z+n)
+>-- \(z (z+1) ... (z+n)\)
 >stirling_numbers :: (Num a) => (Stream :*: Stream) a
 >stirling_numbers = Matrix $ fmap (product . fmap (z +)) natural_prefixes
 
@@ -1310,12 +1329,12 @@ the suffix computation on Seq is constant time rather than linear.
 >exp_generating_function :: (Floating a, Eq a) => Stream a
 >exp_generating_function = z*(z+1)*exp z
 
->-- <https://en.wikipedia.org/wiki/Generating_function>
->-- $exponential_generating_function(sum{k=0..inf}(a_k*z^k)) = sum{k=0..inf}(a_k*z^k/(k!)$.
+>-- | <https://en.wikipedia.org/wiki/Generating_function>.
+>-- \[EGF(z \mapsto \sum_{k=0}^{\infty}{s_kz^k}) = z \mapsto \sum_{k=0}^{\infty}{{1\over{k!}}{s_kz^k}}\].
 >exponential_generating_function :: (Fractional a) => Stream a -> Stream a
 >exponential_generating_function a = liftA2 (/) a factorial
 
->-- <https://en.wikipedia.org/wiki/Generating_function>
+>-- | <https://en.wikipedia.org/wiki/Generating_function>
 >poisson_generating_function :: (Eq a, Floating a) => Stream a -> Stream a
 >poisson_generating_function a = exponential_generating_function $
 >   liftA2 (*) (exp (negate z)) a
@@ -1334,7 +1353,7 @@ the suffix computation on Seq is constant time rather than linear.
 >powers s = Matrix $ Pre s $ fmap (liftA2 (*) s) $ cells $ powers s
 
 >-- | input element is raised to successive increasing powers
->-- (first element of the stream is n^1)
+>-- (first element of the stream is \(n^1\))
 >cauchy_powers :: (Num a) => a -> Stream a
 >cauchy_powers s = Pre s (fmap (s *) $ cauchy_powers s)
 
@@ -1371,13 +1390,16 @@ the suffix computation on Seq is constant time rather than linear.
 >binomial_coefficients :: (Integral a) => Stream [a]
 >binomial_coefficients = codiagonals $ pascal_triangle_diag
 
+>binomial_coefficients_seq :: (Integral a) => Stream (Seq a)
+>binomial_coefficients_seq = codiagonals_seq $ pascal_triangle_diag
+
 >exp_approx :: (Fractional a) => a -> Stream a
 >exp_approx x = fmap (\ ~(j,lst) -> let m = x / j in 
 >       sum $ map (\ ~(i,c :: Integer) -> fromIntegral c * m^^i) lst) $
 >       liftA2 (,) naturals $ fmap (List.zip [(0 :: Integer)..]) $ binomial_coefficients
 
 
->-- | computes (a + b)^n for all n, using binomial coefficients.
+>-- | computes \((a + b)^n\) for all n, using binomial coefficients.
 >--   Hint: use 'z' in one of the argument.
 >--   @pascal_triangle == Matrix $ polynomial_powers 1 z@
 >--   Note: stream_powers can sometimes be a more efficient alternative.
@@ -1419,7 +1441,7 @@ the suffix computation on Seq is constant time rather than linear.
 >odd_integers_ :: (Integral a) => Stream a
 >odd_integers_ = 1 `div` (1 - 3*z + 4*z*z `div` (1 + z))
 
->-- | This is an ideal of the set of positive integers, usually denoted nZ^+,
+>-- | This is an ideal of the set of positive integers, usually denoted \(nZ^+\),
 >-- e.g. set of positive integers divisible by 'n'.
 
 >integers_divisible_by :: Integer -> Stream Integer

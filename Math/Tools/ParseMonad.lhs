@@ -1,5 +1,6 @@
 >{-# LANGUAGE Trustworthy, GADTs,TypeFamilies, FlexibleInstances, MultiParamTypeClasses #-}
 >module Math.Tools.ParseMonad where
+>import Text.PrettyPrint (Doc, fcat, (<+>))
 >import Math.Tools.PrettyP
 >import Debug.Trace
 >import Control.Applicative

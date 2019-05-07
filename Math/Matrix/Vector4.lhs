@@ -1,7 +1,11 @@
->{-# LANGUAGE Safe,FlexibleInstances, MultiParamTypeClasses,FlexibleContexts, TypeOperators, TypeFamilies, NoMonomorphismRestriction, StandaloneDeriving #-}
+>{-# LANGUAGE Safe,FlexibleInstances, MultiParamTypeClasses,FlexibleContexts, TypeOperators, TypeFamilies, NoMonomorphismRestriction, StandaloneDeriving, DeriveGeneric, DeriveDataTypeable #-}
 >module Math.Matrix.Vector4 where
+>import Text.PrettyPrint (nest,vcat)
 >import Control.Applicative
 >import Math.Tools.Functor
+>import GHC.Generics hiding ((:+:), (:*:), R)
+>import Data.Data
+>import Data.Typeable
 
 import Math.Matrix.Dimension
 
@@ -26,7 +30,7 @@ import Math.Matrix.Dimension
 >import Math.Number.Real
 >import Math.Number.Group
 >import qualified Math.Number.Stream as Stream
->import Math.Number.Stream (Stream(..),Limiting(..), Closed(..))
+>import Math.Number.Stream (Stream(..),Limiting(..), Closed(..), Infinitesimal(..))
 
 >data Vector4 s = Vector4 {
 >  tcoord4 :: !s,
@@ -34,7 +38,7 @@ import Math.Matrix.Dimension
 >  ycoord4 :: !s,
 >  zcoord4 :: !s
 > }
->    deriving (Eq)
+>    deriving (Eq, Typeable, Data, Generic)
 
 >instance (ShowPrecision s) => ShowPrecision (Vector4 s) where
 >  show_at_precision (Vector4 t x y z) p =
@@ -87,10 +91,10 @@ import Math.Matrix.Dimension
 >z4 = zcoord4 (cells identity4)
 >t4 :: (Num a) => Vector4 a
 >t4 = tcoord4 (cells identity4)
->dx4 = epsilon %* x4
->dy4 = epsilon %* y4
->dz4 = epsilon %* z4
->dt4 = epsilon %* t4
+>dx4 = epsilon_closure %* x4
+>dy4 = epsilon_closure %* y4
+>dz4 = epsilon_closure %* z4
+>dt4 = epsilon_closure %* t4
 
 >type Matrix4 a = (Vector4 :*: Vector4) a
 
@@ -439,7 +443,6 @@ instance FractionalSpace (Vector4 (Complex R))
 >instance (Num a, Closed a, Infinitesimal a) => VectorDerivative (Vector4 a) where
 >   divergence = divergence4
 >   grad = grad4
->  -- curl = curl4
 
 >divergence4 :: (Infinitesimal a, Closed a) => (Vector4 a -> Vector4 a) -> Covector.Dual (Vector4 a)
 >divergence4 f = Covector $ \z -> partial_derivate4t (tcoord4 . f) z +
@@ -449,11 +452,6 @@ instance FractionalSpace (Vector4 (Complex R))
 
 >laplace4 :: (Infinitesimal a, Closed a) => Covector.Dual (Vector4 a) -> Covector.Dual (Vector4 a)
 >laplace4 f = divergence4 (grad4 f)
-
-laplace4_units :: (Unit a, Unit b, Infinitesimal a, Closed a)
-               => (Vector4 a -> b) -> Vector4 a -> (b :/ a) :/ a
-laplace4_units f = divergence4_units (grad4_units f)
-
 
 >-- | 1 x 4 matrices:
 >instance (Num a) => VectorSpace ((Vector1 :*: Vector4) a) where
@@ -663,8 +661,8 @@ laplace4_units f = divergence4_units (grad4_units f)
 >        det4 = negate $ determinant3 $ Matrix $ fmap removez4 v
 >        v = Vector3 v1 v2 v3
 
->cross4_vec :: (Num a) => Vector3 (Vector4 a) -> Vector4 a
->cross4_vec (Vector3 a b c) = cross4 a b c
+>cross_product4 :: (Num a) => (Vector3 :*: Vector4) a -> Vector4 a
+>cross_product4 (Matrix (Vector3 a b c)) = cross4 a b c
 
 >determinant4 :: (Num a) => Matrix4 a -> a
 >determinant4 (Matrix m) = combine $ pure (*) <*> tcoord4 m <*> amv  

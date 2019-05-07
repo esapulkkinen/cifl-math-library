@@ -1,9 +1,13 @@
 >-- -*- coding: utf-8 -*-
->{-# LANGUAGE Trustworthy,MultiParamTypeClasses, ScopedTypeVariables, FlexibleContexts, FunctionalDependencies, FlexibleInstances, TypeOperators, TypeFamilies, DefaultSignatures, UnicodeSyntax #-}
+>{-# LANGUAGE Trustworthy,MultiParamTypeClasses, ScopedTypeVariables, FlexibleContexts, FunctionalDependencies, FlexibleInstances, TypeOperators, TypeFamilies, DefaultSignatures, UnicodeSyntax, DeriveGeneric, DeriveDataTypeable #-}
 >-- | These should match standard definitions of vector spaces.
 >-- Used for reference: K. Chandrasekhara Rao: Functional Analysis.
 >-- also see Warner: Modern algebra.
 >module Math.Matrix.Interface where
+>import GHC.Generics hiding ((:*:),(:+:))
+>import Text.PrettyPrint hiding ((<>))
+>import Data.Data
+>import Data.Typeable
 >import Data.Monoid
 >import Data.Ratio
 >import Data.Traversable
@@ -29,6 +33,8 @@
 >-- Note that indices are represented in the functors,
 >-- If you want to use numeric indices, use 'Math.Matrix.Simple'. 
 >data (f :*: g) a = Matrix { cells :: f (g a) }
+>  deriving (Typeable, Data, Generic)
+
 
 >-- | This method of matrix construction is especially nice.
 >matrix :: (Functor m, Functor n) => (a -> b -> c) -> m a -> n b -> (m :*: n) c
@@ -48,8 +54,9 @@
 >class (VectorSpace v) => BilinearVectorSpace v where
 >   biLin :: v -> v -> Scalar v
 
+>-- | <https://en.wikipedia.org/wiki/Dot_product>
 >class InnerProductSpace m where
->  (%.) :: m -> m -> Scalar m -- dot product/inner product
+>  (%.) :: m -> m -> Scalar m 
 
 >-- | <https://en.wikipedia.org/wiki/Lie_algebra>
 >class (VectorSpace m) => LieAlgebra m where
@@ -282,9 +289,6 @@ isEigenValue m v = determinant (m %- (v %* identity)) == 0
 
 >toScalarList :: (StandardBasis m, InnerProductSpace m) => m -> [Scalar m]
 >toScalarList m = [m %. c | c <- unit_vectors]
-
->class (PpShowF f) => PpShowVerticalF f where
->   ppf_vertical :: (PpShow a) => f a -> Doc
 
 >instance (Functor f, PpShowVerticalF f, PpShowF g) => PpShowF (f :*: g) where
 >	  ppf (Matrix x) = ppf_vertical $ fmap (nest 4 . ppf) x

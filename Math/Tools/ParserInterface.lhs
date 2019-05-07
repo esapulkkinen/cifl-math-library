@@ -1,4 +1,5 @@
 >module Math.Tools.ParserInterface where
+>import qualified Text.PrettyPrint as Pretty
 >import Math.Tools.LineInfo
 >import Math.Tools.PrettyP
 
@@ -12,4 +13,4 @@
 >  optional  :: p a -> p (Maybe a)
 >  getRemainingInput :: p String
 >  getLineInfo       :: p LineInfo
->  syntaxError :: Doc -> p a
+>  syntaxError :: Pretty.Doc -> p a

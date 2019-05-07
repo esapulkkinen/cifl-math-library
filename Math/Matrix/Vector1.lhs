@@ -1,6 +1,9 @@
->{-# LANGUAGE Safe,MultiParamTypeClasses, TypeSynonymInstances, FlexibleInstances, StandaloneDeriving, FlexibleContexts, TypeOperators, TypeFamilies #-}
+>{-# LANGUAGE Safe,MultiParamTypeClasses, TypeSynonymInstances, FlexibleInstances, StandaloneDeriving, FlexibleContexts, TypeOperators, TypeFamilies, DeriveGeneric, DeriveDataTypeable #-}
 >module Math.Matrix.Vector1 where
 >import Control.Applicative
+>import GHC.Generics hiding ((:*:), (:+:))
+>import Data.Data
+>import Data.Typeable
 >import Data.Monoid hiding (Dual)
 >import Data.Complex
 >import Data.Sequence (Seq)
@@ -17,7 +20,7 @@
 >import Math.Number.Real
 
 >data Vector1 a = Vector1 { vector_element :: !a }
->  deriving (Eq, Ord)
+>  deriving (Eq, Ord, Typeable, Data, Generic)
 
 >instance (Bin.Binary s) => Bin.Binary (Vector1 s) where
 >   put (Vector1 x) = Bin.put x
@@ -145,7 +148,6 @@ http://en.wikipedia.org/wiki/Bra%E2%80%93ket_notation
 >instance (Infinitesimal a, Closed a) => VectorDerivative (Vector1 a) where
 >   divergence f = partial_derivate1x (Covector (vector_element . f))
 >   grad f z = Vector1 (partial_derivate1x f `bracket` z)
->   curl f z = Vector1 $ partial_derivate1x (Covector (vector_element . f)) `bracket` z
 
 >instance (MedianAlgebra a) => MedianAlgebra (Vector1 a) where
 >   med (Vector1 a) (Vector1 b) (Vector1 c) = Vector1 (med a b c)

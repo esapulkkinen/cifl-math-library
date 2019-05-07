@@ -17,6 +17,7 @@
 >import Math.Matrix.Interface
 >import Math.Matrix.Covector
 >import Math.Matrix.Matrix
+>import Math.Number.Interface
 >import Math.Number.Stream hiding (logarithm)
 >import qualified Math.Number.Stream as Stream
 >import Math.Tools.Prop
@@ -52,23 +53,14 @@
 >data R = Limit { approximate :: Stream Rational }
 >data Modulus = Modulus { modulus_value :: R, modulus :: Rational -> Integer }
 
->class (Fractional a,Limiting a) => Infinitesimal a where
->  epsilon :: Closure a
->  epsilon_stream :: Stream a
->  epsilon = limit epsilon_stream
->  epsilon_stream = approximations epsilon
-
->ε :: (Infinitesimal a) => Closure a
->ε = epsilon
-
 >class MetricSpace s where
 >  distance :: s -> s -> R
 
 >-- | d x = partial_derivate x 
 
 >d :: (Infinitesimal a) => (a -> a) -> a -> Closure a
->d f x = derivate f x .>>=. \derx ->
->             epsilon .>>=. \dx ->
+>d f x = derivate_closed f x .>>=. \derx ->
+>             epsilon_closure .>>=. \dx ->
 >             close (derx * dx)
 
 >liftReal :: (Rational -> Rational) -> R -> R
@@ -198,7 +190,7 @@ max_convergence_ratio = fmap (foldl1 max) . cauchy
 >                                     (imagPart . f) z) / 2)
 
 >instance (RealFloat a, Infinitesimal a) => Infinitesimal (Complex a) where
->  epsilon = limit $ liftA2 (:+) (approximations epsilon) (approximations epsilon)
+>  epsilon_closure = limit $ liftA2 (:+) (epsilon_stream) (epsilon_stream)
 
 >average :: R -> R -> R
 >average (Limit x) (Limit y) = Limit $ liftA2 (\x y -> (x+y)/2) x y
@@ -216,6 +208,13 @@ instance MedianAlgebra R where
 >  vnegate x = negate x
 >  a %+ b = a + b
 >  a %* b = a * b
+
+>instance VectorDerivative R where
+>  divergence f = Covector $ real_derivate f
+>  grad (Covector f) x = real_derivate f x
+
+>instance VectorCrossProduct R where
+>  curl f x = real_derivate f x
 
 >-- | The following instance declaration represents the completeness of the
 >-- real number system. This maps to isomorphism "Closure R ~= R".
@@ -297,17 +296,17 @@ infimum = negate_limit . supremum_gen . map negate_limit
 
 >-- | epsilon is a real that converges to zero.
 >instance Infinitesimal R where
->  epsilon = close $ 1 / infinity
+>  epsilon_closure = close $ 1 / infinity
 
 >-- | <http://en.wikipedia.org/wiki/Squeeze_theorem Squeeze theorem>
 
 >limit_below :: R -> (R -> R) -> Closure R
->limit_below c f = limit $ approximations (close $ c - accumulation_point epsilon) >>= (return . f)
+>limit_below c f = limit $ approximations (close $ c - accumulation_point epsilon_closure) >>= (return . f)
 
 >-- | <http://en.wikipedia.org/wiki/Squeeze_theorem Squeeze_theorem>
 
 >limit_above :: R -> (R -> R) -> Closure R
->limit_above c f = limit $ approximations (close $ c + accumulation_point epsilon) >>= (return . f)
+>limit_above c f = limit $ approximations (close $ c + accumulation_point epsilon_closure) >>= (return . f)
 
 >-- | <http://en.wikipedia.org/wiki/Squeeze_theorem Squeeze_theorem>
 >limit_both :: R -> (R -> R) -> Closure R
@@ -371,42 +370,36 @@ infimum = negate_limit . supremum_gen . map negate_limit
 >           | otherwise = check_precision z'
 
 >real_derivate :: (R -> R) -> R -> R
->real_derivate f x = accumulation_point $ derivate f x
+>real_derivate f x = accumulation_point $ derivate_closed f x
+
+>instance DifferentiallyClosed R where
+>  derivate = real_derivate
+>  integral = integral_real
 
 >real_exp :: R -> R
 >real_exp = fix real_derivate
 
 >-- | <https://en.wikipedia.org/wiki/Differential_calculus>
 
->derivate :: (Infinitesimal a) => (a -> a) -> a -> Closure a
->derivate f x = limit $ do
->    eps <- approximations epsilon
+>derivate_closed :: (Infinitesimal a) => (a -> a) -> a -> Closure a
+>derivate_closed f x = limit $ do
+>    eps <- epsilon_stream
 >    return $ (f (x + eps) - f x) / eps
 
 >vector_derivate f x = limit $ do
->   eps <- approximations epsilon
+>   eps <- epsilon_stream
 >   return $ (1 / (2*eps)) %* (f (x + eps) %- f (x - eps))
 
 >pseudo_derivate :: (Fractional r, Limiting r, Infinitesimal a)
 >                => (a -> r) -> a -> Closure r
 >pseudo_derivate f x = limit $ do
->    eps <- approximations epsilon
+>    eps <- epsilon_stream
 >    return $ (f (x + eps) - f x) / f eps
 
->derivates :: (Infinitesimal a, Closed a) => (a -> a) -> Stream (a -> a)
->derivates = iterate_stream $ \f x -> accumulation_point $ derivate f x
-
 >-- | i'th element of derivates_at(f,s) is D^i[f](s_i)
->derivates_at :: (Infinitesimal a, Closed a) => (a -> a) -> Stream a -> Stream a
+>derivates_at :: (DifferentiallyClosed a) => (a -> a) -> Stream a -> Stream a
 >derivates_at f x = derivates f <*> x
 
->-- | <https://en.wikipedia.org/wiki/Taylor_series>
->taylor :: (Infinitesimal a, Closed a) => (a -> a) -> a -> (Stream :*: Stream) a
->taylor f a = Matrix $ sum_stream $ mapper <$> sub_powers
->   where mapper p = liftA3 (\a b c -> a*b*c) der divider p
->         divider = fmap (1/) factorial
->         der = derivates f <*> constant a
->         sub_powers = cells $ stream_powers (z-fromNum a)
 
 
 >-- | derivate_around doesn't require 'f' to be defined at 'x', but requires
@@ -415,38 +408,38 @@ infimum = negate_limit . supremum_gen . map negate_limit
 
 >derivate_around :: (Infinitesimal a) => (a -> a) -> a -> Closure a
 >derivate_around f x = limit $ do
->    eps <- approximations epsilon
+>    eps <- epsilon_stream
 >    return $ (f (x + eps) - f (x - eps)) / (2 * eps)
 
 
 >partial_derivate1_2 :: (Infinitesimal a)
 >                    => (a -> a -> a) -> a -> a -> Closure a
 >partial_derivate1_2 f a b = limit $ do
->    eps <- approximations epsilon
+>    eps <- epsilon_stream
 >    return $ (f (a + eps) b - f (a - eps) b) / (2*eps)
 
 >partial_derivate2_2 :: (Infinitesimal a) => (a -> a -> a) -> a -> a -> Closure a
 >partial_derivate2_2 f a b = limit $ do
->    eps <- approximations epsilon
+>    eps <- epsilon_stream
 >    return $ (f a (b + eps) - f a (b - eps)) / (2*eps)
 
 
 >partial_derivate1_3 :: (Infinitesimal a)
 >                    => (a -> b -> c -> a) -> a -> b -> c -> Closure a
 >partial_derivate1_3 f a b c = limit $ do
->    eps <- approximations epsilon
+>    eps <- epsilon_stream
 >    return $ (f (a + eps) b c - f (a - eps) b c) / (2*eps)
 
 >partial_derivate2_3 :: (Infinitesimal a)
 >                    => (b -> a -> c -> a) -> b -> a -> c -> Closure a
 >partial_derivate2_3 f a b c = limit $ do
->    eps <- approximations epsilon
+>    eps <- epsilon_stream
 >    return $ (f a (b + eps) c - f a (b - eps) c) / (2*eps)
 
 >partial_derivate3_3 :: (Infinitesimal a)
 >                    => (b -> c -> a -> a) -> b -> c -> a -> Closure a
 >partial_derivate3_3 f a b c = limit $ do
->    eps <- approximations epsilon
+>    eps <- epsilon_stream
 >    return $ (f a b (c + eps) - f a b (c - eps)) / (2*eps)
 
 >-- | <http://en.wikipedia.org/wiki/Arithmetic%E2%80%93geometric_mean Arithmetic-geometric mean>
@@ -464,7 +457,7 @@ infimum = negate_limit . supremum_gen . map negate_limit
 
 >newtons_method :: (Infinitesimal a, Closed a) => (a -> a) -> a -> Closure a
 >newtons_method f x = limit $ iterate_stream iteration x
->   where iteration z' = z' - f z' / accumulation_point (derivate f z')
+>   where iteration z' = z' - f z' / accumulation_point (derivate_closed f z')
 
 >eigenvalue :: (Infinitesimal a, Closed a,
 >               Applicative m, FiniteSquareMatrix m a,
@@ -491,24 +484,19 @@ infimum = negate_limit . supremum_gen . map negate_limit
 
 >integral_real :: (R,R) -> (R -> R) -> R
 >integral_real (x,y) f = runRClosure $ limit $ do
->   (eps, xa, ya) <- fzip3 (approximate $ runRClosure epsilon)
+>   (eps, xa, ya) <- fzip3 (approximate $ runRClosure epsilon_closure)
 >                          (approximate x)
 >                          (approximate y)
 >   return $ (fromRational eps *) $ Prelude.sum $
 >      map (f . fromRational) [xa,xa+eps..ya]
 
->integral :: (R,R) -> (Rational -> Rational) -> R
->integral (x,y) f = Limit $ do
->       (eps,xa,ya) <- fzip3 (approximate $ runRClosure epsilon)
+>integral_rational :: (R,R) -> (Rational -> Rational) -> R
+>integral_rational (x,y) f = Limit $ do
+>       (eps,xa,ya) <- fzip3 (approximate $ runRClosure epsilon_closure)
 >                            (approximate x)
 >                            (approximate y)
 >       return $ (eps *) $ Prelude.sum $ map f [xa,xa+eps..ya]
 
->-- | <https://en.wikipedia.org/wiki/Line_integral Line integral>
-
->line_integral :: (R -> R) -> (R -> R) -> (R,R) -> R
->line_integral f r (a,b) = integral_real (a,b) $ \t ->
->   f (r t) * abs (accumulation_point $ derivate r t)
 
 Requires: lim[x->0]curve(x) = 0 /\ lim[i->INF] dx_i = 0
 
@@ -555,7 +543,7 @@ instance Ord R where
 >   = limit $ liftA3 (\a b eps -> abs (b - a) < eps) astr astr' aeps
 >  where astr = fmap approximate $ approximations str
 >        astr' = fmap approximate $ approximations str'
->        aeps  = fmap approximate $ approximations epsilon
+>        aeps  = fmap approximate $ epsilon_stream
 
 >class (Show r) => ShowPrecision r where
 >   show_at_precision :: r -> Integer -> String
@@ -721,7 +709,7 @@ instance RealFrac R where
 
 >-- computes x from equation @(Df)(x) = y@ by newton's method
 >differential_equation1 :: (Closed a, Infinitesimal a) => (a -> a) -> a -> Closure a
->differential_equation1 f y = newtons_method (\x -> accumulation_point (derivate f x) - y) 1
+>differential_equation1 f y = newtons_method (\x -> accumulation_point (derivate_closed f x) - y) 1
 
 
 >exp_by_powers :: (Fractional r, Limiting r) => r -> Closure r

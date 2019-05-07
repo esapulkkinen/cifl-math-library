@@ -11,6 +11,7 @@
 >-- Arrows were originally described by "Paterson R.: A New notation for arrows, 2001" <http://www.staff.city.ac.uk/~ross/papers/notation.html>
 >-- 
 >module Math.Tools.Arrow where
+>import Text.PrettyPrint hiding (render)
 >import System.IO.Error
 >import Control.Monad.Trans.Except
 >import Control.Exception
@@ -18,7 +19,7 @@
 >import Control.Category
 >import Data.Monoid
 >import Prelude hiding (id,(.))
->import Math.Tools.PrettyP (Doc,render,vcat,pp)
+>import Math.Tools.PrettyP (render,pp)
 
 >class (Category ar, Category ar') => ArrowTransformation ar ar' where
 >      mapA :: ar a b -> ar' a b
