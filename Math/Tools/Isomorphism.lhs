@@ -151,7 +151,7 @@
 >pairingIso = (\ (x,y) -> let z = x + y in (z*(z+1)) `div` 2 + y)
 >             <-> pairing_inverse
 >  where pairing_inverse z = (x,y)
->          where w = (square_root (8*z + 1) - 1) `div` 2
+>          where w = (square_root_integer (8*z + 1) - 1) `div` 2
 >                t = (w * w + w) `div` 2                 
 >                y = z - t
 >                x = w - y
@@ -160,7 +160,7 @@ TODO: negative integers?
 
 >squareIso :: Aut Integer
 >squareIso = absIso >>> (sqrIso <||> sqrIso) >>> invertA absIso
->   where sqrIso = (\i -> i*i) <-> square_root
+>   where sqrIso = (\i -> i*i) <-> square_root_integer
 
 
 

@@ -10,6 +10,7 @@
 >-- Roy L. Crole: Categories for Types.
 
 >import Math.Tools.I
+>import Math.Tools.CoMonad
 >import Control.Monad
 >import Control.Applicative
 >import Control.Category
@@ -26,6 +27,37 @@
 === NATURAL TRANSFORMATION ============
 
 >newtype f :~> g = NatTrans { nattrans_component :: forall a. f a -> g a }
+
+>type MaybeNT m = Maybe :~> m
+>type EitherNT a m = (Either a) :~> m
+>type PairNT a m = ((,) a) :~> m
+>type IndexNT a m = ((->) a) :~> m
+>type ListNT m = [] :~> m
+
+>type IMT m = I :~> m
+>type IOMT m = m :~> IO
+>type NondetMT m = m :~> []
+>type FailMT m = m :~> Maybe
+>type AltMT a m  = m :~> Either a
+>type FunctorMT a m = m :~> ((->) a)
+
+>type MonadNT m = (m :*: m) :~> m
+>type ComonadNT m = m :~> (m :*: m)
+>type TransposeNT m n = (m :*: n) :~> (n :*: m)
+
+>failFailMT :: FailMT f
+>failFailMT = NatTrans (const Nothing)
+>succeedFailMT :: FailMT I
+>succeedFailMT = NatTrans (\ (I x) -> Just x)
+>returnMT :: (Monad m) => I :~> m
+>returnMT = NatTrans (return . unI)
+>extractMT :: (Comonad m) => m :~> I
+>extractMT = NatTrans (I . extract)
+>duplicateMT :: (Comonad m) => m :~> (m :*: m)
+>duplicateMT = NatTrans (Matrix . duplicate)
+>joinMT :: (Monad m) => (m :*: m) :~> m
+>joinMT = NatTrans (join . cells)
+
 
 >id_trans :: f :~> f
 >id_trans = NatTrans id

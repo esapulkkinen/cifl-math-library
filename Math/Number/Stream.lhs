@@ -1005,7 +1005,7 @@ the suffix computation on Seq is constant time rather than linear.
 >m >!= f = codiagonals $ Matrix $ fmap f m
 
 >integers :: (Num a) => Stream a
->integers = interleave naturals (fmap negate nonzero_naturals)
+>integers = interleave_stream naturals (fmap negate nonzero_naturals)
 
 >-- | A stream of integers. This is specialized version of naturals for integers
 >integers_stream :: Stream Integer
@@ -1189,8 +1189,11 @@ the suffix computation on Seq is constant time rather than linear.
 >-- | interleave two streams such that even indexed elements of result are
 >-- from first input stream and odd indexed elements of result are from
 >-- second stream.
->interleave :: Stream a -> Stream a -> Stream a
->interleave ~(Pre x xr) y = Pre x (interleave y xr)
+>interleave_stream :: Stream a -> Stream a -> Stream a
+>interleave_stream ~(Pre x xr) y = Pre x (interleave_stream y xr)
+
+>instance InterleaveFunctor Stream where
+>   interleave = interleave_stream
 
 >-- | version of interleave that produces either instances
 >interleave_either :: Stream a -> Stream b -> Stream (Either a b)
@@ -1458,7 +1461,7 @@ the suffix computation on Seq is constant time rather than linear.
 >-- as equivalent by the equivalence class.
 
 >residue_class_modulo :: Integer -> Integer -> Stream Integer
->residue_class_modulo m n = interleave (positive_residue_class_modulo m n)
+>residue_class_modulo m n = interleave_stream (positive_residue_class_modulo m n)
 >                                      (stail (negative_residue_class_modulo m n))
 
 

@@ -34,27 +34,28 @@
 >   module Math.Tools.Tree,
 >   module Math.Tools.Universe,
 >   module Math.Tools.Visitor,
+>   module Math.Tools.Prop
 > ) where
 
 >import Math.Tools.Adjunction
 >import Math.Tools.Arrow
 >import Math.Tools.Category
->import Math.Tools.CoFunctor hiding (terminal)
+>import Math.Tools.CoFunctor
 >import Math.Tools.CoMonad
 >import Math.Tools.Complex
 >import qualified Math.Tools.Expression
 >import Math.Tools.FixedPoint
 >import Math.Tools.Functor
->import qualified Math.Tools.Group
+>import Math.Tools.Group
 >import qualified Math.Tools.Identity
 >import qualified Math.Tools.Id
 >import Math.Tools.I
->import Math.Tools.Integer hiding (square_root)
+>import Math.Tools.Integer 
 >import qualified Math.Tools.Integer 
->import Math.Tools.Isomorphism hiding (swap)
+>import Math.Tools.Isomorphism 
 >import Math.Tools.LineInfo
->import Math.Tools.List hiding (interleave)
->import Math.Tools.Map hiding (sequence)
+>import Math.Tools.List 
+>import Math.Tools.Map 
 >import qualified Math.Tools.Map
 >import Math.Tools.Maybe
 >import Math.Tools.Median
@@ -65,7 +66,7 @@
 >import Math.Tools.NaturalTransformation
 >import qualified Math.Tools.Nondeterministic
 >import qualified Math.Tools.OppositeArrow
->import Math.Tools.Orthogonal hiding (outer3,(|*|))
+>import Math.Tools.Orthogonal 
 >import qualified Math.Tools.ParseMonad
 >import qualified Math.Tools.ParserInterface
 >import qualified Math.Tools.Parser
@@ -75,3 +76,4 @@
 >import qualified Math.Tools.Tree
 >import Math.Tools.Universe
 >import Math.Tools.Visitor
+>import Math.Tools.Prop

@@ -6,6 +6,7 @@
 >{-# LANGUAGE TypeFamilies #-}
 >{-# LANGUAGE AllowAmbiguousTypes #-}
 >{-# LANGUAGE MultiParamTypeClasses #-}
+>{-# OPTIONS_HADDOCK ignore-exports #-}
 >-- | This modules provides SIMD optimized versions of vectors.
 >-- Relies heavily on GHC SIMD support. SIMD works only when using LLVM and
 >-- GHC 8.x

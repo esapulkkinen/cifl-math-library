@@ -64,19 +64,19 @@ dfunction f x y = x `fbind` \a -> y `fbind` (f a)
 >outer_apply :: (Functor f, Functor g) => f (b -> c) -> g b -> f (g c)
 >outer_apply = outer id
 
->(|*|) :: (Functor f, Monad f) => f a -> f b -> f (a,b)
->x |*| y = join $ outer (,) x y
+>(|**|) :: (Functor f, Monad f) => f a -> f b -> f (a,b)
+>x |**| y = join $ outer (,) x y
 
 
->outer3 :: (Functor f, Functor g, Functor h)
+>outer3_functor :: (Functor f, Functor g, Functor h)
 >	=> (a -> b -> c -> d) -> f a -> g b -> h c -> f (g (h d))
->outer3 f x x' y = outer (\a b -> fmap (f a b) y) x x'
+>outer3_functor f x x' y = outer (\a b -> fmap (f a b) y) x x'
 
 
 
->outer4 :: (Functor f, Functor g, Functor h, Functor i) =>
+>outer4_functor :: (Functor f, Functor g, Functor h, Functor i) =>
 >	(a -> b -> c -> d -> e) -> f a -> g b -> h c -> i d -> f (g (h (i e)))
->outer4 f x x' y y' = outer (\a b -> outer (f a b) y y') x x'
+>outer4_functor f x x' y y' = outer (\a b -> outer (f a b) y y') x x'
 
 data LayerSeq f a = LayerSeq a (f (LayerSeq f a))
 

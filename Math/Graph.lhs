@@ -1,5 +1,5 @@
 >{-# LANGUAGE Safe #-}
->{-# OPTIONS_HADDOCK not-home, ignore-exports #-}
+>{-# OPTIONS_HADDOCK not-home #-}
 >-- |
 >-- Module: Graph
 >-- Description: Graph implementation
@@ -79,7 +79,7 @@
 >-- ** library for general actions of a monoid
 >    module Math.Graph.Action
 >  ) where
->import Math.Graph.Action hiding (action, unyoneda)
+>import qualified Math.Graph.Action
 >import Math.Graph.Reversible
 >import Math.Graph.TransformationMonoid
 >import Math.Graph.Labeled

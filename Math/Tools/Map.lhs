@@ -59,18 +59,18 @@ set.
 >foldKeyM f x = Map.foldrWithKey (\k a mb -> mb >>= f k a) x
 
 >mapM :: (Monad m, Ord i) => (a -> m b) -> Map i a -> m (Map i b)
->mapM f m = sequence $ fmap f m
+>mapM f m = sequence_map $ fmap f m
 
 >sequence_ :: (Monad m, Ord i) => Map i (m a) -> m ()
->sequence_ m = sequence m >> return ()
+>sequence_ m = sequence_map m >> return ()
 
 >instance (Ord i) => FunctorM (Map i) where
 >   mapMF = mapM
 
->sequence :: (Monad m,Ord i) => Map i (m a) -> m (Map i a)
->sequence = Map.foldrWithKey (\k act res -> do a <- act
->                                              m <- res
->                                              return (Map.insert k a m))
+>sequence_map :: (Monad m,Ord i) => Map i (m a) -> m (Map i a)
+>sequence_map = Map.foldrWithKey (\k act res -> do a <- act
+>                                                  m <- res
+>                                                  return (Map.insert k a m))
 >                           (return Map.empty)
 
 >sequenceByKey :: (Monad m, Ord i) => Map i (i -> m a) -> m (Map i a)

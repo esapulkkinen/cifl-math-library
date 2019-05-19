@@ -1,5 +1,5 @@
 >{-# LANGUAGE Safe, GADTs, QuasiQuotes #-}
->{-# OPTIONS_HADDOCK not-home #-}
+>{-# OPTIONS_HADDOCK not-home, ignore-exports #-}
 >-- |
 >-- Module: Math.Matrix
 >-- Description: Matrix computations

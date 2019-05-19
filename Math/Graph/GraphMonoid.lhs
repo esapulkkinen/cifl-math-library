@@ -96,6 +96,7 @@
 >four_action _ _ acod _ FCod = Endo acod
 >four_action _ _ _ anot FNot = Endo anot
 
+
 >instance Universe Four where { all_elements = [FId,FDom, FCod,FNot] }
 >instance PpShow Four where
 >   pp FId = pp "id"

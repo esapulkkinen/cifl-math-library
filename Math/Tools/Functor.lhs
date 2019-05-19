@@ -5,6 +5,11 @@
 >class BiFunctor op where
 >   bimap :: (a -> b) -> (c -> d) -> op a c -> op b d
 
+>infixr 8 `interleave`
+
+>class (Functor f) => InterleaveFunctor f where
+>   interleave :: f a -> f a -> f a
+
 For more than three argument versions of zipWith, use (>>=).
 liftA2 is general version of zipWith.
 

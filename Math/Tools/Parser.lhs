@@ -1,6 +1,6 @@
 >{-# LANGUAGE Rank2Types, FlexibleInstances #-}
 >module Math.Tools.Parser where
->import Text.PrettyPrint (Doc, (<+>))
+>import Text.PrettyPrint (Doc, (<+>), empty)
 >import Control.Applicative
 >import Control.Monad
 >import Math.Tools.ParserInterface

@@ -1,5 +1,26 @@
 >{-# LANGUAGE Safe,ExistentialQuantification, ScopedTypeVariables, FlexibleInstances, MultiParamTypeClasses, FlexibleContexts, TypeFamilies, TypeOperators, GADTs, LambdaCase #-}
->module Math.Tools.Prop where
+>module Math.Tools.Prop (
+> Prop(..), subseteq, intersects, split_prop,
+> propositional_table, fromBool, vector_equalizer, matrix_equalizer,
+> list_truthvalues, existential_bind, existential_join, universal_bind,
+> universal_join, prop_fixedpoint, truthvalue, satisfiable,
+> axiom, notMember, subseteq_prop, is_section, doublePropJoin,
+> fromAssoc, fromAssocWith, prop_fromList, prop_fromSet, prop_fromMap,
+> map_prop, equalizer_fixedpoint, invertible, kernel, ternary_op,
+> binary_op, gen_binary_op, binary, integrate_prop, intersect, intersect3,
+> median3, union, union3, excluded_middle, noncontradiction,
+> demorgan_intersect, disjunction_commutative, image_factorization,
+> prop_compose, transitive, antisymmetric, prop_iso_terminal,
+> prop_iso_terminal_inverse, fiber, fiber_, equivalence_relation,
+> reflexive, reflexive_closure, symmetric_closure,
+> transitive_step, transitive_closure, equivalence_generated_by,
+> opposite, leftAdjunct_prop, unit_prop, rel_prop, binary_rel_prop,
+> binary_rel, equal_functions, test_equality_at, equalizer_prop, pullback_prop,
+> sum, prop_and, prop_or, prop_if, prop_if_general, equal, not_equal, lessthan,
+> lesseq, or_list_prop, and_list_prop, enumerate, existential_map,
+> universal_map, prop_existential, prop_universal, image, prop_universal_image,
+> forevery
+> ) where
 >import Prelude hiding (sum,id,(.))
 >import Control.Monad.Fix
 >import Data.Set (Set)
@@ -187,8 +208,8 @@ serial_frames = characteristic (uncurry system_D)
 >   runProposition = \p x -> fromBool $ runCharacteristic p x
 
 
->fixedpoint :: (Prop a -> Prop a) -> Prop a
->fixedpoint = fix
+>prop_fixedpoint :: (Prop a -> Prop a) -> Prop a
+>prop_fixedpoint = fix
 
 >truthvalue :: Bool -> Prop a
 >truthvalue = Characteristic . const
@@ -230,19 +251,19 @@ serial_frames = characteristic (uncurry system_D)
 >fromAssocWith lst (Characteristic p) 
 >   = Characteristic $ \v -> maybe False p (lookup v lst)
 
->fromList :: (Eq a) => [a] -> Prop a
->fromList lst = Characteristic $ (`elem` lst)
+>prop_fromList :: (Eq a) => [a] -> Prop a
+>prop_fromList lst = Characteristic $ (`elem` lst)
 
->fromSet :: (Ord a) => Set a -> Prop a
->fromSet s = Characteristic (`Set.member` s)
+>prop_fromSet :: (Ord a) => Set a -> Prop a
+>prop_fromSet s = Characteristic (`Set.member` s)
 
->fromMap :: (Ord i,Eq e) => Map i e -> Prop (i,e)
->fromMap m = Characteristic $ \ (i,e) -> Just e == Map.lookup i m
+>prop_fromMap :: (Ord i,Eq e) => Map i e -> Prop (i,e)
+>prop_fromMap m = Characteristic $ \ (i,e) -> Just e == Map.lookup i m
 
 >-- | Due to constraints, Prop cannot be made as instance of Functor.
 
 >map_prop :: (Eq b, Universe a) => (a -> b) -> Prop a -> Prop b
->map_prop f = fromList . map f . enumerate
+>map_prop f = prop_fromList . map f . enumerate
 
 >equalizer_fixedpoint :: (HasEqualizers p a) => (a -> a) -> p a
 >equalizer_fixedpoint f = equalizer f id
@@ -322,16 +343,16 @@ The following two functions are the same function.
 >image_factorization = image . graph 
 
 >bind :: (Universe b) => (a -> Prop b) -> (b -> Prop c) -> a -> Prop c
->bind x y = unrelation $ compose (relation x) (relation y)
+>bind x y = unrelation $ prop_compose (relation x) (relation y)
 
->compose :: (Universe b) => Prop (a,b) -> Prop (b,c) -> Prop (a,c)
->compose (Characteristic f) (Characteristic g) =
+>prop_compose :: (Universe b) => Prop (a,b) -> Prop (b,c) -> Prop (a,c)
+>prop_compose (Characteristic f) (Characteristic g) =
 >  Characteristic $ \ (a,c) -> or $ map (\b -> f (a,b) && g (b,c)) all_elements
 
 <x,z> \in transitive R <=> (forall y. <x,y> \in R & <y,z> \in R -> <x,z> \in R)
 
 >transitive :: (Universe a) => Prop (a,a) -> Bool
->transitive r = compose r r <= r
+>transitive r = prop_compose r r <= r
 
 >antisymmetric :: (Eq a) => Prop (a,a) -> Prop (a,a)
 >antisymmetric p = (p -&- opposite p) -=>- reflexive
@@ -489,8 +510,8 @@ universal_map f p = { b | p <= f^-1({b}) }
 >image (Characteristic rel) = 
 >   Characteristic $ \b -> or $ map (\a -> rel (a,b)) all_elements
 
->universal_image :: (Universe a, Universe b, Eq b) => Prop (a,b) -> Prop b
->universal_image (Characteristic rel) 
+>prop_universal_image :: (Universe a, Universe b, Eq b) => Prop (a,b) -> Prop b
+>prop_universal_image (Characteristic rel) 
 >   = Characteristic $ \b -> and $ map (\a -> rel (a,b)) all_elements
 
 >instance Existential Prop where

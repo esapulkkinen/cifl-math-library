@@ -2,6 +2,7 @@
 >{-# LANGUAGE FlexibleInstances, FlexibleContexts, TypeOperators #-}
 >{-# LANGUAGE TypeFamilies, PatternGuards, DataKinds, LambdaCase #-}
 >{-# LANGUAGE StandaloneDeriving, DeriveGeneric, DeriveDataTypeable #-}
+>{-# LANGUAGE PatternSynonyms #-}
 >module Math.Matrix.Vector3 where
 >import Text.PrettyPrint (sep,vcat,nest, Doc)
 >import Control.Applicative

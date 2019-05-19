@@ -1,4 +1,4 @@
->{-# OPTIONS_HADDOCK hide #-}
+>{-# OPTIONS_HADDOCK prune #-}
 >{-# LANGUAGE Safe,FlexibleInstances, MultiParamTypeClasses, TypeOperators #-}
 >-- | Module: Math.Graph.Action
 >--   Copyright: Esa Pulkkinen, 2018

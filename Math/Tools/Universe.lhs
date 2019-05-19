@@ -1,7 +1,8 @@
 >{-# LANGUAGE Safe #-}
 >module Math.Tools.Universe where
 >import Math.Tools.Orthogonal
->import Math.Tools.List (interleave)
+>import Math.Tools.Functor
+>import Math.Tools.List
 >import Data.Monoid
 >import Data.Int
 >import Data.Word
@@ -110,7 +111,7 @@
 >   all_elements = concat $ outer (,) all_elements all_elements
 
 >instance (Universe a, Universe b, Universe c) => Universe (a,b,c) where
->   all_elements = concat (map concat (outer3 (,,) all_elements all_elements all_elements))
+>   all_elements = concat (map concat (outer3_functor (,,) all_elements all_elements all_elements))
 
 >instance (Universe a, Eq a) => Universe (Endo a) where
 >   all_elements = fmap Endo all_elements

@@ -11,6 +11,7 @@
 >import Data.IORef
 >import Data.Monoid
 >import Math.Tools.Arrow
+>import Math.Tools.Functor
 >import qualified Math.Tools.List as LL
 >import Math.Tools.Visitor
 >import qualified Text.PrettyPrint as Pretty
@@ -117,9 +118,12 @@ Alternative implementation of join, works in reverse compared to 'join'.
 >fold :: (Arrow arr) => (a -> arr b b) -> Queue a -> arr b b
 >fold f (MakeQueue x y) = foldr (\xx r -> f xx >>> r) returnA (y ++ L.reverse x)
 
->interleave :: Queue a -> Queue a -> Queue a
->interleave (MakeQueue a b) (MakeQueue c d) = MakeQueue (LL.interleave a c)
->                                                       (LL.interleave b d)
+>instance InterleaveFunctor Queue where
+>  interleave = interleave_queue
+
+>interleave_queue :: Queue a -> Queue a -> Queue a
+>interleave_queue (MakeQueue a b) (MakeQueue c d) = MakeQueue (interleave a c)
+>                                                       (interleave b d)
 
 empty comes from Alternative
 

@@ -2,8 +2,8 @@
 >module Math.Tools.Integer where
 
 
->square_root :: Integer -> Integer
->square_root i = dropUntil (newton_square_root_list i)
+>square_root_integer :: Integer -> Integer
+>square_root_integer i = dropUntil (newton_square_root_list i)
 >  where dropUntil (a:b:r) | a == b  = a
 >                          | a + 1 == b = a 
 >                          | a == b + 1 = b

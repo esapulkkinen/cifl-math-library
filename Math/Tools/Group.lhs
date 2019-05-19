@@ -1,3 +1,4 @@
+>{-# OPTIONS_HADDOCK prune #-}
 >module Math.Tools.Group where
 
 >class (Monad g) => Group g where

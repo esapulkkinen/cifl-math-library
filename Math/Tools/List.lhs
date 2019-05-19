@@ -1,15 +1,17 @@
 >{-# LANGUAGE Safe #-}
 >module Math.Tools.List where
-
->infixr 8 `interleave`
+>import Math.Tools.Functor
 
 The interleave first pattern must not match both arguments,
 otherwise infinite list interleaving doesn't work. Note also that
 interleave swaps arguments after every element.
 
->interleave :: [a] -> [a] -> [a]
->interleave (c:cr) lst = (c:interleave lst cr)
->interleave [] lst = lst
+>interleave_list :: [a] -> [a] -> [a]
+>interleave_list (c:cr) lst = (c:interleave lst cr)
+>interleave_list [] lst = lst
+
+>instance InterleaveFunctor [] where
+>  interleave = interleave_list
 
 >interleave2 :: [[a]] -> [a]
 >interleave2 = foldr interleave []

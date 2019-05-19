@@ -1,4 +1,4 @@
->{-# OPTIONS_HADDOCK hide #-}
+>{-# OPTIONS_HADDOCK hide, prune #-}
 >module Math.Tools.NaturalAPI where
 >import Math.Tools.PrettyP
 

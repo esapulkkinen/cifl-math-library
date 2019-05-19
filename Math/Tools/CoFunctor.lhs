@@ -1,4 +1,5 @@
 >{-# LANGUAGE Safe,TypeOperators, MultiParamTypeClasses, FunctionalDependencies, TypeFamilies #-}
+>{-# OPTIONS_HADDOCK prune #-}
 >module Math.Tools.CoFunctor where
 >import Math.Tools.I
 >import Math.Tools.Universe
@@ -45,7 +46,7 @@ direct_image(f) -| inverse_image(f) -| universal(f)
 >   finite_intersect :: [p a] -> p a
 
 >class HasTerminalObject t where
->   terminal :: a -> t
+>   terminal_arrow :: a -> t
 
 >class (CoFunctor p) => HasVariables p t where
 >   variable :: String -> p t
@@ -169,8 +170,8 @@ so boundary p == p -&- invert p == false
 >graph_subst :: (CoFunctor p) => (a -> b) -> p (a,b) -> p a
 >graph_subst f = inverse_image (\x -> (x,f x))
 
-instance HasTerminalObject () where
-   terminal = const
+>instance HasTerminalObject () where
+>   terminal_arrow = \_ -> ()
 
 >instance Representable IO where
 >   type Representation IO = I

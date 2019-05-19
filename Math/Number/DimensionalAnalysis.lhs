@@ -49,7 +49,8 @@
 >import Control.Applicative (Alternative(many,some,(<|>)))
 >import Control.Exception
 >import Math.Tools.PrettyP hiding (parens)
->import Math.Tools.List (interleave)
+>import Math.Tools.Functor (interleave)
+>import Math.Tools.List ()
 >import Math.Tools.Show
 >import Math.Matrix.Interface
 >import Math.Number.Stream (Stream, Limiting(..), Closed(..), Infinitesimal(..))
