@@ -1,33 +1,12 @@
 >{-# LANGUAGE Safe,ExistentialQuantification, ScopedTypeVariables, FlexibleInstances, MultiParamTypeClasses, FlexibleContexts, TypeFamilies, TypeOperators, GADTs, LambdaCase #-}
->module Math.Tools.Prop (
-> Prop(..), subseteq, intersects, split_prop,
-> propositional_table, fromBool, vector_equalizer, matrix_equalizer,
-> list_truthvalues, existential_bind, existential_join, universal_bind,
-> universal_join, prop_fixedpoint, truthvalue, satisfiable,
-> axiom, notMember, subseteq_prop, is_section, doublePropJoin,
-> fromAssoc, fromAssocWith, prop_fromList, prop_fromSet, prop_fromMap,
-> map_prop, equalizer_fixedpoint, invertible, kernel, ternary_op,
-> binary_op, gen_binary_op, binary, integrate_prop, intersect, intersect3,
-> median3, union, union3, excluded_middle, noncontradiction,
-> demorgan_intersect, disjunction_commutative, image_factorization,
-> prop_compose, transitive, antisymmetric, prop_iso_terminal,
-> prop_iso_terminal_inverse, fiber, fiber_, equivalence_relation,
-> reflexive, reflexive_closure, symmetric_closure,
-> transitive_step, transitive_closure, equivalence_generated_by,
-> opposite, leftAdjunct_prop, unit_prop, rel_prop, binary_rel_prop,
-> binary_rel, equal_functions, test_equality_at, equalizer_prop, pullback_prop,
-> sum, prop_and, prop_or, prop_if, prop_if_general, equal, not_equal, lessthan,
-> lesseq, or_list_prop, and_list_prop, enumerate, existential_map,
-> universal_map, prop_existential, prop_universal, image, prop_universal_image,
-> forevery
-> ) where
->import Prelude hiding (sum,id,(.))
->import Control.Monad.Fix
+>module Math.Tools.Prop where
+>import Prelude
+>import qualified Control.Monad.Fix as Fix
 >import Data.Set (Set)
 >import qualified Data.Set as Set
 >import Data.Map (Map)
 >import qualified Data.Map as Map
->import Control.Category
+>import qualified Control.Category as Cat
 >import Math.Tools.CoFunctor
 >import Math.Tools.Universe
 >import Math.Tools.Adjunction (swap)
@@ -42,6 +21,8 @@
 >-- because of the excluded middle axiom, and because characteristic
 >-- functions (as properties) have complex relationship with possible
 >-- elements of 'a'.  See the Universe type class for a solution.
+>-- For exposition of classical logic used here,
+>-- see "Lawvere,Rosebrugh: Sets for mathematics".
 >data Prop a = Characteristic { runCharacteristic :: a -> Bool }
 
 >instance (Universe a) => Ord (Prop a) where { (<=) = subseteq }
@@ -68,10 +49,10 @@ A `intersects` B == (A `intersect` B != {})
 >  toBool (Characteristic f) = f ()
 
 >fromBool :: Bool -> Prop a
->fromBool = Characteristic . const
+>fromBool = Characteristic Cat.. const
 
 >instance CoFunctor Prop where
->   inverse_image f (Characteristic g) = Characteristic (g . f)
+>   inverse_image f (Characteristic g) = Characteristic (g Cat.. f)
 
 reflexive_and_transitive_frames = characteristic (uncurry system_S4)
 reflexive_frames  = characteristic (uncurry system_T)
@@ -160,7 +141,7 @@ serial_frames = characteristic (uncurry system_D)
 >list_truthvalues (Characteristic f) = map (\x -> (x,f x)) all_elements
 
 >-- | relation and unrelation represent the natural isomorphism
->-- Hom(-,PA) =~= Sub(-xA).
+>-- \[Hom(-,P(A)) \cong Sub(- \times A)\]
 
 >instance Relational Prop where
 >    relation f = Characteristic $ \ (x,y) -> toBool $ y `member` f x
@@ -209,7 +190,7 @@ serial_frames = characteristic (uncurry system_D)
 
 
 >prop_fixedpoint :: (Prop a -> Prop a) -> Prop a
->prop_fixedpoint = fix
+>prop_fixedpoint = Fix.fix
 
 >truthvalue :: Bool -> Prop a
 >truthvalue = Characteristic . const
@@ -218,17 +199,17 @@ serial_frames = characteristic (uncurry system_D)
 >-- such that the proposition is satisfied. Note symmetry with 'axiom'.
 
 >satisfiable :: (Universe a) => Prop a -> Bool
->satisfiable = toBool . terminal_part . prop_existential . prop_iso_terminal_inverse
+>satisfiable = toBool Cat.. terminal_part Cat.. prop_existential Cat.. prop_iso_terminal_inverse
 
 >-- | axiom returns true, if the proposition holds for all elements of the
 >-- universe.
 >axiom :: (Universe a) => Prop a -> Bool
->axiom = toBool . terminal_part . prop_universal . prop_iso_terminal_inverse
+>axiom = toBool Cat.. terminal_part Cat.. prop_universal Cat.. prop_iso_terminal_inverse
 
 >notMember :: a -> Prop a -> Bool
 >notMember x (Characteristic p) = not (p x)
 
->-- | x \in subseteq i j <=> x \in i implies x \in j
+>-- | \[x \in subseteq i j \iff x \in i \implies x \in j\]
 >subseteq_prop :: Prop a -> Prop a -> Prop a
 >subseteq_prop i j = Characteristic (\x -> if toBool (x `member` i) then toBool (x `member` j) else True) 
 
@@ -245,7 +226,7 @@ serial_frames = characteristic (uncurry system_D)
 >  all_members = Characteristic $ const True
 
 >fromAssoc :: (Eq a) => [(a,Bool)] -> Prop a
->fromAssoc lst = Characteristic $ \v -> maybe False id (lookup v lst)
+>fromAssoc lst = Characteristic $ \v -> maybe False Cat.id (lookup v lst)
 
 >fromAssocWith :: (Eq a) => [(a,b)] -> Prop b -> Prop a
 >fromAssocWith lst (Characteristic p) 
@@ -263,13 +244,13 @@ serial_frames = characteristic (uncurry system_D)
 >-- | Due to constraints, Prop cannot be made as instance of Functor.
 
 >map_prop :: (Eq b, Universe a) => (a -> b) -> Prop a -> Prop b
->map_prop f = prop_fromList . map f . enumerate
+>map_prop f = prop_fromList Cat.. map f Cat.. enumerate
 
 >equalizer_fixedpoint :: (HasEqualizers p a) => (a -> a) -> p a
->equalizer_fixedpoint f = equalizer f id
+>equalizer_fixedpoint f = equalizer f Cat.id
 
 >invertible :: (HasEqualizers p a) => (b -> a) -> (a -> b) -> p a
->invertible f g = equalizer_fixedpoint (f . g)
+>invertible f g = equalizer_fixedpoint (f Cat.. g)
 
 >kernel :: (Num c, HasEqualizers p c) => (a -> c) -> p a
 >kernel f = equalizer f (const 0)
@@ -295,7 +276,7 @@ The following two functions are the same function.
 >evaluate x = Characteristic $ \ f -> runCharacteristic f x
 
 >evaluate' :: (Universe a, Eq a) => a -> Prop (Prop a)
->evaluate' = integrate_prop . singleton
+>evaluate' = integrate_prop Cat.. singleton
 
 >integrate_prop :: (Universe a) => Prop a -> Prop (Prop a)
 >integrate_prop a = Characteristic $ \p -> 
@@ -336,11 +317,12 @@ The following two functions are the same function.
 >conjunction_commutative :: (Universe a) => Prop a -> Prop a -> Bool
 >conjunction_commutative p q = axiom (p -|- q -<=>- q -|- p)
 
+>-- | \[graph(f) = [<x,y> | y = f(x)]\]
 >graph :: (Eq b) => (a -> b) -> Prop (a,b)
->graph f = relation (singleton . f) -- == [(x,y)| y = f x ]
+>graph f = relation (singleton Cat.. f) -- == [(x,y)| y = f x ]
 
 >image_factorization :: (Eq b, Universe a) => (a -> b) -> Prop b
->image_factorization = image . graph 
+>image_factorization = image Cat.. graph 
 
 >bind :: (Universe b) => (a -> Prop b) -> (b -> Prop c) -> a -> Prop c
 >bind x y = unrelation $ prop_compose (relation x) (relation y)
@@ -349,7 +331,7 @@ The following two functions are the same function.
 >prop_compose (Characteristic f) (Characteristic g) =
 >  Characteristic $ \ (a,c) -> or $ map (\b -> f (a,b) && g (b,c)) all_elements
 
-<x,z> \in transitive R <=> (forall y. <x,y> \in R & <y,z> \in R -> <x,z> \in R)
+>-- | \[<x,z> \in transitive \mathbb{R} \iff (\forall y. <x,y> \in \mathbb{R} & <y,z> \in \mathbb{R} \implies <x,z> \in \mathbb{R})\]
 
 >transitive :: (Universe a) => Prop (a,a) -> Bool
 >transitive r = prop_compose r r <= r
@@ -363,7 +345,7 @@ The following two functions are the same function.
 >prop_iso_terminal_inverse :: Prop b -> Prop ((),b)
 >prop_iso_terminal_inverse (Characteristic f) = Characteristic (\ ((),x) -> f x)
 
->-- | fiber p y = { x | p x == y } = p^-1({y})
+>-- | \[fiber(p,y) = { x | p(x) = y } = p^{-1}({y})\]
 >fiber :: (HasEqualizers Prop c) => (b -> c) -> c -> Prop b
 >fiber p y = prop_iso_terminal $ pullback (const y) p
 
@@ -393,21 +375,21 @@ An equivalence relation is reflexive, transitive and symmetric
 >transitive_closure p = p `union` transitive_closure (transitive_step p)
 
 >equivalence_generated_by :: (Eq a,Universe a) => Prop (a,a) -> Prop (a,a)
->equivalence_generated_by = transitive_closure . symmetric_closure . reflexive_closure
+>equivalence_generated_by = transitive_closure Cat.. symmetric_closure Cat.. reflexive_closure
 
 >opposite :: Prop (a,b) -> Prop (b,a)
 >opposite = inverse_image swap
 
 
-Adjunction P^{op} -| P between functors P and P^{op}, where P : C^{op}
--> C and P^{op} : C -> C^{op} This is based on symmetry of product in
-relations.
+>-- | Adjunction \[P^{op} \dashv P\] between functors \[P\] and \[P^{op}\],
+>-- where \[P : C^{op} \Rightarrow C\] and \[P^{op} : C \Rightarrow C^{op}\].
+>-- This is based on symmetry of product in relations.
 
 >leftAdjunct_prop :: (a -> Prop b) -> b -> Prop a
->leftAdjunct_prop = unrelation . opposite . relation
+>leftAdjunct_prop = unrelation Cat.. opposite Cat.. relation
 
 >unit_prop :: b -> Prop (Prop b)
->unit_prop = leftAdjunct_prop id
+>unit_prop = leftAdjunct_prop Cat.id
 
 >-- | rightAdjunct of that adjunction is difficult, because it would be in
 >-- C^{op}, and we don't have that category here. So how could we
@@ -419,7 +401,7 @@ relations.
 >rel_prop = Characteristic
 
 >binary_rel_prop :: (a -> a -> Bool) -> Prop (a,a)
->binary_rel_prop = Characteristic . uncurry
+>binary_rel_prop = Characteristic Cat.. uncurry
 
 >-- | <http://nlab.mathforge.org/nlab/show/well-founded+relation>
 
@@ -487,7 +469,7 @@ existential_map f p = { b | p `intersect` f^-1({b}) }
 >existential_map :: (Universe a, Eq b) => (a -> b) -> Prop a -> Prop b
 >existential_map f p = Characteristic $ \b -> p `intersects` fiber f b
 
-universal_map f p = { b | p <= f^-1({b}) }
+>-- | \[universal\_map( f, p ) = \{ b | p <= f^{-1}(\{b\}) \}\]
 
 
 >universal_map :: (Universe a, Eq b) => (a -> b) -> Prop a -> Prop b
@@ -495,7 +477,7 @@ universal_map f p = { b | p <= f^-1({b}) }
                                             
 >-- | prop_existential is basically the same as 'existential_map fst',
 >-- except for performance. 'existential_map fst' will need to iterate
->-- over all pairs <a,b>, whereas prop_existential will only iterate
+>-- over all pairs \[<a,b>\], whereas prop_existential will only iterate
 >-- through all elements of b only. Similarly for prop_universal.
 
 >prop_existential :: (Universe b) => Prop (a,b) -> Prop a
@@ -519,7 +501,7 @@ universal_map f p = { b | p <= f^-1({b}) }
 >   universal_image    = universal_map
 
 >forevery :: (Universe b) => Prop b -> Prop ()
->forevery = prop_universal . prop_iso_terminal_inverse
+>forevery = prop_universal Cat.. prop_iso_terminal_inverse
 
 >data (b :\: a) = PSub { runpsub :: PProp a -> PProp b }
 
@@ -529,23 +511,6 @@ universal_map f p = { b | p <= f^-1({b}) }
 
 >pneg_func :: (a -> b) -> PProp (a :\: b)
 >pneg_func f = PNeg $ \a -> inverse_image f a
-
-pnegeq :: (Universe a) => PProp (Prop a :\: a)
-pnegeq = PNeg $ \case
-   (PProp x) -> PProp $ Characteristic (==x)
-
-pnegeither :: PProp t -> PProp (Either t a :\: a)
-pnegeither (PProp (Characteristic f)) = PNeg $ \ case
-   (PProp (Characteristic g)) -> PProp (Characteristic (either f g))
-
-pneg3 :: (PProp a -> PProp b -> PProp c) -> PProp ((c :\: b) :\: a)
-pneg3 = PNeg . fmap PNeg
-
-pprop :: (a -> b) -> PProp (a :\: b)
-pprop g = PNeg $ \case
-   (PProp f) -> PProp (inverse_image g f)
-
-   (PNeg h) -> PNeg (h . inverse_image PUnNeg g)
 
 >instance CoFunctor PProp where
 >   inverse_image f (PProp p) = PProp $ inverse_image f p

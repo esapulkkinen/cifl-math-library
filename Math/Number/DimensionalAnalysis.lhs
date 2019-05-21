@@ -932,9 +932,11 @@ order in the table is significant
 >planck_temperature = 1.41683385e32 %* kelvin
 
 >-- | <https://en.wikipedia.org/wiki/Physical_constant>
->-- | Warning: don't confuse with stefan_boltzmann_constant.
+>--  <https://en.wikipedia.org/wiki/2019_redefinition_of_SI_base_units>
+>-- Warning: don't confuse with stefan_boltzmann_constant.
+>-- Notice value is exact.
 >boltzmann_constant :: (Floating a) => Quantity a
->boltzmann_constant = 1.3806485279e-23 @@ (joule_dimension %- kelvin_dimension)
+>boltzmann_constant = 1.380649e-23 @@ (joule_dimension %- kelvin_dimension)
 
 >-- | <https://en.wikipedia.org/wiki/Gravitational_constant>
 >gravitational_constant :: (Floating a) => Quantity a
@@ -949,12 +951,16 @@ order in the table is significant
 >standard_atmosphere = 101325 %* pascal
 
 >-- | <https://en.wikipedia.org/wiki/Speed_of_light>
+>-- Note value is exact.
 >speed_of_light :: (Floating a) => Quantity a
 >speed_of_light = 299792458.0 @@ (meter_dimension %- second_dimension)
 
 >-- | <https://en.wikipedia.org/wiki/Planck_constant>
+>-- <https://en.wikipedia.org/wiki/2019_redefinition_of_SI_base_units>
+>-- Note value is exact.
 >planck_constant :: (Floating a) => Quantity a
->planck_constant = 6.62607004081e-34 @@ (joule_dimension %+ second_dimension)
+>planck_constant = 6.62607015e-34 @@ (joule_dimension %+ second_dimension)
+
 >reduced_planck_constant :: (Floating a) => Quantity a
 >reduced_planck_constant = (1/(2*pi)) %* planck_constant
 
@@ -975,8 +981,10 @@ order in the table is significant
 >coulombs_constant :: (Floating a) => Quantity a
 >coulombs_constant = 8.9875517873681764e9 @@ (kilogram_dimension %+ (3 %* meter_dimension) %- (4 %* second_dimension) %- (2 %* ampere_dimension))
 >-- | <https://en.wikipedia.org/wiki/Physical_constant>
+>--   <https://en.wikipedia.org/wiki/2019_redefinition_of_SI_base_units>
+>--   Notice value is exact.
 >elementary_charge :: (Floating a) => Quantity a
->elementary_charge = 1.602178620898e-19 @@ coulomb_dimension
+>elementary_charge = 1.602176634e-19 @@ coulomb_dimension
 
 >-- | <https://en.wikipedia.org/wiki/Physical_constant>
 >bohr_magneton :: (Floating a) => Quantity a
@@ -1034,11 +1042,22 @@ order in the table is significant
 >thomson_cross_section :: (Floating a) => Quantity a
 >thomson_cross_section = 6.652458715891e-29 @@ (2 %* meter_dimension)
 
+>-- <https://en.wikipedia.org/wiki/2019_redefinition_of_SI_base_units>
+>ground_state_cesium_hyperfine_transition_frequency :: (Floating a) => Quantity a
+>ground_state_cesium_hyperfine_transition_frequency = 9192631770 @@ hertz_dimension
+
 >-- | <https://en.wikipedia.org/wiki/Physical_constant>
 >weak_mixing_angle :: (Floating a) => Quantity a
 >weak_mixing_angle = 0.222321 @@ radian_dimension
 
+>-- | <https://en.wikipedia.org/wiki/2019_redefinition_of_SI_base_units>
+>-- value is exact.
+>luminous_efficacy_of_monochromatic_540e12_hertz_radiation :: (Floating a) => Quantity a
+>luminous_efficacy_of_monochromatic_540e12_hertz_radiation = 683 @@ (lumen_dimension %- watt_dimension)
+
 >-- | <https://en.wikipedia.org/wiki/Avogadro_constant>
+>-- <https://en.wikipedia.org/wiki/2019_redefinition_of_SI_base_units>
+>-- Notice value is exact.
 >avogadro_constant :: (Floating a) => Quantity a
 >avogadro_constant = 6.02214076e23 @@ (negate $ mol_dimension)
 >-- | <https://en.wikipedia.org/wiki/Physical_constant>
