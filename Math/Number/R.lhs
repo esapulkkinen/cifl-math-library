@@ -15,10 +15,10 @@
 >import qualified Control.Monad.Fix
 >
 >-- | This real representation takes 'epsilon' as input as in epsilon-delta proof.
->data R = Limit { approximate_endo :: Endo Rational }
+>data R = Limit { approximate_endo :: (Endo Rational) }
 
 >instance Limiting R where
->   data Closure R = RClosure { runRClosure :: R }
+>   data Closure R = RClosure { runRClosure :: !R }
 >   limit (Pre x z@(Pre y _)) = RClosure $ real $ \eps ->
 >       if abs (y `approximate` eps - x `approximate` eps) < eps
 >         then y `approximate` eps
@@ -45,10 +45,10 @@
 >floating_approximations r = fmap fromRational $ rational_approximations r
 
 >instance Show R where
->   show x = show $ (fromRational (x `approximate` (1 % 1000000000000000)) :: Double)
+>   show x = show $! (fromRational (x `approximate` (1 % 1000000000000000)) :: Double)
 
 >instance PpShow R where
->   pp x = pp $ (fromRational (x `approximate` (1 % 1000000000000000)) :: Double)
+>   pp x = pp $! (fromRational (x `approximate` (1 % 1000000000000000)) :: Double)
 
 >instance CompleteSpace R
 
@@ -170,7 +170,7 @@
 >pi_r = lim $ sum_stream $ do
 >   k <- naturals
 >   let kr = k % 1
->   return $ fromRational $ (16^^(negate k))*(4/(8*kr+1) - 2/(8*kr+4)
+>   return $! fromRational $! (16^^(negate k))*(4/(8*kr+1) - 2/(8*kr+4)
 >                              - 1/(8*kr+5) - 1/(8*kr+6))
 
 >-- <http://en.wikipedia.org/wiki/Logarithm Logarithm>
@@ -178,7 +178,7 @@
 >log_r a = let a' = (a-1)/(a+1) in
 >  2* (lim $ sum_stream $ do   
 >     n <- naturals
->     return $ (1 / (2 * fromIntegral n + 1))*a'^(2*n+1))
+>     return $! (1 / (2 * fromIntegral n + 1))*a'^(2*n+1))
 
 >integral_r :: (R,R) -> (R -> R) -> R
 >integral_r (x,y) f = foldable_integral acc f
@@ -190,7 +190,7 @@
 
 >foldable_simple_integral :: (Num a, Foldable t, Functor t) =>
 >  (a -> t b) -> (b -> a) -> a -> a
->foldable_simple_integral border f eps = eps * (sum $ fmap f $ border eps)
+>foldable_simple_integral border f eps = eps * (sum $! fmap f $! border eps)
 
 >integral_accuracy :: (Fractional t) => (t -> R) -> R -> R -> Rational -> [Rational]
 >integral_accuracy f x y eps = [x',x'+eps..y']

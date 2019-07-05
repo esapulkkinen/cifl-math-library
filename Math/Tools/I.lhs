@@ -1,7 +1,7 @@
 >{-# LANGUAGE Safe,TypeFamilies, FlexibleInstances, MultiParamTypeClasses,
 >             FlexibleContexts #-}
 >module Math.Tools.I where
->data I a = I { unI :: a }
+>data I a = I { unI :: !a }
 
 >instance Applicative I where
 >   pure x = I x

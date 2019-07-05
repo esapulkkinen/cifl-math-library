@@ -1,4 +1,4 @@
->{-# LANGUAGE Safe, TypeOperators #-}
+>{-# LANGUAGE Safe, TypeOperators, UnicodeSyntax #-}
 >module Math.Number.Interface where
 >import Control.Applicative
 >import Data.Ratio
@@ -27,6 +27,7 @@
 >-- | computes \(f'(x)*g(x) - f(x)*g'(x)\)
 >derivate_commutator :: (DifferentiallyClosed r) => (r -> r) -> (r -> r) -> r -> r
 >derivate_commutator f g x = derivate f x * g x - f x * (derivate g x)
+
 
 >-- | computes \(f'(x)*g(x) + f(x)*g'(x)\). Notice this is product rule.
 >derivate_anticommutator :: (DifferentiallyClosed r) => (r -> r) -> (r -> r) -> r -> r

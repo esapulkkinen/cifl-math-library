@@ -44,14 +44,15 @@
 >   zcoord3 :: !s }
 >       deriving (Eq, Typeable, Data, Generic)
 
+
 >instance (Binary s) => Binary (Vector3 s) where
 >   put (Vector3 x y z) = put x >> put y >> put z
->   get = do { x <- get ; y <- get ; z <- get ; return (Vector3 x y z) }
+>   get = do { x <- get ; y <- get ; z <- get ; return $! (Vector3 x y z) }
 
 >type ComplexVector3 a = (Vector3 :*: Complex) a
 
 >instance Unfoldable Vector3 where
->   unfoldF f = f >>= \a -> f >>= \b -> f >>= \c -> return $ Vector3 a b c
+>   unfoldF f = f >>= \a -> f >>= \b -> f >>= \c -> return $! Vector3 a b c
 
 >i3 :: (Num a) => Vector3 a
 >i3 = identity <!> (xcoord3,id)
@@ -252,7 +253,7 @@
 >vector_epsilon = epsilon_stream Stream.>>!= \x ->
 >   epsilon_stream Stream.>>!= \y ->
 >   epsilon_stream Stream.>>!= \z ->
->   return $ Vector3 x y z
+>   return $! Vector3 x y z
 
 >instance (ShowPrecision s) => ShowPrecision (Vector3 s) where
 >   show_at_precision (Vector3 x y z) p =
@@ -279,7 +280,7 @@
 >                       yr_ <- char ',' yr
 >                       (z,zr) <- readsPrec 0 yr_
 >                       zr_ <- char ']' zr 
->                       return (Vector3 x y z,zr_)
+>                       return $! (Vector3 x y z,zr_)
 >   where char ch (ch2:cr) | ch == ch2 = return cr
 >                          | otherwise = []
 >         char ch [] = []
@@ -297,14 +298,6 @@ instance (PpShow (f a)) => PpShow ((Vector3 :*: f) a) where
 
 >instance Functor Vector3 where
 >  fmap f (Vector3 x y z) = Vector3 (f x) (f y) (f z)
-
->instance Linear Vector3 where
->  linear = id -- (Vector3 x y z) = Vector3 x y z
->  unlinear = id -- (Vector3 x y z) = Vector3 x y z
-
-
-linear :: (Num a, VectorSpace v) => (Vector3 a -> v) -> Vector3 (Scalar v) -> v
-linear f (Vector3 x y z) = (x %* f xid) %+ (y %* f yid) %+ (z %* f zid)
 
 >instance Monad Vector3 where
 >  return x = Vector3 x x x
@@ -343,7 +336,7 @@ linear f (Vector3 x y z) = (x %* f xid) %+ (y %* f yid) %+ (z %* f zid)
 >     (a',b',c') <- fzip3 (approximations a)
 >                         (approximations b)
 >                         (approximations c)
->     return $ Vector3 a' b' c'
+>     return $! Vector3 a' b' c'
 
 
 approximations_vector3 :: Vector3 R -> Stream (Vector3 R)
@@ -531,6 +524,13 @@ grad3 f x = Vector3 (partial_derivate3x f x)
 >   recip = inverse
 >   fromRational = diagonal_matrix . constant3 . fromRational
 
+>-- | <http://en.wikipedia.org/wiki/Hyperbolic_function hyperbolic function>
+>instance (Floating a, Closed a, ConjugateSymmetric a) => Floating ((Vector3 :*: Vector3) a) where
+>   exp = matrix_exponential3
+>   sinh x = (exp x - exp (negate x)) / 2
+>   cosh x = (exp x + exp (negate x)) / 2
+>   tanh x = sinh x / cosh x
+
 >instance (Num a) => Num (Vector3 a) where
 >  (Vector3 x y z) + (Vector3 x' y' z') = Vector3 (x+x') (y+y') (z+z')
 >  (Vector3 x y z) - (Vector3 x' y' z') = Vector3 (x-x') (y-y') (z-z')
@@ -578,6 +578,13 @@ grad3 f x = Vector3 (partial_derivate3x f x)
 >cross_product3 :: (Num a) => (Vector2 :*: Vector3) a -> Vector3 a
 >cross_product3 (Matrix (Vector2 a b)) = cross_product a b
 
+>matrix_exponential3 :: (Closed b, ConjugateSymmetric b, Fractional b)
+>   => Matrix3 b -> Matrix3 b
+>matrix_exponential3 m = Stream.ssum $ 
+>    liftA2 (\x y -> fmap (/y) x)
+>               (liftA2 matrix_power3 (Stream.constant m) (Stream.naturals :: Stream Integer))
+>               Stream.factorial
+
 >xid,yid,zid :: (Num a) => Vector3 a
 >xid = Vector3 1 0 0
 >yid = Vector3 0 1 0
@@ -587,16 +594,9 @@ grad3 f x = Vector3 (partial_derivate3x f x)
 >identity3 = Matrix $ Vector3 xid yid zid
 
 
->matrix_power :: (Num a) => Matrix3 a -> Integer -> Matrix3 a
->matrix_power mat 0 = identity3
->matrix_power mat i = mat `matrix_multiply3` matrix_power mat (pred i)
-
->matrix_exponential3 :: (Closed a, Fractional a, ConjugateSymmetric a) => Matrix3 a -> Matrix3 a
->matrix_exponential3 m = Stream.ssum $ 
->    liftA2 (\x y -> fmap (/y) x)
->               (liftA2 matrix_power (Stream.constant m) Stream.naturals)
->               Stream.factorial
-
+>matrix_power3 :: (Num a) => Matrix3 a -> Integer -> Matrix3 a
+>matrix_power3 mat 0 = identity3
+>matrix_power3 mat i = mat `matrix_multiply3` matrix_power3 mat (pred i)
 
 >vector_indices3 :: (Integral a) => Vector3 a
 >vector_indices3 = Vector3 1 2 3
@@ -850,7 +850,9 @@ instance FractionalSpace (Vector3 (Complex R)) where
 >         u3 = z - projection u1 z - projection u2 z
 
 >-- | <https://en.wikipedia.org/wiki/Eigenvalue_algorithm>
-
+>--   based on algorithm by
+>--   Smith, Oliver K.: Eigenvalues of symmetric 3x3 matrix, 1961, Communications of the ACM., <doi:10.1145/355578.366316>
+>--  The algorithm works reasonably when the matrix is real and symmetric.
 >eigenvalue3 :: (Floating a, Ord a, ConjugateSymmetric a) => (Vector3 :*: Vector3) a -> Vector3 a
 >eigenvalue3 m = if p1 == 0 then diagonal m else Vector3 eig1 eig2 eig3
 >   where eig1 = q + 2*p*cos(phi)

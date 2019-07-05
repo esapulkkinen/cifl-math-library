@@ -13,8 +13,8 @@
 >import Math.Tools.Exception
 >import System.Environment
 
->data ParseExceptions = CannotParseException String
->                     | IncompleteParseException String String
+>data ParseExceptions = CannotParseException !String
+>                     | IncompleteParseException !String !String
 >                     | AmbiguousParseException [(String,String)]
 >  deriving (Show, Typeable, Data, Generic)
 
@@ -36,7 +36,7 @@
 >   pure x = CmdlineParsingMT $ const (pure x)
 >   (CmdlineParsingMT f) <*> (CmdlineParsingMT x) = CmdlineParsingMT $ \m -> f m <*> x m
 
->data LookupExceptions = NotFoundException String
+>data LookupExceptions = NotFoundException !String
 >  deriving (Show,Typeable, Data, Generic)
 
 >instance Exception LookupExceptions
@@ -71,8 +71,8 @@
 >   [(v,r)]  -> throwM $ IncompleteParseException str r
 >   r -> throwM $ AmbiguousParseException $ map (\ (a,b) -> (show a,b)) r
 
->data CommandLineException = MissingCommandLineArgument String
->                          | InvalidCommandLineArgument String
+>data CommandLineException = MissingCommandLineArgument !String
+>                          | InvalidCommandLineArgument !String
 >   deriving (Show, Typeable, Data, Generic)
 
 >instance Exception CommandLineException

@@ -33,7 +33,9 @@
 >-- ** unicode syntax
 >   module Math.Matrix.Unicode,
 >-- ** commutator and characteristic polynomials
->   module Math.Matrix.Instances
+>   module Math.Matrix.Instances,
+>-- ** concurrent evaluation of matrices
+>   module Math.Matrix.Concurrent
 >  ) where
 >import Math.Matrix.Interface 
 >import Math.Matrix.Matrix
@@ -49,3 +51,4 @@
 >import Math.Matrix.QuasiQuoter
 >import Math.Matrix.Unicode
 >import Math.Matrix.SIMD
+>import Math.Matrix.Concurrent

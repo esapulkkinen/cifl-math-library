@@ -9,9 +9,9 @@
 >import Math.Tools.PrettyP
 >import Math.Tools.Isomorphism
 
->data LineInfo = LineInfo { li_file :: String,
->			    li_row  :: Int,
->			    li_column :: Int }
+>data LineInfo = LineInfo { li_file :: !String,
+>			    li_row  :: {-# UNPACK #-} !Int,
+>			    li_column :: {-# UNPACK #-} !Int }
 >              | NoLineInfo
 >   deriving (Eq,Ord,Typeable)
 

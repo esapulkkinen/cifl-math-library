@@ -6,6 +6,7 @@
 >{-# LANGUAGE TypeFamilies #-}
 >{-# LANGUAGE AllowAmbiguousTypes #-}
 >{-# LANGUAGE MultiParamTypeClasses #-}
+>{-# LANGUAGE RoleAnnotations #-}
 >{-# OPTIONS_HADDOCK ignore-exports #-}
 >-- | This modules provides SIMD optimized versions of vectors.
 >-- Relies heavily on GHC SIMD support. SIMD works only when using LLVM and
@@ -53,7 +54,6 @@
 >import GHC.Exts
 >import GHC.Int
 >import GHC.Word
-
 
 >data SVec4 a where
 >   Int32SVec4 :: !Int32X4# -> SVec4 Int32
@@ -214,11 +214,13 @@
 >toInt32Vector4 (Int32SVec4 x) = let (# a,b,c,d #) = unpackInt32X4# x
 >                           in Vector4 (I32# a) (I32# b) (I32# c) (I32# d)
 
+>{-# INLINE from2x2Matrix #-}
 >from2x2Matrix :: (Vector2 :*: Vector2) Int32 -> SVec4 Int32
 >from2x2Matrix (Matrix (Vector2 (Vector2 (I32# a) (I32# b))
 >                               (Vector2 (I32# c) (I32# d))))
 >   = Int32SVec4 (packInt32X4# (# a,b,c,d #))
 
+>{-# INLINE to2x2Matrix #-}
 >-- | convert a SIMD optimized SVec4 Int32 to a 2x2 matrix
 >to2x2Matrix :: SVec4 Int32 -> (Vector2 :*: Vector2) Int32
 >to2x2Matrix (Int32SVec4 x) = let (# a,b,c,d #) = unpackInt32X4# x
@@ -290,6 +292,7 @@
 >                                I32# fd = f (I32# d)
 >                             in Int32SVec4 (packInt32X4# (# fa,fb,fc,fd #))
 
+>{-# INLINE mapFVec2 #-}
 >mapFVec2 :: (Double -> Double) -> FVec2 Double -> FVec2 Double
 >mapFVec2 f (DoubleFVec2 x) = let (# a,b #) = unpackDoubleX2# x
 >                                 D# a' = f (D# a)
@@ -815,6 +818,7 @@
 
 #endif
 
+
 >instance Eq (SVec4 Int32) where
 >   (==) = eqSVec4
 >instance Eq (SVec8 Int16) where
@@ -938,10 +942,16 @@
 >   (sum_coordinates2 $ fromO $ zipFVec2 (*) (toO b) v')
 >  where v' = toO v
 
->instance LinearTransform Vector2 Vector2 Double where
+>instance {-# OVERLAPS #-} LinearTransform Vector2 Vector2 Double where
 >   (<<*>) = fast_multiply2_double
 >   v <*>> m = fast_multiply2_double (transpose m) v
 
->instance LinearTransform Vector4 Vector4 Float where
+>instance {-# OVERLAPS #-} LinearTransform Vector4 Vector4 Float where
 >   (<<*>) = fast_multiply4_float
 >   v <*>> m = fast_multiply4_float (transpose m) v
+
+>type role SVec4 nominal
+>type role SVec8 nominal
+>type role SVec16 nominal
+>type role FVec4 nominal
+>type role FVec2 nominal

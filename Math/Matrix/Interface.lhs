@@ -1,5 +1,5 @@
 >-- -*- coding: utf-8 -*-
->{-# LANGUAGE Trustworthy,MultiParamTypeClasses, ScopedTypeVariables, FlexibleContexts, FunctionalDependencies, FlexibleInstances, TypeOperators, TypeFamilies, DefaultSignatures, UnicodeSyntax, DeriveGeneric, DeriveDataTypeable #-}
+>{-# LANGUAGE Trustworthy,MultiParamTypeClasses, ScopedTypeVariables, FlexibleContexts, FunctionalDependencies, FlexibleInstances, TypeOperators, TypeFamilies, DefaultSignatures, UnicodeSyntax, DeriveGeneric, DeriveDataTypeable, ConstraintKinds #-}
 >-- | These should match standard definitions of vector spaces.
 >-- Used for reference: K. Chandrasekhara Rao: Functional Analysis.
 >-- also see Warner: Modern algebra.
@@ -49,7 +49,10 @@
 >  (%+)  :: v -> v -> v -- sum
 >  (%*)  :: Scalar v -> v -> v -- scalar product
 
->class (VectorSpace v, Scalar v ~ Complex a) => ComplexVectorSpace v a where
+>type VectorSpaceOver v a = (VectorSpace v, Scalar v ~ a)
+>type ComplexVectorSpace v a = VectorSpaceOver v (Complex a)
+>type Linear a b = (VectorSpace a, VectorSpace b, Scalar a ~ Scalar b)
+>type LinearInnerProductSpace a b = (InnerProductSpace a, InnerProductSpace b, Scalar a ~ Scalar b)
 
 >class (VectorSpace v) => BilinearVectorSpace v where
 >   biLin :: v -> v -> Scalar v
@@ -89,15 +92,10 @@
 >class ConjugateSymmetric m where
 >  conj :: m -> m
 
->class Linear f where
->  linear   :: f (Scalar (f a)) -> f a
->  unlinear :: f a -> f (Scalar (f a))
-
 >class LinearTransform m n a where
 >  (<*>>) :: n a -> (m :*: n) a -> m a -- ^ vector times matrix
 >  (<<*>) :: (m :*: n) a -> m a -> n a -- ^ matrix times vector
 
->class (Scalar (f a) ~ a) => VectorLike f a
 
 >class (Functor m, Functor n) => Transposable m n where
 >  transpose :: (m :*: n) a -> (n :*: m) a
@@ -332,16 +330,16 @@ index2 (row,col) (C e) = index col (index row e)
 >      => (g :*: h) a -> (h :*: f) a -> (g :*: f) (Scalar (h a))
 >m1 %*% m2 = matrix (%.) (cells m1) (cells $ transpose m2)
 
->-- | In this version, we must assume Scalar (h a) ~ a constraint,
+>-- | In this version, we must assume VectorSpaceOver (h a) a constraint,
 >-- but the result type is nicer.
 
 >(%**%) :: (Functor g,Transposable h f,InnerProductSpace (h a),
->           Scalar (h a) ~ a)
+>           VectorSpaceOver (h a) a)
 >      => (g :*: h) a -> (h :*: f) a -> (g :*: f) a
 >m1 %**% m2 = matrix (%.) (cells m1) (cells $ transpose m2)
 
 
->(%^%) :: (Functor h, SquareMatrix h b, InnerProductSpace (h b), b ~ Scalar (h b))
+>(%^%) :: (Functor h, SquareMatrix h b, InnerProductSpace (h b), VectorSpaceOver (h b) b)
 >      => (h :*: h) b -> Integer -> (h :*: h) b
 >x %^% 0 = identity
 >x %^% i = x %*% (x %^% (i-1)) 
@@ -390,7 +388,7 @@ index2 (row,col) (C e) = index col (index row e)
 >
 >-- | <https://en.wikipedia.org/wiki/Conjugate_transpose>
 >is_skew_hermitian :: (Num a, Eq a, ConjugateSymmetric a) => a -> Bool
->is_skew_hermitian a = a == negate (conj a)
+>is_skew_hermitian a = a == (negate $! (conj $! a))
 >
 >-- | <https://en.wikipedia.org/wiki/Conjugate_transpose>
 >is_normal :: (Num a, Eq a, ConjugateSymmetric a) => a -> Bool
@@ -455,12 +453,19 @@ index2 (row,col) (C e) = index col (index row e)
 >instance (Num a) => VectorSpace (Endo a) where
 >   type Scalar (Endo a) = a
 >   vzero = Endo id
->   vnegate (Endo f) = Endo (negate . f)
+>   vnegate (Endo f) = Endo $ negate . f
 >   a %* (Endo f) = Endo $ \x -> a * f x
 >   (Endo f) %+ (Endo g) = Endo $ \x -> f x + g x
 
->instance (Num a, ConjugateSymmetric a, Universe a) => InnerProductSpace (Endo a) where
->   (Endo f) %. (Endo g) = sum [f x * conj (g x) | x <- all_elements]
+
+>instance (Num a) => Num (Endo a) where
+>   (+) = (%+)
+>   x - y = x %+ vnegate y
+>   (Endo f) * (Endo g) = Endo $ f . g
+>   negate (Endo f) = Endo $ negate . f
+>   abs (Endo f) = Endo $ abs . f
+>   signum f = f - abs f
+>   fromInteger = Endo . const . fromInteger
 
 >instance (RealFloat a) => VectorSpace (Complex a) where
 >   type Scalar (Complex a) = Complex a
@@ -468,6 +473,7 @@ index2 (row,col) (C e) = index col (index row e)
 >   vnegate = negate
 >   a %* b = a * b
 >   a %+ b = a + b
+
 
 >instance (RealFloat a) => InnerProductSpace (Complex a) where
 >   a %. b = a * conj b
@@ -536,12 +542,16 @@ instance (Floating a) => NormedSpace [a] where
 >   a %* (Product x) = Product (x ^ a)
 >   (Product x) %+ (Product y) = Product (x * y)
 
+>instance (Floating a) => InnerProductSpace (Product a) where
+>  (Product x) %. (Product y) = x ** y
+
 >instance (Num a) => VectorSpace (Sum a) where
 >   type Scalar (Sum a) = a
 >   vzero = Sum 0
 >   vnegate (Sum x) = Sum (negate x)
 >   a %* (Sum x) = Sum (a * x)
 >   (Sum x) %+ (Sum y) = Sum (x + y)
+
 
 >instance (Floating a, ConjugateSymmetric a) => NormedSpace (Sum a) where
 >   norm x = sqrt (x %. x)
@@ -579,26 +589,21 @@ instance (Floating a) => NormedSpace [a] where
 >instance (Integral a,Fractional a) => LieAlgebra (Product a) where
 >   f %<>% g = (f <> g) %- (g <> f)
 
->instance (VectorSpace v, VectorSpace w, Scalar v ~ Scalar w)
->  => VectorSpace (v,w) where
+>instance (Linear v w) => VectorSpace (v,w) where
 >   type Scalar (v,w) = Scalar v
 >   vzero = (vzero,vzero)
 >   vnegate (v,w) = (vnegate v, vnegate w)
 >   a %* (x,y) = (a %* x, a %* y)
 >   (x,y) %+ (x',y') = (x %+ x', y %+ y')
 
->instance (Scalar v ~ Scalar w, Num (Scalar w), 
->         InnerProductSpace v, InnerProductSpace w)
->  => InnerProductSpace (v,w) where
+>instance (LinearInnerProductSpace v w, Num (Scalar w)) => InnerProductSpace (v,w) where
 >   (a,b) %. (c,d) = a %. c + b %. d
 
 >-- | <https://en.wikipedia.org/wiki/Lie_algebra>
 >instance (LieAlgebra a, LieAlgebra b, Scalar a ~ Scalar b) => LieAlgebra (a,b) where
 >   (a,b) %<>% (a',b') = (a %<>% a', b %<>% b')
 
->instance (VectorSpace v, VectorSpace w,VectorSpace u, 
->  Scalar v ~ Scalar w, Scalar w ~ Scalar u)
-> => VectorSpace (v,w,u) where
+>instance (Linear v w, Linear w u) => VectorSpace (v,w,u) where
 >   type Scalar (v,w,u) = Scalar v
 >   vzero = (vzero,vzero,vzero)
 >   vnegate (x,y,z) = (vnegate x, vnegate y,vnegate z)
@@ -609,8 +614,7 @@ instance (Floating a) => NormedSpace [a] where
 >  => LieAlgebra (v,w,u) where
 >   (a,b,c) %<>% (a',b',c') = (a %<>% a', b %<>% b', c %<>% c')
 
->instance (Scalar v ~ Scalar w, Scalar w ~ Scalar u, Num (Scalar w),
->          InnerProductSpace v, InnerProductSpace w, InnerProductSpace u)
+>instance (LinearInnerProductSpace v w, LinearInnerProductSpace w u, Num (Scalar w))
 >  => InnerProductSpace (v,w,u) where
 >    (a,b,c) %. (d,e,f) = a %. d + b %. e + c %. f
 
@@ -662,8 +666,6 @@ instance (Functor m) => Unital (:*:) m where
 >  vnegate (Matrix v) = Matrix (vnegate v)
 >  (Matrix v) %+ (Matrix w) = Matrix (v %+ w)
 >  c %* (Matrix v) = Matrix (c %* v)
-
->instance (VectorSpace (f (Complex a)), Scalar (f (Complex a)) ~ Complex a) => ComplexVectorSpace ((f :*: Complex) a) a
 
 >instance (Functor f) => Transposable f Complex where
 >  transpose (Matrix m) = Matrix $ fmap realPart m :+ fmap imagPart m

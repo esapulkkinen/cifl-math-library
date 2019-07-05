@@ -118,10 +118,11 @@ http://en.wikipedia.org/wiki/Bra%E2%80%93ket_notation
 >         char ch [] = fail "no match"
 
 
->(%<|>%) :: (Functor v, RealFloat a, Transposable v Vector1,
->            Scalar (v (Complex a)) ~ Complex a,             
->            InnerProductSpace (v (Complex a))) => 
->           v (Complex a) -> v (Complex a) -> Scalar (v (Complex a))
+(%<|>%) :: (Functor v, RealFloat a, Transposable v Vector1,
+            Scalar (v (Complex a)) ~ Complex a,             
+            InnerProductSpace (v (Complex a))) => 
+           v (Complex a) -> v (Complex a) -> Scalar (v (Complex a))
+
 >(%<|>%) a b = vector_element $ vector_element $ cells $ bra a %*% ket b
 
 >instance (Limiting a) => Limiting (Vector1 a) where

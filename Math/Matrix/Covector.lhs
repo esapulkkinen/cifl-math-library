@@ -27,6 +27,9 @@
 >data Dual v = Covector { bracket :: v -> Scalar v }
 >  deriving (Typeable, Generic)
 
+>(*><) :: Dual v -> v -> Scalar v
+>(*><) = bracket
+
 >-- | <https://en.wikipedia.org/wiki/Curl_(mathematics)>
 >--   <https://en.wikipedia.org/wiki/Laplace_operator>
 >--   <https://en.wikipedia.org/wiki/Divergence>

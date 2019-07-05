@@ -1,4 +1,5 @@
 >{-# LANGUAGE Safe,GADTs, Rank2Types, FlexibleInstances #-}
+>{-# OPTIONS_HADDOCK hide, prune #-}
 >module Math.Graph.Monoid where
 >import Prelude hiding (id,(.))
 >import Control.Category

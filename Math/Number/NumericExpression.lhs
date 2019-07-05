@@ -20,8 +20,8 @@
 >import Math.Matrix.Interface
 >import Math.Matrix.Matrix
 
->data Var a = Var { var_name :: String, var_debruijn_index :: Integer }
->           | Val a
+>data Var a = Var { var_name :: !String, var_debruijn_index :: !Integer }
+>           | Val !a
 >   deriving (Typeable, Data, Generic, Eq)
 
 >instance PpShowF Var where
@@ -242,15 +242,15 @@ instance (VectorSpace a) => Expression VectorSpaceExpr VectorCtx a where
 deriving instance (Show a) => Show ((NumExpr v :*: Var) a)
 
 >-- | Basically same as methods in Num type class from prelude, but as data.
->data NumExpr v a = Plus (NumExpr v a) (NumExpr v a)
->            | Product (NumExpr v a) (NumExpr v a)
->            | Subtract (NumExpr v a) (NumExpr v a)
->            | Negate (NumExpr v a)
->            | Abs (NumExpr v a)
->            | Signum (NumExpr v a)
->            | NumPrim (Var a)
->            | FromInteger Integer
->            | InnerProduct (VectorSpaceExpr v a) (VectorSpaceExpr v a)
+>data NumExpr v a = Plus !(NumExpr v a) !(NumExpr v a)
+>            | Product !(NumExpr v a) !(NumExpr v a)
+>            | Subtract !(NumExpr v a) !(NumExpr v a)
+>            | Negate !(NumExpr v a)
+>            | Abs !(NumExpr v a)
+>            | Signum !(NumExpr v a)
+>            | NumPrim !(Var a)
+>            | FromInteger !Integer
+>            | InnerProduct !(VectorSpaceExpr v a) !(VectorSpaceExpr v a)
 >  deriving (Eq, Typeable, Data, Generic)
 
 >instance (PpShowF v) => PpShowF (NumExpr v) where
@@ -394,10 +394,10 @@ deriving instance (Show a) => Show ((NumExpr v :*: Var) a)
 >   eval = runEnumExpr
 
 >-- | basically same as Fractional class in Prelude.
->data FracExpr v a = PrimFracExpr (NumExpr v a)
->                | Divide (FracExpr v a) (FracExpr v a)
->                | Recip  (FracExpr v a)
->                | FromRational Rational
+>data FracExpr v a = PrimFracExpr !(NumExpr v a)
+>                | Divide !(FracExpr v a) !(FracExpr v a)
+>                | Recip  !(FracExpr v a)
+>                | FromRational !Rational
 >  deriving (Eq, Typeable, Data, Generic)
 
 >instance (PpShowF v) => PpShowF (FracExpr v) where
@@ -414,23 +414,23 @@ deriving instance (Show a) => Show ((NumExpr v :*: Var) a)
 
 >-- | basically same as Floating class in Prelude, but as data.
 >data FloatExpr v a = PrimPi
->                 | Exp (FloatExpr v a)
->                 | Log (FloatExpr v a)
->                 | Sqrt (FloatExpr v a)
->                 | Power (FloatExpr v a) (FloatExpr v a)
->                 | Sin (FloatExpr v a)
->                 | Cos (FloatExpr v a)
->                 | Tan (FloatExpr v a)
->                 | Asin (FloatExpr v a)
->                 | Acos (FloatExpr v a)
->                 | Atan (FloatExpr v a)
->                 | Sinh (FloatExpr v a)
->                 | Cosh (FloatExpr v a)
->                 | Tanh (FloatExpr v a)
->                 | Asinh (FloatExpr v a)
->                 | Acosh (FloatExpr v a)
->                 | Atanh (FloatExpr v a)
->                 | PrimFloatExpr (FracExpr v (FloatExpr v a))
+>                 | Exp !(FloatExpr v a)
+>                 | Log !(FloatExpr v a)
+>                 | Sqrt !(FloatExpr v a)
+>                 | Power !(FloatExpr v a) !(FloatExpr v a)
+>                 | Sin !(FloatExpr v a)
+>                 | Cos !(FloatExpr v a)
+>                 | Tan !(FloatExpr v a)
+>                 | Asin !(FloatExpr v a)
+>                 | Acos !(FloatExpr v a)
+>                 | Atan !(FloatExpr v a)
+>                 | Sinh !(FloatExpr v a)
+>                 | Cosh !(FloatExpr v a)
+>                 | Tanh !(FloatExpr v a)
+>                 | Asinh !(FloatExpr v a)
+>                 | Acosh !(FloatExpr v a)
+>                 | Atanh !(FloatExpr v a)
+>                 | PrimFloatExpr !(FracExpr v (FloatExpr v a))
 >  deriving (Generic)
 
 >deriving instance (Typeable (v (FloatExpr v a))) => Typeable (FloatExpr v a)
@@ -520,9 +520,9 @@ deriving instance (Show a) => Show ((NumExpr v :*: Var) a)
 >   acosh = Acosh
 >   atanh = Atanh
 
->data EnumExpr a = SuccExpr (EnumExpr a)
->                | PredExpr (EnumExpr a)
->                | ToEnumExpr (Var a)
+>data EnumExpr a = SuccExpr !(EnumExpr a)
+>                | PredExpr !(EnumExpr a)
+>                | ToEnumExpr !(Var a)
 >  deriving (Eq, Typeable, Data, Generic)
 
 >instance (Enum a) => Enum (EnumExpr a) where

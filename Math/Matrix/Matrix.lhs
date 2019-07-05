@@ -144,22 +144,22 @@ example use: m <!> (xcoord3,ycoord3)
 matrix_commutator :: (Applicative h, Transposable h h, InnerProductSpace (h a), Scalar (h a) ~ a) => (h :*: h) a -> (h :*: h) a -> (h :*: h) a
 
 >matrix_commutator :: (Num a, Applicative h, Transposable h h,
->                      InnerProductSpace (h a), Scalar (h a) ~ a)
+>                      InnerProductSpace (h a), VectorSpaceOver (h a) a)
 >                     => (h :*: h) a -> (h :*: h) a -> (h :*: h) a 
 >matrix_commutator m n = liftA2 (-) (m %**% n) (n %**% m)
 
 >matrix_anticommutator :: (Num a, Applicative h, Transposable h h,
->                      InnerProductSpace (h a), Scalar (h a) ~ a)
+>                      InnerProductSpace (h a), VectorSpaceOver (h a) a)
 >                     => (h :*: h) a -> (h :*: h) a -> (h :*: h) a 
 >matrix_anticommutator m n = liftA2 (+) (m %**% n) (n %**% m)
 
 >normalized_anticommutator :: (Fractional a, Applicative h, Transposable h h,
->                      InnerProductSpace (h a), Scalar (h a) ~ a)
+>                      InnerProductSpace (h a), VectorSpaceOver (h a) a)
 >                     => (h :*: h) a -> (h :*: h) a -> (h :*: h) a 
 >normalized_anticommutator m n = liftA (/2) (matrix_anticommutator m n)
 
 >commute :: (Fractional a, Applicative f, Transposable f f,
->            InnerProductSpace (f a), Scalar (f a) ~ a) =>
+>            InnerProductSpace (f a), VectorSpaceOver (f a) a) =>
 >   Complex ((f :*: f) a) -> Complex ((f :*: f) a) -> (f :*: f) (Complex a)
 >commute (x :+ y) (x' :+ y') = liftA2 (:+) (normalized_anticommutator x x')
 >                                          (matrix_commutator y y')

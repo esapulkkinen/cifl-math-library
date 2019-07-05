@@ -1,4 +1,5 @@
 >{-# LANGUAGE FlexibleContexts, TypeOperators, TemplateHaskell, QuasiQuotes, GADTs #-}
+>{-# LANGUAGE UnicodeSyntax #-}
 >{-# OPTIONS_HADDOCK hide #-}
 >module Math.Matrix.QuantumMechanics where
 >import Control.Applicative
@@ -27,11 +28,14 @@ momentum :: (Infinitesimal a, Closed a, RealFloat a)
 >momentum :: (Show a, RealFloat a, Closed a, Infinitesimal a) 
 >         =>  (Complex (Quantity a) -> Complex (Quantity a))
 >         -> Complex (Quantity a) -> Complex (Quantity a)
->momentum psi x0 = - (0 :+ 1) * (hbar :+ 0) * complex_derivate psi x0
+>momentum psi x0 = - i * (ħ :+ 0) * complex_derivate psi x0
 
 >-- <http://en.wikipedia.org/wiki/Planck_Constant>
 >hbar :: (Show a, Floating a) => Quantity a
 >hbar = 6.62607004081e-34 * joule * second
+
+>ħ :: (Show a, Floating a) => Quantity a
+>ħ = hbar
 
 
 >-- <http://en.wikipedia.org/wiki/Matrix_representation_of_Maxwell's_equations>
@@ -43,7 +47,7 @@ momentum :: (Infinitesimal a, Closed a, RealFloat a)
 > -> (Vector4 (Complex v) -> b)
 > -> Vector4 (Complex v) -> b
 >riemann_silberstein_plus permit permea e b rt = (1 / sqrt 2) %* (sqrt(permit `bracket` rt) %* e rt)
->     %+ ((0 :+ 1) / (sqrt(permea `bracket` rt))) %* b rt
+>     %+ (i / (sqrt(permea `bracket` rt))) %* b rt
 
 >-- <http://en.wikipedia.org/wiki/Matrix_representation_of_Maxwell's_equations>
 
@@ -56,17 +60,17 @@ momentum :: (Infinitesimal a, Closed a, RealFloat a)
 > -> Vector4 (Complex v) -> b
 >riemann_silberstein_minus permit permea e b rt = 
 >   (1 / sqrt 2) %* (sqrt(permit `bracket` rt) %* e rt)
->     %- ((0 :+ 1) / (sqrt(permea `bracket` rt))) %* (b rt)
+>     %- (i / (sqrt(permea `bracket` rt))) %* (b rt)
 
 >theta_plus :: (RealFloat v) =>
 > (Dual (Vector4 (Complex v))) -> (Dual (Vector4 (Complex v)))
 > -> (Vector4 (Complex v) -> Vector3 (Complex v))
 > -> (Vector4 (Complex v) -> Vector3 (Complex v))
 > -> Vector4 (Complex v) -> Vector4 (Complex v)
->theta_plus permit permea e b rt = Vector4 (vnegate fx + (0:+1) * fy)
+>theta_plus permit permea e b rt = Vector4 (vnegate fx + i * fy)
 >                                          fz
 >                                          fz
->                                          (fx + (0:+1) * fy)
+>                                          (fx + i * fy)
 >   where Vector3 fx fy fz = riemann_silberstein_plus permit permea e b rt
 
 >theta_minus :: (RealFloat v) =>
@@ -75,10 +79,10 @@ momentum :: (Infinitesimal a, Closed a, RealFloat a)
 > -> (Vector4 (Complex v) -> Vector3 (Complex v))
 > -> Vector4 (Complex v) -> Vector4 (Complex v)
 
->theta_minus permit permea e b rt = Vector4 (negate fx - (0:+1) * fy)
+>theta_minus permit permea e b rt = Vector4 (negate fx - i * fy)
 >                                           fz
 >                                           fz
->                                           (fx - (0:+1) * fy)
+>                                           (fx - i * fy)
 >   where Vector3 fx fy fz = riemann_silberstein_minus permit permea e b rt
 
 >velocity :: Floating a => (b -> a) -> (b -> a) -> b -> a
@@ -102,10 +106,10 @@ momentum :: (Infinitesimal a, Closed a, RealFloat a)
 >                                  0 0 0 1
 >                                  1 0 0 0
 >                                  0 1 0 0|]
->maxwell_y = (0 :+ 1) %* [double4x4|0 0 -1 0
->                                  0 0 0 -1
->                                  1 0 0 0
->                                  0 1 0 0|]
+>maxwell_y = i %* [double4x4|0 0 -1 0
+>                           0 0 0 -1
+>                           1 0 0 0
+>                           0 1 0 0|]
 >maxwell_z = (1 :+ 0) %* [double4x4|1 0 0 0
 >                                  0 1 0 0
 >                                  0 0 -1 0
@@ -136,8 +140,11 @@ momentum :: (Infinitesimal a, Closed a, RealFloat a)
 
 >klein_gordon :: (Show a, Floating a, Closed a, Infinitesimal a)
 >  => Quantity a -> Dual (Vector4 (Quantity a)) -> Dual (Vector4 (Quantity a))
->klein_gordon m phi = (1 / (c*c)) %* (derivate4t_squared phi)
->   %- ((∇·∇) phi) %+ (((m*m*c*c)/(hbar*hbar)) %* phi)
+>klein_gordon m ϕ = (1 / (c*c)) %* (derivate4t_squared ϕ)
+>   %- ((∇·∇) ϕ) %+ (((m ^ 2* c ^ 2)/(ħ*ħ)) %* ϕ)
+
+>i :: (Num a) => Complex a
+>i= 0:+1
 
 >-- | <https://en.wikipedia.org/wiki/Schr%C3%B6dinger_equation>
 >schrodinger :: (Show a, RealFloat a, Closed a, Infinitesimal a)
@@ -145,7 +152,7 @@ momentum :: (Infinitesimal a, Closed a, RealFloat a)
 >            -> Dual (Vector4 (Quantity (Complex a)))
 >            -> Dual (Vector4 (Quantity (Complex a)))
 >            -> Dual (Vector4 (Quantity (Complex a)))
->schrodinger mu phi v = Covector $ \ rt ->
->   ((0:+1) %* hbar) * derivate4t phi `bracket` rt
->  %+ (1 / (2*mu)) * hbar * hbar * ((∇·∇) phi `bracket` rt)
->  %- v `bracket` rt * phi `bracket` rt
+>schrodinger μ ϕ v = Covector $ \ rt ->
+>   (i %* ħ) * derivate4t ϕ *>< rt
+>  %+ (1 / (2 * μ)) * ħ^2 * ((∇·∇) ϕ *>< rt)
+>  %- v `bracket` rt * ϕ *>< rt

@@ -7,6 +7,6 @@
 >
 >data LAct m a = LAct { lelements :: Set a, laction :: m -> a -> a }
 
->leftActionG :: Set (a -> b) -> LAct m a -> Graph m (a -> b)
->leftActionG x lg = Graph x action
->  where action f alfa = \t -> f (laction lg alfa t)
+leftActionG :: Set (a -> b) -> LAct m a -> Graph m (a -> b)
+leftActionG x lg = Graph x action
+  where action f alfa = \t -> f (laction lg alfa t)

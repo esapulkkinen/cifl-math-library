@@ -22,7 +22,9 @@
 >ogf_to_egf :: (Num a) => OGF a -> EGF a
 >ogf_to_egf (OGF s) = EGF $ liftA2 (*) s factorial
 
-> 
+>egf_to_pg :: (Floating a, Eq a) => EGF a -> PG a
+>egf_to_pg (EGF s) = PG $ s / exp z
+
 >-- | Poisson generating function
 >newtype PG a = PG { unPG :: Stream a }
 >   deriving newtype (Show,PpShow, PpShowF, PpShowVerticalF)

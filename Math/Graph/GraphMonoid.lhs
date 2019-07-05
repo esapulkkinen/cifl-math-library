@@ -1,4 +1,4 @@
->{-# LANGUAGE Safe,FlexibleInstances, MultiParamTypeClasses, TypeOperators, DeriveGeneric, DeriveDataTypeable #-}
+>{-# LANGUAGE Safe,FlexibleInstances, MultiParamTypeClasses, TypeOperators, DeriveGeneric, DeriveDataTypeable, LambdaCase #-}
 >module Math.Graph.GraphMonoid where
 >import Control.Arrow
 >import GHC.Generics
@@ -12,11 +12,13 @@
 >import Math.Tools.Adjunction (swap)
 >import Data.Map (Map)
 >import qualified Data.Map as Map
->import Data.Monoid
+>import qualified Data.Monoid as Monoid
+>import Data.Monoid (Endo(Endo), appEndo)
 >import Math.Number.Group
+>import Math.Matrix.Interface
 >import Math.Graph.Action
 
->class (Eq x, Monoid x) => GraphMonoid x where
+>class (Eq x, Monoid.Monoid x) => GraphMonoid x where
 >   gdom :: x
 >   gcod :: x
 
@@ -57,9 +59,10 @@
 >data Three = TId | TDom | TCod deriving (Eq,Show,Ord, Typeable, Data, Generic)
 
 >three_action :: (g -> g) -> (g -> g) -> (g -> g) -> Three -> Endo g
->three_action a _ _ TId  = Endo a
->three_action _ b _ TDom = Endo b
->three_action _ _ c TCod = Endo c
+>three_action a b c = \case
+>  TId -> Endo a
+>  TDom -> Endo b
+>  TCod -> Endo c
 
 >instance Universe Three where { all_elements = [TId,TDom,TCod] }
 >instance PpShow Three where
@@ -86,16 +89,14 @@
 >data Four = FId | FDom | FCod | FNot deriving (Eq,Show, Ord, Typeable, Data, Generic)
 
 >three_to_four :: Three -> Four
->three_to_four TId = FId
->three_to_four TDom = FDom
->three_to_four TCod = FCod
+>three_to_four = \case { TId -> FId ;  TDom -> FDom ; TCod -> FCod }
 
 >four_action :: (g -> g) -> (g -> g) -> (g -> g) -> (g -> g) -> Four -> Endo g
->four_action aid _ _ _ FId   = Endo aid
->four_action _ adom _ _ FDom = Endo adom
->four_action _ _ acod _ FCod = Endo acod
->four_action _ _ _ anot FNot = Endo anot
-
+>four_action aid adom acod anot = \case
+>  FId -> Endo aid
+>  FDom -> Endo adom
+>  FCod -> Endo acod
+>  FNot -> Endo anot
 
 >instance Universe Four where { all_elements = [FId,FDom, FCod,FNot] }
 >instance PpShow Four where
@@ -157,6 +158,13 @@
 >               | m == gcod = y
 >               | otherwise = a
 
+>bidirectionalEdge :: (a,a) -> (a,a) -> Four -> a
+>bidirectionalEdge (a,ra) (x,y) m
+> | m == gdom   = x
+> | m == gcod   = y
+> | m == mempty = a
+> | m == gnot   = ra
+
 >edgesFromMapEndo :: (Ord a) => Map a (a,a) -> Three -> Endo a
 >edgesFromMapEndo edgemap m = Endo $ \a -> case Map.lookup a edgemap of
 >   (Just (x,y)) -> edge a (x,y) m
@@ -181,31 +189,10 @@
 >edgePairEndo :: (m -> Endo a) -> (n -> Endo b) -> (m,n) -> Endo (a,b)
 >edgePairEndo f g (x,y) = Endo $ \(a,b) -> (f x `appEndo` a, g y `appEndo` b)
 
-instance Comonad (MonAct m) where
-   extract (MonAct x _) = x
-   duplicate (MonAct x f) = MonAct (MonAct x f) $ \m ->
-         Endo $ \ (MonAct a af) -> MonAct (af m `appEndo` a) $ \m' ->
-         Endo $ \ a' -> af m' `appEndo` a'
-
-
 >-- | This is closest that the endomorphism is to a functor.
 >mapEndo :: a :==: b -> Endo a :==: Endo b
 >mapEndo f =   (\ (Endo g) -> Endo (runIso f . g . runIsoInverse f))
 >          <-> (\ (Endo h) -> Endo (runIsoInverse f . h . runIso f))
-
->instance (Num a) => Num (Endo a) where
->   (Endo f) + (Endo g) = Endo $ \x -> f x + g x
->   (Endo f) - (Endo g) = Endo $ \x -> f x - g x
->   (Endo f) * (Endo g) = Endo $ \x -> f x * g x
->   negate (Endo f) = Endo $ \x -> negate (f x)
->   abs (Endo f) = Endo $ \x -> abs (f x)
->   signum (Endo f) = Endo $ \x -> signum (f x)
->   fromInteger i = Endo $ const (fromInteger i)
-
->instance (Fractional a) => Fractional (Endo a) where
->   (Endo f) / (Endo g) = Endo $ \x -> f x / g x
->   recip (Endo f) = Endo $ \x -> recip (f x)
->   fromRational r = Endo $ const (fromRational r)
 
 >instance FunctorArrow Endo (:==:) where
 >   amap = mapEndo

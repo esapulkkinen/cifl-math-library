@@ -1,5 +1,6 @@
 >-- -*- coding: utf-8 -*-
 >{-# LANGUAGE Trustworthy, CPP, TypeOperators #-}
+>{-# LANGUAGE FlexibleInstances, TypeFamilyDependencies #-}
 >{-# LANGUAGE GeneralizedNewtypeDeriving, DerivingStrategies #-}
 >{-# LANGUAGE ExistentialQuantification, TypeFamilies,GADTs, RankNTypes, UnicodeSyntax #-}
 >{-# LANGUAGE ScopedTypeVariables, StandaloneDeriving, FlexibleContexts, DeriveGeneric, DeriveDataTypeable #-}
@@ -108,12 +109,12 @@
 >quantity (x :: u) = (conversionFactor (fromAmount :: Scalar u -> u) * (amount x
 >                    + zeroAmount (fromAmount :: Scalar u -> u))) @@ dimension x
 
->data a :/ b  = QDivide { qdivide_amount :: Scalar a,
+>data a :/ b  = QDivide { qdivide_amount :: !(Scalar a),
 >                         qdivide_dividend_unit :: UnitName a,
 >                         qdivide_divisor_unit  :: UnitName b }
 >   deriving (Typeable, Generic)
 
->data a :* b = QProduct { qproduct_amount :: Scalar a,
+>data a :* b = QProduct { qproduct_amount :: !(Scalar a),
 >                         qproduct_first_unit :: UnitName a,
 >                         qproduct_second_unit :: UnitName b
 >                       }
@@ -188,7 +189,7 @@
 
 >newtype Dimensionless = Dimensionless { dimensionless_value :: Double }
 > deriving (Eq,Ord, Typeable, Data, Generic)
-> deriving newtype (Binary)
+> deriving newtype (Binary, Num, Fractional, Real, RealFrac, Floating, RealFloat)
 >instance Show Dimensionless where { show = show_unit }
 >instance VectorSpace Dimensionless where
 >   type Scalar Dimensionless = Double
@@ -207,7 +208,8 @@
 >     return $ Dimensionless x
 
 >newtype Information = Bits { number_of_bits :: Double }
->  deriving (Eq,Ord, Data,Generic, Typeable) deriving newtype (Binary)
+>  deriving (Eq,Ord, Data,Generic, Typeable)
+>  deriving newtype (Binary)
 >instance Show Information where { show = show_unit }
 >instance VectorSpace Information where
 >   type Scalar Information = Double

@@ -1,4 +1,4 @@
->{-# LANGUAGE Safe,UndecidableInstances, ExistentialQuantification, FlexibleInstances, MultiParamTypeClasses, MagicHash, TypeOperators, FlexibleContexts, Arrows, TypeFamilies, ScopedTypeVariables, DeriveGeneric, DeriveDataTypeable #-}
+>{-# LANGUAGE Safe,UndecidableInstances, ExistentialQuantification, FlexibleInstances, MultiParamTypeClasses, MagicHash, TypeOperators, FlexibleContexts, Arrows, TypeFamilies, ScopedTypeVariables, DeriveGeneric, DeriveDataTypeable, BangPatterns #-}
 >-- |
 >--  Module: Math.Number.Stream
 >--  Description: Stream implementation
@@ -67,7 +67,7 @@ import qualified Model.Nondeterminism as Nondet
 >default ()
 
 >-- | Data structure of infinite lazy streams.
->data Stream a = Pre { shead :: a, stail_strict :: Stream a }
+>data Stream a = Pre { shead :: a, stail_lazy :: Stream a }
 >  deriving (Typeable, Data, Generic)
 
 >(!) :: Stream a -> Integer -> a
@@ -75,6 +75,9 @@ import qualified Model.Nondeterminism as Nondet
 
 >stail :: Stream a -> Stream a
 >stail ~(Pre _ xr) = xr
+
+>shead_strict :: Stream a -> a
+>shead_strict (Pre !x _) = x
 
 >matrix_powers :: (SquareMatrix g a, InnerProductSpace (g a),
 >                 Scalar (g a) ~ a) => (g :*: g) a -> Stream ((g :*: g) a)
@@ -96,6 +99,10 @@ import qualified Model.Nondeterminism as Nondet
 >                      VectorSpace ((g :*: g) a), Scalar (g a) ~ a)
 >                     => (g :*: g) a -> (g :*: g) a
 >matrix_exponential x = shead $ drop 10 (matrix_exponential_stream x)
+
+>-- | <https://en.wikipedia.org/wiki/Matrix_exponential>
+
+
 
 >instance (Num a) => FiniteDimensional (Stream a) where
 >   finite (Matrix (Covector f)) = Pre (f (Covector shead))
@@ -734,8 +741,37 @@ matrix_convolution_product :: (Num a) => (Stream :*: Stream) a -> (Stream :*: St
 >-- | stream_matrix creates matrix from a diagonal and a codiagonal
 
 >stream_matrix :: Stream a -> Stream (Stream a, Stream a) -> (Stream :*: Stream) a
->stream_matrix (Pre x xr) (Pre (y,yh) yr) = Matrix $ Pre (Pre x y)
+>stream_matrix ~(Pre x xr) ~(Pre ~(y,yh) yr) = Matrix $ Pre (Pre x y)
 >                             (liftA2 Pre yh (cells (stream_matrix xr yr)))
+
+>-- | this surprising function builds a two-dimensional infinite matrix
+>-- from a diagonal, an upper triangular matrix and a lower triangular matrix.
+>-- Notice the input matrices have no zero entries, rather indices for
+>-- the triangular matrices are bijectively
+>-- mapped to indices of the result matrix.
+>-- This is only possible for infinite matrices.
+>-- It's even more surprising once it's realised that two-dimensional
+>-- infinite matrices can be bijectively described as an infinite binary tree
+>-- of one-dimensional streams.
+>from_triangular_matrices :: Stream a -> (Stream :*: Stream) a -> (Stream :*: Stream) a -> (Stream :*: Stream) a
+>from_triangular_matrices diag upper lower =
+>  stream_matrix diag (liftA2 (,) (cells upper) (cells lower))
+
+>-- | this matrix contains 0 on diagonal, 1 on diagonal of upper and lower
+>-- triangular matrices and so on. Every element of the two-dimensional matrix
+>-- gets an index.
+>triangular_order_matrix :: (Num a) => (Stream :*: Stream) a
+>triangular_order_matrix = from_triangular_matrices (constant 0) submatrix submatrix
+>  where submatrix = fmap (+1) triangular_order_matrix
+
+>triangular_inverted_matrix :: (Num a) => (Stream :*: Stream) a
+>triangular_inverted_matrix = from_triangular_matrices (constant 0) submatrix (fmap negate submatrix)
+>   where submatrix = fmap (+1) triangular_inverted_matrix
+
+>triangular_pair_matrix :: (Num a) => (Stream :*: Stream) (a,a)
+>triangular_pair_matrix = from_triangular_matrices (constant (0,0))
+>   (fmap (first (+1)) triangular_pair_matrix)
+>   (fmap (second (+1)) triangular_pair_matrix)
 
 >prefix_stream_matrix :: Stream a -> (Stream a, Stream a) -> (Stream :*: Stream) a -> (Stream :*: Stream) a
 >prefix_stream_matrix (Pre x xr) (row,col) (Matrix m) = Matrix $ 
@@ -771,7 +807,7 @@ matrix_convolution_product :: (Num a) => (Stream :*: Stream) a -> (Stream :*: St
 >   indexable_indices = fmap fromIntegral (naturals :: Stream Integer)
 
 >zipList :: ([a] -> b) -> [Stream a] -> Stream b
->zipList f lst = Pre (f (map shead lst)) (zipList f (map stail lst))
+>zipList f lst = Pre (f $ map shead lst) $ zipList f $ map stail lst
 
 >sequence :: [Stream a] -> Stream [a]
 >sequence = zipList id
@@ -861,9 +897,6 @@ the suffix computation on Seq is constant time rather than linear.
 >codiagonals :: (Stream :*: Stream) a -> Stream [a]
 >codiagonals x = fmap Data.Foldable.toList $ codiagonals_seq x
 
-
-
-
 >-- | for uncodiagonals, the i'th list element of the input stream must have length 'i'.
 >-- 
 >-- @uncodiagonals ([a] \`Pre\` [b,c] \`Pre\` [d,e,f] ...)@
@@ -944,7 +977,6 @@ the suffix computation on Seq is constant time rather than linear.
 >-- It eventually produces every element of the original two-dimensional
 >-- stream. It first produces all elements \(e_{(i,j)}\) where \(i+j=k\) and \(k\)
 >-- increasing.
-
 
 >cojoin :: (Stream :*: Stream) a -> Stream a
 >cojoin = concatenate . codiagonals
@@ -1116,6 +1148,7 @@ the suffix computation on Seq is constant time rather than linear.
 >   | c /= 0 = let self = (fmap (`div` c) $ Pre 1 (negate (cr * self))) in self
 >   | otherwise = error "can't invert series that begins with zero"
            
+>-- | see <http://en.wikipedia.org/wiki/Formal_power_series>
 >quotient_invert :: (Integral a) => Stream a -> Stream a
 >quotient_invert ~z'@(Pre c cr)
 >   | c /= 0 = let self = (fmap (`quot` c) $ Pre 1 (negate (cr * self))) in self
@@ -1172,8 +1205,9 @@ the suffix computation on Seq is constant time rather than linear.
 >filter f ~(Pre x xr) | f x = Pre x (filter f xr)
 >                     | otherwise = filter f xr
 
+>-- remove removes those elements from the stream that are part of the list
 >remove :: (Eq a) => [a] -> Stream a -> Stream a
->remove lst = filter (`elem` lst)
+>remove lst = filter (not . (`elem` lst))
 
 >-- | @interleave_count@ is like @interleave@ except that 'i' elements of each
 >-- stream are taken from each stream at each stream.
@@ -1640,13 +1674,13 @@ the suffix computation on Seq is constant time rather than linear.
 >    where p = gcd_prime_gen (n - 1)                                            
            
 >instance (Limiting a, Limiting b) => Limiting (a,b) where
->  data Closure (a,b) = PairClosure (Closure a,Closure b)
+>  data Closure (a,b) = PairClosure !(Closure a,Closure b)
 >  limit str = PairClosure (limit a, limit b)
 >      where (a,b) = funzip str
 >  approximations (PairClosure (x,y)) = approximations x <&> approximations y
 
 >instance (Limiting a, Limiting b, Limiting c) => Limiting (a,b,c) where
->  data Closure (a,b,c) = TripleClosure (Closure a, Closure b, Closure c)
+>  data Closure (a,b,c) = TripleClosure !(Closure a, Closure b, Closure c)
 >  limit str = TripleClosure (limit a, limit b, limit c)
 >    where (a,b,c) = funzip3 str
 >  approximations (TripleClosure (x,y,z)) = liftA3 (,,) (approximations x) (approximations y) (approximations z)

@@ -53,7 +53,9 @@
 >--
 >-- Note that the monoid data structure contains only names of the monoid elements -
 >-- the action_endomorphism is then used to convert it to actual operation.
->data Graph m a = Graph { elements :: Set a, action_endomorphism :: m -> Endo a }
+>data Graph m a = Graph {
+> elements :: !(Set a),
+> action_endomorphism :: m -> Endo a }
 >  deriving (Typeable, Generic)
 
 >action :: Graph m a -> a -> m -> a

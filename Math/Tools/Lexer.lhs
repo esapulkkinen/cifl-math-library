@@ -8,12 +8,12 @@
 >import Math.Tools.LineInfo
 
 >data Token = EOF
->           | Number Integer
->           | FloatNumber Double
->           | StringLit String
->           | Identifier String
->           | Operator String
->           | WhiteSpace String
+>           | Number !Integer
+>           | FloatNumber !Double
+>           | StringLit !String
+>           | Identifier !String
+>           | Operator !String
+>           | WhiteSpace !String
 >           | Linefeed
 >           | Comma
 >           | Semicolon

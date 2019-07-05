@@ -50,8 +50,15 @@
 >   mappend f g = liftA2 mappend f g
 
 >instance (Monad m) => Monad (InGraphM mon e m) where
->  return x = InGraphM (return x)
->  ~(InGraphM m) >>= f = InGraphM $ m >>= (runInGraphM . f)
+>  return = inGraphM_return
+>  (>>=) = inGraphM_bind
+
+>{-# INLINE inGraphM_bind #-}
+>{-# INLINE inGraphM_return #-}
+>inGraphM_bind :: (Monad m) => InGraphM mon e m a -> (a -> InGraphM mon e m b) -> InGraphM mon e m b
+>inGraphM_bind ~(InGraphM m) f = InGraphM $ m >>= (runInGraphM . f)
+>inGraphM_return :: (Monad m) => a -> InGraphM mon e m a
+>inGraphM_return x = InGraphM (return x)
 
 >instance (MonadIO m) => MonadIO (InGraphM mon e m) where
 >  liftIO m = InGraphM $ liftIO m

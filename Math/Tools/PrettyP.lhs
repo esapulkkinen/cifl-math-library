@@ -7,8 +7,8 @@
 > -- Text.PrettyPrint is (c) 2001 The University of Glasgow under BSD license.
 > ) where
 >
-> import Text.PrettyPrint as Pretty hiding (render, (<>))
-> import GHC.Stack
+> import qualified Text.PrettyPrint as Pretty
+> import qualified GHC.Stack as Stack
 > import Data.Monoid 
 > import Data.Set (Set)
 > import Data.Map (Map)
@@ -17,6 +17,8 @@
 > import Data.Complex
 > import qualified Data.Set as Set
 > import qualified Data.Map as Map
+
+> type Doc = Pretty.Doc
 
 > class PpShow a where
 >      pp :: a -> Doc
@@ -43,30 +45,30 @@ hang :: Doc -> Int -> Doc -> Doc
 > pPrint x = render (pp x)
 
 > render :: Doc -> String
-> render = Pretty.fullRender PageMode 80 1.1 produceOutput ""
+> render = Pretty.fullRender Pretty.PageMode 80 1.1 produceOutput ""
  
 > render132 :: Doc -> String
-> render132 = Pretty.fullRender PageMode 132 1.1 produceOutput ""
+> render132 = Pretty.fullRender Pretty.PageMode 132 1.1 produceOutput ""
 
-> produceOutput :: TextDetails -> String -> String
-> produceOutput (Chr c) s = c:s
-> produceOutput (Str n) s = n ++ s 
-> produceOutput (PStr n) s = n ++ s
+> produceOutput :: Pretty.TextDetails -> String -> String
+> produceOutput (Pretty.Chr c) s = c:s
+> produceOutput (Pretty.Str n) s = n ++ s 
+> produceOutput (Pretty.PStr n) s = n ++ s
  
 > enclose :: PpShow a => a -> Doc
 > enclose x = pp "'" <> pp x <> pp "'"
  
 > parenthesize :: PpShow a => [a] -> Doc
-> parenthesize lst = parens $ nest 4 $ fcat $ punctuate (pp ',') (map pp lst)
+> parenthesize lst = Pretty.parens $ Pretty.nest 4 $ Pretty.fcat $ Pretty.punctuate (pp ',') (map pp lst)
  
 > bracketize :: PpShow a => [a] -> Doc
-> bracketize lst = brackets $ nest 4 $ fsep $ punctuate (pp ';') (map pp lst)
+> bracketize lst = Pretty.brackets $ Pretty.nest 4 $ Pretty.fsep $ Pretty.punctuate (pp ';') (map pp lst)
  
 > alternativitize :: PpShow a => [a] -> Doc
-> alternativitize lst = brackets $ nest 4 $ fsep $ punctuate (pp '|') (map pp lst)
+> alternativitize lst = Pretty.brackets $ Pretty.nest 4 $ Pretty.fsep $ Pretty.punctuate (pp '|') (map pp lst)
  
 > verticalize :: PpShow a => [a] -> Doc
-> verticalize lst = vcat $ map (nest 4 . pp) lst
+> verticalize lst = Pretty.vcat $ map (Pretty.nest 4 . pp) lst
  
 > class (PpShowF f) => PpShowVerticalF f where
 >   ppf_vertical :: (PpShow a) => f a -> Doc
@@ -76,7 +78,7 @@ hang :: Doc -> Int -> Doc -> Doc
 >   ppf_vertical = verticalize
  
 > pp_list :: (PpShow a) => [a] -> Doc
-> pp_list x = brackets $ nest 8 (fsep (punctuate (pp ',') (map pp x)))
+> pp_list x = Pretty.brackets $ Pretty.nest 8 (Pretty.fsep (Pretty.punctuate (pp ',') (map pp x)))
   
  
 > instance PpShowF [] where
@@ -89,7 +91,7 @@ instance PpShow a => Show a where
 >      exprLevel :: a -> Int
 >      exprLevel x = 1
 >      pp_level :: a -> Int -> Doc
->      pp_level x lim | exprLevel x < lim  = parens (pp x)
+>      pp_level x lim | exprLevel x < lim  = Pretty.parens (pp x)
 >                     | otherwise          = pp x
 
 
@@ -113,13 +115,13 @@ instance PpShow a => PpShow [a] where
 >	  pp x = x
 
 > instance PpShow String where
->	  pp = ptext
+>	  pp = Pretty.ptext
 
 > instance PpShow Char where
->	  pp = char
+>	  pp = Pretty.char
 
 > instance PpShow Int where
->	  pp = int
+>	  pp = Pretty.int
 
 
 
@@ -130,39 +132,39 @@ instance PpShow (f (Rec f)) => PpShow (Rec f) where
 
 
 > instance PpShow Integer where
->	  pp = integer
+>	  pp = Pretty.integer
     
 > instance (PpShow a, Num a, Ord a) => PpShow (Complex a) where
 >  pp (x :+ y) = pp x <> (if y >= 0 then pp '+' else pp '-') <> pp (abs y) <> pp 'i'
 
 > instance PpShowF Complex where
->  ppf (x :+ y) = pp x <+> pp ":+" <+> pp y
+>  ppf (x :+ y) = pp x Pretty.<+> pp ":+" Pretty.<+> pp y
 
 
 > instance (Integral a,PpShow a) => PpShow (Ratio a) where
 >  pp r = pp (numerator r) <> pp '/' <> pp (denominator r)
 
 > instance PpShow Float where
->   	  pp = float
+>   	  pp = Pretty.float
 
 > instance PpShow Double where
->	  pp = double
+>	  pp = Pretty.double
 
 > instance (PpShow a, PpShow b) => PpShow (a,b) where
->	  pp (x,y) = parens $ fsep [pp x <> pp ',', nest 4 $ pp y]
+>	  pp (x,y) = Pretty.parens $ Pretty.fsep [pp x <> pp ',', Pretty.nest 4 $ pp y]
 > instance (PpShow a, PpShow b, PpShow c) => PpShow (a,b,c) where
->	  pp (x,y,z) = parens $ fsep [pp x <> pp ',', nest 4 $ pp y <> pp ',', nest 4 $ pp z]
+>	  pp (x,y,z) = Pretty.parens $ Pretty.fsep [pp x <> pp ',', Pretty.nest 4 $ pp y <> pp ',', Pretty.nest 4 $ pp z]
 > instance (PpShow a, PpShow b, PpShow c,PpShow d) => PpShow (a,b,c,d) where
->	  pp (x,y,z,z') = parens $ fsep [pp x <> pp ',', nest 4 $ pp y <> pp ',',
->					  nest 4 $ pp z <> pp ',', nest 4 $ pp z']
+>	  pp (x,y,z,z') = Pretty.parens $ Pretty.fsep [pp x <> pp ',', Pretty.nest 4 $ pp y <> pp ',',
+>					  Pretty.nest 4 $ pp z <> pp ',', Pretty.nest 4 $ pp z']
 
 > instance PpShow a => PpShow (Maybe a) where
 >	  pp Nothing = pp "Nothing"
 >	  pp (Just x) = pp x
 
 > instance (PpShow a, PpShow b) => PpShow (Either a b) where
->	  pp (Left x) = pp "Left" <> parens (pp x)
->	  pp (Right x) = pp "Right" <> parens (pp x)
+>	  pp (Left x) = pp "Left" <> Pretty.parens (pp x)
+>	  pp (Right x) = pp "Right" <> Pretty.parens (pp x)
 
 > instance (PpShow a) => PpShow (Set a) where
 >   pp = bracketize . Set.toList
@@ -181,5 +183,5 @@ instance PpShow [(Integer,Integer)] where
    pp lst = pp '[' <> ppf lst <> pp ']'
 
 
-> instance PpShow CallStack where
+> instance PpShow Stack.CallStack where
 >   pp s = pp (show s)

@@ -48,6 +48,7 @@
 >prop_vectorSpace_svec8  = MatrixTest.vectorspace (const () :: SVec8 Int16 -> ())
 >prop_vectorSpace_svec4  = MatrixTest.vectorspace (const () :: SVec4 Int32 -> ())
 
+
 >$(return [])
 >qcAll = $(quickCheckAll)
 

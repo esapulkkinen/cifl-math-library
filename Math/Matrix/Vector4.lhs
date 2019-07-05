@@ -52,9 +52,8 @@ import Math.Matrix.Dimension
 >     y <- Bin.get
 >     z <- Bin.get
 >     t <- Bin.get
->     return (Vector4 x y z t)
+>     return $! Vector4 x y z t
 
->instance (RealFloat a) => ComplexVectorSpace ((Vector4 :*: Complex) a) a
 
 >instance (Num a) => Num (Vector4 a) where
 >   v1 + v2 = pure (+) <*> v1 <*> v2
@@ -67,7 +66,7 @@ import Math.Matrix.Dimension
 
 >instance Unfoldable Vector4 where
 >   unfoldF f = f >>= \a -> f >>= \b -> f >>= \c -> f >>= \d ->
->     return $ Vector4 a b c d
+>     return $! Vector4 a b c d
 
 >instance Comonad Vector4 where
 >   extract (Vector4 t _ _ _) = t
@@ -215,7 +214,7 @@ instance FractionalSpace (Vector4 (Complex R))
 >                       zr_ <- char ',' zr
 >                       (t,tr) <- readsPrec 0 zr_
 >                       zt_ <- char ']' tr
->                       return (Vector4 x y z t,zt_)
+>                       return $! (Vector4 x y z t,zt_)
 >   where char ch (ch2:cr) | ch == ch2 = return cr
 >                          | otherwise = []
 >         char ch [] = []
@@ -277,7 +276,7 @@ instance FractionalSpace (Vector4 (Complex R))
 >                      (limit $ str >>= (return . zcoord4))
 >  approximations (Vector4Closure (Vector4 a b c t)) = do
 >     (a',b',c',t') <- fzip4 (approximations a) (approximations b) (approximations c) (approximations t)
->     return $ Vector4 a' b' c' t'
+>     return $! Vector4 a' b' c' t'
 
 >sum_coordinates4 :: (Num a) => Vector4 a -> a
 >sum_coordinates4 (Vector4 a b c d) = a + b + c + d
@@ -313,7 +312,7 @@ instance FractionalSpace (Vector4 (Complex R))
 >dot4 :: (Num a) => Vector4 a -> Vector4 a -> a
 >dot4 x y = sum_coordinates4 $ pure (*) <*> x <*> y
 
->instance (Num a) => LinearTransform Vector4 Vector4 a where
+>instance {-# OVERLAPPABLE #-} (Num a) => LinearTransform Vector4 Vector4 a where
 >   (<*>>) = left_multiply4
 >   (<<*>) = right_multiply4
 

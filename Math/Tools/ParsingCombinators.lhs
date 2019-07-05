@@ -15,7 +15,7 @@
 >errorMessage _ = Nothing
 
 >data ParseResult a = Parsed { unparsedString :: String, 
->                               lineInfoOf ::  LineInfo,
+>                               lineInfoOf ::  !LineInfo,
 >                               parsedValue ::  Either a Doc }
 
 >okparse s li v = Parsed s li (Left v)

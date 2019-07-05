@@ -1,8 +1,9 @@
 >{-# LANGUAGE Safe,DataKinds, MultiParamTypeClasses, GADTs, FlexibleInstances, FlexibleContexts, UndecidableInstances, TypeOperators, KindSignatures, TypeFamilies, ExistentialQuantification, ScopedTypeVariables, TypeOperators, AllowAmbiguousTypes #-}
->{-# OPTIONS_GHC -cpp #-}
 >module Math.Matrix.FiniteVector where
+>import qualified Text.PrettyPrint as Pretty
 >import Control.Applicative
 >import Math.Matrix.Interface
+>import Math.Tools.PrettyP
 >import GHC.TypeLits
 
 >-- | See <https://blog.jle.im/entry/fixed-length-vector-types-in-haskell.html>
@@ -13,7 +14,27 @@
 >  Assoc :: Vec (n + (m + p)) a -> Vec ((n + m) + p) a
 
 >vzero_vec = Empty
-> 
+>zero = Empty
+>one = Cons () zero
+>two = Cons () one
+>three = Cons () two
+>four = Cons () three
+>five = Cons () four
+>six = Cons () five
+>seven = Cons () six
+>
+>one_index = Cons 0 zero
+>two_index = succ_index one_index
+>three_index = succ_index two_index
+>four_index = succ_index three_index
+>five_index = succ_index four_index
+
+>succ_index :: (Enum a) => Vec n a -> Vec (1+n) a
+>succ_index z@(Cons i x) = Cons (toEnum 0) (fmap succ z)
+
+>constant_vec :: a -> Vec n b -> Vec n a
+>constant_vec x v = fmap (const x) v
+
 >vnegate_vec :: (Num a) => Vec n a -> Vec n a
 >vnegate_vec = fmap negate
 
@@ -90,12 +111,22 @@ Doesn't typecheck in GHC 7.10.3, "Could not deduce (n1 ~ n) from the context
 >   vdiagonal :: Vec n (Vec n a) -> Vec n a
 >   videntity :: (Num a) => Vec n (Vec n a)
 >   vdiagonal_matrix :: (Num a) => Vec n a -> Vec n (Vec n a)
+>   vlist :: Vec n a -> [a]
 
 >instance Diagonalizable 0 where
 >   vnull = Empty
 >   vdiagonal Empty = Empty
 >   videntity = Empty
 >   vdiagonal_matrix Empty = Empty
+>   vlist _ = []
+
+>instance PpShowVerticalF (Vec n) where
+>   ppf_vertical Empty = pp ""
+>   ppf_vertical (Cons x xr) = Pretty.nest 4 (pp x) Pretty.$$ (ppf xr)
+
+>instance PpShowF (Vec n) where
+>   ppf Empty = pp ""
+>   ppf (Cons x xr) = pp x Pretty.<+> ppf xr
 
 >instance (Show a) => Show (Vec n a) where
 >  show Empty = ""

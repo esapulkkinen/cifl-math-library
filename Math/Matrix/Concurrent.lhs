@@ -1,5 +1,5 @@
->{-# LANGUAGE TypeOperators #-}
->module Math.Matrix.Concurrent where
+>{-# LANGUAGE Trustworthy, TypeOperators #-}
+>module Math.Matrix.Concurrent (parMatrix) where
 >import Control.Parallel
 >import Math.Matrix.Interface
 >

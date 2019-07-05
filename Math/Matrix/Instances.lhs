@@ -6,14 +6,13 @@
 >-- | <https://en.wikipedia.org/wiki/Matrix_mechanics>
 
 >commutator :: (Transposable f f, Num (Scalar (f a)), InnerProductSpace (f a),
->               a ~ Scalar (f a), VectorSpace ((f :*: f) a),
+>               VectorSpaceOver (f a) a, VectorSpace ((f :*: f) a),
 >           Applicative f) => (f :*: f) a -> (f :*: f) a -> (f :*: f) a
 >commutator x y = (x %*% y) %- (y %*% x)
 
 >-- | <https://en.wikipedia.org/wiki/Characteristic_polynomial>
 >characteristicPolynomial :: (FiniteSquareMatrix m a, Num a, Applicative m,
->                    VectorSpace ((m :*: m) a),
->                    Scalar ((m :*: m) a) ~ a)
+>                    VectorSpaceOver ((m :*: m) a) a)
 >    => (m :*: m) a -> a -> a
 >characteristicPolynomial m v = determinant (v %* identity %- m)
 

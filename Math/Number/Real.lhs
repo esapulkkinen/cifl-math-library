@@ -50,8 +50,8 @@
 >-- computable, wouldn't @~(r1 < r2 || r2 < r1)@ be computable equality of reals;
 >-- This is computable in the limit , but not computable? <https://en.wikipedia.org/wiki/Computation_in_the_limit>
 
->data R = Limit { approximate :: Stream Rational }
->data Modulus = Modulus { modulus_value :: R, modulus :: Rational -> Integer }
+>data R = Limit { approximate :: !(Stream Rational) }
+>data Modulus = Modulus { modulus_value :: !R, modulus :: Rational -> Integer }
 
 >class MetricSpace s where
 >  distance :: s -> s -> R
@@ -61,7 +61,7 @@
 >d :: (Infinitesimal a) => (a -> a) -> a -> Closure a
 >d f x = derivate_closed f x .>>=. \derx ->
 >             epsilon_closure .>>=. \dx ->
->             close (derx * dx)
+>             close $! (derx * dx)
 
 >liftReal :: (Rational -> Rational) -> R -> R
 >liftReal f (Limit str) = Limit $ fmap f str
@@ -160,7 +160,7 @@ max_convergence_ratio = fmap (foldl1 max) . cauchy
 >  distance x y = accumulation_point $ limit $ do 
 >                    (xn,yn,n) <- fzip3 x y naturals
 >                    let d = abs (xn-yn)
->                    return $ (1 / (2^n)) * d / (1 + d)
+>                    return $! (1 / (2^n)) * d / (1 + d)
 
 >increase_accuracy_by :: (Limiting a) => Integer -> Closure a -> Closure a
 >increase_accuracy_by i = limit . Stream.drop i . approximations
@@ -170,13 +170,13 @@ max_convergence_ratio = fmap (foldl1 max) . cauchy
 >partial_derive delta f v = accumulation_point $ limit $ do
 >   eps <- epsilon_stream
 >   let v_plus_dv = delta eps v
->   return $ (f v_plus_dv - f v) / (v_plus_dv - v)
+>   return $! (f v_plus_dv - f v) / (v_plus_dv - v)
 
 >partial_derivate :: (Closed eps, Infinitesimal eps)
 > => (eps -> a -> a) -> (a -> eps) -> a -> eps
 >partial_derivate delta f v = accumulation_point $ limit $ do
 >   eps <- epsilon_stream
->   return $ (f (delta eps v) - f v) / eps
+>   return $! (f (delta eps v) - f v) / eps
 
 
 >-- | <https://en.wikipedia.org/wiki/Wirtinger_derivatives>
@@ -227,13 +227,13 @@ instance MedianAlgebra R where
 >completenessOfReals = runRClosure <-> RClosure
 
 >instance Num (Closure R) where
->   (RClosure x) + (RClosure y) = RClosure $ x + y
->   (RClosure x) - (RClosure y) = RClosure $ x - y
->   (RClosure x) * (RClosure y) = RClosure $ x * y
->   negate (RClosure x) = RClosure $ negate x
->   abs (RClosure x) = RClosure $ abs x
->   signum (RClosure x) = RClosure $ signum x
->   fromInteger i = RClosure $ fromInteger i
+>   (RClosure x) + (RClosure y) = RClosure $! x + y
+>   (RClosure x) - (RClosure y) = RClosure $! x - y
+>   (RClosure x) * (RClosure y) = RClosure $! x * y
+>   negate (RClosure x) = RClosure $! negate x
+>   abs (RClosure x) = RClosure $! abs x
+>   signum (RClosure x) = RClosure $! signum x
+>   fromInteger i = RClosure $! fromInteger i
 
 >limit_real :: Stream R -> R
 >limit_real str = Limit $ str >>= approximate
@@ -333,7 +333,7 @@ infimum = negate_limit . supremum_gen . map negate_limit
 >limiting_distance :: (Num a, Limiting a) => Closure a -> Closure a -> Closure a
 >limiting_distance x y = limit $ do 
 >                      (x',y') <- approximations x <&> approximations y
->                      return $ abs (x' - y')
+>                      return $! abs (x' - y')
 
 >distance_matrix :: R -> R -> (Stream :*: Stream) Rational
 >distance_matrix (Limit x) (Limit y) = matrix (\a b -> abs $ a - b) x y
@@ -348,7 +348,7 @@ infimum = negate_limit . supremum_gen . map negate_limit
 >-- to represent correct precision.
 >at_precision_rational :: R -> Rational -> Rational
 >at_precision_rational (Limit s) p = check_precision s
-> where check_precision z@(Pre x z'@(Pre y _))
+> where check_precision ~z@(Pre x ~z'@(Pre y _))
 >         | abs (y - x) <= p = x
 >         | otherwise = check_precision z'
 
@@ -384,17 +384,17 @@ infimum = negate_limit . supremum_gen . map negate_limit
 >derivate_closed :: (Infinitesimal a) => (a -> a) -> a -> Closure a
 >derivate_closed f x = limit $ do
 >    eps <- epsilon_stream
->    return $ (f (x + eps) - f x) / eps
+>    return $! (f (x + eps) - f x) / eps
 
 >vector_derivate f x = limit $ do
 >   eps <- epsilon_stream
->   return $ (1 / (2*eps)) %* (f (x + eps) %- f (x - eps))
+>   return $! (1 / (2*eps)) %* (f (x + eps) %- f (x - eps))
 
 >pseudo_derivate :: (Fractional r, Limiting r, Infinitesimal a)
 >                => (a -> r) -> a -> Closure r
 >pseudo_derivate f x = limit $ do
 >    eps <- epsilon_stream
->    return $ (f (x + eps) - f x) / f eps
+>    return $! (f (x + eps) - f x) / f eps
 
 >-- | i'th element of derivates_at(f,s) is D^i[f](s_i)
 >derivates_at :: (DifferentiallyClosed a) => (a -> a) -> Stream a -> Stream a
@@ -409,43 +409,43 @@ infimum = negate_limit . supremum_gen . map negate_limit
 >derivate_around :: (Infinitesimal a) => (a -> a) -> a -> Closure a
 >derivate_around f x = limit $ do
 >    eps <- epsilon_stream
->    return $ (f (x + eps) - f (x - eps)) / (2 * eps)
+>    return $! (f (x + eps) - f (x - eps)) / (2 * eps)
 
 
 >partial_derivate1_2 :: (Infinitesimal a)
 >                    => (a -> a -> a) -> a -> a -> Closure a
 >partial_derivate1_2 f a b = limit $ do
 >    eps <- epsilon_stream
->    return $ (f (a + eps) b - f (a - eps) b) / (2*eps)
+>    return $! (f (a + eps) b - f (a - eps) b) / (2*eps)
 
 >partial_derivate2_2 :: (Infinitesimal a) => (a -> a -> a) -> a -> a -> Closure a
 >partial_derivate2_2 f a b = limit $ do
 >    eps <- epsilon_stream
->    return $ (f a (b + eps) - f a (b - eps)) / (2*eps)
+>    return $! (f a (b + eps) - f a (b - eps)) / (2*eps)
 
 
 >partial_derivate1_3 :: (Infinitesimal a)
 >                    => (a -> b -> c -> a) -> a -> b -> c -> Closure a
 >partial_derivate1_3 f a b c = limit $ do
 >    eps <- epsilon_stream
->    return $ (f (a + eps) b c - f (a - eps) b c) / (2*eps)
+>    return $! (f (a + eps) b c - f (a - eps) b c) / (2*eps)
 
 >partial_derivate2_3 :: (Infinitesimal a)
 >                    => (b -> a -> c -> a) -> b -> a -> c -> Closure a
 >partial_derivate2_3 f a b c = limit $ do
 >    eps <- epsilon_stream
->    return $ (f a (b + eps) c - f a (b - eps) c) / (2*eps)
+>    return $! (f a (b + eps) c - f a (b - eps) c) / (2*eps)
 
 >partial_derivate3_3 :: (Infinitesimal a)
 >                    => (b -> c -> a -> a) -> b -> c -> a -> Closure a
 >partial_derivate3_3 f a b c = limit $ do
 >    eps <- epsilon_stream
->    return $ (f a b (c + eps) - f a b (c - eps)) / (2*eps)
+>    return $! (f a b (c + eps) - f a b (c - eps)) / (2*eps)
 
 >-- | <http://en.wikipedia.org/wiki/Arithmetic%E2%80%93geometric_mean Arithmetic-geometric mean>
 
 >agm :: (Floating a, Limiting a) => a -> a -> Closure a
->agm x y = limit $ fmap fst $ iterate_stream (\(x,y) -> ((x+y)/2, sqrt(x*y))) (x,y)
+>agm x y = limit $! fmap fst $ iterate_stream (\(x,y) -> ((x+y)/2, sqrt(x*y))) (x,y)
 
 >-- | <http://en.wikipedia.org/wiki/Exponential_function Exponential function>
 >-- using limit definition @ exp(x) = lim[n->oo](1+(x/n)^n) @.
@@ -453,7 +453,7 @@ infimum = negate_limit . supremum_gen . map negate_limit
 >expo :: R -> R
 >expo x = Limit $ do
 >           (xr,n) <- approximate x <&> power_integral 10
->           return $ (1 + (xr/fromIntegral n))^^n
+>           return $! (1 + (xr/fromIntegral n))^^n
 
 >newtons_method :: (Infinitesimal a, Closed a) => (a -> a) -> a -> Closure a
 >newtons_method f x = limit $ iterate_stream iteration x
@@ -470,32 +470,32 @@ infimum = negate_limit . supremum_gen . map negate_limit
 >integrate_vector :: (Enum (Scalar a), VectorSpace a, Limiting a,
 >                     Limiting (Scalar a))
 >   => (Scalar a -> a) -> Closure (Scalar a) -> (Scalar a,Scalar a) -> Closure a
->integrate_vector f dx (xa,ya) = limit $ do
+>integrate_vector f dx ~(xa,ya) = limit $ do
 >   eps <- approximations dx
->   return $ vsum $ map ((eps %*) . f) [xa,xa + eps..ya]
+>   return $! vsum $ map ((eps %*) . f) [xa,xa + eps..ya]
 
 >-- | <https://en.wikipedia.org/wiki/Methods_of_contour_integration>
 
 >integrate :: (Enum a, Num a, Limiting a)
 >          => (a -> a) -> Closure a -> (a,a) -> Closure a
->integrate f dx (xa,ya) = limit $ do
+>integrate f dx ~(xa,ya) = limit $ do
 >   eps <- approximations dx
->   return $ (eps *) $ Prelude.sum $ map f [xa,xa+eps..ya]
+>   return $! (eps *) $! Prelude.sum $! map f [xa,xa+eps..ya]
 
 >integral_real :: (R,R) -> (R -> R) -> R
->integral_real (x,y) f = runRClosure $ limit $ do
+>integral_real ~(x,y) f = runRClosure $ limit $ do
 >   (eps, xa, ya) <- fzip3 (approximate $ runRClosure epsilon_closure)
 >                          (approximate x)
 >                          (approximate y)
->   return $ (fromRational eps *) $ Prelude.sum $
+>   return $! (fromRational eps *) $! Prelude.sum $!
 >      map (f . fromRational) [xa,xa+eps..ya]
 
 >integral_rational :: (R,R) -> (Rational -> Rational) -> R
->integral_rational (x,y) f = Limit $ do
+>integral_rational ~(x,y) f = Limit $ do
 >       (eps,xa,ya) <- fzip3 (approximate $ runRClosure epsilon_closure)
 >                            (approximate x)
 >                            (approximate y)
->       return $ (eps *) $ Prelude.sum $ map f [xa,xa+eps..ya]
+>       return $! (eps *) $! Prelude.sum $! map f [xa,xa+eps..ya]
 
 
 Requires: lim[x->0]curve(x) = 0 /\ lim[i->INF] dx_i = 0
@@ -504,7 +504,7 @@ Requires: lim[x->0]curve(x) = 0 /\ lim[i->INF] dx_i = 0
 >                => (a,a) -> (a -> r) -> (r -> r) -> Closure a -> Closure r
 >integrate_curve (xa,ya) curve f dx  = limit $ do
 >   eps <- approximations dx
->   return $ (curve eps *) $ Prelude.sum $ map (f . curve) [xa,xa+eps..ya]
+>   return $! (curve eps *) $! Prelude.sum $! map (f . curve) [xa,xa+eps..ya]
 
 >-- | <http://en.wikipedia.org/wiki/Integral Integral>
 >-- This doesn't converge well.
@@ -552,7 +552,7 @@ instance Ord R where
 >   show_at_precision = show_at_precision_real
 
 >instance (ShowPrecision a) => ShowPrecision (Complex a) where
->   show_at_precision (a :+ b) x = show_at_precision a x ++ ":+" ++ show_at_precision b x
+>   show_at_precision ~(a :+ b) x = show_at_precision a x ++ ":+" ++ show_at_precision b x
 
 >instance ShowPrecision Double where
 >   show_at_precision r _ = show r
@@ -569,7 +569,7 @@ instance Ord R where
 >signum_real :: R -> Int -> Int
 >signum_real _ 0 = 0
 >signum_real r i
->   | (a,b) <- properFraction (shead $ approximate r) =
+>   | ~(a,b) <- properFraction (shead $ approximate r) =
 >       if signum a == 0
 >        then signum_real (r*10) (i-1)
 >         else signum a
@@ -582,13 +582,13 @@ instance Ord R where
 >         (a,b) = properFraction_real r
 >         decimals x 0 = ""
 >         decimals x i
->             | (a',b') <- properFraction_real (x*10), r <- decimals b' (pred i) = show a' ++ r
+>             | ~(a',b') <- properFraction_real (x*10), r <- decimals b' (pred i) = show a' ++ r
 >         decimals_str2 x i = case decimals2 x i of
 >           (0,res) -> decimals (res `at_precision` i) i 
 >           (j,res) -> decimals (res `at_precision` i) i 
 >                        ++ "e" ++ show j
 >         decimals2 x 0 = (0,x)
->         decimals2 x i = let (a',b') = properFraction_real (x*10) 
+>         decimals2 x i = let ~(a',b') = properFraction_real (x*10) 
 >                           in case a' of
 >                             0 -> let (res,res2) = decimals2 b' (pred i) in (pred res,res2)
 >                             _ -> (0,x)
@@ -674,20 +674,20 @@ instance RealFrac R where
 >    negate = lift_real negate
 >    abs = lift_real abs
 >    signum = lift_real signum
->    fromInteger i = Limit $ Stream.constant $ fromInteger i
+>    fromInteger i = Limit $ Stream.constant $! fromInteger i
 
 >instance Fractional R where
 >    (Limit s) / (Limit t) = Limit $ liftA2 (/) s t
 >    recip = lift_real recip
->    fromRational r = Limit $ Stream.constant r
+>    fromRational r = Limit $ Stream.constant $! r
 
 >toReal :: Rational -> R
 >toReal = fromRational
 
 >instance Fractional (Closure R) where
->   (RClosure x) / (RClosure y) = RClosure $ x / y
->   recip (RClosure x) = RClosure $ recip x
->   fromRational r = RClosure $ fromRational r
+>   (RClosure x) / (RClosure y) = RClosure $! x / y
+>   recip (RClosure x) = RClosure $! recip x
+>   fromRational r = RClosure $! fromRational r
 
 >-- | <https://en.wikipedia.org/wiki/Natural_logarithm Natural logarithm>
 >-- @ log(1+z) = z - z^2/2 + z^3/3 - ... @
@@ -716,7 +716,7 @@ instance RealFrac R where
 >exp_by_powers x = limit $ do
 >     n <- naturals
 >     let n2 = 10^n
->     return $ (1 + x/fromIntegral n2)^^n2
+>     return $! (1 + x/fromIntegral n2)^^n2
 
 >exp_by_powers_real :: R -> R
 >exp_by_powers_real (Limit x) = Limit $ liftA2 (\n x' -> (1 + (x'/fromIntegral n))^^n) (stail $ stail $ power_integral 10) x
@@ -807,7 +807,7 @@ primitive_root_of_unity i = newtons_method (\x -> x ^^ i - (1 :+ 0)) (0 :+ 1)
 >logarithm_by_power :: (Floating a, Limiting a) => a -> Closure a
 >logarithm_by_power x = limit $ do
 >                n <- naturals
->                return $ n * (x ** (1/n) - 1)
+>                return $! n * (x ** (1/n) - 1)
 
 
 tetrate2 x == x^x
@@ -877,27 +877,27 @@ it means there are always two adjacent equal elements.
 >    pi = Limit $ Stream.sum_stream $ do 
 >            k <- Stream.naturals
 >            let kr = k % 1                
->            return $ (16^^(negate k))*(4/(8*kr+1) - 2/(8*kr+4)
+>            return $! (16^^(negate k))*(4/(8*kr+1) - 2/(8*kr+4)
 >                                       - 1/(8*kr+5) - 1/(8*kr+6))
 >    exp (Limit x) = Limit $ Stream.drop 3 $ x >>= \xappr -> sum_stream $
 >         liftA2 (/) (index_powers (constant xappr)) factorial
 >    sqrt v = accumulation_point $ newtons_method (\x -> x*x - v) 1
 >    log a = 2* (Limit $ Stream.sum_stream $ do
 >                  (n,aaprx) <- naturals <&> approximate a'
->                  return $ (1 / (2*fromIntegral n+1))*aaprx^(2*n+1))
+>                  return $! (1 / (2*fromIntegral n+1))*aaprx^(2*n+1))
 >         where a' = (a-1)/(a+1)
 >    x ** y = exp (y * log x)
 >    sin = sin_by_series
 >    cos = cos_by_series
 >    tan x = sin x / cos x
->    asin x = integral_real (0,x) $ \a -> 1 / (sqrt $ 1 - a*a)
->    acos x = integral_real (x,1) $ \a -> 1 / (sqrt $ 1 - a*a)
+>    asin x = integral_real (0,x) $ \a -> 1 / (sqrt $! 1 - a*a)
+>    acos x = integral_real (x,1) $ \a -> 1 / (sqrt $! 1 - a*a)
 >    atan x = integral (0,x) $ \a -> 1 / (a*a+1)
 >    sinh x = (exp x - exp (negate x)) / 2
 >    cosh x = (exp x + exp (negate x)) / 2
 >    tanh x = sinh x / cosh x
->    asinh x = log $ x + sqrt (x*x+1)
->    acosh x = log $ x + sqrt (x*x-1)
+>    asinh x = log $! x + sqrt (x*x+1)
+>    acosh x = log $! x + sqrt (x*x-1)
 >    atanh x = log ((1 + x)/(1-x)) / 2
 
 mandelbrot_polynomial :: Complex R -> Complex R -> Complex R

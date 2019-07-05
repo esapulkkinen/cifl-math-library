@@ -20,7 +20,7 @@
 >codiagonalsWith :: Transform2D a b -> (Stream :*: Stream) a -> Stream b
 >codiagonalsWith z@(Transform2D diag pair thr) q = Pre (diag d) $ Pre (pair x y) $
 >             liftA3 thr xr (codiagonalsWith z m) yr 
->    where (d,(Pre x xr, Pre y yr),m) = dematrix q
+>    where ~(d,(Pre x xr, Pre y yr),m) = dematrix q
 
 >element2D :: a -> a -> Transform2D () a
 >element2D x y = Transform2D (\ () -> x) (\ () () -> y) (\ () m () -> m)
@@ -88,9 +88,15 @@
 >        -> Transform2D ((m :*: m) a) ((m :*: m) a)
 >matrix2D = Transform2D transpose (%*%)
 
+>matrixProduct2D :: (VectorSpace ((f :*: f) a), Transposable f f,
+> InnerProductSpace (f a), VectorSpaceOver (f a) a)
+> => Transform2D ((f :*: f) a) ((f :*: f) a)
+>matrixProduct2D = Transform2D transpose (\a b -> a %**% b %- b %**% a) (\a m b -> a %**% m %**% transpose b)
+
 >list2D :: Transform2D a [a]
 >list2D = Transform2D (\a -> [a]) (\a b -> [a,b]) (\a m b -> a : m ++ [b])
 
 >seq2D :: Transform2D a (Seq a)
 >seq2D = Transform2D (\a -> Seq.singleton a) (\a b -> Seq.singleton a Seq.|> b)
 >                    (\a m b -> a Seq.<| (m Seq.|> b))
+

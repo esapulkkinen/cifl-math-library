@@ -42,8 +42,14 @@ build-cabal :
 build-stack :
 	$(STACK) build
 
+build-stack-llvm :
+	$(STACK) build --ghc-options="-fllvm"
+
 build-llvm:
 	$(CABAL) $(CABALOPTS) $(CABALFLAGS) new-build -j4 --ghc-options="-fllvm"
+
+test-stack-llvm:
+	$(STACK) test --ghc-options="-fllvm"
 
 test-llvm:
 	$(CABAL) $(CABALOPTS) $(CABALFLAGS) new-test -j4 --ghc-options="-fllvm"
@@ -84,7 +90,7 @@ latex-document :
 publish_document : dependencegraph document hscolor
 	cp -r dist-newstyle/build/*/ghc-*/cifl-math-library-*/doc/html/cifl-math-library/* docs/
 	sed -i 's+COPYRIGHT">COPYRIGHT+COPYRIGHT" rel="license">COPYRIGHT+g' docs/index.html
-	sed -i "s+<head><meta+<head>$$(cat metadata.txt | tr '\n' ' ')<meta+g" docs/*.html
+	sed -i "s+<head><meta+<head prefix=\"og: http://ogp.me/ns#\">$$(cat metadata.txt | tr '\n' ' ')<meta+g" docs/*.html
 
 hscolor :
 
@@ -95,5 +101,9 @@ install :
 	cabal $(CABALOPTS) $(CABALFLAGS) new-install -j2 --enable-documentation 
 
 clean :
+	stack clean
+	rm -f dependencies-*.ps dependencies-*.pdf
+
+old-clean :
 	cabal $(CABALOPTS) $(CABALFLAGS) new-clean
 	rm -f dependencies-*.ps dependencies-*.pdf

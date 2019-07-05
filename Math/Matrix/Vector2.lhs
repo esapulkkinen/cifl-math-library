@@ -449,7 +449,7 @@ curl2 f z = Vector2 (partial_derivate2y (xcoord2 . f) z)
 >instance Transposable Vector2 Vector2 where
 >  transpose   = transpose2
 
->instance (Num a) => LinearTransform Vector2 Vector2 a where
+>instance {-# OVERLAPPABLE #-} (Num a) => LinearTransform Vector2 Vector2 a where
 >  (<*>>) = left_multiply2
 >  (<<*>) = right_multiply2
 

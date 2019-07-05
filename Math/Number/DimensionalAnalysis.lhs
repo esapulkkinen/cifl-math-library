@@ -37,7 +37,7 @@
 >--
 >-- @convert lightyear (kilo meter) == return 9.4607304725808e12@
 >module Math.Number.DimensionalAnalysis where
->import Text.PrettyPrint (vcat,nest, (<+>), empty)
+>import qualified Text.PrettyPrint as Pretty (Doc,vcat,nest, (<+>), empty) 
 >import Data.Complex
 >import Data.Typeable
 >import GHC.Generics
@@ -58,12 +58,12 @@
 >import Math.Number.Real ( ShowPrecision(..))
 >import Math.Number.Group
 >import Math.Number.Interface
->import Text.ParserCombinators.ReadPrec
->import Text.Read
+>import qualified Text.ParserCombinators.ReadPrec as ReadPrec
+>import qualified Text.Read as TRead
 
 >data Quantity r = As {
 >   value_amount :: r,
->   value_dimension :: Dimension }
+>   value_dimension :: !Dimension }
 >  deriving (Typeable, Data, Generic)
 
 >instance (Show r, DifferentiallyClosed r, VectorSpace r) => DifferentiallyClosed (Quantity r) where
@@ -72,7 +72,7 @@
 >  integral (a `As` da,b `As` db) f
 >     | da == db =
 >         integral (a,b) (\x -> value_amount (f (x `As` da)))
->         `As` ((dimension $ f (a `As` da)) %+ da)
+>         `As` ((dimension $! f (a `As` da)) %+ da)
 >     | otherwise = error $ "integral: invalid dimensions: " ++ show da ++ " != " ++ show db
 
 >default_tolerance :: (Floating a) => a
@@ -88,13 +88,13 @@
 >   | otherwise = invalidDimensions "equal_up_to" d d' x y
 
 >data Dimension = Dimension {
->   length_power :: !Rational,
->   weight_power :: !Rational,
->   time_power   :: !Rational,
->   current_power :: !Rational,
->   temperature_power :: !Rational,
->   luminosity_power  :: !Rational,
->   substance_power   :: !Rational }
+>   length_power :: {-# UNPACK #-} !Rational,
+>   weight_power :: {-# UNPACK #-} !Rational,
+>   time_power   :: {-# UNPACK #-} !Rational,
+>   current_power :: {-# UNPACK #-} !Rational,
+>   temperature_power :: {-# UNPACK #-} !Rational,
+>   luminosity_power  :: {-# UNPACK #-} !Rational,
+>   substance_power   :: {-# UNPACK #-} !Rational }
 >  deriving (Eq, Typeable, Ord, Data, Generic)
 
 >instance Applicative Quantity where
@@ -137,19 +137,19 @@
 >mapQuantity :: (a -> b)
 >            -> (Dimension -> Dimension)
 >            -> Quantity a -> Quantity b
->mapQuantity f g (r `As` d) = f r `As` g d
+>mapQuantity f g ~(r `As` d) = f r `As` g d
 
 >mapQuantity2 :: (a -> b -> c) -> (Dimension -> Dimension -> Dimension)
 >             -> Quantity a -> Quantity b -> Quantity c
->mapQuantity2 f g (x `As` d) (y `As` d') = f x y `As` g d d'
+>mapQuantity2 f g ~(x `As` d) ~(y `As` d') = f x y `As` g d d'
 
 >complexQuantity :: (Show r) => Complex (Quantity r) -> Quantity (Complex r)
->complexQuantity ((a `As` d) :+ (b `As` d'))
+>complexQuantity ~(~(a `As` d) :+ ~(b `As` d'))
 >   | d == d' = (a :+ b) `As` d
 >   | otherwise = invalidDimensions "complexQuantity" d d' a b
 
 >quantityComplex :: Quantity (Complex r) -> Complex (Quantity r)
->quantityComplex ((a :+ b) `As` d) = (a `As` d) :+ (b `As` d)
+>quantityComplex ~(~(a :+ b) `As` d) = (a `As` d) :+ (b `As` d)
 
 >ratioQuantity :: (Integral r, Show r) => Ratio (Quantity r) -> Quantity (Ratio r)
 >ratioQuantity r = ((a % b) `As` (d - d'))
@@ -175,7 +175,7 @@
 >   conversionFactor _ = 1
 
 >fromQuantityDef :: (Monad m, Alternative m, Show a) => Dimension -> (a -> b) -> Quantity a -> m b
->fromQuantityDef dim ctr (x `As` d) = do { guard (d == dim) ; return $ ctr x }
+>fromQuantityDef dim ctr (x `As` d) = do { guard (d == dim) ; return $! ctr x }
 >                                <|> invalidDimensionsM "fromQuantityDef" d dim x x
 
 
@@ -223,7 +223,7 @@
 >-- | Note that the number of alternatives grows quickly.
 >toAlternatives :: (Floating a, Ord a, ShowPrecision a, Monad m) => Quantity a -> m a
 >toAlternatives x
->   | isDimensionless (value_dimension x) = return $ 2.0 ** value_amount x
+>   | isDimensionless (value_dimension x) = return $! 2.0 ** value_amount x
 >   | otherwise = invalidDimensionsM "toAlternatives" (value_dimension x) dimensionless x x
 
 >(@@) :: r -> Dimension -> Quantity r
@@ -233,12 +233,12 @@
 >  => Quantity a -> (String, Quantity a) -> m String
 >convertTo value (qname,base) = do
 >   val <- convert value base
->   return $ show val ++ qname
+>   return $! show val ++ qname
 
 >instance (Num r, VectorSpace r) => Unit (Quantity r) where
 >  amount (x `As` _) = x
 >  unitOf (_ `As` r) = show r
->  fromQuantity q = return q
+>  fromQuantity q = return $! q
 >  dimension (_ `As` r) = r
 >  -- | fromAmount is not implemented, as the dimension is not known.
 >  fromAmount x = error "Ambiguous units while constructing run-time Quantity."
@@ -252,7 +252,7 @@
 >convert :: (Scalar u ~ Scalar v, Unit v, Unit u, Show v, Show u, Monad m, Fractional (Scalar u))
 >        => v -> u -> m (Scalar u)
 >convert x d
->   | dimension x == dimension d = return (amount x / amount d)
+>   | dimension x == dimension d = return $! (amount x / amount d)
 >   | otherwise = invalidDimensionsM "convert" (dimension x) (dimension d) x d
 
 
@@ -268,7 +268,7 @@
 >     te <- Binary.get
 >     lu <- Binary.get
 >     su <- Binary.get
->     return $ Dimension l w t c te lu su
+>     return $! Dimension l w t c te lu su
 
 >dimension_basis :: [Dimension]
 >dimension_basis = [meter_dimension, kilogram_dimension, second_dimension,
@@ -429,7 +429,7 @@
 >   fromRational x = fromRational x `As` vzero
 
 >require_dimensionless :: (Show a) => String -> (a -> a) -> Quantity a -> Quantity a
->require_dimensionless op f (x `As` r)
+>require_dimensionless op f ~(x `As` r)
 >   | isDimensionless r = f x `As` dimensionless
 >   | otherwise = invalidDimensions op r dimensionless x (f x)
 
@@ -490,10 +490,10 @@
 >instance (Show r, Real r) => Real (Quantity r) where
 >   toRational (x `As` r) = toRational x
 
->readprefix :: ReadPrec (Quantity Double -> Quantity Double)
+>readprefix :: TRead.ReadPrec (Quantity Double -> Quantity Double)
 >readprefix = choose $ map (\(a,b) -> (a,return b)) siPrefixes
 
->readunit :: ReadPrec (String,Quantity Double)
+>readunit :: TRead.ReadPrec (String,Quantity Double)
 >readunit = choose $ map (\ (a,b) -> (a,return (a,b))) siUnits
 
 >-- | This read instance handles input examples such
@@ -501,31 +501,31 @@
 >--     "3.4 mm"
 >instance Read (Quantity Double) where
 >   readPrec = do
->     v <- readPrec
+>     v <- TRead.readPrec
 >     whitespace
 >     (do prefix <- readprefix
 >         lst <- some readunit
->         lst' <- ((whitespace >> string "/" >> unitdivider) >>= (return . Just)) <++ return Nothing
+>         lst' <- ((whitespace >> string "/" >> unitdivider) >>= (return . Just)) TRead.<++ return Nothing
 >         let lst'' = maybe lst (\lst2 -> lst ++ map (\(i,j) -> (i,1 / j)) lst2) lst'
->         return $ prefix $ v %* (product $ map snd lst''))
->       <++ do
+>         return $! prefix $ v %* (product $ map snd lst''))
+>       TRead.<++ do
 >             lst <- many readunit
 >             lst' <- ((whitespace >> string "/" >> whitespace >> unitdivider) >>= (return . Just)) <|> return Nothing
 >             let lst'' = maybe lst (\lst2 -> lst ++ map (\(i,j) -> (i,1 / j)) lst2) lst'
->             return $ v %* (product $ map snd lst'')
+>             return $! v %* (product $ map snd lst'')
 >      where 
->            parens x = string "(" >> whitespace >> reset x >>= \v -> whitespace >> string ")" >> return v
->            chooseunits = step (readunit >>= \v -> whitespace >> string "*" >> whitespace >> chooseunits >>= \r -> return (v:r))
->                        <++ (readunit >>= (\x -> return [x]))
+>            parens x = string "(" >> whitespace >> TRead.reset x >>= \v -> whitespace >> string ")" >> return v
+>            chooseunits = TRead.step (readunit >>= \v -> whitespace >> string "*" >> whitespace >> chooseunits >>= \r -> return (v:r))
+>                        TRead.<++ (readunit >>= (\x -> return [x]))
 >            unitdivider = (readunit >>= (\x -> whitespace >> string "/" >> unitdivider >>= \xr -> (return (x:xr))))
->                           <++ (readunit >>= (\x -> return [x]))
->                           <++ parens chooseunits
+>                           TRead.<++ (readunit >>= (\x -> return [x]))
+>                           TRead.<++ parens chooseunits
   
 >instance (ShowPrecision r) => Show (Quantity r) where
 >  show (x `As` d) = show_at_precision x 10 ++ " " ++ show d
 
 >instance (ShowPrecision r) => PpShow (Quantity r) where
->  pp (x `As` d) = pp (show_at_precision x 10) <+> pp d
+>  pp (x `As` d) = pp (show_at_precision x 10) Pretty.<+> pp d
 
 
 >invalidDimensions :: (Show b, Show c) => String -> Dimension -> Dimension -> b -> c -> a
@@ -572,12 +572,12 @@
 >plusQ :: (Monad m, Num r, Show r) => Quantity r -> Quantity r -> m (Quantity r)
 >plusQ (x `As` r) (y `As` r')
 >   | r /= r' = invalidDimensionsM "plusQ" r r' x y
->   | otherwise = return $ (x+y) `As` r
+>   | otherwise = return $! (x+y) `As` r
 >
 >minusQ :: (Monad m, Num r, Show r) => Quantity r -> Quantity r -> m (Quantity r)
 >minusQ (x `As` r) (y `As` r')
 >   | r /= r' = invalidDimensionsM "minusQ" r r' x y
->   | otherwise = return $ (x - y) `As` r
+>   | otherwise = return $! (x - y) `As` r
 
 >instance (Num r, Show r) => Num (Quantity r) where
 >  (x `As` r) + (y `As` r')
@@ -646,31 +646,32 @@ order in the table is significant
 
 >instance Read Dimension where
 >   readPrec = do lst <- dimension_product_reader
->                 lst' <- ((optional_whitespace >> string "/" >> dimension_divider_reader) >>= (return . Just)) <++ return Nothing
+>                 lst' <- ((optional_whitespace >> string "/" >> dimension_divider_reader) >>= (return . Just)) TRead.<++ return Nothing
 >                 let lst'' = maybe lst (\lst2 -> lst ++ map (\j -> negate j) lst2) lst'
->                 return $ sum lst''
+>                 return $! sum lst''
 
->dimension_product_reader :: ReadPrec [Dimension]
->dimension_product_reader = step $ do v <- dimension_reader
+>dimension_product_reader :: TRead.ReadPrec [Dimension]
+>dimension_product_reader = TRead.step $ do
+>                                     v <- dimension_reader
 >                                     optional_whitespace
 >                                     string "*"
 >                                     optional_whitespace
 >                                     r <- dimension_product_reader
->                                     return (v:r)
->                            <++ some dimension_reader
->                            <++ parens dimension_product_reader
+>                                     return $! (v:r)
+>                            TRead.<++ some dimension_reader
+>                            TRead.<++ TRead.parens dimension_product_reader
 
->dimension_divider_reader :: ReadPrec [Dimension]
+>dimension_divider_reader :: TRead.ReadPrec [Dimension]
 >dimension_divider_reader = do
 >        x <- dimension_reader
 >        whitespace
 >        string "/"
 >        xr <- dimension_divider_reader
->        return (x:xr)
->  <++ (dimension_reader >>= \x -> return [x])
->  <++ parens dimension_product_reader
+>        return $! (x:xr)
+>  TRead.<++ (dimension_reader >>= \x -> return $! [x])
+>  TRead.<++ TRead.parens dimension_product_reader
 
->dimension_reader :: ReadPrec Dimension
+>dimension_reader :: TRead.ReadPrec Dimension
 >dimension_reader = choose $ fmap (\ (d,s) -> (s,return d)) full_dimension_table
 
 >dimensionless :: Dimension
@@ -687,10 +688,10 @@ order in the table is significant
 >                      && (abs e >= abs e') && (signum e == signum e' || signum e' == 0)
 >                      && (abs f >= abs f') && (signum f == signum f' || signum f' == 0)
 >                      && (abs g >= abs g') && (signum g == signum g' || signum g' == 0)
->                            = Just (pp p <+> pp (z %- z'))
+>                            = Just (pp p Pretty.<+> pp (z %- z'))
 >                    | otherwise = Nothing
 >           check (Just x) _ = Just x                      
->           def (Dimension 0 0 0 0 0 0 0) = empty
+>           def (Dimension 0 0 0 0 0 0 0) = Pretty.empty
 >           def z = pp (show_dimension z)
 
 >instance Show Dimension where
@@ -884,7 +885,7 @@ order in the table is significant
 >toFahrenheit :: (Monad m, Fractional a,VectorSpace a)
 > => Quantity a -> m a
 >toFahrenheit x
->   | dimension x == kelvin_dimension = return $ (amount x * (9/5)) - 459.67
+>   | dimension x == kelvin_dimension = return $! (amount x * (9/5)) - 459.67
 >   | otherwise = fail "Cannot convert to fahrenheit"
 
 >toCelsius :: (Fractional a, Show a, VectorSpace a) => Quantity a -> a

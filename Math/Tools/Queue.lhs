@@ -20,15 +20,14 @@
 >import Math.Tools.Nondeterministic
 >import Math.Matrix.Interface hiding (fromList)
 
-a queue is really a list with a missing element which is the focus of
-the current operations.
-This idea comes from 'zipper' pattern. http://www.haskell.org/haskellwiki/Zipper
+>-- | a queue is really a list with a missing element which is the focus of
+>-- the current operations.
+>-- This idea comes from zipper pattern. <http://www.haskell.org/haskellwiki/Zipper>
 
->data Queue a = MakeQueue { queue_newest_first_prefix  :: [a],
->                           queue_oldest_first_postfix :: [a] }
+>data Queue a = MakeQueue { queue_newest_first_prefix  :: ![a],
+>                           queue_oldest_first_postfix :: ![a] }
 
-This version of queue is not a comonad, since empty queue is possible.
-
+>-- | This version of queue is not a comonad, since empty queue is possible.
 >instance (Num a) => VectorSpace (Queue a) where
 >  type Scalar (Queue a) = a
 >  vzero = MakeQueue [] []
@@ -102,13 +101,12 @@ cat (punctuate (pp ',') $ map pp (x ++ L.reverse y)) <> pp '}'
 >               y' <- amap f -< y
 >               returnA -< MakeQueue x' y'
 
-join works in round-robin fashion. Note if all inner queues are empty,
-this goes to infinite loop trying to find elements from empty queues.
-
+>-- | join works in round-robin fashion. Note if all inner queues are empty,
+>-- this goes to infinite loop trying to find elements from empty queues.
 >join :: Queue (Queue a) -> Queue a
 >join = visit (QueueFold empty interleave)
 
-Alternative implementation of join, works in reverse compared to 'join'.
+>-- | Alternative implementation of join, works in reverse compared to join.
 
 >join' :: Queue (Queue a) -> Queue a
 >join' q = maybe empty f (dequeue q)

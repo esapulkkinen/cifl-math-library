@@ -4,6 +4,7 @@
 >import Math.Matrix.Interface hiding (inverse)
 >import Math.Matrix.Vector2
 >import Math.Matrix.Vector4
+>import Math.Matrix.SIMD
 >
 >-- | Quaternion interpretation of four-component vectors.
 >newtype Quaternion a = Quaternion { quaternion_vector :: Vector4 a }
