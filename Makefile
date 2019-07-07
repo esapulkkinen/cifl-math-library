@@ -90,7 +90,7 @@ latex-document :
 publish_document : dependencegraph document hscolor
 	cp -r dist-newstyle/build/*/ghc-*/cifl-math-library-*/doc/html/cifl-math-library/* docs/
 	sed -i 's+COPYRIGHT">COPYRIGHT+COPYRIGHT" rel="license">COPYRIGHT+g' docs/index.html
-	sed -i "s+<head><meta+<head prefix=\"og: http://ogp.me/ns#\">$$(cat metadata.txt | tr '\n' ' ')<meta+g" docs/*.html
+	sed -i "s+<head><meta+<head profile=\"http://dublincore.org/specifications/dublin-core/dc-html/2008-08-04/\" prefix=\"og: http://ogp.me/ns#\">$$(cat metadata.txt | tr '\n' ' ')<meta+g" docs/*.html
 
 hscolor :
 

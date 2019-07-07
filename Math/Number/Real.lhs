@@ -25,29 +25,29 @@
 >import Math.Matrix.Instances (characteristicPolynomial)
 
 >-- | Problem with this representation: real number ranges cannot be represented.
->-- given two rational numbers r1 < r2, it should be there are infinitely
->-- many real numbers between r1 and r2, so support density of irrationals.
+>-- given two rational numbers \(r_1 < r_2\), it should be there are infinitely
+>-- many real numbers between \(r_1\) and \(r_2\), so support density of irrationals.
 >-- <https://en.wikipedia.org/wiki/Dense_order>
 >-- 
->-- In constructive mathematics, given two real numbers @r1' < r2'@, there
->-- should exist a rational number r, such that @r1' < r@ and @r < r2'@.
+>-- In constructive mathematics, given two real numbers \(r_1' < r_2'\), there
+>-- should exist a rational number r, such that \(r_1' < r\) and \(r < r_2'\).
 >-- HOWEVER, these comparisons are a type error. In particular this
 >-- cannot be used to _define_ how to compare real numbers.
 >-- 
->-- what is meant is if @r1' < r2'@
+>-- what is meant is if \(r_1' < r_2'\)
 >--                  then there exists a rational r
->--                  such that @r1' < fromRational r@ and @fromRational r < r2'@
+>--                  such that \(r_1' < {\mathbf{fromRational}}(r)\) and \({\mathbf{fromRational}}(r) < r_2'\)
 >-- 
->-- In here properties of fromRational are important. Note that comparisons
+>-- In here properties of \({\mathbf{fromRational}}\) are important. Note that comparisons
 >-- invoke the real comparison, so at most is a recursive definition
 >-- of real comparison in terms of itself. But it doesn't include
 >-- termination condition.
 >-- 
->-- It should be so that _if_ two real numbers r1 and r2 are not the same
->-- real number, then @r1 < r2@ makes sense. But comparing whether two real
+>-- It should be so that _if_ two real numbers \(r_1\) and \(r_2\) are not the same
+>-- real number, then \(r_1 < r_2\) makes sense. But comparing whether two real
 >-- numbers are the same is undecidable (algorithm for this comparison
->-- will not halt if they are same). Would this mean that if @r1 < r2@ is
->-- computable, wouldn't @~(r1 < r2 || r2 < r1)@ be computable equality of reals;
+>-- will not halt if they are same). Would this mean that if \(r_1 < r_2\) is
+>-- computable, wouldn't \(\neg(r_1 < r_2 \lor r_2 < r_1)\) be computable equality of reals;
 >-- This is computable in the limit , but not computable? <https://en.wikipedia.org/wiki/Computation_in_the_limit>
 
 >data R = Limit { approximate :: !(Stream Rational) }
@@ -85,9 +85,9 @@ max_convergence_ratio = fmap (foldl1 max) . cauchy
 > => m a -> n a -> (m :*: n) a
 >cseq_difference_matrix s t = matrix (\x y -> abs (x - y)) s t
 
->-- | See "Suppes: Axiomatic Set Theory"
+>-- | See Suppes: Axiomatic Set Theory.
 >-- Note that we would like to check that
->-- forall eps. exists n. forall k > n. |s_k - t_k| < eps.
+>-- \[\forall \epsilon > 0. \exists n. \forall k > n. |s_k - t_k| < \epsilon \].
 >-- However, this is undecidable in particular with respect to what to choose for 'n'.
 >-- We can nonetheless compute the stream of distances.
 >cauchy_sequence_equivalence :: (Num a) => Stream a -> Stream a -> Stream a
@@ -116,7 +116,7 @@ max_convergence_ratio = fmap (foldl1 max) . cauchy
 >-- | This version of cauchy sequence equality convergence check
 >-- produces a stream of lists, where each list contains those elements
 >-- which are close to each other in terms of choice of indices, e.g.
->-- @C(s,t)_i = [ abs(s_j - t_k) | j <- naturals, k <- naturals, i == j + k]@
+>-- \[C(s,t)_i = [ \lvert s_j - t_k \rvert | j \leftarrow naturals, k \leftarrow naturals, i = j + k]\]
 >-- thus the complexity of the stream element lists of the result should increase
 >-- in the same way than the complexity of the input stream elements.
 >-- The lists in the result stream have monotonically increasing length.
@@ -125,8 +125,8 @@ max_convergence_ratio = fmap (foldl1 max) . cauchy
 >-- using the values in the list. To do this, it would be necessary to be able
 >-- to determine how close to zero the elements in the list should be.
 >-- the middle element (if any) of the list is probably the most interesting,
->-- because that would mean j == k, therefore the computation result
->-- would be @abs(s_j - t_j)@, but due to different rate of convergence of the input
+>-- because that would mean \(j == k\), therefore the computation result
+>-- would be \(\lvert s_j - t_j \rvert\), but due to different rate of convergence of the input
 >-- sequences, it can happen that the elementwise differences are not really
 >-- representative of the stream convergence behaviour at the diagonal.
 >-- however, analyzing these numbers should produce useful results about
@@ -217,7 +217,7 @@ instance MedianAlgebra R where
 >  curl f x = real_derivate f x
 
 >-- | The following instance declaration represents the completeness of the
->-- real number system. This maps to isomorphism "Closure R ~= R".
+>-- real number system. This maps to isomorphism \(Closure R \cong R\).
 >instance Limiting R where
 >  data Closure R = RClosure { runRClosure :: R }
 >  limit str = RClosure $ limit_real str
@@ -225,6 +225,27 @@ instance MedianAlgebra R where
 
 >completenessOfReals :: Closure R :==: R
 >completenessOfReals = runRClosure <-> RClosure
+
+>instance Floating (Closure R) where
+>   pi = RClosure pi
+>   exp = liftRClosure exp
+>   log = liftRClosure exp
+>   sqrt = liftRClosure sqrt
+>   sin = liftRClosure sin
+>   cos = liftRClosure cos
+>   tan = liftRClosure tan
+>   asin = liftRClosure asin
+>   acos = liftRClosure acos
+>   atan = liftRClosure atan
+>   sinh = liftRClosure sinh
+>   cosh = liftRClosure cosh
+>   tanh = liftRClosure tanh
+>   asinh = liftRClosure asinh
+>   acosh = liftRClosure acosh
+>   atanh = liftRClosure atanh
+
+>liftRClosure :: (R -> R) -> Closure R -> Closure R
+>liftRClosure f (RClosure x) = RClosure $! (f x)
 
 >instance Num (Closure R) where
 >   (RClosure x) + (RClosure y) = RClosure $! x + y
@@ -340,9 +361,9 @@ infimum = negate_limit . supremum_gen . map negate_limit
 
 >-- | compute rational approximation more precise than the given rational
 >-- the precision is expressed as rational number close to zero,
->-- the result will be within range @[r-p,r+p]@, in the sense
->-- that in the sequence of rational approximations @r = {r_i}_{i \\in N}@
->-- @abs(r_{i+1) - r_i) <= p@. Note that we do _not_ attempt to prove
+>-- the result will be within range \([r-p,r+p]\), in the sense
+>-- that in the sequence of rational approximations \(r = (r_i | i \in {\mathbf N})\)
+>-- we have \(\lvert r_{i+1} - r_i \rvert \leq p\). Note that we do _not_ attempt to prove
 >-- that all successive approximations have this same property,
 >-- we need the differences to be monotonically decreasing for this
 >-- to represent correct precision.
@@ -352,8 +373,8 @@ infimum = negate_limit . supremum_gen . map negate_limit
 >         | abs (y - x) <= p = x
 >         | otherwise = check_precision z'
 
->-- | here precision is expresses as integer power of 10
->--   1 == 10^(-1), 2 == 10^(-2), 3 == 10^(-3) and so on.
+>-- | here precision is expresses as integer power of 10, e.g.
+>--   \(1 == 10^{-1}\), \(2 == 10^{-2}\), \(3 == 10^{-3}\) and so on.
 >--   so how many digits after the decimal point are required.
 >at_precision :: R -> Integer -> R
 >at_precision (Limit s) p = Limit $ check_precision s
@@ -376,6 +397,10 @@ infimum = negate_limit . supremum_gen . map negate_limit
 >  derivate = real_derivate
 >  integral = integral_real
 
+>instance DifferentiallyClosed (Closure R) where
+>  derivate f (RClosure x) = RClosure $ derivate (runRClosure . f . RClosure) x
+>  integral (a,b) f = RClosure $ integral (runRClosure a, runRClosure b) (runRClosure . f . RClosure)
+
 >real_exp :: R -> R
 >real_exp = fix real_derivate
 
@@ -396,7 +421,7 @@ infimum = negate_limit . supremum_gen . map negate_limit
 >    eps <- epsilon_stream
 >    return $! (f (x + eps) - f x) / f eps
 
->-- | i'th element of derivates_at(f,s) is D^i[f](s_i)
+>-- | i'th element of derivates_at(f,s) is \(D^i[f](s_i)\)
 >derivates_at :: (DifferentiallyClosed a) => (a -> a) -> Stream a -> Stream a
 >derivates_at f x = derivates f <*> x
 
@@ -405,6 +430,7 @@ infimum = negate_limit . supremum_gen . map negate_limit
 >-- | derivate_around doesn't require 'f' to be defined at 'x', but requires
 >-- limits from both sides of 'x' to exist [it never evaluates 'f' at
 >-- 'x'].
+>-- \[ \lim_{\epsilon \rightarrow 0} {{f(x+\epsilon)-f(x-\epsilon)}\over{2\epsilon}} \]
 
 >derivate_around :: (Infinitesimal a) => (a -> a) -> a -> Closure a
 >derivate_around f x = limit $ do
@@ -412,30 +438,35 @@ infimum = negate_limit . supremum_gen . map negate_limit
 >    return $! (f (x + eps) - f (x - eps)) / (2 * eps)
 
 
+>-- | \[\lim_{\epsilon\rightarrow 0}{{f(a+\epsilon,b)-f(a-\epsilon,b)}\over{2\epsilon}}\]
 >partial_derivate1_2 :: (Infinitesimal a)
->                    => (a -> a -> a) -> a -> a -> Closure a
+>                    => (a -> b -> a) -> a -> b -> Closure a
 >partial_derivate1_2 f a b = limit $ do
 >    eps <- epsilon_stream
 >    return $! (f (a + eps) b - f (a - eps) b) / (2*eps)
 
->partial_derivate2_2 :: (Infinitesimal a) => (a -> a -> a) -> a -> a -> Closure a
+>-- | \[\lim_{\epsilon\rightarrow 0}{{f(a,b+\epsilon)-f(a,b-\epsilon)}\over{2\epsilon}}\]
+>partial_derivate2_2 :: (Infinitesimal a) => (b -> a -> a) -> b -> a -> Closure a
 >partial_derivate2_2 f a b = limit $ do
 >    eps <- epsilon_stream
 >    return $! (f a (b + eps) - f a (b - eps)) / (2*eps)
 
 
+>-- | \[\lim_{\epsilon\rightarrow 0}{{f(a+\epsilon,b,c)-f(a-\epsilon,b,c)}\over{2\epsilon}}\]
 >partial_derivate1_3 :: (Infinitesimal a)
 >                    => (a -> b -> c -> a) -> a -> b -> c -> Closure a
 >partial_derivate1_3 f a b c = limit $ do
 >    eps <- epsilon_stream
 >    return $! (f (a + eps) b c - f (a - eps) b c) / (2*eps)
 
+>-- | \[\lim_{\epsilon\rightarrow 0}{{f(a,b+\epsilon,c)-f(a,b-\epsilon,c)}\over{2\epsilon}}\]
 >partial_derivate2_3 :: (Infinitesimal a)
 >                    => (b -> a -> c -> a) -> b -> a -> c -> Closure a
 >partial_derivate2_3 f a b c = limit $ do
 >    eps <- epsilon_stream
 >    return $! (f a (b + eps) c - f a (b - eps) c) / (2*eps)
 
+>-- | \[\lim_{\epsilon\rightarrow 0}{{f(a,b,c+\epsilon)-f(a,b,c-\epsilon)}\over{2\epsilon}}\]
 >partial_derivate3_3 :: (Infinitesimal a)
 >                    => (b -> c -> a -> a) -> b -> c -> a -> Closure a
 >partial_derivate3_3 f a b c = limit $ do
@@ -448,7 +479,7 @@ infimum = negate_limit . supremum_gen . map negate_limit
 >agm x y = limit $! fmap fst $ iterate_stream (\(x,y) -> ((x+y)/2, sqrt(x*y))) (x,y)
 
 >-- | <http://en.wikipedia.org/wiki/Exponential_function Exponential function>
->-- using limit definition @ exp(x) = lim[n->oo](1+(x/n)^n) @.
+>-- using limit definition \(\exp(x) = \lim_{n\rightarrow\infty}(1+{{x}\over{n}})^n\).
 
 >expo :: R -> R
 >expo x = Limit $ do
@@ -498,8 +529,7 @@ infimum = negate_limit . supremum_gen . map negate_limit
 >       return $! (eps *) $! Prelude.sum $! map f [xa,xa+eps..ya]
 
 
-Requires: lim[x->0]curve(x) = 0 /\ lim[i->INF] dx_i = 0
-
+>-- | for integrate_curve (xa,ya) curve f dx, Requires: \(\lim_{x \rightarrow 0}curve(x) = 0 \land \lim_{i\rightarrow \infty} dx_i = 0\)
 >integrate_curve :: (Enum a, Num a, Num r, Limiting a, Limiting r)
 >                => (a,a) -> (a -> r) -> (r -> r) -> Closure a -> Closure r
 >integrate_curve (xa,ya) curve f dx  = limit $ do
@@ -509,8 +539,8 @@ Requires: lim[x->0]curve(x) = 0 /\ lim[i->INF] dx_i = 0
 >-- | <http://en.wikipedia.org/wiki/Integral Integral>
 >-- This doesn't converge well.
 
-gamma :: R -> Closure R  
-gamma z = integral (close 0,infinity_gen) $ \t -> exp (negate t) * (t ** (z-1))
+>gamma_via_integral :: R -> Closure R  
+>gamma_via_integral zz = integral (close 0,infinity_gen) $ \t -> exp (negate t) * (t ** RClosure (zz-1))
     
 instance Eq R where
   xs == ys = error "equality of constructive reals is undecidable"
