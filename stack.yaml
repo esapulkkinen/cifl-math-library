@@ -46,7 +46,7 @@ extra-deps: [arrows-0.4.4.2, Stream-0.4.7.2, lazysmallcheck-0.6]
 # extra-package-dbs: []
 
 # Control whether we use the GHC we find on the path
-# system-ghc: true
+system-ghc: true
 #
 # Require a specific version of stack, using version ranges
 # require-stack-version: -any # Default

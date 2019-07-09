@@ -1,5 +1,7 @@
 >{-# LANGUAGE LambdaCase, TypeOperators, FlexibleInstances, TemplateHaskell, ScopedTypeVariables, GADTs, FlexibleContexts, Trustworthy #-}
 >-- | This module provides QuasiQuoter syntactic sugar for matrices.
+>-- based on GHC's "Language.Haskell.TH" quasi quoters.
+>-- 
 >-- The syntax is:
 >-- 
 >-- @[mat3x4|1 2 3 4;3 4 5 6;5 6 7 8|] :: (Vector3 :*: Vector4) Integer@
@@ -37,18 +39,18 @@
 >import Math.Matrix.Simple
 >import qualified Language.Haskell.TH as TH
 >import qualified Language.Haskell.TH.Quote as Quote
->import Language.Haskell.TH.Syntax
+>import qualified Language.Haskell.TH.Syntax as Syntax
 
->notQuote :: b -> Q a
+>notQuote :: b -> Syntax.Q a
 >notQuote = const $ fail "not supported"
->quoter :: (String -> Q Exp) -> Quote.QuasiQuoter
+>quoter :: (String -> Syntax.Q Syntax.Exp) -> Quote.QuasiQuoter
 >quoter f = Quote.QuasiQuoter f notQuote notQuote notQuote
 
 >intmat :: Quote.QuasiQuoter
 >intmat = Quote.QuasiQuoter quoteExpr notQuote notQuote notQuote
 
->quoteExpr :: String -> Q Exp
->quoteExpr s = parseNumberMatrix s >>= lift
+>quoteExpr :: String -> Syntax.Q Syntax.Exp
+>quoteExpr s = parseNumberMatrix s >>= Syntax.lift
 
 >-- | Quasiquoters for various matrix sizes
 >mat1x1,mat2x1,mat3x1,mat4x1 :: Quote.QuasiQuoter
@@ -95,25 +97,25 @@
 
 >parseMat :: (CoordinateSpace (Scalar (f (g a))),
 >            CoordinateSpace (f (g a)),
->            Lift (f (g a)),
+>            Syntax.Lift (f (g a)),
 >            Scalar (Scalar (f (g a))) ~ Integer)
->           => (f (g a) -> ()) -> String -> Q Exp
+>           => (f (g a) -> ()) -> String -> Syntax.Q Syntax.Exp
 >parseMat (t :: f (g a) -> ()) s = do
 >   s' <- parseNumberMatrix s
 >   let res :: f (g a)
 >       res = s' <!> (listVector,listVector)
->   TH.appE [| Matrix |] (lift res)
+>   TH.appE [| Matrix |] (Syntax.lift res)
 
 >parseDbl :: (CoordinateSpace (Scalar (f (g a))),
 >            CoordinateSpace (f (g a)),
->            Lift (f (g a)),
+>            Syntax.Lift (f (g a)),
 >            Scalar (Scalar (f (g a))) ~ Double)
->           => (f (g a) -> ()) -> String -> Q Exp
+>           => (f (g a) -> ()) -> String -> Syntax.Q Syntax.Exp
 >parseDbl (t :: f (g a) -> ()) s = do
 >   s' <- parseDoubleMatrix s
 >   let res :: f (g a)
 >       res = s' <!> (listVector,listVector)
->   TH.appE [| Matrix |] (lift res)
+>   TH.appE [| Matrix |] (Syntax.lift res)
 
 
 >parse1x4mat = parseMat (const () :: Vector1 (Vector4 Integer) -> ())
@@ -168,26 +170,26 @@
 >parseNumberMatrix :: (Monad m) => String -> m (([] :*: []) Integer)
 >parseNumberMatrix = parseToMatrix numberP 
 
->instance Lift ((Vector3 :*: Vector3) Integer) where
+>instance Syntax.Lift ((Vector3 :*: Vector3) Integer) where
 >   lift (Matrix x) = [| Matrix |] `TH.appE` [| x |]
 
->instance (Lift a) => Lift (Vector1 a) where
+>instance (Syntax.Lift a) => Syntax.Lift (Vector1 a) where
 >   lift (Vector1 x) = [| Vector1 |] `TH.appE` [| x |]
 
->instance (Lift a) => Lift (Vector4 a) where
+>instance (Syntax.Lift a) => Syntax.Lift (Vector4 a) where
 >   lift (Vector4 x y z t) = [| Vector4 |]
 >      `TH.appE` [| x |] `TH.appE` [| y |] `TH.appE` [| z |]
 >      `TH.appE` [| t |]
 
->instance (Lift a) => Lift (Vector3 a) where
+>instance (Syntax.Lift a) => Syntax.Lift (Vector3 a) where
 >   lift (Vector3 x y z) = [| Vector3 |]
 >      `TH.appE` [| x |] `TH.appE` [| y |] `TH.appE` [| z |]
 
->instance (Lift a) => Lift (Vector2 a) where
+>instance (Syntax.Lift a) => Syntax.Lift (Vector2 a) where
 >   lift (Vector2 x y) = [| Vector2 |]
 >     `TH.appE` [| x |] `TH.appE` [| y |]
 
->instance Lift (([] :*: []) Integer) where
+>instance Syntax.Lift (([] :*: []) Integer) where
 >   lift (Matrix f) = [| Matrix |] `TH.appE` [| f |]
 >
 >numberP (Number tok) = return tok
