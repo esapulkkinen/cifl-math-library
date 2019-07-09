@@ -2,12 +2,10 @@
 >{-# OPTIONS_HADDOCK not-home #-}
 >module Math.Tools (
 >   module Math.Tools.Adjunction,
->   module Math.Tools.Arrow,
 >   module Math.Tools.CoFunctor,
 >   module Math.Tools.CoMonad,
 >   module Math.Tools.Complex,
 >   module Math.Tools.Expression,
->   module Math.Tools.FixedPoint,
 >   module Math.Tools.Functor,
 >   module Math.Tools.Group,
 >   module Math.Tools.Identity,
@@ -33,18 +31,15 @@
 >   module Math.Tools.PrettyP,
 >   module Math.Tools.Tree,
 >   module Math.Tools.Universe,
->   module Math.Tools.Visitor,
->   module Math.Tools.Prop
+>   module Math.Tools.Visitor
 > ) where
 
 >import Math.Tools.Adjunction
->import Math.Tools.Arrow
 >import Math.Tools.Category
 >import Math.Tools.CoFunctor
 >import Math.Tools.CoMonad
 >import Math.Tools.Complex
 >import qualified Math.Tools.Expression
->import Math.Tools.FixedPoint
 >import Math.Tools.Functor
 >import Math.Tools.Group
 >import qualified Math.Tools.Identity
@@ -76,4 +71,3 @@
 >import qualified Math.Tools.Tree
 >import Math.Tools.Universe
 >import Math.Tools.Visitor
->import Math.Tools.Prop
