@@ -9,6 +9,7 @@ Compilation should occur when you do:
 
 Compilation requires the following additional software:
    GNU Make <https://www.gnu.org/software/make/>
+   stack <https://docs.haskellstack.org/en/stable/README/>
    cabal <https://www.haskell.org/cabal/>
    sed <https://www.gnu.org/software/sed/>
 
