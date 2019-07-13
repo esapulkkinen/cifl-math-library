@@ -300,7 +300,7 @@ instance (Num a) => Matrix.VectorSpace ((Stream :*: Stream) a) where
 >-- | stream_diagonal is the "depth-first" traversal over two-dimensional streams,
 >-- where the choice always goes to diagonal elements.
 >--
->-- prop> stream_diagonal (matrix f x y) == liftA2 f x y
+>-- stream_diagonal (matrix f x y) == liftA2 f x y
 >stream_diagonal :: (Stream :*: Stream) a -> Stream a
 >stream_diagonal ~(Matrix ~(Pre ~(Pre x _) dr))
 >   = Pre x $ stream_diagonal $ Matrix $ fmap stail dr
@@ -1140,14 +1140,14 @@ codiagonals x = fmap Data.Foldable.toList $ codiagonals_seq x
 >-- | both reciprocal and inversion are the inverse of a Cauchy product.
 >-- see <http://en.wikipedia.org/wiki/Formal_power_series>
 >--
->-- prop> reciprocal s * s == unit_product
+>-- @reciprocal s * s == unit_product@
 >reciprocal :: (Fractional a) => Stream a -> Stream a
 >reciprocal (Pre c cr) = self
 >    where self = fmap (/c) $ Pre 1 (negate (cr * self))
 
 >-- | see <http://en.wikipedia.org/wiki/Formal_power_series>
 >-- 
->-- prop> inversion s * s == unit_product
+>-- @inversion s * s == unit_product@.
 >inversion :: (Integral a) => Stream a -> Stream a
 >inversion (Pre !c cr)
 >   | c /= 0 = let self = Pre (1 `div` c) (fmap (`div` c) $ negate (cr * self)) in self

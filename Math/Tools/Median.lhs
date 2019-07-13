@@ -14,7 +14,10 @@
 >--
 >-- === "median/commutative"
 >--
->-- prop> med x y z == med x z y == med y z x == med z x y == med z y x
+>-- prop> med x y z == med x z y
+>-- prop> med x y z == med y z x
+>-- prop> med x y z == med z x y
+>-- prop> med x y z == med z y x
 >--  
 >-- === "median/associative"
 >--

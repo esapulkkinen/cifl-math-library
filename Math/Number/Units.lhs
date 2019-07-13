@@ -1,6 +1,7 @@
 >-- -*- coding: utf-8 -*-
 >{-# LANGUAGE Trustworthy, CPP, TypeOperators #-}
 >{-# LANGUAGE FlexibleInstances, TypeFamilyDependencies #-}
+>{-# LANGUAGE UndecidableInstances #-}
 >{-# LANGUAGE GeneralizedNewtypeDeriving, DerivingStrategies #-}
 >{-# LANGUAGE ExistentialQuantification, TypeFamilies,GADTs, RankNTypes, UnicodeSyntax #-}
 >{-# LANGUAGE ScopedTypeVariables, StandaloneDeriving, FlexibleContexts, DeriveGeneric, DeriveDataTypeable #-}

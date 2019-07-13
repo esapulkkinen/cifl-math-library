@@ -1,6 +1,9 @@
 >{-# LANGUAGE ScopedTypeVariables, FlexibleContexts, TemplateHaskell #-}
+>{-# LANGUAGE FlexibleInstances #-}
 >module Math.Matrix.Test.InterfaceTest where
 >import Data.Complex
+>import Data.Ratio
+>import qualified Data.Monoid as Monoid
 >import Math.Test.Common
 >import Test.QuickCheck
 >import Test.HUnit
@@ -79,23 +82,23 @@ https://en.wikipedia.org/wiki/Inner_product_space
 
 >-- | <https://en.wikipedia.org/wiki/Lie_algebra>
 
->bilinearity (f :: v -> ()) =
+>bilinearity (f :: v -> ()) = counterexample "bilinearity" $
 >   forAll arbitrary $ \ (a :: Scalar v, b :: Scalar v, x :: v, y :: v, z :: v) ->
 >      (a %* x %+ b %* y) %<>% z === a %* (x %<>% z) %+ b %* (y %<>% z)
 
->alternativity (f :: v -> ()) =
+>alternativity (f :: v -> ()) = counterexample "alternativity" $
 >   forAll arbitrary $ \ (a :: v) -> a %<>% a === vzero
 
->jacobi_identity (f :: v -> ()) =
+>jacobi_identity (f :: v -> ()) = counterexample "jacobi_identity" $
 >   forAll arbitrary $ \ (x :: v, y :: v, z :: v) ->
 >      x %<>% (y %<>% z) %+
 >      z %<>% (x %<>% y) %+
 >      y %<>% (z %<>% x) === vzero
 
->anticommutativity (f :: v -> ()) =
+>anticommutativity (f :: v -> ()) = counterexample "anticommutativity" $
 >   forAll arbitrary $ \ (x :: v, y :: v) -> x %<>% y === vnegate (y %<>% x)
 
->lie_algebra (f :: v -> ()) =
+>lie_algebra (f :: v -> ()) = counterexample "lie_algebra" $
 >   bilinearity f .&&. alternativity f .&&. jacobi_identity f .&&. anticommutativity f
 
 
@@ -114,6 +117,11 @@ https://en.wikipedia.org/wiki/Vector_space
 >prop_triple_ips = inner_product_space (const () :: (Integer,Integer,Integer) -> ())
 
 
+>instance Eq (Monoid.Endo Rational) where
+>  (Monoid.Endo f) == (Monoid.Endo g) = and [f x == g x | x <- [0,1%2..5]]
+
+>instance Show (Monoid.Endo Rational) where
+>  show (Monoid.Endo f) = "[" ++ concatMap (\i -> show i ++ "=" ++ show (f i) ++ ";") [0,1%2..5] ++ "]"
 
 > -- prop_float_vectorspace = vectorspace (const () :: Float -> ())
 > -- prop_double_vectorspace = vectorspace (const () :: Double -> ())

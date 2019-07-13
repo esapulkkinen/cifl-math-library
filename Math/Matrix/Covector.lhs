@@ -104,8 +104,13 @@
 >                    => (m :*: n) a -> (n :*: m) a
 >conjugate_transpose = transpose . fmap conj
 
->dvector :: (InnerProductSpace v) => v -> Dual v
->dvector x = Covector $ (%. x)
+>-- | partial application of dot product on second argument @(- %. v)@.
+>bravector :: (InnerProductSpace v) => v -> Dual v
+>bravector x = Covector $ (%. x)
+
+>-- | partial application of dot product on first argument: @(v %. -)@.
+>ketvector :: (InnerProductSpace v) => v -> Dual v
+>ketvector x = Covector $ (x %.)
 
 >kronecker :: (Eq i, Functor n, Functor m, Num c) => m i -> n i -> (m :*: n) c
 >kronecker = matrix (\ x y -> if x == y then 1 else 0)

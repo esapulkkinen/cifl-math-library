@@ -11,4 +11,3 @@
 
 >instance Test.HUnit.Testable Property where
 >   test p = p ~? "property"
-

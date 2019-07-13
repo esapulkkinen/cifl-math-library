@@ -1,5 +1,5 @@
 >-- -*- coding: utf-8 -*-
->{-# LANGUAGE Trustworthy,MultiParamTypeClasses, ScopedTypeVariables, FlexibleContexts, FunctionalDependencies, FlexibleInstances, TypeOperators, TypeFamilies, DefaultSignatures, UnicodeSyntax, DeriveGeneric, DeriveDataTypeable, ConstraintKinds #-}
+>{-# LANGUAGE Trustworthy,MultiParamTypeClasses, ScopedTypeVariables, FlexibleContexts, FunctionalDependencies, FlexibleInstances, TypeOperators, TypeFamilies, DefaultSignatures, UnicodeSyntax, DeriveGeneric, DeriveDataTypeable, ConstraintKinds, UndecidableInstances #-}
 >-- | These should match standard definitions of vector spaces.
 >-- Used for reference: K. Chandrasekhara Rao: Functional Analysis.
 >-- also see Warner: Modern algebra.
@@ -21,6 +21,7 @@
 >import Math.Tools.FixedPoint
 >import Math.Tools.Universe
 >import Math.Tools.I
+
 
 >infixl 7 %.%
 >infix 7 %*
@@ -52,7 +53,7 @@
 >type VectorSpaceOver v a = (VectorSpace v, Scalar v ~ a)
 >type ComplexVectorSpace v a = VectorSpaceOver v (Complex a)
 >type Linear a b = (VectorSpace a, VectorSpace b, Scalar a ~ Scalar b)
->type LinearInnerProductSpace a b = (InnerProductSpace a, InnerProductSpace b, Scalar a ~ Scalar b)
+>type LinearInnerProductSpace a b = (Linear a b, InnerProductSpace a, InnerProductSpace b)
 
 >class (VectorSpace v) => BilinearVectorSpace v where
 >   biLin :: v -> v -> Scalar v
@@ -73,11 +74,6 @@
 >  => (m :*: g) a -> (g :*: n) a -> (m :*: n) (g a)
 >lie_compose m1 m2 = matrix (%<>%) (cells m1) (cells $ transpose m2)
 >  
->  -- (a %* x %+ b %* y) %<>% z == a %* (x %<>% z) + b %* (y %<>% z)  [bilinearity]
->  -- x %<>% x == 0   [alternativity]
->  -- x %<>% (y %<>% z) + z %<>% (x %<>% y) + y %<>% (z %<>% x) == 0
->  --   [jacobi identity]
->  -- x %<>% y == - y %<>% x   [anticommutativity]
 
 >class (VectorSpace m) => NormedSpace m where
 >  norm :: m -> Scalar m
@@ -452,7 +448,7 @@ index2 (row,col) (C e) = index col (index row e)
 
 >instance (Num a) => VectorSpace (Endo a) where
 >   type Scalar (Endo a) = a
->   vzero = Endo id
+>   vzero = Endo (const 0)
 >   vnegate (Endo f) = Endo $ negate . f
 >   a %* (Endo f) = Endo $ \x -> a * f x
 >   (Endo f) %+ (Endo g) = Endo $ \x -> f x + g x

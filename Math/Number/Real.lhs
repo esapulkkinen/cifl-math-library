@@ -229,7 +229,7 @@ instance MedianAlgebra R where
 >instance Floating (Closure R) where
 >   pi = RClosure pi
 >   exp = liftRClosure exp
->   log = liftRClosure exp
+>   log = liftRClosure log
 >   sqrt = liftRClosure sqrt
 >   sin = liftRClosure sin
 >   cos = liftRClosure cos
