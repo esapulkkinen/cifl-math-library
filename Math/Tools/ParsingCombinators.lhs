@@ -1,3 +1,4 @@
+>{-# LANGUAGE TypeOperators #-}
 >module Math.Tools.ParsingCombinators where
 >import Prelude hiding ((.),id)
 >import Control.Category
@@ -21,19 +22,19 @@
 >okparse s li v = Parsed s li (Left v)
 >syntaxerror s li d = Parsed s li (Right d)
 
->mapValue :: Iso (Either a Doc) (Either a Doc) -> Iso (ParseResult a) (ParseResult a)
+>mapValue :: (Either a Doc) :==: (Either a Doc) -> (ParseResult a) :==: (ParseResult a)
 >mapValue f = embedIso open (id <**> f)
 
->mapLineInfo :: Iso LineInfo LineInfo -> Iso (ParseResult a) (ParseResult a)
+>mapLineInfo :: LineInfo :==: LineInfo -> (ParseResult a) :==: (ParseResult a)
 >mapLineInfo f = embedIso open ((id <**> f) <**> id)
                  
->mapString :: Iso String String -> Iso (ParseResult a) (ParseResult a)
+>mapString :: String :==: String -> (ParseResult a) :==: (ParseResult a)
 >mapString f = embedIso open ((f <**> id) <**> id)              
 
->mapError :: Iso Doc Doc -> Iso (ParseResult a) (ParseResult a)
+>mapError :: Doc :==: Doc -> (ParseResult a) :==: (ParseResult a)
 >mapError f = embedIso open (id <**> (id <||> f))
               
->open :: Iso (ParseResult a) ((String,LineInfo),(Either a Doc))
+>open :: (ParseResult a) :==: ((String,LineInfo),(Either a Doc))
 >open = Iso open' close'
 >  where open' (Parsed s li d) = ((s,li),d)  
 >        close' ((s,li),d) = Parsed s li d
@@ -43,7 +44,7 @@
 >   fmap _ (Parsed s li (Right d)) = Parsed s li (Right d)
 
 >data ParsingA i o = ParsingA { 
->    runParsingA  :: Iso (ParseResult i) (ParseResult o)
+>    runParsingA  :: (ParseResult i) :==: (ParseResult o)
 >  }
 
 instance FailureArrow ParsingA Doc where
@@ -51,7 +52,7 @@ instance FailureArrow ParsingA Doc where
 instance ScopedFailureArrow ParsingA 
 
 >instance Isomorphic ParsingA where
->   iso (ParsingA i) = Iso (fwd (runIso i)) (fwd (runIsoInverse i))
+>   iso (ParsingA i) = Iso (fwd $ runIso i) (fwd $ runIsoInverse i)
 >     where fwd x v = case x (Parsed "" emptyLineInfo (Left v)) of
 >                     (Parsed s li (Left v')) -> v'
 >                     (Parsed s li (Right d)) -> error "Syntax error"
