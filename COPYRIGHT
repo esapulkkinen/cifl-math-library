@@ -76,7 +76,7 @@ Licensed under BSD3.
 Documentation is generated from Haskell code using haddock. <https://www.haskell.org/haddock/>.
 ===
 The dependency graphs on the documentation are generated using
-graphviz (which is under "Common Public License"), and ps2pdf (from
+stack (https://docs.haskellstack.org/en/stable/README/), graphviz (which is under "Common Public License"), and ps2pdf (from
 ghostscript, under GPL).
 
 See <https://www.graphviz.org/> for graphviz.
