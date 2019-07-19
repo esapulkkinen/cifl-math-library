@@ -33,6 +33,8 @@ description:  Haskell libraries containing graphs, vector spaces, matrices,
 
               <dependencies-Number.pdf Number dependencies>
 
+              <external-deps.pdf External dependencies>
+
               <https://github.com/esapulkkinen/cifl-math-library/blob/master/COPYRIGHT COPYRIGHT>.
 
 -- The license under which the package is released.

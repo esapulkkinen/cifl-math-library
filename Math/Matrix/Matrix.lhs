@@ -82,6 +82,10 @@ instance Comonad ((,) a :*: (->) a) where
 > -> (f :*: (g :*: (h :*: i))) e
 >matrix4d f x y z t = x `matrixBind` \a -> matrix3d (f a) y z t
 
+>-- | needs type annotation
+>constantMatrix :: (Applicative m, Applicative n) => a -> (m :*: n) a
+>constantMatrix a = matrix (\_ _ -> a) (pure ()) (pure ())
+
 >applyCol :: (Applicative f) => (f :*: (->) a) b -> f a -> f b
 >applyCol (Matrix m) x = pure ($) <*> m <*> x
 
@@ -258,9 +262,6 @@ instance (Functor g, Functor f, Builder a) => Builder (Matrix g f a) where
 >    (m :*: m') a -> (m :*: n') a -> (n :*: m') a -> (n :*: n') a -> ((m :+: n) :*: (m' :+: n')) a
 >join_matrix (Matrix a) (Matrix b) (Matrix c) (Matrix d) = Matrix $ (liftA2 (|>) a b) |> (liftA2 (|>) c d)
 
->matrix_iso :: (f :*: g) a :==: f (g a)
->matrix_iso = cells <-> Matrix
+>matrix_iso :: f (g a) :==: (f :*: g) a
+>matrix_iso = Matrix <-> cells
 
-
-codiagonal m = codiagonal a |>
-   where ((a,b),(c,d)) = split_matrix m

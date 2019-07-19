@@ -42,6 +42,17 @@
 >matrix f x y = Matrix $ flip fmap x $ \a -> 
 >                        flip fmap y $ \b -> f a b
 
+>applicativeMatrix :: (Applicative f, Functor m, Functor n)
+>                  => f (a -> b -> c)
+>                  -> (m :*: f) a -> (n :*: f) b
+>                  -> (m :*: n) (f c)
+>applicativeMatrix f (Matrix x) (Matrix y) = matrix (\a b -> f <*> a <*> b) x y
+
+>(>*<) :: (Applicative f, Functor m, Functor n)
+>                  => f (a -> b -> c) -> ((m :*: f) a, (n :*: f) b)
+>                  -> (m :*: n) (f c)
+>f >*< (x,y) = applicativeMatrix f x y
+
 >-- | <https://en.wikipedia.org/wiki/Matrix_%28mathematics%29>
 >class (Num (Scalar v)) => VectorSpace v where
 >  type Scalar v
@@ -97,6 +108,7 @@
 >  transpose :: (m :*: n) a -> (n :*: m) a
 
 >type Index m a = m a -> a
+
 
 >class (Applicative m) => Indexable m where
 >  diagonal_projections :: m (Index m a)

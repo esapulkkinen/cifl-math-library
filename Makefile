@@ -68,6 +68,10 @@ test-cabal :
 	cabal $(CABALOPTS) $(CABALFLAGS) new-test -j4 --ghc-options="+RTS -M786M -RTS"
 	@grep -h Counts dist-newstyle/build/*/*/*/*/unit-tests/test/*.log
 
+externaldepgraph :
+	$(STACK) dot --external | dot -Tpdf > external-deps.pdf
+	mv external-deps.pdf dist-newstyle/doc/html/cifl-math-library/
+
 dependencegraph :
 	mkdir -p dist-newstyle/doc/html/cifl-math-library
 	dependencies/draw_graph.sh Tools
@@ -87,8 +91,9 @@ document-cabal :
 latex-document :
 	cabal $(CABALOPTS) $(CABALFLAGS) new-haddock --enable-documentation --haddock-options="--title=cifl-math-library --latex" --haddock-all
 
-publish_document : dependencegraph document hscolor
+publish_document : dependencegraph externaldepgraph document hscolor
 	cp -r dist-newstyle/build/*/ghc-*/cifl-math-library-*/doc/html/cifl-math-library/* docs/
+	cp dist-newstyle/doc/html/cifl-math-library/*.pdf docs/
 	sed -i 's+COPYRIGHT">COPYRIGHT+COPYRIGHT" rel="license">COPYRIGHT+g' docs/index.html
 	sed -i "s+<head><meta+<head profile=\"http://dublincore.org/specifications/dublin-core/dc-html/2008-08-04/\" prefix=\"og: http://ogp.me/ns#\">$$(cat metadata.txt | tr '\n' ' ')<meta+g" docs/*.html
 

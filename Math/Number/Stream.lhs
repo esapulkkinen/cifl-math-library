@@ -58,6 +58,7 @@ import qualified Model.Nondeterminism as Nondet
 >import Math.Matrix.Matrix
 
 >infixr 5 `Pre`
+>infixl 4 !
 
 >default ()
 
@@ -371,15 +372,30 @@ instance (Num a) => Matrix.VectorSpace ((Stream :*: Stream) a) where
 >add_row :: f a -> (Stream :*: f) a -> (Stream :*: f) a
 >add_row x = Matrix . Pre x . cells
 
+>first_row :: (Stream :*: g) a -> g a
+>first_row = shead . cells
+>
+>first_column :: (Functor f) => (f :*: Stream) a -> f a
+>first_column = fmap shead . cells
+
 >remove_row :: (Stream :*: f) a -> (Stream :*: f) a
 >remove_row = Matrix . stail . cells
+
+>remove_row_endo :: Endo ((Stream :*: f) a)
+>remove_row_endo = Endo remove_row
 
 >-- | adding a column to a matrix.
 >add_column :: (Applicative f) => f a -> (f :*: Stream) a -> (f :*: Stream) a
 >add_column x = Matrix . liftA2 Pre x . cells
 
+>add_column_endo :: (Applicative f) => f a -> Endo ((f :*: Stream) a)
+>add_column_endo = Endo . add_column
+
 >remove_column :: (Functor f) => (f :*: Stream) a -> (f :*: Stream) a
 >remove_column = Matrix . fmap stail . cells
+
+>remove_column_endo :: (Functor f) => Endo ((f :*: Stream) a)
+>remove_column_endo = Endo remove_column
 
 >join3 :: (Stream :*: Stream) a -> Stream (a,a,a)
 >join3 m = m `bind_matrix` \x y zz -> do
@@ -761,6 +777,22 @@ matrix_convolution_product :: (Num a) => (Stream :*: Stream) a -> (Stream :*: St
 >from_triangular_matrices diag upper lower =
 >  stream_matrix diag (liftA2 (,) (cells upper) (cells lower))
 
+>-- | isomorphism of infinite matrices that splits along diagonal.
+>triangular_matrix_iso :: (Num a) => (Stream :*: Stream) a :==: ((Stream :*: Stream) a, Stream a, (Stream :*: Stream) a)
+>triangular_matrix_iso = fwd TArrow.<-> bck
+>  where fwd m = (lower_triangle m, diagonal m, upper_triangle m)
+>        bck (l,d,u) = from_triangular_matrices d u l
+
+>first_row_iso :: (Stream :*: Stream) a :==: (Stream a, (Stream :*: Stream) a)
+>first_row_iso = fwd TArrow.<-> bck
+>  where fwd (Matrix m) = (fmap shead m, Matrix $ fmap stail m)
+>        bck (s,Matrix m) = Matrix $ liftA2 Pre s m
+
+>first_col_iso :: (Stream :*: Stream) a :==: (Stream a, (Stream :*: Stream) a)
+>first_col_iso = fwd TArrow.<-> bck
+>   where fwd (Matrix m) = (shead m, Matrix $ stail m)
+>         bck (s,Matrix m) = Matrix $ Pre s m
+
 >-- | this matrix contains 0 on diagonal, 1 on diagonal of upper and lower
 >-- triangular matrices and so on. Every element of the two-dimensional matrix
 >-- gets an index.
@@ -929,6 +961,9 @@ codiagonals x = fmap Data.Foldable.toList $ codiagonals_seq x
 
 >codiagonalsIso :: (TArrow.BiArrow arr) => arr ((Stream :*: Stream) a) (Stream [a])
 >codiagonalsIso = codiagonals TArrow.<-> uncodiagonals
+
+>codiagonalsIsoMatrix :: (TArrow.BiArrow arr) => arr ((Stream :*: Stream) a) ((Stream :*: []) a)
+>codiagonalsIsoMatrix = codiagonalsIso >>> (Matrix TArrow.<-> cells)
 
 >-- | lower_triangle takes lower half of a two-dimensional stream split at diagonal.
 >lower_triangle :: (Stream :*: Stream) a -> (Stream :*: Stream) a

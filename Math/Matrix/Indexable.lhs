@@ -23,8 +23,12 @@
 >indexable_transpose (Matrix m) = matrix id diagonal_projections m
 
 >indexable_matrix_projections :: (Indexable f, Indexable g)
->                             => (f :*: g) ((f :*: g) a -> a)
+>                             => (f :*: g) (Index (f :*: g) a)
 >indexable_matrix_projections = matrix (\f g (Matrix m) -> (g . f) m) diagonal_projections diagonal_projections
+>
+>transposedIndices :: (Indexable f, Indexable g) => (g :*: f) (Index (f :*: g) a)
+>transposedIndices = fmap (. cells) $ matrix (.) diagonal_projections diagonal_projections
+
 
 >join_matrix :: (Indexable f, Indexable g) 
 >            => (f :*: g) ((f :*: g) b) -> (f :*: g) b

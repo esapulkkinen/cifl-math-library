@@ -69,7 +69,6 @@
 >horiz :: (Functor h) => h :~> k -> f :~> g -> (h :*: f) :~> (k :*: g)
 >horiz s t = NatTrans (Matrix .  nattrans_component s . fmap (nattrans_component t) . cells)
 
-
 >map_natural_matrix :: (Functor f, Functor h) 
 >           => f :~> g -> h :~> i -> (a -> b) -> (f :*: h) a -> (g :*: i) b
 >map_natural_matrix f g t = map_columns f . map_rows g . fmap t
@@ -83,6 +82,7 @@
 >mapMatrix :: (Functor f, Functor g)
 > => f :~> f' -> g :~> g' -> (a -> b) -> (f :*: g) a -> (f' :*: g') b
 >mapMatrix col row elem m = (col `horiz` row) `nattrans_component` (fmap elem m)
+
 
 
 >unyoneda :: (Category cat) => cat a :~> f -> f a
