@@ -38,7 +38,7 @@
 >   svec8_1,svec8_2,svec8_3,svec8_4,svec8_5,svec8_6,svec8_7,svec8_8,
 >   svec16_1,svec16_2,svec16_3,svec16_4,svec16_5,svec16_6,svec16_7,svec16_8,
 >   svec16_9,svec16_10,svec16_11,svec16_12,svec16_13,svec16_14,svec16_15,svec16_16,
->   fast_multiply4_float
+>   fast_multiply4_float, fast_multiply2_double
 >  )
 > where
 >

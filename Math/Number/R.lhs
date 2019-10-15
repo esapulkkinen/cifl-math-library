@@ -21,7 +21,9 @@
 
 >instance (TypeError (Text "Cannot compare reals for equality." :$$:
 >                     Text "Real equality is undecidable."))
->  => Eq R
+>  => Eq R where
+>   x == y = error "cannot compare reals for equality"
+
 
 >instance Limiting R where
 >   data Closure R = RClosure { runRClosure :: !R }

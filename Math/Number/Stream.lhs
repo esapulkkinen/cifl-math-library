@@ -204,12 +204,12 @@ import qualified Model.Nondeterminism as Nondet
 >   epsilon_stream = Pre 1.0 $ fmap (/10.0) epsilon_stream
 
 >instance Closed Double where
->   accumulation_point (DoubleClosure (Pre x (Pre y yr)))
+>   accumulation_point (DoubleClosure ~(Pre x ~(Pre y yr)))
 >     | abs (y - x) <= 1 / (fromInteger $ (floatRadix (0 :: Double)) ^ (floatDigits (0 :: Double) - 1)) = x
 >     | otherwise = accumulation_point (DoubleClosure yr)
 
 >instance Closed Float where
->   accumulation_point (FloatClosure (Pre x (Pre y yr)))
+>   accumulation_point (FloatClosure ~(Pre x ~(Pre y yr)))
 >     | abs (y - x) <= 1 / (fromInteger $ (floatRadix (0 :: Float)) ^ (floatDigits (0 :: Float) - 1)) = x
 >     | otherwise = accumulation_point (FloatClosure yr)
 
@@ -225,7 +225,7 @@ import qualified Model.Nondeterminism as Nondet
 >limiting_iso = limit TArrow.<-> approximations
 
 >vec_stream :: Stream a -> Integer -> a
->vec_stream (Pre x xr) i = if i == 0 then x else vec_stream xr (pred i)
+>vec_stream ~(Pre x xr) i = if i == 0 then x else vec_stream xr (pred i)
 
 >-- | mapping operation for closures.
 >-- Note we cannot make this a Functor instance due to constraint in the type.
@@ -271,7 +271,7 @@ import qualified Model.Nondeterminism as Nondet
 >instance (Applicative f, Traversable f,Applicative g, Traversable g, Limiting a) => Limiting ((f :*: g) a) where
 >   data Closure ((f :*: g) a) = MatrixClosure {
 >      runMatrixClosure :: (f :*: g) (Closure a) }
->   limit zz@(Pre _ _) = MatrixClosure $ fmap limit $ sequenceA zz
+>   limit ~zz@(Pre _ _) = MatrixClosure $ fmap limit $ sequenceA zz
 >   approximations = sequenceA . fmap approximations . runMatrixClosure
 
 >instance (Closed a, Applicative f, Applicative g, Traversable f, Traversable g) => Closed ((f :*: g) a) where
@@ -287,7 +287,7 @@ import qualified Model.Nondeterminism as Nondet
 >   where f b' | m <- a Matrix.<<*> b' = (1 / Matrix.norm m) Matrix.%* m
 
 >stream_distance_count :: (Eq a) => Stream a -> Stream a -> Integer
->stream_distance_count (Pre x xr) (Pre y yr) 
+>stream_distance_count ~(Pre x xr) ~(Pre y yr) 
 >         | not (x == y) = 0
 >         | otherwise = succ $ stream_distance_count xr yr
 
@@ -296,12 +296,12 @@ import qualified Model.Nondeterminism as Nondet
 
 >instance Limiting (IO ()) where
 >  data Closure (IO ()) = IOClosure { runIOClosure :: IO () }
->  limit (Pre x xr) = IOClosure $ x >> runIOClosure (limit xr)
+>  limit ~(Pre x xr) = IOClosure $ x >> runIOClosure (limit xr)
 >  approximations x = Pre (runIOClosure x) $ fmap (runIOClosure x >>) $ approximations x
 
 >instance (Monad m) => Limiting (Kleisli m a a) where
 >  data Closure (Kleisli m a a) = KleisliClosure { runKleisliClosure :: Kleisli m a a }
->  limit (Pre x xr) = KleisliClosure $ (runKleisliClosure $ limit xr) C.. x
+>  limit ~(Pre x xr) = KleisliClosure $ (runKleisliClosure $ limit xr) C.. x
 >  approximations x = Pre (runKleisliClosure x) $ fmap (C.. runKleisliClosure x)$ approximations x
 
 >instance Nondeterministic.Nondeterministic Stream where
@@ -397,7 +397,7 @@ instance (Num a) => Matrix.VectorSpace ((Stream :*: Stream) a) where
 
 
 >instance (Matrix.ConjugateSymmetric a) => Matrix.ConjugateSymmetric (Stream a) where
->   conj (Pre x xr) = Pre (Matrix.conj x) (Matrix.conj xr)
+>   conj ~(Pre x xr) = Pre (Matrix.conj x) (Matrix.conj xr)
 
 >-- | According to <http://patternsinfp.wordpress.com/2010/12/31/stream-monad/>, the diagonal
 >-- is the join of the stream monad.
@@ -411,12 +411,12 @@ instance (Num a) => Matrix.VectorSpace ((Stream :*: Stream) a) where
 >ssum = accumulation_point . limit . sum_stream
 
 >increasing_substream :: (Ord a) => Stream a -> Stream a
->increasing_substream (Pre x xr) = Pre x res
+>increasing_substream ~(Pre x xr) = Pre x res
 >  where res = increasing_substream (dropWhile (< x) xr)
 
 >sub_member :: (Ord a) => Stream a -> a -> Bool
 >sub_member s x = prim_member (increasing_substream s) x
->   where prim_member (Pre x' xr) y = case compare x' y of
+>   where prim_member ~(Pre x' xr) y = case compare x' y of
 >              EQ -> True
 >              GT -> False
 >              LT -> prim_member xr y            
@@ -470,7 +470,7 @@ instance (Num a) => Matrix.VectorSpace ((Stream :*: Stream) a) where
 >instance Comonad Stream where
 >   extract = shead
 >   duplicate = cells . tails
->   extend f z'@(Pre _ xr) = Pre (f z') (extend f xr)
+>   extend f ~z'@(Pre _ xr) = Pre (f z') (extend f xr)
 
 >instance CircularComonad Stream where
 >   rotate = stail
@@ -495,9 +495,12 @@ instance (Num a) => Matrix.VectorSpace ((Stream :*: Stream) a) where
 >   build (StreamUnfold e f) x = Pre (build e x) (build f x)
 
 >-- | The instance of Eq is kind of bogus, because equality for streams is
->-- only semidecidable. 
+>-- only semidecidable. It's still possible to use this if you know
+>-- that the operation on your specific streams terminate.
+>-- worst case occurs if the streams contain exactly equal elements.
 >instance (Eq a) => Eq (Stream a) where
->  (Pre _ _ ) == (Pre _ _) = error "cannot compute equality for Reals" -- x == y && xr == yr
+> ~(Pre x xr) == ~(Pre y yr) = x == y && xr == yr
+> ~(Pre x xr) /= ~(Pre y yr) = x /= y || xr /= yr
 
 >-- | Interpretation of a stream as a polynomial (its ordinary generating function)
 >-- \[OGF_{s}(z) = \sum_{i=0}^{\infty}s_iz^i\]
@@ -619,19 +622,16 @@ matrix_convolution_product :: (Num a) => (Stream :*: Stream) a -> (Stream :*: St
 >-- | this instance of Ord goes to infinite loop if the compared streams are
 >-- equal.
 >instance (Ord a) => Ord (Stream a) where
->   compare (Pre x xr) (Pre y yr) = case compare x y of
+>   compare ~(Pre x xr) ~(Pre y yr) = case compare x y of
 >                                     LT -> LT
 >                                     GT -> GT
 >                                     EQ -> compare xr yr
 
->instance (MedianAlgebra a) => MedianAlgebra (Stream a) where
->   med = liftA3 med
-
 >instance (Enum a, Num a) => Enum (Stream a) where
->   succ (Pre x xr) = Pre (succ x) xr
->   pred (Pre x xr) = Pre (pred x) xr
+>   succ ~(Pre x xr) = Pre (succ x) xr
+>   pred ~(Pre x xr) = Pre (pred x) xr
 >   toEnum i = Pre (toEnum i) zero
->   fromEnum (Pre x _) = fromEnum x
+>   fromEnum ~(Pre x _) = fromEnum x
 >   enumFrom p = p : fmap succ (enumFrom p)
 >   enumFromThen p q = p : fmap (+ diff) (enumFromThen p q)
 >     where diff = q - p
@@ -642,7 +642,7 @@ matrix_convolution_product :: (Num a) => (Stream :*: Stream) a -> (Stream :*: St
 >   -- TODO: missing functions
 
 >instance (Num a, Ord a, Real a) => Real (Stream a) where
->   toRational (Pre x _) = toRational x
+>   toRational ~(Pre x _) = toRational x
 
 >-- | Integral instance is based on interpretation of
 >-- a stream as generating function.
@@ -675,10 +675,10 @@ matrix_convolution_product :: (Num a) => (Stream :*: Stream) a -> (Stream :*: St
 >streamfold_lst lst = let x = foldr StreamFold x lst in x
 
 >streamfold_stream :: Stream (a -> b -> b) -> Fold (Stream a) b
->streamfold_stream (Pre x xr) = StreamFold x (streamfold_stream xr)
+>streamfold_stream ~(Pre x xr) = StreamFold x (streamfold_stream xr)
 
 >rotate_prefix :: Integer -> Stream a -> Stream a
->rotate_prefix k (Pre c cr) = (take k cr ++ [c]) `prefix` drop k cr
+>rotate_prefix k ~(Pre c cr) = (take k cr ++ [c]) `prefix` drop k cr
 
 >threeNplusOne :: Integer -> Integer
 >threeNplusOne n | n == 1 = 1
@@ -686,8 +686,8 @@ matrix_convolution_product :: (Num a) => (Stream :*: Stream) a -> (Stream :*: St
 >                | otherwise = n `div` 2
 
 >toNatSeq :: Stream a -> Rec Maybe -> a
->toNatSeq (Pre x _) (In Nothing) = x
->toNatSeq (Pre _ xr) (In (Just y)) = toNatSeq xr y
+>toNatSeq ~(Pre x _) (In Nothing) = x
+>toNatSeq ~(Pre _ xr) (In (Just y)) = toNatSeq xr y
 
 >fromIntegerSeq :: (Integer -> a) -> Stream a
 >fromIntegerSeq f = fmap f naturals
@@ -728,11 +728,11 @@ matrix_convolution_product :: (Num a) => (Stream :*: Stream) a -> (Stream :*: St
 >iterate_stream f x = Pre x (iterate_stream f (f x))
 
 >stream_differences :: (Num a) => Stream a -> Stream a
->stream_differences (Pre x z'@(Pre y _)) = 
+>stream_differences ~(Pre x ~z'@(Pre y _)) = 
 >        Pre (y - x) $ stream_differences z'
 
 >stream_quotients :: (Fractional a) => Stream a -> Stream a
->stream_quotients (Pre x z'@(Pre y _)) = Pre (y/x) $ stream_quotients z'
+>stream_quotients ~(Pre x ~z'@(Pre y _)) = Pre (y/x) $ stream_quotients z'
 
 >fixpoint :: (Limiting a) => (a -> a) -> a -> Closure a
 >fixpoint f x = limit $ iterate_stream f x
@@ -790,8 +790,8 @@ matrix_convolution_product :: (Num a) => (Stream :*: Stream) a -> (Stream :*: St
 >cobind f = fmap f . stream_diagonal
 
 >indexed_lookup :: Stream Integer -> Stream a -> Stream a
->indexed_lookup (Pre i x) s = Pre y (indexed_lookup x yr)
->   where (Pre y yr) = drop i s 
+>indexed_lookup ~(Pre i x) s = Pre y (indexed_lookup x yr)
+>   where ~(Pre y yr) = drop i s 
 
 >universal :: (Stream :*: Stream) Bool -> Stream Bool
 >universal = fmap and . codiagonals_seq
@@ -813,8 +813,8 @@ matrix_convolution_product :: (Num a) => (Stream :*: Stream) a -> (Stream :*: St
 >   type (Stream \\ a) = Stream a
 >   codiagonal = CodiagonalStream . stream_codiagonal
 >   diag |\| (CodiagonalStream codiag) = stream_matrix diag codiag
->   down_project (CodiagonalStream (Pre (x,_) _)) = x
->   right_project (CodiagonalStream (Pre (_,y) _)) = y
+>   down_project (CodiagonalStream ~(Pre ~(x,_) _)) = x
+>   right_project (CodiagonalStream ~(Pre ~(_,y) _)) = y
 
 >zero_codiagonal :: (Num a) => Codiagonal Stream a
 >zero_codiagonal = CodiagonalStream $ constant (constant 0, constant 0)
@@ -878,12 +878,12 @@ matrix_convolution_product :: (Num a) => (Stream :*: Stream) a -> (Stream :*: St
 >       Pre (Pre x row) $ liftA2 Pre col m
 
 >pseudo_codiagonal :: (Stream :*: Stream) a -> Codiagonal Stream a
->pseudo_codiagonal (Matrix (Pre (Pre _ x)
->                       (Pre y yr))) = CodiagonalStream $
+>pseudo_codiagonal (Matrix ~(Pre ~(Pre _ x)
+>                       ~(Pre y yr))) = CodiagonalStream $
 >                             Pre (x,y) (codiagonal_substreams $ pseudo_codiagonal $ Matrix yr)
 
 >pseudo_matrix :: Stream a -> Stream (Stream a, Stream a) -> (Stream :*: Stream) a
->pseudo_matrix (Pre a ar) (Pre (x,y) yr) = Matrix $ Pre (Pre a x) (Pre y (cells $ pseudo_matrix ar yr))
+>pseudo_matrix ~(Pre a ar) ~(Pre ~(x,y) yr) = Matrix $ Pre (Pre a x) (Pre y (cells $ pseudo_matrix ar yr))
 
 >map_matrix :: (a -> b) 
 >           -> ((Stream a,Stream a) -> (Stream b, Stream b))
@@ -900,7 +900,7 @@ matrix_convolution_product :: (Num a) => (Stream :*: Stream) a -> (Stream :*: St
 
 >instance Applicative Stream where
 >   pure = constant
->   (Pre f fr) <*> (Pre b br) = Pre (f b) (fr <*> br)
+>   ~(Pre f fr) <*> ~(Pre b br) = Pre (f b) (fr <*> br)
 
 >instance Indexable Stream where
 >   diagonal_projections = Pre shead $ fmap (\a -> a . stail) diagonal_projections
@@ -929,7 +929,7 @@ matrix_convolution_product :: (Num a) => (Stream :*: Stream) a -> (Stream :*: St
 >apply3 = liftA3 ($)
 
 >applyA :: (Arrow arr) => Stream (arr a b) -> arr (Stream a) (Stream b)
->applyA (Pre f fr) = proc (Pre y yr) -> do
+>applyA ~(Pre f fr) = proc (Pre y yr) -> do
 >                      y' <- f -< y
 >                      yr' <- applyA fr -< yr
 >                      returnA -< Pre y' yr'
@@ -937,8 +937,8 @@ matrix_convolution_product :: (Num a) => (Stream :*: Stream) a -> (Stream :*: St
 >dematrix :: (Stream :*: Stream) a
 >               -> (a, (Stream a, Stream a), (Stream :*: Stream) a)
 >dematrix y = (d,zz,stream_matrix dr cr)
->   where (Pre d  dr) = stream_diagonal y
->         (Pre zz cr) = stream_codiagonal y
+>   where ~(Pre d  dr) = stream_diagonal y
+>         ~(Pre zz cr) = stream_codiagonal y
 
 >-- | The 'codiagonals' function will divide a two-dimensional
 >-- stream of streams (where elements are \(e_{(i,j)}\) into a stream of
@@ -976,26 +976,24 @@ matrix_convolution_product :: (Num a) => (Stream :*: Stream) a -> (Stream :*: St
 >-- The resulting lists would be: 
 >--  @[d], [x,y], [xr0,d',yr0], [xr1,x',y',yr1],...@
                       
->codiagonals :: (Stream :*: Stream) a -> Stream [a]
->codiagonals q
->   | (d,(Pre x xr, Pre y yr),m) <- dematrix q = Pre [d] $ Pre [x,y] $ liftA3 f xr yr $ codiagonals m
->    where f pr suf r = pr : (r ++ [suf])
+codiagonals :: (Stream :*: Stream) a -> Stream [a]
+codiagonals q
+   | (d,~(~(Pre x xr), ~(Pre y yr)),m) <- dematrix q = Pre [d] $ Pre [x,y] $ liftA3 f xr yr $ codiagonals m
+    where f pr suf r = pr : (r ++ [suf])
 
 >-- | This is faster than above commented version of codiagonals, because
 >-- the suffix computation on Seq is constant time rather than linear.
 >-- However, strictness seems to behave differently.
 >codiagonals_seq :: (Stream :*: Stream) a -> Stream (Seq.Seq a)
 >codiagonals_seq q
->   | (d,(Pre x xr, Pre y yr),m) <- dematrix q =
+>   | ~(d,~(~(Pre x xr), ~(Pre y yr)),m) <- dematrix q =
 >       Pre (Seq.singleton d) $
 >       Pre (Seq.singleton x Seq.|> y) $
 >       liftA3 f xr yr $ codiagonals_seq m
 >    where f pr suf r = (pr Seq.<| r) Seq.|> suf
 
-
-
-codiagonals :: (Stream :*: Stream) a -> Stream [a]
-codiagonals x = fmap Data.Foldable.toList $ codiagonals_seq x
+>codiagonals :: (Stream :*: Stream) a -> Stream [a]
+>codiagonals x = fmap Data.Foldable.toList $ codiagonals_seq x
 
 >-- | for uncodiagonals, the i'th list element of the input stream must have length 'i'.
 >-- 
@@ -1015,7 +1013,7 @@ codiagonals x = fmap Data.Foldable.toList $ codiagonals_seq x
 >uncodiagonals _ = error "form requirements for input to uncodiagonals not satisfied."
 
 >takes :: Stream Integer -> Stream a -> Stream [a]
->takes (Pre x xr) s = Pre (take x s) $ takes xr (drop x s)
+>takes ~(Pre x xr) s = Pre (take x s) $ takes xr (drop x s)
 
 >split_dimension :: Stream a -> (Stream :*: Stream) a
 >split_dimension = uncodiagonals . takes nonzero_naturals
@@ -1053,7 +1051,7 @@ codiagonals x = fmap Data.Foldable.toList $ codiagonals_seq x
 >diagonalize (Pre (c:_) xr) = Pre c (diagonalize (fmap nice_tail xr))
 
 >skip_even :: Stream a -> Stream a
->skip_even (Pre x (Pre _ yr)) = Pre x (skip_even yr)
+>skip_even ~(Pre x ~(Pre _ yr)) = Pre x (skip_even yr)
 
 >nice_tail :: [a] -> [a]
 >nice_tail [] = []
@@ -1063,8 +1061,8 @@ codiagonals x = fmap Data.Foldable.toList $ codiagonals_seq x
 >diagonal_differences neg = fmap neg . stream_diagonal
 
 >find_equal :: (Eq a) => Stream a -> Stream a -> a
->find_equal (Pre x xr) (Pre y yr) | x == y = x
->                                 | otherwise = find_equal xr yr
+>find_equal ~(Pre x xr) ~(Pre y yr) | x == y = x
+>                                   | otherwise = find_equal xr yr
 
 >fixedpoint :: (Eq a) => (a -> a) -> (Stream :*: Stream) a -> a
 >fixedpoint f s = find_equal diag (fmap f diag)
@@ -1241,7 +1239,7 @@ codiagonals x = fmap Data.Foldable.toList $ codiagonals_seq x
 >--
 >-- @reciprocal s * s == unit_product@
 >reciprocal :: (Fractional a) => Stream a -> Stream a
->reciprocal (Pre c cr) = self
+>reciprocal ~(Pre c cr) = self
 >    where self = fmap (/c) $ Pre 1 (negate (cr * self))
 
 >-- | see <http://en.wikipedia.org/wiki/Formal_power_series>
@@ -1254,7 +1252,7 @@ codiagonals x = fmap Data.Foldable.toList $ codiagonals_seq x
            
 >-- | see <http://en.wikipedia.org/wiki/Formal_power_series>
 >quotient_invert :: (Integral a) => Stream a -> Stream a
->quotient_invert (Pre c cr)
+>quotient_invert ~(Pre c cr)
 >   | c /= 0 = let self = (fmap (`quot` c) $ Pre 1 (negate (cr * self))) in self
 >   | otherwise = error "can't invert series that begins with zero"
 
@@ -1273,13 +1271,13 @@ codiagonals x = fmap Data.Foldable.toList $ codiagonals_seq x
 >either f g z' = fmap (P.either f g) z'
 
 >split_either :: Stream (Either a b) -> (Stream a, Stream b)
->split_either (Pre (Left x) xr) = let (a,b) = split_either xr in (Pre x a,b)
->split_either (Pre (Right y) yr) = let (a,b) = split_either yr in (a,Pre y b)
+>split_either (Pre (Left x) xr) = let ~(a,b) = split_either xr in (Pre x a,b)
+>split_either (Pre (Right y) yr) = let ~(a,b) = split_either yr in (a,Pre y b)
 
 >split_either_bool :: Stream (Either a b) -> (Stream Bool, Stream a,Stream b)
->split_either_bool (Pre (Left x) xr) = let (c,a,b) = split_either_bool xr
+>split_either_bool (Pre (Left x) xr) = let ~(c,a,b) = split_either_bool xr
 >                                  in (Pre False c,Pre x a,b)
->split_either_bool (Pre (Right y) xr) = let (c,a,b) = split_either_bool xr
+>split_either_bool (Pre (Right y) xr) = let ~(c,a,b) = split_either_bool xr
 >                                   in (Pre True c,a,Pre y b)
 
 >join_either :: Stream Bool -> Stream a -> Stream b -> Stream (Either a b)
@@ -1322,7 +1320,7 @@ codiagonals x = fmap Data.Foldable.toList $ codiagonals_seq x
 
 >uninterleave_index :: Integer -> Stream a -> Stream a
 >uninterleave_index i s = Pre x (uninterleave_index i xr)
->   where Pre x xr = drop i s
+>   where ~(Pre x xr) = drop i s
 
 >-- | interleave two streams such that even indexed elements of result are
 >-- from first input stream and odd indexed elements of result are from
@@ -1358,7 +1356,7 @@ codiagonals x = fmap Data.Foldable.toList $ codiagonals_seq x
 
 >-- | interleave a non-empty list of streams.
 >interleave_lst :: [Stream a] -> Stream a
->interleave_lst ~(Pre x xr:sr) = Pre x (interleave_lst (sr ++ [xr]))
+>interleave_lst (~(Pre x xr):sr) = Pre x (interleave_lst (sr ++ [xr]))
 >interleave_lst [] = undefined
 
 >-- | uninterleave to an indicated number of streams.
@@ -1368,7 +1366,7 @@ codiagonals x = fmap Data.Foldable.toList $ codiagonals_seq x
 
 >-- | interleave a queue of streams.
 >interleave_queue :: (Queue :*: Stream) a -> Stream a
->interleave_queue (Matrix q) = case Q.dequeue q of
+>interleave_queue ~(Matrix q) = case Q.dequeue q of
 >     (Just (~(Pre x xr),r)) -> Pre x (interleave_queue (Matrix $ Q.enqueue xr r))
 >     Nothing                -> error "interleave_queue: empty queue"
 
@@ -1773,7 +1771,7 @@ codiagonals x = fmap Data.Foldable.toList $ codiagonals_seq x
 
 >twin_primes :: (Integral a) => Stream a
 >twin_primes = twin_primes_stream_gen 1 primes
->  where twin_primes_stream_gen prev (Pre x xr) 
+>  where twin_primes_stream_gen prev ~(Pre x xr) 
 >          | x == prev + 2 = Pre prev (twin_primes_stream_gen x xr)
 >          | otherwise     = twin_primes_stream_gen x xr
 

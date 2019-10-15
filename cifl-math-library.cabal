@@ -61,7 +61,6 @@ stability: alpha
 -- README.
 extra-source-files:  README.md
 
-
 Flag WithHaXML
      description: Build with HaXml
      default: False
@@ -71,7 +70,7 @@ Flag Library-Only
 
 common options
   default-language: Haskell2010
-  ghc-options: -fno-omit-yields -fPIC -msse2 -dynamic +RTS -M768M -c -RTS 
+  ghc-options: -fllvm -fobject-code -fno-omit-yields -fPIC -msse2 -dynamic +RTS -M768M -c -RTS 
   other-extensions:    MultiParamTypeClasses, ScopedTypeVariables, FlexibleContexts, FunctionalDependencies, FlexibleInstances, TypeOperators, GADTs, StandaloneDeriving, TypeFamilies, ExistentialQuantification, Rank2Types, TypeSynonymInstances, RankNTypes, DeriveDataTypeable, TemplateHaskell, ImpredicativeTypes, DeriveFoldable, DeriveTraversable, KindSignatures, AllowAmbiguousTypes, GeneralizedNewtypeDeriving, UnicodeSyntax, LambdaCase       
   If flag(WithHaXML)
      build-depends: HaXml
