@@ -1,4 +1,6 @@
->{-# LANGUAGE Safe,ExistentialQuantification, TypeOperators, Rank2Types, Arrows, TypeFamilies, StandaloneDeriving, FlexibleContexts, FlexibleInstances #-}
+>{-# LANGUAGE Safe,ExistentialQuantification, TypeOperators, Rank2Types #-}
+>{-# LANGUAGE Arrows, TypeFamilies, StandaloneDeriving, FlexibleContexts #-}
+>{-# LANGUAGE FlexibleInstances, PatternSynonyms #-}
 >module Math.Matrix.Matrix where
 >import Data.Complex
 >import Data.Array (Array)
@@ -30,9 +32,6 @@ exactly 2.
 >type family Transpose a
 >type instance Transpose ((f :*: g) a) = (g :*: f) a
 
-See video by Bartosz Milewski ("Category theory II 7.2: Comonads
-categorically and examples")
-
 >conjIso :: (ConjugateSymmetric a) => a :==: a
 >conjIso = conj <-> conj
 
@@ -42,6 +41,8 @@ categorically and examples")
 >vnegateIso :: (VectorSpace v) => v :==: v
 >vnegateIso = vnegate <-> vnegate
 
+>-- | See video by Bartosz Milewski ("Category theory II 7.2: Comonads
+>-- categorically and examples")
 >instance (Comonad f, Comonad g, Transposable g f, Transposable f g)
 >  => Comonad (f :*: g) where
 >   extract (Matrix m) = extract (extract m)

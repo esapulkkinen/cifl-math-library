@@ -2,7 +2,7 @@
 >{-# LANGUAGE Safe, GADTs, TypeFamilies, FlexibleContexts #-}
 >{-# LANGUAGE FlexibleInstances, TypeOperators, DataKinds #-}
 >{-# LANGUAGE UnicodeSyntax, MultiParamTypeClasses, DeriveGeneric #-}
->{-# LANGUAGE DeriveDataTypeable #-}
+>{-# LANGUAGE DeriveDataTypeable, StandaloneDeriving #-}
 >-- | This module provides dimensional analysis according to SI system of units.
 >--   For reference have used <https://en.wikipedia.org/wiki/Dimensional_analysis>
 >--   and <https://en.wikipedia.org/wiki/International_System_of_Units>.
@@ -53,7 +53,7 @@
 >import Math.Tools.List ()
 >import Math.Tools.Show
 >import Math.Matrix.Interface
->import Math.Number.Stream (Stream, Limiting(..), Closed(..), Infinitesimal(..))
+>import Math.Number.Stream (Stream(..), Limiting(..), Closed(..), Infinitesimal(..))
 >import qualified Math.Number.Stream as Stream
 >import Math.Number.Real ( ShowPrecision(..))
 >import Math.Number.Group
@@ -96,6 +96,12 @@
 >   luminosity_power  :: {-# UNPACK #-} !Rational,
 >   substance_power   :: {-# UNPACK #-} !Rational }
 >  deriving (Eq, Typeable, Ord, Data, Generic)
+
+>dimension_multiples :: Dimension -> Stream Dimension
+>dimension_multiples d = Pre d $ fmap (%+ d) $ dimension_multiples d
+
+>quantity_powers :: (Num a, Show a) => Quantity a -> Stream (Quantity a)
+>quantity_powers z = Pre z $ fmap (z *) $ quantity_powers z
 
 >instance Applicative Quantity where
 >  pure x = x `As` dimensionless
@@ -184,25 +190,97 @@
 >     | (Stream.Pre (As x d) xr) <- approximations s
 >     = accumulation_point (limit $ Stream.Pre x (fmap value_amount xr)) `As` d
 
->-- | <https://en.wikipedia.org/wiki/Level_(logarithmic_quantity)>
+>-- | <https://en.wikipedia.org/wiki/Level_(logarithmic_quantity)>-- Level represents a reference to which computations involving
+>-- logarithmic scales are compared to.
 >data Level r = Level {
 >   reference_value :: Quantity r,
 >   base_of_logarithm :: r }
+>  deriving (Show)
 
->level :: (Show a, Floating a, Real a) => Quantity a -> Level a -> Quantity a
->level x (Level q b) = log (x / q) / (log b `As` dimensionless)
+>deriving instance Read (Level Double)
 
->bit_level :: (Num a) => Level a
->bit_level = Level (1 `As` dimensionless) 2
+>scale :: (Show a, Floating a, Real a) => Quantity a -> Level a -> Quantity a
+>scale x (Level q b) = log (x / q) / (log b `As` dimensionless)
 
->bel_level :: (Num a) => Level a
->bel_level = Level (1 `As` dimensionless) 10
+>logarithmic :: (Floating a) => a -> Level a -> Quantity a
+>logarithmic x (Level q b) = (b ** x) %* q
 
->ratioToDecibel :: (Fractional a, Show a, Floating a, Real a) => Quantity a -> Quantity a
->ratioToDecibel x = 10 %* level x bel_level
+>bit_scale :: (Num a) => Level a
+>bit_scale = Level (1 `As` dimensionless) 2
 
->decibelToRatio :: (Floating a, Real a,Show a) => Quantity a -> Quantity a
->decibelToRatio x = 10 ** (x/10)
+>bel_scale :: (Num a) => Level a
+>bel_scale = Level (1 `As` dimensionless) 10
+
+>-- | logarithmic voltage with respect to base 10 relative to 1V.
+>-- <https://en.wikipedia.org/wiki/Decibel>
+>dBV :: (Floating a) => Level a
+>dBV = Level (1 %* volt) 10
+
+>-- | <https://en.wikipedia.org/wiki/Decibel>
+>-- logarithmic voltage in base 10 relative to \(\sqrt{0.6}V\).
+>dBu :: (Floating a) => Level a
+>dBu = Level (sqrt(0.6) %* volt) 10
+
+>-- | <https://en.wikipedia.org/wiki/Decibel>
+>-- logarithmic pressure in base 10 compared to 20 micro pascals.
+>dB_SPL :: (Floating a) => Level a
+>dB_SPL = Level (20 %* micro pascal) 10
+
+>-- | <https://en.wikipedia.org/wiki/Decibel>
+>dB_SIL :: Level Double
+>dB_SIL = Level (10**(negate 12) %* (watt / squaremeter)) 10
+
+>-- <https://en.wikipedia.org/wiki/Decibel>
+>dB_SWL :: Level Double
+>dB_SWL = Level (10e-12 %* watt) 10
+
+>-- | for logarithmic lengths in base 10.
+>length_scale :: (Floating a) => Level a
+>length_scale = Level (1.0 %* meter) 10
+
+>-- | <https://en.wikipedia.org/wiki/Octave>
+>-- logarithmic frequency in base 2 relative to 16.352 Hz.
+>-- a.k.a. in scientific designation.
+>-- middle-C is fourth octave, e.g. @4 \`logarithmic\` octave == 261.626 %* hertz@
+>frequency_scale :: (Floating a) => Level a
+>frequency_scale = Level (16.352 %* hertz) 2
+
+>-- | <https://en.wikipedia.org/wiki/Moment_magnitude_scale>
+>moment_magnitude_scale :: (Show a, Floating a) => Level a
+>moment_magnitude_scale = Level (10 ** (-7) %* (newton * meter)) 10
+
+>-- | <https://en.wikipedia.org/wiki/Entropy>
+>entropy_scale :: (Floating a) => Level a
+>entropy_scale = Level boltzmann_constant (exp 1)
+
+>hartley_scale :: (Num a) => Level a
+>hartley_scale = Level (1 `As` dimensionless) 10
+>ban_scale :: (Num a) => Level a
+>ban_scale = hartley_scale
+
+>time_scale :: (Floating a) => Level a
+>time_scale = Level (1 %* second) 10
+
+>weight_scale :: (Floating a) => Level a
+>weight_scale = Level (1 %* kilogram) 10
+
+>-- | compute how many nines a probability has. @nines 0.99999 == 5.0@.
+>-- <https://en.wikipedia.org/wiki/9#Probability>
+>nines :: Double -> Double
+>nines prob = value_amount $ negate $ (1.0 `As` dimensionless - prob `As` dimensionless) `scale` Level (1.0 `As` dimensionless) 10
+
+>-- | compute probability when given number of nines.
+>-- <https://en.wikipedia.org/wiki/9#Probability>
+>fromNines :: Double -> Double
+>fromNines n = value_amount $ 1.0 - ((negate n) `logarithmic` Level (1.0 `As` dimensionless) 10)
+
+>-- | note frequency from octave and index of note within octave.
+>-- @note_pitch 4 0@ is middle-C.
+>note_pitch :: Int -> Int -> Quantity Double
+>note_pitch oct note_index = (fromIntegral oct + fromIntegral note_index / 12) `logarithmic` frequency_scale
+
+>ratioToDecibel :: (Fractional a, Show a, Floating a, Real a) => Quantity a -> Level a -> Quantity a
+>ratioToDecibel x lvl = base_of_logarithm lvl %* (x `scale` lvl)
 
 >-- | WARNING: native representation is in number of bits.
 >-- Use code such as the following for conversion:
@@ -218,7 +296,7 @@
 >byte = fromAlternatives 256
 
 >fromAlternatives :: (Floating a, Real a, Show a) => a -> Quantity a
->fromAlternatives count = level (count `As` dimensionless) bit_level
+>fromAlternatives count = scale (count `As` dimensionless) bit_scale
 
 >-- | Note that the number of alternatives grows quickly.
 >toAlternatives :: (Floating a, Ord a, ShowPrecision a, Monad m) => Quantity a -> m a

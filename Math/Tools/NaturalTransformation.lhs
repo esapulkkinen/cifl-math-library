@@ -45,6 +45,8 @@
 >type ComonadNT m = m :~> (m :*: m)
 >type TransposeNT m n = (m :*: n) :~> (n :*: m)
 
+>type (row ::*:: col) elem = (((:==:) row) :*: ((:==:) col)) elem
+
 >failFailMT :: FailMT f
 >failFailMT = NatTrans (const Nothing)
 >succeedFailMT :: FailMT I
@@ -62,6 +64,11 @@
 >id_trans :: f :~> f
 >id_trans = NatTrans id
 
+>unit_trans :: (Adjunction f g) => I :~> (g :*: f)
+>unit_trans = NatTrans (\ (I x) -> Matrix $ unit x)
+
+>counit_trans :: (Adjunction f g) => (f :*: g) :~> I
+>counit_trans = NatTrans (\ (Matrix f) -> I $ counit f)
 
 >vert :: g :~> h -> f :~> g -> f :~> h
 >vert (NatTrans f) (NatTrans g) = NatTrans (f . g)
@@ -91,6 +98,7 @@
 >yoneda_function :: (Functor t) => t a -> (->) a :~> t
 >yoneda_function f = NatTrans (\g -> fmap g f)
 
+
 >inverse_horiz :: (CoFunctor k) => f :~> k -> f' :~> k'
 >              -> (f :*: k') :~> (k :*: f')
 >inverse_horiz s t = NatTrans (Matrix . inverse_image (nattrans_component t) . nattrans_component s . cells)
@@ -119,12 +127,30 @@
 >id_iso :: f :<~>: f
 >id_iso = NaturalIso id_trans id_trans
 
+>symmetricIso :: g :<~>: f -> f :<~>: g
+>symmetricIso (NaturalIso f g) = NaturalIso g f
+
 >vertIso :: g :<~>: h -> f :<~>: g -> f :<~>: h
 >vertIso (NaturalIso x x') (NaturalIso y y')
 >   = NaturalIso (x `vert` y) (y' `vert` x')
 
 >horizIso :: (Functor f, Functor f') => f :<~>: f' -> g :<~>: g' -> (f :*: g) :<~>: (f' :*: g')
 >horizIso (NaturalIso x xinv) (NaturalIso y yinv) = NaturalIso (x `horiz` y) (xinv `horiz` yinv)
+>
+>isoMatrix :: (Functor g, Functor g') => f :<~>: (g :*: h) -> g :<~>: g' -> h :<~>: h' -> f :<~>: (g' :*: h')
+>isoMatrix f x y = (x `horizIso` y) `vertIso` f
+
+>isoMatrix_ :: (Functor g') =>
+> f :<~>: ((->) row :*: (->) col) -> (->) row :<~>: g' -> (->) col :<~>: h' -> f :<~>: (g' :*: h')
+>isoMatrix_ f x y = (x `horizIso` y) `vertIso` f
+
+>outerIso :: (Functor g') => (->) row :<~>: g' -> (->) col :<~>: h'
+>      -> ((->) row :*: (->) col) :<~>: (g' :*: h')
+>outerIso = isoMatrix_ id_iso
+
+>matrixFrom :: (Functor g) => (row -> col -> a)
+>   -> ((->) row :<~>: g) -> ((->) col :<~>: h) -> (g :*: h) a
+>matrixFrom f a b = runNaturalIso (outerIso a b) `runIso` (Matrix f)
 
 >matrixIso :: (Functor f, Functor f', Functor g, Functor g')
 > => f :<~>: f' -> g :<~>: g' -> a :==: b -> ((f :*: g) a) :==: ((f' :*: g') b)

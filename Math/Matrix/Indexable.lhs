@@ -10,17 +10,17 @@
 >  indexable_indices = matrix (\x y -> (x+y)*(x+y+1)`div` 2 + x) indexable_indices indexable_indices
 
 >instance (Summable f, Summable g) => Summable (f :*: g) where
->   sum_coordinates (Matrix m) = sum_coordinates (fmap sum_coordinates m)
+>   sum_coordinates ~(Matrix m) = sum_coordinates (fmap sum_coordinates m)
 
 >indexable_diagonal :: (Indexable f) => (f :*: f) a -> f a
->indexable_diagonal (Matrix m) = diagonal_projections <*> m
+>indexable_diagonal ~(Matrix m) = diagonal_projections <*> m
 
 >indexable_apply :: (Indexable f) => (f :*: f) (a -> b) -> f a -> f b
->indexable_apply (Matrix m) x = diagonal_projections <*> m <*> x
+>indexable_apply ~(Matrix m) x = diagonal_projections <*> m <*> x
 
 >indexable_transpose :: (Functor f, Functor g, Indexable g) =>
 >                       (f :*: g) a -> (g :*: f) a
->indexable_transpose (Matrix m) = matrix id diagonal_projections m
+>indexable_transpose ~(Matrix m) = matrix id diagonal_projections m
 
 >indexable_matrix_projections :: (Indexable f, Indexable g)
 >                             => (f :*: g) (Index (f :*: g) a)

@@ -1,5 +1,5 @@
 >-- -*- coding: utf-8 -*-
->{-# LANGUAGE Safe,GADTs,MultiParamTypeClasses,FlexibleContexts, TypeOperators, UndecidableInstances, TypeFamilies, UnicodeSyntax, DeriveGeneric, DeriveDataTypeable #-}
+>{-# LANGUAGE Safe,GADTs,MultiParamTypeClasses,FlexibleContexts, TypeOperators, UndecidableInstances, TypeFamilies, UnicodeSyntax, DeriveGeneric, DeriveDataTypeable, RankNTypes, FlexibleInstances #-}
 >-- |
 >-- Module: Math.Matrix.Covector
 >-- Description: Covectors
@@ -27,11 +27,12 @@
 >data Dual v = Covector { bracket :: v -> Scalar v }
 >  deriving (Typeable, Generic)
 
+
+
 >(*><) :: Dual v -> v -> Scalar v
 >(*><) = bracket
 
->-- | <https://en.wikipedia.org/wiki/Curl_(mathematics)>
->--   <https://en.wikipedia.org/wiki/Laplace_operator>
+>-- | <https://en.wikipedia.org/wiki/Laplace_operator>
 >--   <https://en.wikipedia.org/wiki/Divergence>
 >--   <https://en.wikipedia.org/wiki/Gradient>
 >class (VectorSpace v) => VectorDerivative v where
@@ -40,8 +41,21 @@
 >  laplace    :: Dual v -> Dual v    -- (Del^2 f)(v)
 >  laplace = divergence . grad
 
+>-- | <https://en.wikipedia.org/wiki/Curl_(mathematics)>
 >class (VectorDerivative v) => VectorCrossProduct v where
 >  curl       :: (v -> v) -> v -> v  -- (Del * f)(v)
+
+>class (Functor f) => ProjectionDual f a where
+>   projection_dual :: f (Dual (f a))
+
+>projection_dual_matrix :: (Scalar ((f :*: g) a) ~ Scalar (f (Scalar (g a))),
+> ProjectionDual f (Scalar (g a)), ProjectionDual g a) => (f :*: g) (Dual ((f :*: g) a))
+>projection_dual_matrix = matrix (\ (Covector x) (Covector y) -> Covector (\m -> m <!> (x,y))) projection_dual projection_dual
+
+>instance (Scalar ((f :*: g) a) ~ Scalar (f (Scalar (g a))),
+>   ProjectionDual f (Scalar (g a)), ProjectionDual g a)
+> => ProjectionDual (f :*: g) a where
+>   projection_dual = projection_dual_matrix
 
 >-- | unicode support for gradient. Use with parenthesis.
 >(∇) :: (VectorDerivative v) => Dual v -> v -> v
@@ -50,6 +64,10 @@
 >-- | unicode support for divergence. Use with parenthesis.
 >(∇·) :: (VectorDerivative v) => (v -> v) -> Dual v
 >(∇·) = divergence
+
+>-- | unicode support for directional derivative. Binary operator.
+>(·∇) :: (VectorDerivative v, InnerProductSpace v) => v -> Dual v -> Dual v
+>(·∇) = directional_derivative
 > 
 >-- | unicode support for curl. Use with parenthesis.
 >(∇×) :: (VectorCrossProduct v) => (v -> v) -> v -> v
@@ -78,6 +96,9 @@
 >divergence_endo :: (VectorDerivative v) => Endo v -> Dual v
 >divergence_endo (Endo f) = divergence f
 
+>laplace_endo :: (VectorDerivative v) => Endo (Dual v)
+>laplace_endo = Endo laplace
+
 >-- | <https://en.wikipedia.org/wiki/Dual_space#Injection_into_the_double-dual>
 >class (VectorSpace v) => FiniteDimensional v where
 >   finite :: (Dual :*: Dual) v -> v
@@ -91,7 +112,11 @@
 
 >directional_derivative :: (VectorDerivative v, InnerProductSpace v)
 >                       => v -> Dual v -> Dual v
->directional_derivative v f = Covector $ \x -> (∇) f x %. v
+>directional_derivative v f = Covector $ \x -> v %. (∇) f x
+
+>directional_derivative_endo :: (VectorDerivative v, InnerProductSpace v)
+>  => v -> Endo (Dual v)
+>directional_derivative_endo v = Endo $ directional_derivative v
 
 >dconst :: Scalar v -> Dual v
 >dconst = Covector . const
@@ -112,11 +137,23 @@
 >ketvector :: (InnerProductSpace v) => v -> Dual v
 >ketvector x = Covector $ (x %.)
 
+>covariant_covector :: ((a -> c) -> c) -> Dual (a -> a -> c)
+>covariant_covector x = Covector (x .)
+
 >kronecker :: (Eq i, Functor n, Functor m, Num c) => m i -> n i -> (m :*: n) c
 >kronecker = matrix (\ x y -> if x == y then 1 else 0)
 
+
+>dual_tensor :: 
+>   (Scalar a -> Scalar b -> Scalar (a,b))
+>  -> Dual a -> Dual b -> Dual (a,b)
+>dual_tensor h (Covector f) (Covector g) = Covector $ \(a,b) -> h (f a) (g b) 
+
 >bilinear :: (v -> v -> Scalar v) -> v -> Dual v
 >bilinear bra x = Covector $ \y -> x `bra` y
+
+>kronecker_dual :: (Eq a, Num (Scalar a)) => a -> Dual a
+>kronecker_dual = bilinear (\x y -> if x == y then 1 else 0)
 
 >-- | <https://en.wikipedia.org/wiki/Dual_space#Injection_into_the_double-dual>
 
@@ -144,6 +181,9 @@
 >scalar_map :: (Scalar a -> Scalar a) -> Dual a -> Dual a
 >scalar_map f (Covector g) = Covector (f . g)
 
+>scalar_map2 :: (Scalar a -> Scalar a -> Scalar a) -> Dual a -> Dual a -> Dual a
+>scalar_map2 f (Covector x) (Covector y) = Covector $ \a -> f (x a) (y a)
+
 >operator_map :: ((v -> Scalar v) -> w -> Scalar w) -> Dual v -> Dual w
 >operator_map f (Covector g) = Covector (f g)
 
@@ -154,14 +194,16 @@
 >class (Fractional (Scalar v), NumSpace v) => FractionalSpace v 
 
 >instance (StandardBasis v, Show (Scalar v)) => Show (Dual v) where
->   show (Covector f) = "dual[" ++ (show $ map f $ unit_vectors) ++ "]"
+>   show (Covector f) = "dual" ++ (show $ map f $ unit_vectors)
 
 >instance (VectorSpace v) => VectorSpace (Dual v) where
 >   type Scalar (Dual v) = Scalar v
 >   vzero = Covector $ const 0
 >   vnegate (Covector x) = Covector (negate . x)
->   (Covector f) %+ (Covector g) = Covector $ \a -> f a + g a
+>   (%+) = scalar_map2 (+)
 >   a %* (Covector f) = Covector $ \b -> a * f b
+
+
 
 >instance (StandardBasis v, Num (Scalar v)) => InnerProductSpace (Dual v) where
 >   (Covector f) %. (Covector g) = sum [f x * g x | x <- unit_vectors]
@@ -202,3 +244,25 @@
 >   atanh = scalar_map atanh
 
 
+>-- | This computes
+>-- \(DDM(\otimes,{\bar{x}},{\bar{y}}) = [({\bar{x}} \cdot \nabla) \times ({\bar{y}} \cdot \nabla)]\)
+>-- where \(\times\) is the outer product for linear operators derived
+>-- from product of dual spaces \(\otimes\). Notice \({\bar{x}} \cdot \nabla\) is normally called the directional derivative, so this is really a
+>-- two dimensional version of directional derivative with some possibility
+>-- to choose how two dual vectors are combined.
+>dual_derivative ::
+> (VectorDerivative v, VectorDerivative w,
+> InnerProductSpace v, InnerProductSpace w)
+> => (Dual v -> Dual w  -> c) -> v -> w -> (Dual v -> Dual w -> c)
+>dual_derivative f x y = cells $ matrix f (x ·∇) (y ·∇)
+
+>dual_differential_outer_product :: (VectorDerivative v, InnerProductSpace v)
+> => v -> v -> Dual v -> Dual v  -> Dual v
+>dual_differential_outer_product = dual_derivative (*)
+
+>dual_differential_dot_product :: (VectorDerivative v, InnerProductSpace v, StandardBasis v)
+>  => v -> v -> Dual v -> Dual v -> Scalar v
+>dual_differential_dot_product = dual_derivative (%.)
+
+>norm_covector :: (NormedSpace v) => Dual v
+>norm_covector = Covector norm

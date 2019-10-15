@@ -1,5 +1,5 @@
 >{-# LANGUAGE TypeFamilies, FlexibleInstances, ScopedTypeVariables #-}
->{-# LANGUAGE TypeOperators #-}
+>{-# LANGUAGE TypeOperators, DataKinds, UndecidableInstances #-}
 >module Math.Number.R where
 >import Control.Applicative
 >import Control.Monad
@@ -13,13 +13,19 @@
 >import Math.Number.Interface
 >import Math.Number.Stream
 >import qualified Control.Monad.Fix
+>import GHC.TypeLits
+>
 >
 >-- | This real representation takes 'epsilon' as input as in epsilon-delta proof.
 >data R = Limit { approximate_endo :: (Endo Rational) }
 
+>instance (TypeError (Text "Cannot compare reals for equality." :$$:
+>                     Text "Real equality is undecidable."))
+>  => Eq R
+
 >instance Limiting R where
 >   data Closure R = RClosure { runRClosure :: !R }
->   limit (Pre x z@(Pre y _)) = RClosure $ real $ \eps ->
+>   limit ~(Pre x ~z@(Pre y _)) = RClosure $ real $ \eps ->
 >       if abs (y `approximate` eps - x `approximate` eps) < eps
 >         then y `approximate` eps
 >         else runRClosure (limit z) `approximate` eps
@@ -51,9 +57,6 @@
 >   pp x = pp $! (fromRational (x `approximate` (1 % 1000000000000000)) :: Double)
 
 >instance CompleteSpace R
-
->class MetricSpace s where
->   distance :: s -> s -> R
 
 >epsilon :: R
 >epsilon = real id
@@ -147,7 +150,7 @@
 >taylor f a = Matrix $ sum_stream $ fmap mapper sub_powers
 >  where mapper p = liftA3 (\a b c -> (a*c)/b) der factorial p
 >        der = derivates f <*> constant a
->        sub_powers = cells $ stream_powers (z - fromNum a)
+>        sub_powers = cells $ stream_powers (s_z - fromNum a)
 
 >newtons_method :: (R -> R) -> R -> R
 >newtons_method f x = lim $ iterate_stream iteration x 

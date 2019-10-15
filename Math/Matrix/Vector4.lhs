@@ -1,4 +1,4 @@
->{-# LANGUAGE Safe,FlexibleInstances, MultiParamTypeClasses,FlexibleContexts, TypeOperators, TypeFamilies, NoMonomorphismRestriction, StandaloneDeriving, DeriveGeneric, DeriveDataTypeable #-}
+>{-# LANGUAGE Safe,FlexibleInstances, MultiParamTypeClasses,FlexibleContexts, TypeOperators, TypeFamilies, NoMonomorphismRestriction, StandaloneDeriving, DeriveGeneric, DeriveDataTypeable, LambdaCase #-}
 >module Math.Matrix.Vector4 where
 >import Text.PrettyPrint (nest,vcat)
 >import Control.Applicative
@@ -12,7 +12,6 @@ import Math.Matrix.Dimension
 >import Math.Tools.PrettyP
 >import Math.Tools.Universe
 >import Math.Matrix.Matrix
->import Data.Monoid
 >import Data.Complex
 >import Math.Tools.Isomorphism
 >import Math.Tools.Orthogonal
@@ -23,6 +22,7 @@ import Math.Matrix.Dimension
 >import Math.Tools.Median
 >import Math.Tools.Visitor
 >import Math.Tools.CoMonad
+>import Math.Matrix.Covector
 >import Math.Matrix.Vector1
 >import Math.Matrix.Vector2
 >import Math.Matrix.Vector3
@@ -40,19 +40,25 @@ import Math.Matrix.Dimension
 > }
 >    deriving (Eq, Typeable, Data, Generic)
 
+>cov4 :: Vector4 (Dual (Vector4 a))
+>cov4 = Vector4 (Covector tcoord4) (Covector xcoord4) (Covector ycoord4) (Covector zcoord4)
+
+>instance ProjectionDual Vector4 a where
+>   projection_dual = cov4
+
 >instance (ShowPrecision s) => ShowPrecision (Vector4 s) where
 >  show_at_precision (Vector4 t x y z) p =
 >    "(" ++ show_at_precision t p ++ "," ++ show_at_precision x p ++ "," ++
 >    show_at_precision y p ++ "," ++ show_at_precision z p ++ ")"
 
 >instance (Bin.Binary s) => Bin.Binary (Vector4 s) where
->   put (Vector4 x y z t) = Bin.put x >> Bin.put y >> Bin.put z >> Bin.put t
+>   put (Vector4 t x y z) = Bin.put t >> Bin.put x >> Bin.put y >> Bin.put z
 >   get = do
+>     t <- Bin.get
 >     x <- Bin.get
 >     y <- Bin.get
 >     z <- Bin.get
->     t <- Bin.get
->     return $! Vector4 x y z t
+>     return $! Vector4 t x y z
 
 
 >instance (Num a) => Num (Vector4 a) where
@@ -195,14 +201,14 @@ instance FractionalSpace (Vector4 (Complex R))
 >   = Vector4 (med a a' a'') (med b b' b'') (med c c' c'') (med t t' t'')
 
 >instance (PpShow a) => PpShow (Vector4 a) where
->  pp (Vector4 x y z t) = vcat $ zipWith nest [0,20,40,60] (map pp [x,y,z,t])
+>  pp (Vector4 t x y z) = vcat $ zipWith nest [0,20,40,60] (map pp [t,x,y,z])
 
 >instance (PpShow (f a)) => PpShow ((Vector4 :*: f) a) where
->  pp (Matrix (Vector4 x y z t)) = verticalize $ map pp [x,y,z,t]
+>  pp (Matrix (Vector4 t x y z)) = verticalize $ map pp [t,x,y,z]
 
 
 >instance (Show a) => Show (Vector4 a) where
->  show (Vector4 x y z t) = "[" ++ show x ++ "," ++ show y ++ "," ++ show z ++ "," ++ show t ++ "]"
+>  show (Vector4 t x y z) = "[" ++ show t ++ "," ++ show x ++ "," ++ show y ++ "," ++ show z ++ "]"
 
 >instance (Read a) => Read (Vector4 a) where
 >  readsPrec i str = do pre <- char '[' str
@@ -224,7 +230,7 @@ instance FractionalSpace (Vector4 (Complex R))
 >  show (Matrix (Vector4 a b c d)) = show a ++ "\n" ++ show b ++ "\n" ++ show c ++ "\n" ++ show d
 
 >instance Functor Vector4 where
->  fmap f (Vector4 x y z t) = Vector4 (f x) (f y) (f z) (f t)
+>  fmap f (Vector4 t x y z) = Vector4 (f t) (f x) (f y) (f z) 
 
 >instance Monad Vector4 where
 >  return x = Vector4 x x x x
@@ -241,10 +247,10 @@ instance FractionalSpace (Vector4 (Complex R))
 >   idFold = Vector4Fold Vector4 
 
 >instance Foldable Vector4 where
->   foldMap f (Vector4 x y z t) = f x `mappend` f y `mappend` f z `mappend` f t
+>   foldMap f (Vector4 t x y z) = f t `mappend` f x `mappend` f y `mappend` f z
 
 >instance Traversable Vector4 where
->   traverse f (Vector4 x y z t) = Vector4 <$> f x <*> f y <*> f z <*> f t
+>   traverse f (Vector4 t x y z) = Vector4 <$> f t <*> f x <*> f y <*> f z
 
 >instance (Universe a) => Universe (Vector4 a) where
 >   all_elements = Vector4 <$> all_elements
@@ -365,22 +371,24 @@ instance FractionalSpace (Vector4 (Complex R))
 >                                (Covector ycoord4)
 >                                (Covector zcoord4)
 
+
+>dt_4 eps = \case { (Vector4 t x y z) -> Vector4 (t+eps) x y z }
+>dx_4 eps = \case { (Vector4 t x y z) -> Vector4 t (x+eps) y z }
+>dy_4 eps = \case { (Vector4 t x y z) -> Vector4 t x (y+eps) z }
+>dz_4 eps = \case { (Vector4 t x y z) -> Vector4 t x y (z+eps) }
+
 >partial_derivate4x :: (Infinitesimal a, Closed a)
 >   => (Vector4 a -> a) -> Vector4 a -> a
->partial_derivate4x = partial_derivate ch
->   where ch eps (Vector4 x y z t) = Vector4 (x+eps*x) y z t
+>partial_derivate4x = partial_derivate dx_4
 
 >partial_derivate4y :: (Infinitesimal a, Closed a) => (Vector4 a -> a) -> Vector4 a -> a
->partial_derivate4y = partial_derivate ch
->   where ch eps (Vector4 x y z t) = Vector4 x (y+eps*y) z t
+>partial_derivate4y = partial_derivate dy_4
 
 >partial_derivate4z :: (Infinitesimal a, Closed a) => (Vector4 a -> a) -> Vector4 a -> a
->partial_derivate4z = partial_derivate ch
->   where ch eps (Vector4 x y z t) = Vector4 x y (z+eps*z) t
+>partial_derivate4z = partial_derivate dz_4
 
 >partial_derivate4t :: (Infinitesimal a, Closed a) => (Vector4 a -> a) -> Vector4 a -> a
->partial_derivate4t = partial_derivate ch 
->   where ch eps (Vector4 x y z t) = Vector4 x y z (t+ eps * t)
+>partial_derivate4t = partial_derivate dt_4
 
 >derivate4t_squared :: (Closed a, Infinitesimal a)
 >     => Covector.Dual (Vector4 a) -> Covector.Dual (Vector4 a)
@@ -402,6 +410,8 @@ instance FractionalSpace (Vector4 (Complex R))
 >  Covector.Dual (Vector4 a) -> Covector.Dual (Vector4 a)
 >derivate4z = operator_map partial_derivate4z
 
+>del4_ :: (Closed a, Infinitesimal a)
+>      => Vector4 (Dual (Vector4 a) -> Dual (Vector4 a))
 >del4_ = Vector4 derivate4t derivate4x derivate4y derivate4z
 
 >del4 :: (Infinitesimal a, Closed a) => Vector4 ((Vector4 a -> a) -> Vector4 a -> a)

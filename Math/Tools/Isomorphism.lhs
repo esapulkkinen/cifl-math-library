@@ -13,6 +13,7 @@
 >import Math.Tools.Arrow
 >import Math.Tools.CoFunctor
 >import Math.Tools.Visitor
+>import Math.Tools.Adjunction
 >import Data.Ratio
 >import qualified Data.Binary as Bin
 >import Data.ByteString.Lazy (ByteString)
@@ -46,6 +47,10 @@
 
 >visit_iso :: (ComposableVisitor v) => v :==: a -> v -> a
 >visit_iso = visit . embed . isomorphism_epimorphism
+
+>adjoint_iso :: (Adjunction f g) => (f a -> b) :==: (a -> g b)
+>adjoint_iso = leftAdjunct <-> rightAdjunct
+>
 
 >class (BiArrow arr, Groupoid arr) => Isomorphic arr where
 >   iso :: arr a b -> a :==: b

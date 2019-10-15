@@ -1,11 +1,13 @@
 >-- -*- coding: utf-8 -*-
 >{-# LANGUAGE Safe,FlexibleInstances, MultiParamTypeClasses, FlexibleContexts, ScopedTypeVariables, TypeOperators, TypeFamilies, PatternGuards, UnicodeSyntax #-}
+>{-# LANGUAGE DataKinds, UndecidableInstances #-}
 >module Math.Number.Real where
 >import Prelude hiding (zipWith,take,zip,zip3)
 >import Control.Monad.Fix (fix)
 >import Control.Applicative
 >import Data.Complex
 >import Data.Ratio
+>import Data.Monoid
 >import Math.Tools.Functor
 >import Math.Tools.Visitor
 >import Math.Tools.Median
@@ -21,6 +23,7 @@
 >import Math.Number.Stream hiding (logarithm)
 >import qualified Math.Number.Stream as Stream
 >import Math.Tools.Prop
+>import GHC.TypeLits
 
 >import Math.Matrix.Instances (characteristicPolynomial)
 
@@ -50,11 +53,8 @@
 >-- computable, wouldn't \(\neg(r_1 < r_2 \lor r_2 < r_1)\) be computable equality of reals;
 >-- This is computable in the limit , but not computable? <https://en.wikipedia.org/wiki/Computation_in_the_limit>
 
->data R = Limit { approximate :: !(Stream Rational) }
->data Modulus = Modulus { modulus_value :: !R, modulus :: Rational -> Integer }
-
->class MetricSpace s where
->  distance :: s -> s -> R
+>data R = Limit { approximate :: (Stream Rational) }
+>data Modulus = Modulus { modulus_value :: R, modulus :: Rational -> Integer }
 
 >-- | d x = partial_derivate x 
 
@@ -69,7 +69,7 @@
 >convergence_ratio_test :: (Fractional a, Ord a, Closed a) => Stream a -> Bool
 >convergence_ratio_test str = (accumulation_point $ limit $ abs <$> stream_quotients str) < 1
 
->average_convergence_ratio :: (MetricSpace a, Fractional a) => Stream a -> Stream R
+>average_convergence_ratio :: (MetricSpace a, Fractional (Scalar a)) => Stream a -> Stream (Scalar a)
 >average_convergence_ratio = fmap list_average . cauchy
 
 >list_average :: (Fractional a) => [a] -> a
@@ -78,7 +78,7 @@
 max_convergence_ratio :: (MetricSpace a) => Stream a -> Stream R
 max_convergence_ratio = fmap (foldl1 max) . cauchy
 
->cauchy :: (MetricSpace a) => Stream a -> Stream [R]
+>cauchy :: (MetricSpace a) => Stream a -> Stream [Scalar a]
 >cauchy s = codiagonals $ matrix distance s s
 
 >cseq_difference_matrix :: (Functor m, Functor n, Num a)
@@ -141,7 +141,7 @@ max_convergence_ratio = fmap (foldl1 max) . cauchy
 >cseq_equivalence_list :: (Num a, Infinitesimal eps) => (eps -> Integer) -> Stream a -> Stream a -> Stream [a]
 >cseq_equivalence_list modulus x y = codiagonals $ cseq_equivalence_matrix modulus x y
 
->converges :: (MetricSpace a) => Stream a -> a -> Stream [R]
+>converges :: (MetricSpace a) => Stream a -> a -> Stream [Scalar a]
 >converges s p = codiagonals $ matrix distance s (constant p)
 >
 >instance NormedSpace R where
@@ -172,11 +172,23 @@ max_convergence_ratio = fmap (foldl1 max) . cauchy
 >   let v_plus_dv = delta eps v
 >   return $! (f v_plus_dv - f v) / (v_plus_dv - v)
 
+>partial_derivate_closure :: (Limiting a, Fractional a)
+>   => (a -> b -> b) -> (b -> a) -> b -> Endo (Closure a)
+>partial_derivate_closure delta f v = Endo $ \dx -> limit $ do
+>   eps <- approximations dx
+>   return $! (f (delta eps v) - f v) / eps
+
 >partial_derivate :: (Closed eps, Infinitesimal eps)
 > => (eps -> a -> a) -> (a -> eps) -> a -> eps
 >partial_derivate delta f v = accumulation_point $ limit $ do
 >   eps <- epsilon_stream
 >   return $! (f (delta eps v) - f v) / eps
+
+>partial_derivate_endo :: (Limiting a, Fractional a)
+>  => (a -> Endo b) -> (b -> a) -> b -> Endo (Closure a)
+>partial_derivate_endo delta f v = Endo $ \dx -> limit $ do
+>   eps <- approximations dx
+>   return $! (f (delta eps `appEndo` v) - f v) / eps
 
 
 >-- | <https://en.wikipedia.org/wiki/Wirtinger_derivatives>
@@ -248,13 +260,13 @@ instance MedianAlgebra R where
 >liftRClosure f (RClosure x) = RClosure $! (f x)
 
 >instance Num (Closure R) where
->   (RClosure x) + (RClosure y) = RClosure $! x + y
->   (RClosure x) - (RClosure y) = RClosure $! x - y
->   (RClosure x) * (RClosure y) = RClosure $! x * y
->   negate (RClosure x) = RClosure $! negate x
->   abs (RClosure x) = RClosure $! abs x
->   signum (RClosure x) = RClosure $! signum x
->   fromInteger i = RClosure $! fromInteger i
+>   (RClosure x) + (RClosure y) = RClosure $ x + y
+>   (RClosure x) - (RClosure y) = RClosure $ x - y
+>   (RClosure x) * (RClosure y) = RClosure $ x * y
+>   negate (RClosure x) = RClosure $ negate x
+>   abs (RClosure x) = RClosure $ abs x
+>   signum (RClosure x) = RClosure $ signum x
+>   fromInteger i = RClosure $ fromInteger i
 
 >limit_real :: Stream R -> R
 >limit_real str = Limit $ str >>= approximate
@@ -264,6 +276,14 @@ instance MedianAlgebra R where
 
 >instance Show (Closure R) where
 >   show (RClosure (Limit str)) = show (take 10 $ fmap fromRational str)
+
+>instance VectorSpace (Closure R) where
+>  type Scalar (Closure R) = R
+>  vzero = RClosure vzero
+>  vnegate (RClosure x) = RClosure (vnegate x)
+>  (RClosure x) %+ (RClosure y) = RClosure $ x %+ y
+>  a %* (RClosure x) = RClosure (a %* x)
+
 
 >instance MetricSpace (Closure R) where
 >   distance (RClosure a) (RClosure b) = distance a b
@@ -295,7 +315,7 @@ supremum [] = negative_infinity
 >supremum_gen [x] = x
 >supremum_gen (a:lst) = limit $ Pre c $ rest
 >   where rest = liftA2 max cr $ approximations $ supremum_gen lst
->         (Pre c cr) = approximations a
+>         ~(Pre c cr) = approximations a
 
 >negate_limit :: (Limiting a, Num a) => Closure a -> Closure a
 >negate_limit = cmap negate
@@ -342,11 +362,11 @@ infimum = negate_limit . supremum_gen . map negate_limit
 >epsilon_linear = Limit $ (1 %) <$> nonzero_naturals
 
 >increase_accuracy :: R -> R
->increase_accuracy (Limit (Pre _ xr)) = Limit xr
+>increase_accuracy (Limit ~(Pre _ xr)) = Limit xr
 
 >lessthan_precision :: R -> R -> Integer -> Bool
 >lessthan_precision _ _ 0 = False 
->lessthan_precision (Limit (Pre x xs)) (Limit (Pre y ys)) i
+>lessthan_precision (Limit ~(Pre x xs)) (Limit ~(Pre y ys)) i
 >           | x < y = True
 >           | x > y = False
 >           | otherwise = lessthan_precision (Limit xs) (Limit ys) (pred i)
@@ -476,7 +496,7 @@ infimum = negate_limit . supremum_gen . map negate_limit
 >-- | <http://en.wikipedia.org/wiki/Arithmetic%E2%80%93geometric_mean Arithmetic-geometric mean>
 
 >agm :: (Floating a, Limiting a) => a -> a -> Closure a
->agm x y = limit $! fmap fst $ iterate_stream (\(x,y) -> ((x+y)/2, sqrt(x*y))) (x,y)
+>agm x y = limit $ fmap fst $ iterate_stream (\(x,y) -> ((x+y)/2, sqrt(x*y))) (x,y)
 
 >-- | <http://en.wikipedia.org/wiki/Exponential_function Exponential function>
 >-- using limit definition \(\exp(x) = \lim_{n\rightarrow\infty}(1+{{x}\over{n}})^n\).
@@ -503,7 +523,7 @@ infimum = negate_limit . supremum_gen . map negate_limit
 >   => (Scalar a -> a) -> Closure (Scalar a) -> (Scalar a,Scalar a) -> Closure a
 >integrate_vector f dx ~(xa,ya) = limit $ do
 >   eps <- approximations dx
->   return $! vsum $ map ((eps %*) . f) [xa,xa + eps..ya]
+>   return $ vsum $ map ((eps %*) . f) [xa,xa + eps..ya]
 
 >-- | <https://en.wikipedia.org/wiki/Methods_of_contour_integration>
 
@@ -542,11 +562,8 @@ infimum = negate_limit . supremum_gen . map negate_limit
 >gamma_via_integral :: R -> Closure R  
 >gamma_via_integral zz = integral (close 0,infinity_gen) $ \t -> exp (negate t) * (t ** RClosure (zz-1))
     
-instance Eq R where
-  xs == ys = error "equality of constructive reals is undecidable"
-
-instance Ord R where
-   x <= y = error "ordering of constructive reals is undecidable"
+>instance (TypeError (Text "Equality of constructive reals is undecidable")) => Eq R where
+>  xs == ys = error "equality of constructive reals is undecidable"
 
 >instance Limiting Bool where
 >   data Closure Bool = BoolClosure { runBoolClosure :: Stream Bool }
@@ -563,7 +580,7 @@ instance Ord R where
 
 
 >constructively_less :: Rational -> R -> R -> Closure Bool
->constructively_less between (Limit (Pre a ar)) (Limit (Pre b br)) = limit $
+>constructively_less between (Limit ~(Pre a ar)) (Limit ~(Pre b br)) = limit $
 >   (a < between || between < b)
 >   `Pre` (approximations $ constructively_less between (Limit ar) (Limit br))
 
@@ -695,7 +712,7 @@ instance RealFrac R where
 >realEnumFromThenTo (Limit str) (Limit str2) (Limit str3) = strEnumFromThenTo str str2 str3
 > 
 >strEnumFromThenTo :: Stream Rational -> Stream Rational -> Stream Rational -> Stream [Rational]
->strEnumFromThenTo (Pre x xr) (Pre x2 x2r) (Pre y yr) = Pre (enumFromThenTo x x2 y) (strEnumFromThenTo xr x2r yr)
+>strEnumFromThenTo ~(Pre x xr) ~(Pre x2 x2r) ~(Pre y yr) = Pre (enumFromThenTo x x2 y) (strEnumFromThenTo xr x2r yr)
 
 >instance Num R where
 >    (Limit s) + (Limit t) = Limit $ liftA2 (+) s t
@@ -704,7 +721,7 @@ instance RealFrac R where
 >    negate = lift_real negate
 >    abs = lift_real abs
 >    signum = lift_real signum
->    fromInteger i = Limit $ Stream.constant $! fromInteger i
+>    fromInteger i = Limit $ Stream.constant $ fromInteger $! i
 
 >instance Fractional R where
 >    (Limit s) / (Limit t) = Limit $ liftA2 (/) s t
@@ -715,9 +732,9 @@ instance RealFrac R where
 >toReal = fromRational
 
 >instance Fractional (Closure R) where
->   (RClosure x) / (RClosure y) = RClosure $! x / y
->   recip (RClosure x) = RClosure $! recip x
->   fromRational r = RClosure $! fromRational r
+>   (RClosure x) / (RClosure y) = RClosure $ x / y
+>   recip (RClosure x) = RClosure $ recip x
+>   fromRational r = RClosure $ fromRational r
 
 >-- | <https://en.wikipedia.org/wiki/Natural_logarithm Natural logarithm>
 >-- @ log(1+z) = z - z^2/2 + z^3/3 - ... @
@@ -940,9 +957,9 @@ mandelbrot :: Complex R -> Closure (Complex R)
 mandelbrot c = limit (mandelbrot_stream c)
 
 >instance MetricSpace (Ratio Integer) where
->   distance x y = fromRational $ abs (x - y)
->instance MetricSpace Integer where { distance x y = fromIntegral $ abs (x - y) }
->instance MetricSpace Int where { distance x y = fromIntegral $ abs (x - y) }
+>   distance x y = abs (x - y)
+>instance MetricSpace Integer where { distance x y = abs (x - y) }
+>instance MetricSpace Int where { distance x y = abs (x - y) }
 
 >approximate_sums_modulus :: Modulus -> Modulus -> Modulus
 >approximate_sums_modulus ((Limit x) `Modulus` f) ((Limit y) `Modulus` g)

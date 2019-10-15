@@ -12,6 +12,15 @@
 >complex_pi_ :: (Floating a) => Complex a
 >complex_pi_ = pi :+ 0
 
+>-- | compared to Prelude instance of Floating for Complex,
+>-- this implementation doesn't attempt to compare scalars for equality
+>-- so complex_sqrt (0 :+ 0) == (0 :+ NaN).
+>complex_sqrt :: (RealFloat a) => Complex a -> Complex a
+>complex_sqrt z@(x:+y) = u :+ (if y < 0*y then -v else v)
+>  where (u,v) = if x < 0*x then (v',u') else (u',v')
+>        v' = abs y / (u'*2)
+>        u' = sqrt ((magnitude z + abs x)/2)
+
 >-- | <https://en.wikipedia.org/wiki/Trigonometric_functions>
 >complex_cos :: (Floating a) => Complex a -> Complex a
 >complex_cos (a :+ b) = cos a * cosh b :+ negate (sin a * sinh b)

@@ -1,5 +1,6 @@
->{-# LANGUAGE DeriveFoldable, DeriveTraversable, TypeFamilies #-}
+>{-# LANGUAGE DeriveFoldable, DeriveTraversable, TypeFamilies, PatternSynonyms #-}
 >module Math.Tools.Tree where
+>import Control.Arrow
 >import Control.Applicative
 >import qualified Data.Foldable as F
 >import Data.Traversable
@@ -10,6 +11,29 @@
 
 >data Tree e n = Node { root_label :: n, children :: [(e,Tree e n)] }
 >  deriving (F.Foldable, Traversable)
+
+>pattern LeafNode :: n -> Tree e n
+>pattern LeafNode n = Node n []
+>pattern Edge :: n -> e -> Tree e n -> Tree e n
+>pattern Edge n e t = Node n [(e,t)]
+>pattern BinNode :: n -> Tree Bool n -> Tree Bool n -> Tree Bool n
+>pattern BinNode n c1 c2 = Node n [(False,c1), (True, c2)]
+
+>join_lists ::  (Ord e) => (a -> a -> a) -> [(e,a)] -> [(e,a)] -> [(e,a)]
+>join_lists combine z@((e,t):r) z2@((f,t'):r')
+>  | e == f = (e,combine t t') : join_lists combine r r'
+>  | e < f  = (e,t) : join_lists combine r z2
+>  | otherwise = (f,t') : join_lists combine z r'
+
+>instance (Num n, Ord e, Semigroup e) => Num (Tree e n) where
+>   (Node n lst) + (Node m lst') = Node (n + m) $ join_lists (+) lst lst'
+>   (Node n lst) - (Node m lst') = Node (n - m) $ join_lists (-) lst lst'
+>   (Node n lst) * (Node m lst') = Node (n * m) $
+>      [(e1 <> e2, t1*t2) | (e1,t1) <- lst, (e2,t2) <- lst' ]
+>   negate (Node n lst) = Node (negate n) $ map (id *** arr negate) lst
+>   abs (Node n lst) = Node (abs n) $ map (id *** arr abs) lst
+>   signum (Node n lst) = Node (signum n) $ map (id *** arr signum) lst
+>   fromInteger i = Node (fromInteger i) []
 
 >instance (Binary e, Binary n) => Binary (Tree e n) where
 >   put (Node x lst) = put x >> put lst
@@ -22,6 +46,7 @@
 >tlookup z (c:cr) | Just e <- lookup c (children z) = tlookup e cr
 >                 | otherwise = fail $ "cannot find:" ++ show c
 >tlookup z [] = return z
+
 
 >has_children :: Tree e n -> Bool
 >has_children (Node _ lst) = null lst
@@ -67,12 +92,12 @@
 >leaf :: n -> Tree e n
 >leaf x = Node x []
 
->node :: n -> [(e, Tree e n)] -> Tree e n
->node = Node
+>tree_node :: n -> [(e, Tree e n)] -> Tree e n
+>tree_node = Node
 
->level :: Integer -> Forest n e -> [n]
->level 0 = roots
->level i = level (i-1) . next_level
+>tree_level :: Integer -> Forest n e -> [n]
+>tree_level 0 = roots
+>tree_level i = tree_level (i-1) . next_level
 
 >roots :: Forest n e -> [n]
 >roots = map root_label
@@ -95,11 +120,11 @@
 >node_count :: Tree e n -> Int
 >node_count = visit nodeCountFold
 
->leaves :: Tree e n -> [n]
->leaves = visit leavesFold
+>tree_leaves :: Tree e n -> [n]
+>tree_leaves = visit leavesFold
 
->depth :: Tree e n -> Int
->depth = visit depthFold
+>tree_depth :: Tree e n -> Int
+>tree_depth = visit depthFold
 
 >all_nodes :: Tree e n -> [n]
 >all_nodes = visit nodesFold
@@ -136,8 +161,8 @@
 >find_child e (Node _ lst) | Just s <- lookup e lst = return s
 >                          | otherwise = fail $ "child not found:" ++ show e
 
->find_subtree :: (Monad m, Show e, Eq e) => Path e -> Tree e n -> m (Tree e n)
->find_subtree = flip $ foldM (flip find_child)
+>tree_find_subtree :: (Monad m, Show e, Eq e) => Path e -> Tree e n -> m (Tree e n)
+>tree_find_subtree = flip $ foldM (flip find_child)
 
 
 

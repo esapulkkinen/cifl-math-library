@@ -40,6 +40,7 @@
 >import Math.Tools.PrettyP as Tools.PrettyP
 >import Math.Tools.CoMonad
 >import Math.Tools.NaturalTransformation
+>import Math.Tools.Isomorphism
 >import Math.Matrix.Interface
 >import Math.Matrix.Matrix
 >import Math.Matrix.Covector
@@ -126,7 +127,7 @@
 >  divergence = divergence_index
 >  laplace = laplace_index
 
->-- | https://en.wikipedia.org/wiki/Frobenius_inner_product
+>-- | <https://en.wikipedia.org/wiki/Frobenius_inner_product>
 
 >instance (Universe row, Universe col, Num a, ConjugateSymmetric a)
 > => InnerProductSpace (((->) row :*: (->) col) a) where
@@ -138,6 +139,12 @@
 
 >productS :: (Num b, Universe a) => (a -> b) -> b
 >productS f = product [f i | i <- all_elements]
+
+>cov_index :: a -> Dual (a -> b)
+>cov_index x = Covector (\f -> f x)
+>
+>instance ProjectionDual ((->) a) b where
+>   projection_dual = cov_index
 
 >instance (Floating a, Universe row, Universe col, ConjugateSymmetric a)
 > => NormedSpace (((->) row :*: (->) col) a) where
@@ -651,3 +658,5 @@ to map indices.
 >   abs _ = OneD0
 >   signum _ = OneD0
 >   fromInteger _ = OneD0
+
+

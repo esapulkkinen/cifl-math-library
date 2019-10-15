@@ -39,11 +39,16 @@
 
 >-- | Three element vector
 >data Vector3 s = Vector3 { 
->   xcoord3 :: !s,
->   ycoord3 :: !s,
->   zcoord3 :: !s }
+>   xcoord3 :: s,
+>   ycoord3 :: s,
+>   zcoord3 :: s }
 >       deriving (Eq, Typeable, Data, Generic)
 
+>cov3 :: Vector3 (Dual (Vector3 a))
+>cov3 = Vector3 (Covector xcoord3) (Covector ycoord3) (Covector zcoord3)
+
+>instance ProjectionDual Vector3 a where
+>   projection_dual = cov3
 
 >instance (Binary s) => Binary (Vector3 s) where
 >   put (Vector3 x y z) = put x >> put y >> put z
@@ -131,6 +136,9 @@
 
 >setz3 :: s -> Vector3 s -> Vector3 s
 >setz3 z v = v { zcoord3 = z }
+
+>set_endo :: Vector3 s -> Vector3 (Mon.Endo (Vector3 s))
+>set_endo = fmap Mon.Endo . set_vector_action
 
 >set_vector_action :: Vector3 s -> Vector3 (Vector3 s -> Vector3 s)
 >set_vector_action (Vector3 x y z) = Vector3 (setx3 x) (sety3 y) (setz3 z)
@@ -354,6 +362,13 @@ approximations_vector3 (Vector3 x y z) = do
 >        chy eps y = y + eps
 >        chz eps z = z + eps
 
+>dx3_endo :: (Num a) => a -> Mon.Endo (Vector3 a)
+>dx3_endo = Mon.Endo . dx3
+>dy3_endo :: (Num a) => a -> Mon.Endo (Vector3 a)
+>dy3_endo = Mon.Endo . dy3
+>dz3_endo :: (Num a) => a -> Mon.Endo (Vector3 a)
+>dz3_endo = Mon.Endo . dz3
+
 >dx3 :: (Num a) => a -> Vector3 a -> Vector3 a
 >dx3 eps = \case { (Vector3 x y z) -> Vector3 (x + eps) y z }
 > 
@@ -490,10 +505,10 @@ grad3 f x = Vector3 (partial_derivate3x f x)
 >  transpose (Matrix x) = Matrix $ Vector1 (fmap vector_element x)
 
 >instance Transposable Vector1 Vector3 where
->  transpose = indexable_transpose 
+>  transpose (Matrix (Vector1 x)) = Matrix $ fmap Vector1 x
 
 >instance Transposable Vector3 Vector3 where
->  transpose = indexable_transpose
+>  transpose = transpose3
 
 >instance (Num a) => LinearTransform Vector3 Vector3 a where
 >  (<*>>) = left_multiply3
@@ -512,8 +527,8 @@ grad3 f x = Vector3 (partial_derivate3x f x)
 >  unit_vectors = [xid,yid,zid]
 
 >instance (Num a, ConjugateSymmetric a) => Num ((Vector3 :*: Vector3) a) where
->  (Matrix v) + (Matrix v') = Matrix $ v + v'
->  (Matrix v) - (Matrix v') = Matrix $ v - v'
+>  (Matrix v) + (Matrix v') = Matrix $ liftA2 (liftA2 (+)) v v'
+>  (Matrix v) - (Matrix v') = Matrix $ liftA2 (liftA2 subtract) v v'
 >  (*) = (%*%)
 >  negate (Matrix v) = Matrix (negate v)
 >  abs (Matrix v) = Matrix (abs v)
@@ -526,10 +541,21 @@ grad3 f x = Vector3 (partial_derivate3x f x)
 
 >-- | <http://en.wikipedia.org/wiki/Hyperbolic_function hyperbolic function>
 >instance (Floating a, Closed a, ConjugateSymmetric a) => Floating ((Vector3 :*: Vector3) a) where
+>   pi = error "Matrix pi is not implemented."
 >   exp = matrix_exponential3
+>   log = error "Matrix log is not implemented."
+>   cos = error "Matrix cosine is not implemented."
+>   sin = error "Matrix sine is not implemented."
+>   tan = error "Matrix tangent is not implemented."
 >   sinh x = (exp x - exp (negate x)) / 2
 >   cosh x = (exp x + exp (negate x)) / 2
 >   tanh x = sinh x / cosh x
+>   acos = error "Matrix acos is not implemented."
+>   asin = error "Matrix asin is not implemented."
+>   atan = error "Matrix atan is not implemented."
+>   asinh = error "Matrix asinh is not implemented."
+>   acosh = error "Matrix acosh is not implemented."
+>   atanh = error "Matrix atanh is not implemented."
 
 >instance (Num a) => Num (Vector3 a) where
 >  (Vector3 x y z) + (Vector3 x' y' z') = Vector3 (x+x') (y+y') (z+z')
@@ -582,7 +608,7 @@ grad3 f x = Vector3 (partial_derivate3x f x)
 >   => Matrix3 b -> Matrix3 b
 >matrix_exponential3 m = Stream.ssum $ 
 >    liftA2 (\x y -> fmap (/y) x)
->               (liftA2 matrix_power3 (Stream.constant m) (Stream.naturals :: Stream Integer))
+>               (let v = Pre identity3 (fmap (m `matrix_multiply3`) v) in v)
 >               Stream.factorial
 
 >xid,yid,zid :: (Num a) => Vector3 a
@@ -594,7 +620,7 @@ grad3 f x = Vector3 (partial_derivate3x f x)
 >identity3 = Matrix $ Vector3 xid yid zid
 
 
->matrix_power3 :: (Num a) => Matrix3 a -> Integer -> Matrix3 a
+>matrix_power3 :: (ConjugateSymmetric a,Num a) => Matrix3 a -> Integer -> Matrix3 a
 >matrix_power3 mat 0 = identity3
 >matrix_power3 mat i = mat `matrix_multiply3` matrix_power3 mat (pred i)
 
@@ -604,11 +630,9 @@ grad3 f x = Vector3 (partial_derivate3x f x)
 >matrix_indices3 :: (Integral a) => (Vector3 :*: Vector3) (a,a)
 >matrix_indices3 = matrix (,) vector_indices3 vector_indices3
 
->-- | would use @%.@ instead of @dot3@ if @%.@ didn't need @ConjugateSymmetric@
-
->matrix_multiply3 :: (Num a) => Matrix3 a -> Matrix3 a -> Matrix3 a
+>matrix_multiply3 :: (ConjugateSymmetric a,Num a) => Matrix3 a -> Matrix3 a -> Matrix3 a
 >matrix_multiply3 (Matrix m1) m2 
->   | Matrix m2t <- transpose m2 = matrix dot3 m1 m2t
+>   | Matrix m2t <- transpose3 m2 = matrix (%.) m1 m2t
 
 >-- | dot3 doesn't work on complex numbers
 

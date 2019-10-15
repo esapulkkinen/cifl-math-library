@@ -29,6 +29,12 @@
 >data Vector2 s = Vector2 { xcoord2 :: !s, ycoord2 :: !s }
 >   deriving (Eq, Typeable, Data, Generic)
 
+>cov2 :: Vector2 (Dual (Vector2 a))
+>cov2 = Vector2 (Covector xcoord2) (Covector ycoord2)
+
+>instance ProjectionDual Vector2 a where
+>   projection_dual = cov2
+
 >instance (Bin.Binary s) => Bin.Binary (Vector2 s) where
 >   put (Vector2 x y) = Bin.put x >> Bin.put y 
 >   get = do { x <- Bin.get ; y <- Bin.get ; return (Vector2 x y) }

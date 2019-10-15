@@ -40,7 +40,7 @@ build-cabal :
 	$(CABAL) $(CABALOPTS) $(CABALFLAGS) new-build -j4 
 
 build-stack :
-	$(STACK) build
+	$(STACK) build -j 3
 
 build-stack-llvm :
 	$(STACK) build --ghc-options="-fllvm"

@@ -77,6 +77,9 @@
 >class (VectorSpace m) => LieAlgebra m where
 >  (%<>%) ::  m -> m -> m  -- [x,y]
 
+>class (VectorSpace s) => MetricSpace s where
+>   distance :: s -> s -> Scalar s
+
 >compose_matrix_with :: (Transposable g n, Functor m) =>
 > (f a -> g b -> c) -> (m :*: f) a -> (g :*: n) b -> (m :*: n) c
 >compose_matrix_with f m1 m2 = matrix f (cells m1) (cells $ transpose m2)
@@ -390,6 +393,12 @@ index2 (row,col) (C e) = index col (index row e)
 >instance (RealFloat a) => ConjugateSymmetric (Complex a)where
 >   conj = conjugate
 
+>-- | <https://en.wikipedia.org/wiki/Convex_combination>
+>-- This computes \[f([a_0,a_1,...,a_n], [{\mathbf b}_0,{\mathbf b}_1,...,{\mathbf b}_n]) = {{\sum_{j=0}^n{a_j{\mathbf b}_j}} \over \sum_{i=0}^n{a_i}}\]
+>convex_combination :: (VectorSpace v, Fractional (Scalar v), Foldable t,
+>  Applicative t) => t (Scalar v) -> t v -> v
+>convex_combination a b = (1/sum a) %* vsum (liftA2 (%*) a b)
+
 >-- | <https://en.wikipedia.org/wiki/Conjugate_transpose>
 >is_hermitian :: (Eq a, ConjugateSymmetric a) => a -> Bool
 >is_hermitian a = a == conj a
@@ -534,7 +543,6 @@ instance (Floating a) => NormedSpace [a] where
 >   vnegate f = negate . f
 >   a %* f = \i -> a * f i
 >   f %+ g = \i -> f i + g i
-
 
 >-- | <https://en.wikipedia.org/wiki/Commutator>
 >instance (VectorSpace a, Num a) => LieAlgebra (a -> a) where
@@ -686,3 +694,4 @@ instance (Functor m) => Unital (:*:) m where
 
 >instance PpShowVerticalF Complex where
 >  ppf_vertical (x :+ y) = pp x $$ pp ":+" <+> pp y
+

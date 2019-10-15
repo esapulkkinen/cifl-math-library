@@ -1,6 +1,7 @@
 >{-# LANGUAGE Safe, TypeOperators, UnicodeSyntax #-}
 >module Math.Number.Interface where
 >import Control.Applicative
+>import Data.Monoid
 >import Data.Ratio
 >import Math.Number.Stream
 >import Math.Matrix.Interface
@@ -24,6 +25,11 @@
 >   derivate :: (r -> r) -> r -> r
 >   integral :: (r,r) -> (r -> r) -> r
 
+
+>-- | <https://en.wikipedia.org/wiki/Differential_form>
+>differential :: (DifferentiallyClosed r) => (r -> r) -> r -> Endo r 
+>differential f x0 = Endo $ \dx -> dx * derivate f x0
+
 >-- | computes \(f'(x)*g(x) - f(x)*g'(x)\)
 >derivate_commutator :: (DifferentiallyClosed r) => (r -> r) -> (r -> r) -> r -> r
 >derivate_commutator f g x = derivate f x * g x - f x * (derivate g x)
@@ -42,7 +48,7 @@
 >   where mapper p = liftA3 (\a b c -> a*b*c) der divider p
 >         divider = fmap (1/) factorial
 >         der = derivates f <*> constant a
->         sub_powers = cells $ stream_powers (z-fromNum a)
+>         sub_powers = cells $ stream_powers (s_z-fromNum a)
 
 >-- | <https://en.wikipedia.org/wiki/Line_integral Line integral>
 
