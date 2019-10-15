@@ -692,7 +692,7 @@ matrix_convolution_product :: (Num a) => (Stream :*: Stream) a -> (Stream :*: St
 >fromIntegerSeq :: (Integer -> a) -> Stream a
 >fromIntegerSeq f = fmap f naturals
 
->-- | \[sumSeq(f)(n) = \sum_{i=n}^{\infty}f(i)\]
+>-- | \[[sumSeq(f)(n)]_j = \sum_{i=n}^{n+j+1}f(i)\]
 >sumSeq :: (Num b, Num a, Ord a) => (a -> b) -> a -> Stream b
 >sumSeq f i = sum_stream $ fmap f $ naturals_starting_from i
 
