@@ -102,7 +102,7 @@
 >class ConjugateSymmetric m where
 >  conj :: m -> m
 
->class LinearTransform m n a where
+>class (Scalar (m a) ~ Scalar (n a)) => LinearTransform m n a where
 >  (<*>>) :: n a -> (m :*: n) a -> m a -- ^ vector times matrix
 >  (<<*>) :: (m :*: n) a -> m a -> n a -- ^ matrix times vector
 
@@ -695,3 +695,9 @@ instance (Functor m) => Unital (:*:) m where
 >instance PpShowVerticalF Complex where
 >  ppf_vertical (x :+ y) = pp x $$ pp ":+" <+> pp y
 
+>instance (Num a) => VectorSpace (I a) where
+>  type Scalar (I a) = a
+>  vzero = I 0
+>  vnegate (I x) = I (negate x)
+>  (I x) %+ (I y) = I (x + y)
+>  k %* (I x) = I (k * x)

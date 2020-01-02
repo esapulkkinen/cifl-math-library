@@ -31,7 +31,6 @@
 >import Math.Tools.Functor
 >import qualified Math.Tools.Arrow as TArrow
 >import Math.Tools.Visitor
->import Math.Tools.Median
 >import Math.Matrix.Covector
 >import Math.Tools.CoMonad hiding (copy)
 >import Math.Tools.PrettyP
@@ -129,17 +128,63 @@ import qualified Model.Nondeterminism as Nondet
 >ε = epsilon_closure
 
 >instance Limiting Rational where
->   data Closure Rational = RationalClosure (Stream Rational)
->   limit = RationalClosure
->   approximations ~(RationalClosure s) = s
+>   data Closure Rational = FiniteRational (Stream Rational) | MinusInfiniteRational | InfiniteRational
+>   limit = FiniteRational
+>   approximations (FiniteRational s) = s
+>   approximations MinusInfiniteRational = fmap negate $ power 10
+>   approximations InfiniteRational = power 10
 
+>instance Fractional (Closure Rational) where
+>   (FiniteRational x) / (FiniteRational y) = FiniteRational $ liftA2 (/) x y
+>   (FiniteRational _) / InfiniteRational = 0
+>   (FiniteRational _) / MinusInfiniteRational = 0
+>   MinusInfiniteRational / (FiniteRational _) = error "can't compute sign of rational closure in -INF/lim{i->INF}(x_i)"
+>   InfiniteRational / (FiniteRational _) = error "can't compute sign of rational closure in INF/lim{i->INF}(x_i)"
+>   _ / _ = error "undefined: INF/INF"
+>   recip (FiniteRational x) = FiniteRational $ fmap recip x
+>   recip InfiniteRational = 0
+>   recip MinusInfiniteRational = -0
+>   fromRational = FiniteRational . constant
+
+>instance Num (Closure Rational) where
+>   InfiniteRational + InfiniteRational = InfiniteRational
+>   MinusInfiniteRational + InfiniteRational = error "undefined INF-INF"
+>   InfiniteRational + MinusInfiniteRational = error "undefined INF-INF"
+>   MinusInfiniteRational + MinusInfiniteRational = MinusInfiniteRational
+>   InfiniteRational + _ = InfiniteRational
+>   MinusInfiniteRational + _ = MinusInfiniteRational
+>   _ + InfiniteRational = InfiniteRational
+>   _ + MinusInfiniteRational = MinusInfiniteRational
+>   (FiniteRational x) + (FiniteRational y) = FiniteRational (liftA2 (+) x y)
+>   a - b = a + (negate b)
+>   (FiniteRational x) * (FiniteRational y) = FiniteRational $ liftA2 (*) x y
+>   InfiniteRational * InfiniteRational = InfiniteRational
+>   InfiniteRational * MinusInfiniteRational = MinusInfiniteRational
+>   MinusInfiniteRational * InfiniteRational = MinusInfiniteRational
+>   MinusInfiniteRational * MinusInfiniteRational = InfiniteRational
+>   _ * InfiniteRational = error "(*): can't compute sign of rational closure in lim{i->INF}(x_i)*INF"
+>   InfiniteRational * _ = error "(*): can't compute sign of rational closure in INF*lim{i->INF}(x_i)"
+>   _ * MinusInfiniteRational = error "(*): can't compute sign of rational closure in lim{i->INF}(x_i)* -INF"
+>   MinusInfiniteRational * _ = error "(*): can't compute sign of rational closure in -INF*lim{i->INF}(x_i)"
+>   negate InfiniteRational = MinusInfiniteRational
+>   negate MinusInfiniteRational = InfiniteRational
+>   negate (FiniteRational x) = FiniteRational (fmap negate x)
+>   abs (FiniteRational x) = FiniteRational (fmap abs x)
+>   abs MinusInfiniteRational = InfiniteRational
+>   abs InfiniteRational = InfiniteRational
+>   signum InfiniteRational = FiniteRational (constant 1)
+>   signum MinusInfiniteRational = FiniteRational (constant $ negate 1)
+>   signum (FiniteRational s) = FiniteRational (fmap signum s)
+>   fromInteger = FiniteRational . fromInteger
 
 >instance Limiting Integer where
->   data Closure Integer = IntegerClosure { integer_closure_stream :: Stream Integer }
+>   data Closure Integer = FiniteInteger { integer_closure_stream :: Stream Integer }
 >     | MinusInfiniteInteger
 >     | InfiniteInteger
->   limit s = IntegerClosure s
->   approximations = integer_closure_stream
+>   limit s = FiniteInteger s
+>   approximations (FiniteInteger s) = s
+>   approximations MinusInfiniteInteger = fmap negate $ power_integral 10
+>   approximations InfiniteInteger = power_integral 10
 
 >instance (Num (Closure Integer)) where
 >   InfiniteInteger + InfiniteInteger = InfiniteInteger
@@ -150,40 +195,47 @@ import qualified Model.Nondeterminism as Nondet
 >   MinusInfiniteInteger + _ = MinusInfiniteInteger
 >   _ + InfiniteInteger = InfiniteInteger
 >   _ + MinusInfiniteInteger = MinusInfiniteInteger
->   (IntegerClosure s) + (IntegerClosure s')
->     = IntegerClosure (s + s') 
+>   (FiniteInteger s) + (FiniteInteger s')
+>     = FiniteInteger (s + s') 
 >   a - b = a + (negate b)
 >   negate InfiniteInteger = MinusInfiniteInteger
 >   negate MinusInfiniteInteger = InfiniteInteger
->   negate (IntegerClosure s) = IntegerClosure (fmap negate s)
+>   negate (FiniteInteger s) = FiniteInteger (fmap negate s)
 >   InfiniteInteger * InfiniteInteger = InfiniteInteger
 >   MinusInfiniteInteger * InfiniteInteger = MinusInfiniteInteger
 >   InfiniteInteger * MinusInfiniteInteger = MinusInfiniteInteger
 >   MinusInfiniteInteger * MinusInfiniteInteger = InfiniteInteger
->   InfiniteInteger * _ = InfiniteInteger
->   MinusInfiniteInteger * _ = MinusInfiniteInteger
->   _ * InfiniteInteger = InfiniteInteger
->   _ * MinusInfiniteInteger = MinusInfiniteInteger
->   (IntegerClosure s) * (IntegerClosure s')
->     = IntegerClosure (liftA2 (*) s s')
+>   InfiniteInteger * _ = error "cannot compute sign of integer closure in INF * lim{i->INF}(x_i)"
+>   MinusInfiniteInteger * _ = error "cannot compute sign of integer closure in -INF*lim{i->INF}(x_i)"
+>   _ * InfiniteInteger = error "cannot compute sign of integer closure in lim{i->INF}(x_i)*INF"
+>   _ * MinusInfiniteInteger = error "cannot compute sign of integer closure in -INF*lim{i->INF}(x_i)"
+>   (FiniteInteger s) * (FiniteInteger s')
+>     = FiniteInteger (liftA2 (*) s s')
 >   abs MinusInfiniteInteger = InfiniteInteger
 >   abs InfiniteInteger = InfiniteInteger
->   abs (IntegerClosure s) = IntegerClosure (fmap abs s)
+>   abs (FiniteInteger s) = FiniteInteger (fmap abs s)
 >   signum InfiniteInteger = constantIntegerClosure 1
 >   signum MinusInfiniteInteger = constantIntegerClosure (negate 1)
->   signum (IntegerClosure s) = IntegerClosure (fmap signum s)
+>   signum (FiniteInteger s) = FiniteInteger (fmap signum s)
 >   fromInteger = constantIntegerClosure
 
 >constantIntegerClosure :: Integer -> Closure Integer
->constantIntegerClosure i = IntegerClosure (constant i)
+>constantIntegerClosure i = FiniteInteger (constant i)
 >
+>infiniteInteger :: Closure Integer
 >infiniteInteger = InfiniteInteger
+>negativeInfiniteInteger :: Closure Integer
 >negativeInfiniteInteger = MinusInfiniteInteger
 
 >instance Show (Closure Integer) where
+>   show (FiniteInteger s) = " ... " ++ concat (List.intersperse "," (map show $ take 10 s)) ++ " ... "
 >   show InfiniteInteger = "INF"
 >   show MinusInfiniteInteger = "-INF"
->   show (IntegerClosure s) = " ... " ++ concat (List.intersperse "," (map show $ take 10 s)) ++ " ... "
+
+>instance Show (Closure Rational) where
+>   show InfiniteRational = "INF"
+>   show MinusInfiniteRational = "-INF"
+>   show (FiniteRational s) = " ... " ++ concat (List.intersperse "," (map show $ take 10 s)) ++ " ... "
 
 >instance Limiting Double where
 >   data Closure Double = DoubleClosure (Stream Double)
@@ -719,13 +771,15 @@ matrix_convolution_product :: (Num a) => (Stream :*: Stream) a -> (Stream :*: St
 >constant x = Pre x (constant x)
 
 >limit_fold :: (a -> a -> a) -> Fold (Stream a) (Integer -> a)
->limit_fold f = streamfold (\ x r i -> if i > 0 then f x (r (i-1)) else x)
+>limit_fold f = streamfold $
+>   \ x r i -> if i > 0 then f x (r (i-1)) else x
 
 >limit_fold_gen :: (a -> b -> b) -> (a -> b) -> Fold (Stream a) (Integer -> b)
->limit_fold_gen f g = streamfold (\ x r i -> if i > 0 then f x (r (i-1)) else g x)
+>limit_fold_gen f g = streamfold $
+>   \ x r i -> if i > 0 then f x (r (i-1)) else g x
 
 >iterate_stream :: (a -> a) -> a -> Stream a
->iterate_stream f x = Pre x (iterate_stream f (f x))
+>iterate_stream f x = Pre x $ iterate_stream f (f x)
 
 >stream_differences :: (Num a) => Stream a -> Stream a
 >stream_differences ~(Pre x ~z'@(Pre y _)) = 
@@ -1538,10 +1592,9 @@ codiagonals q
 >binomial_coefficients_seq = codiagonals_seq $ pascal_triangle_diag
 
 >exp_approx :: (Fractional a) => a -> Stream a
->exp_approx x = fmap (\ ~(j,lst) -> let m = x / j in 
->       sum $ map (\ ~(i,c :: Integer) -> fromIntegral c * m^^i) lst) $
+>exp_approx x = fmap (\ ~(j,lst) -> let m = x / fromInteger j in 
+>       sum $ map (\ ~(i,c :: Integer) -> fromInteger c * m^^i) lst) $
 >       liftA2 (,) naturals $ fmap (List.zip [(0 :: Integer)..]) $ binomial_coefficients
-
 
 >-- | computes \((a + b)^n\) for all n, using binomial coefficients.
 >--   Hint: use 'z' in one of the argument.
@@ -1840,4 +1893,5 @@ codiagonals q
 
 >instance (Closed a) => Closed (Complex a) where
 >   accumulation_point (ComplexClosure (ca :+ ci)) = accumulation_point ca :+ accumulation_point ci
+
 

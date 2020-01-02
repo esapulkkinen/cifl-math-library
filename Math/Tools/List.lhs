@@ -10,6 +10,14 @@ interleave swaps arguments after every element.
 >interleave_list (c:cr) lst = (c:interleave lst cr)
 >interleave_list [] lst = lst
 
+>-- | computes iterates of the given function while they are monotone.
+>-- <https://en.wikipedia.org/wiki/Monotonic_function>
+>monotone_prefix :: (Ord a) => (a -> a) -> a -> [a]
+>monotone_prefix f x
+>   | x <= f x = x : monotone_prefix f (f x)
+>   | otherwise = []
+
+
 >instance InterleaveFunctor [] where
 >  interleave = interleave_list
 

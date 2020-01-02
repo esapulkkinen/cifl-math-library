@@ -1,5 +1,5 @@
 >-- -*- coding: utf-8 -*-
->{-# LANGUAGE Safe,GADTs,MultiParamTypeClasses,FlexibleContexts, TypeOperators, UndecidableInstances, TypeFamilies, UnicodeSyntax, DeriveGeneric, DeriveDataTypeable, RankNTypes, FlexibleInstances #-}
+>{-# LANGUAGE Safe,GADTs,MultiParamTypeClasses,FlexibleContexts, TypeOperators, UndecidableInstances, TypeFamilies, UnicodeSyntax, DeriveGeneric, DeriveDataTypeable, RankNTypes, FlexibleInstances, DefaultSignatures #-}
 >-- |
 >-- Module: Math.Matrix.Covector
 >-- Description: Covectors
@@ -40,10 +40,18 @@
 >  grad       :: Dual v -> v -> v    -- (Del f)(v)
 >  laplace    :: Dual v -> Dual v    -- (Del^2 f)(v)
 >  laplace = divergence . grad
+>  {-# MINIMAL divergence, grad #-}
 
 >-- | <https://en.wikipedia.org/wiki/Curl_(mathematics)>
 >class (VectorDerivative v) => VectorCrossProduct v where
 >  curl       :: (v -> v) -> v -> v  -- (Del * f)(v)
+>
+>-- | <https://en.wikipedia.org/wiki/Vector_Laplacian>
+>class VectorLaplacian v where
+>  vector_laplace :: (v -> v) -> v -> v -- (Del^2 A)(v)
+>  default vector_laplace :: (VectorCrossProduct v) => (v -> v) -> v -> v
+>  vector_laplace a x = grad (divergence a) x %- curl (curl a) x
+
 
 >class (Functor f) => ProjectionDual f a where
 >   projection_dual :: f (Dual (f a))
@@ -168,8 +176,14 @@
 >adjoint :: (Scalar a ~ Scalar b) => (a -> b) -> Dual b -> Dual a
 >adjoint f (Covector g) = Covector (g . f)
 
+>adjoint_map :: (Scalar b -> Scalar a) -> (a -> b) -> Dual b -> Dual a
+>adjoint_map sca f (Covector x) = Covector (sca . x . f)
+
 >data VectorSpaceMap v w where
->   VectorSpaceMap :: (Scalar v ~ Scalar w) => (v -> w) -> VectorSpaceMap v w
+>   VectorSpaceMap :: (Scalar w ~ Scalar v) => (v -> w) -> VectorSpaceMap v w
+
+>matrix_arrow :: (LinearTransform f g a) => (f :*: g) a -> VectorSpaceMap (f a) (g a)
+>matrix_arrow m = VectorSpaceMap $ \v -> m <<*> v
 
 >instance Category VectorSpaceMap where
 >   id = VectorSpaceMap id

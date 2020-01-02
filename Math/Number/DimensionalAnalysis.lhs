@@ -190,7 +190,8 @@
 >     | (Stream.Pre (As x d) xr) <- approximations s
 >     = accumulation_point (limit $ Stream.Pre x (fmap value_amount xr)) `As` d
 
->-- | <https://en.wikipedia.org/wiki/Level_(logarithmic_quantity)>-- Level represents a reference to which computations involving
+>-- | <https://en.wikipedia.org/wiki/Level_(logarithmic_quantity)
+>-- Level represents a reference to which computations involving
 >-- logarithmic scales are compared to.
 >data Level r = Level {
 >   reference_value :: Quantity r,
@@ -204,6 +205,14 @@
 
 >logarithmic :: (Floating a) => a -> Level a -> Quantity a
 >logarithmic x (Level q b) = (b ** x) %* q
+
+>hyperbolic :: (RealFloat a) => Complex a -> Level (Complex a) -> Quantity (Complex a)
+>hyperbolic x (Level q b) = (b ** ((0 :+ 1) * x)) %* q
+
+>-- | This is a way to convert radians to complex numbers
+>-- e.g. @(pi/2) `logarithmic` radian_scale == 0 :+ 1@.
+>radian_scale :: (RealFloat a) => Level (Complex a)
+>radian_scale = Level ((1 :+ 0) `As` dimensionless) (exp (0 :+ 1))
 
 >bit_scale :: (Num a) => Level a
 >bit_scale = Level (1 `As` dimensionless) 2
@@ -227,11 +236,11 @@
 >dB_SPL = Level (20 %* micro pascal) 10
 
 >-- | <https://en.wikipedia.org/wiki/Decibel>
->dB_SIL :: Level Double
->dB_SIL = Level (10**(negate 12) %* (watt / squaremeter)) 10
+>dB_SIL :: (Floating a, Show a) => Level a
+>dB_SIL = Level ((10**(negate 12)) %* (watt / squaremeter)) 10
 
 >-- <https://en.wikipedia.org/wiki/Decibel>
->dB_SWL :: Level Double
+>dB_SWL :: (Floating a) => Level a
 >dB_SWL = Level (10e-12 %* watt) 10
 
 >-- | for logarithmic lengths in base 10.
@@ -245,6 +254,14 @@
 >frequency_scale :: (Floating a) => Level a
 >frequency_scale = Level (16.352 %* hertz) 2
 
+>-- | <https://en.wikipedia.org/wiki/Octave>
+>-- logarithmic frequency in base 2 relative to 16.352 Hz.
+>-- a.k.a. in scientific designation.
+>-- middle-C is fourth octave, e.g. @4 \`logarithmic\` octave == 261.626 %* hertz@
+>-- octave is just a different name for 'frequency_scale'.
+>octave :: (Floating a) => Level a
+>octave = frequency_scale
+
 >-- | <https://en.wikipedia.org/wiki/Moment_magnitude_scale>
 >moment_magnitude_scale :: (Show a, Floating a) => Level a
 >moment_magnitude_scale = Level (10 ** (-7) %* (newton * meter)) 10
@@ -255,6 +272,7 @@
 
 >hartley_scale :: (Num a) => Level a
 >hartley_scale = Level (1 `As` dimensionless) 10
+
 >ban_scale :: (Num a) => Level a
 >ban_scale = hartley_scale
 
@@ -985,14 +1003,20 @@ order in the table is significant
 
 >squaremeter_dimension :: Dimension
 >squaremeter_dimension = 2 %* meter_dimension
+
+>squaremeter :: (Floating a) => Quantity a
 >squaremeter = 1.0 @@ squaremeter_dimension
 >
+>cubicmeter_dimension :: Dimension
 >cubicmeter_dimension = 3 %* meter_dimension
+>cubicmeter :: (Floating a) => Quantity a
 >cubicmeter = 1.0 @@ cubicmeter_dimension
 
+>watt_dimension :: Dimension
 >watt_dimension = (kilogram_dimension %+ (2 %* meter_dimension) %- (3 %* second_dimension))
->
+>coulomb_dimension :: Dimension
 >coulomb_dimension = (second_dimension %+ ampere_dimension)
+>siemens_dimension :: Dimension
 >siemens_dimension = (3 %* second_dimension) %+ (2 %* ampere_dimension)
 >                 %- (kilogram_dimension %+ squaremeter_dimension)
 

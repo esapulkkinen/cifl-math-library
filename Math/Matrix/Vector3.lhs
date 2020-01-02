@@ -352,15 +352,24 @@ approximations_vector3 (Vector3 x y z) = do
         (x',(y',z')) <- approximate x `zip` (approximate y `zip` approximate z)
         return $ Vector3 (Limit x') (Limit y') (Limit z')
 
->pderive :: (Closed a, Infinitesimal a)
+>-- | partial derivate a function defined for each coordinate along
+>-- each dimension of three-dimensional vector.
+>pderive3 :: (Closed a, Infinitesimal a)
 >   => Vector3 (a -> a) -> Vector3 a -> Vector3 a
->pderive (Vector3 fx fy fz) (Vector3 x y z) = Vector3
+>pderive3 (Vector3 fx fy fz) (Vector3 x y z) = Vector3
 >   (partial_derive chx fx x)
 >   (partial_derive chy fy y)
 >   (partial_derive chz fz z)
 >  where chx eps x = x + eps
 >        chy eps y = y + eps
 >        chz eps z = z + eps
+
+>vector_field_derivate :: (Closed a, Infinitesimal a)
+>  => (Vector3 a -> a) -> Vector3 a -> Vector3 a
+>vector_field_derivate f v@(Vector3 x y z) = Vector3
+>   (partial_derivate dx3 f v)
+>   (partial_derivate dy3 f v)
+>   (partial_derivate dz3 f v)
 
 >dx3_endo :: (Num a) => a -> Mon.Endo (Vector3 a)
 >dx3_endo = Mon.Endo . dx3
@@ -388,19 +397,22 @@ approximations_vector3 (Vector3 x y z) = do
 >partial_derivate3z :: (Infinitesimal a, Closed a) => Dual (Vector3 a) -> Dual (Vector3 a)
 >partial_derivate3z (Covector f) = Covector $ partial_derivate dz3 f
 
+>-- | \[\nabla_3\], three-dimensional partial derivate. Use Applicative.<*> for applying it.
 >del3 :: (Infinitesimal v, Closed v) => Vector3 (Dual (Vector3 v) -> Dual (Vector3 v))
 >del3 = Vector3 partial_derivate3x partial_derivate3y partial_derivate3z
 
 
-grad3 :: (Infinitesimal a) => (Vector3 a -> Vector3 a)
-                           ->  Vector3 a -> Vector3 a
-grad3 f x = Vector3 (partial_derivate3x f x)
-                    (partial_derivate3y f x)
-                    (partial_derivate3z f x)
+>-- outer product \[\nabla_3 \otimes \nabla_3\] operator for three-dimensional vectors.
+>del3_squared :: (Infinitesimal v, Closed v)
+>  => (Vector3 :*: Vector3) (Dual (Vector3 v) -> Dual (Vector3 v))
+>del3_squared = matrix (.) del3 del3
 
 >op_dot :: (Num b) => Vector3 (a -> b) -> a -> b
 >op_dot (Vector3 f g h) z = f z + g z + h z
 
+>hessian3 :: (Infinitesimal v, Closed v)
+> => Dual (Vector3 v) -> (Vector3 :*: Vector3) (Dual (Vector3 v))
+>hessian3 f = matrix (\a b -> a (b f)) del3 del3
 
 >instance (Infinitesimal a, Closed a) => VectorDerivative (Vector3 a) where
 >  divergence = divergence3
@@ -408,6 +420,16 @@ grad3 f x = Vector3 (partial_derivate3x f x)
 
 >instance (Infinitesimal a, Closed a) => VectorCrossProduct (Vector3 a) where
 >  curl = curl3
+
+>instance (Infinitesimal a, Closed a) => VectorLaplacian (Vector3 a) where
+>  vector_laplace = vector_laplace3
+
+>vector_laplace3 :: (VectorDerivative v) =>
+>  (v -> Vector3 (Scalar v)) -> v -> Vector3 (Scalar v)
+>vector_laplace3 f x = Vector3
+> ((laplace $ Covector (xcoord3 . f)) `bracket` x)
+> ((laplace $ Covector (ycoord3 . f)) `bracket` x)
+> ((laplace $ Covector (zcoord3 . f)) `bracket` x)
 
 >-- | <https://en.wikipedia.org/wiki/Divergence>
 >divergence3 :: (Infinitesimal a, Closed a) => (Vector3 a -> Vector3 a) -> Dual (Vector3 a)

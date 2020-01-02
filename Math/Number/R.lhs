@@ -10,6 +10,7 @@
 >import Math.Tools.PrettyP
 >import Math.Matrix.Covector
 >import Math.Matrix.Interface
+>import Math.Tools.Median
 >import Math.Number.Interface
 >import Math.Number.Stream
 >import qualified Control.Monad.Fix
@@ -129,8 +130,8 @@
 >   x %* (Limit f) = real $ \df -> x %* f `appEndo` df
 
 >-- | This lifts a rational function to a real function.
->-- This computes accuracy using the formula @dx = df / f'(x)@.
->-- The accuracy behaves badly when @f'(x) = 0@ due to divide-by-zero.
+>-- This computes accuracy using the formula \(dx = df / f'(x)\).
+>-- The accuracy behaves badly when \(f'(x) = 0\) due to divide-by-zero.
 >differentialLiftR :: (Rational -> Rational) -> R -> R
 >differentialLiftR f (Limit (Endo g)) = Limit $ Endo $ \df -> f $ g (1 / (derivate_rational df f (g df)))
 
@@ -138,6 +139,7 @@
 >derivate_rational :: Rational -> (Rational -> Rational) -> Rational -> Rational
 >derivate_rational eps f i = (f (i + eps) - f (i - eps)) / (2*eps)
 
+>-- | computes derivate. \[{{df}\over{dt}} = \lim_{\epsilon\rightarrow 0}{{f(t+\epsilon)-f(t-\epsilon)}\over{2\epsilon}}\]
 >derivate_r :: (R -> R) -> R -> R
 >derivate_r f (Limit x) = real $ \eps ->
 >    ((f (real $ \eps' -> x `appEndo` eps' + eps)
@@ -154,6 +156,8 @@
 >        der = derivates f <*> constant a
 >        sub_powers = cells $ stream_powers (s_z - fromNum a)
 
+>-- | newton's method for finding root of function.
+>-- \[x_{i+1} = x_i - {{f(x_i)}\over{f'(x_i)}}\]
 >newtons_method :: (R -> R) -> R -> R
 >newtons_method f x = lim $ iterate_stream iteration x 
 >  where iteration z' = z' - f z' / derivate f z'

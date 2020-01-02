@@ -216,6 +216,8 @@ deriving instance (Show a) => Show (Codiagonal Vector2 a)
 >   divergence = divergence2
 >   grad = grad2
 
+
+
 >divergence2 :: (Infinitesimal a, Closed a) => (Vector2 a -> Vector2 a) -> Dual (Vector2 a)
 >divergence2 f = partial_derivate2x (Covector (xcoord2 . f))
 >             %+ partial_derivate2y (Covector (ycoord2 . f))
@@ -232,9 +234,17 @@ deriving instance (Show a) => Show (Codiagonal Vector2 a)
 >  where fx = Covector (xcoord2 . f)
 >        fy = Covector (ycoord2 . f)
 
-curl2 :: (Infinitesimal a) => (Vector2 a -> Vector2 a) -> Vector2 a -> Vector2 a
-curl2 f z = Vector2 (partial_derivate2y (xcoord2 . f) z)
-                    (partial_derivate2x (ycoord2 . f) z)
+>del2 :: (Infinitesimal v, Closed v) => Vector2 (Dual (Vector2 v) -> Dual (Vector2 v))
+>del2 = Vector2 partial_derivate2x partial_derivate2y
+
+>hessian2 :: (Infinitesimal a, Closed a)
+> => Dual (Vector2 a) -> (Vector2 :*: Vector2) (Dual (Vector2 a))
+>hessian2 f = matrix (\a b -> a (b f)) del2 del2
+> 
+>instance (Infinitesimal a, Closed a) => VectorCrossProduct (Vector2 a) where
+>  curl = curl2
+>
+>instance (Infinitesimal a, Closed a) => VectorLaplacian (Vector2 a)
 
 >instance Monad Vector2 where
 >   return x = Vector2 x x

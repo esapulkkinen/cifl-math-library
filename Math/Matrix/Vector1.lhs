@@ -239,10 +239,10 @@ http://en.wikipedia.org/wiki/Bra%E2%80%93ket_notation
 
 >instance (Num a) => VectorSpace (Vector1 a) where
 >  type Scalar (Vector1 a) = a
->  x %* (Vector1 e) = Vector1 (x * e)
->  (Vector1 a) %+ (Vector1 b) = Vector1 (a + b)
 >  vzero = Vector1 0
 >  vnegate (Vector1 x) = Vector1 (negate x)
+>  x %* (Vector1 e) = Vector1 (x * e)
+>  (Vector1 a) %+ (Vector1 b) = Vector1 (a + b)
 
 >instance (Num a) => NormedSpace (Vector1 a) where
 >  norm (Vector1 x) = x

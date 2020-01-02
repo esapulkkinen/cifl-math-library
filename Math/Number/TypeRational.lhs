@@ -8,11 +8,13 @@
 
 >data SNat = Ze | Su SNat | SNegate SNat
 
+>data SBin = SBZe | SBOne SBin | SBZero SBin 
+
 >data Sing :: SNat -> * where
 >  SNatZ :: Sing 'Ze
 >  SNatS :: Sing s -> Sing ('Su s)
 
->type family Half (n :: SNat) where
+>type family Half (n :: SNat) = s | s -> n where
 >   Half 'Ze = 'Ze
 >   Half ('Su ('Su z)) = 'Su (Half z)
 
@@ -69,12 +71,12 @@
 >data PrimePower = PrimePower Prime SNat
 >data Prime = PrTwo | NextPrimeAfter Prime
 
->type family InvertPrime (a :: SRat) :: SRat where
+>type family InvertPrime (a :: SRat) = (c :: SRat) | c -> a where
 >   InvertPrime 'PrOne = 'PrOne
 >   InvertPrime ('PrTimes ('PrimePower p n) r) = 'PrTimes ('PrimePower p ('SNegate n))
 >                                                         (InvertPrime r)
 
->type family ShiftPrime (a :: SRat) :: SRat where
+>type family ShiftPrime (a :: SRat) = (c :: SRat) | c -> a where
 >   ShiftPrime 'PrOne = 'PrTimes PPTwo 'PrOne
 >   ShiftPrime ('PrTimes ('PrimePower p n) r) = 'PrTimes ('PrimePower ('NextPrimeAfter p) n) r
 

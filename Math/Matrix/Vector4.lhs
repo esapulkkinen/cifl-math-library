@@ -410,13 +410,17 @@ instance FractionalSpace (Vector4 (Complex R))
 >  Covector.Dual (Vector4 a) -> Covector.Dual (Vector4 a)
 >derivate4z = operator_map partial_derivate4z
 
->del4_ :: (Closed a, Infinitesimal a)
+>del4 :: (Closed a, Infinitesimal a)
 >      => Vector4 (Dual (Vector4 a) -> Dual (Vector4 a))
->del4_ = Vector4 derivate4t derivate4x derivate4y derivate4z
+>del4 = Vector4 derivate4t derivate4x derivate4y derivate4z
 
->del4 :: (Infinitesimal a, Closed a) => Vector4 ((Vector4 a -> a) -> Vector4 a -> a)
->del4 = Vector4 partial_derivate4t partial_derivate4x partial_derivate4y
+>del4_ :: (Infinitesimal a, Closed a) => Vector4 ((Vector4 a -> a) -> Vector4 a -> a)
+>del4_ = Vector4 partial_derivate4t partial_derivate4x partial_derivate4y
 >               partial_derivate4z
+
+>hessian4 :: (Infinitesimal v, Closed v)
+>  => Dual (Vector4 v) -> (Vector4 :*: Vector4) (Dual (Vector4 v))
+>hessian4 f = matrix (\a b -> a (b f)) del4 del4
 
 >grad4 :: (Infinitesimal a, Closed a) => Covector.Dual (Vector4 a) -> Vector4 a -> Vector4 a
 >grad4 (Covector f) x = Vector4
@@ -461,6 +465,16 @@ instance FractionalSpace (Vector4 (Complex R))
 
 >laplace4 :: (Infinitesimal a, Closed a) => Covector.Dual (Vector4 a) -> Covector.Dual (Vector4 a)
 >laplace4 f = divergence4 (grad4 f)
+
+>instance (Infinitesimal a, Closed a) => VectorLaplacian (Vector4 a) where
+>  vector_laplace = vector_laplace4
+
+>vector_laplace4 :: (VectorDerivative v) => (v -> Vector4 (Scalar v)) -> v -> Vector4 (Scalar v)
+>vector_laplace4 f x = Vector4
+>   ((laplace $ Covector (tcoord4 . f)) `bracket` x)
+>   ((laplace $ Covector (xcoord4 . f)) `bracket` x)
+>   ((laplace $ Covector (ycoord4 . f)) `bracket` x)
+>   ((laplace $ Covector (zcoord4 . f)) `bracket` x)
 
 >-- | 1 x 4 matrices:
 >instance (Num a) => VectorSpace ((Vector1 :*: Vector4) a) where

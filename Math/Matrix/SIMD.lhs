@@ -78,6 +78,12 @@
 >  fromInteger i = FloatFVec4 (broadcastFloatX4# f)
 >    where F# f = fromInteger i
 
+>instance Fractional (FVec4 Float) where
+>   (FloatFVec4 x) / (FloatFVec4 y) = FloatFVec4 (divideFloatX4# x y)
+>   recip (FloatFVec4 x) = FloatFVec4 (divideFloatX4# (broadcastFloatX4# 1.0#) x)
+>   fromRational x = FloatFVec4 (broadcastFloatX4# f)
+>     where (F# f) = fromRational x
+
 >instance Num (FVec2 Double) where
 >  (DoubleFVec2 x) + (DoubleFVec2 y) = DoubleFVec2 (plusDoubleX2# x y)
 >  (DoubleFVec2 x) - (DoubleFVec2 y) = DoubleFVec2 (minusDoubleX2# x y)
@@ -87,6 +93,12 @@
 >  signum = mapFVec2 signum
 >  fromInteger i = DoubleFVec2 (broadcastDoubleX2# f)
 >    where D# f = fromInteger i
+
+>instance Fractional (FVec2 Double) where
+>   (DoubleFVec2 x) / (DoubleFVec2 y) = DoubleFVec2 (divideDoubleX2# x y)
+>   recip (DoubleFVec2 x) = DoubleFVec2 (divideDoubleX2# (broadcastDoubleX2# 1.0##) x)
+>   fromRational x = DoubleFVec2 (broadcastDoubleX2# f)
+>     where (D# f) = fromRational x
 
 >instance Num (SVec4 Int32) where
 >  (Int32SVec4 x) + (Int32SVec4 y) = Int32SVec4 (plusInt32X4# x y)
@@ -670,6 +682,11 @@
 >  signum = mapFVec4 signum
 >  fromInteger i = constantFVec4 (fromInteger i)
 
+>instance Fractional (FVec4 Float) where
+>   (/) = zipFVec4 (/)
+>   recip = mapFVec4 recip
+>   fromRational r = constantFVec4 (fromRational r)
+
 >instance Num (FVec2 Double) where
 >  (+) = zipFVec2 (+)
 >  (-) = zipFVec2 (-)
@@ -678,6 +695,11 @@
 >  abs = mapFVec2 abs
 >  signum = mapFVec2 signum
 >  fromInteger i = constantFVec2 (fromInteger i)
+
+>instance Fractional (FVec2 Double) where
+>   (/) = zipFVec2 (/)
+>   recip = mapFVec2 recip
+>   fromRational r = constantFVec2 (fromRational r)
 
 >svec8_1 :: SVec8 Int16 -> Int16
 >svec8_2 :: SVec8 Int16 -> Int16
@@ -929,17 +951,16 @@
 
 >fast_multiply4_float :: Matrix4 Float -> Vector4 Float -> Vector4 Float
 >fast_multiply4_float (Matrix (Vector4 a b c d)) v = Vector4
->   (sum_coordinates4 $ fromO $ zipO' (*) (toO a) v')
->   (sum_coordinates4 $ fromO $ zipO' (*) (toO b) v')
->   (sum_coordinates4 $ fromO $ zipO' (*) (toO c) v')
->   (sum_coordinates4 $ fromO $ zipO' (*) (toO d) v')
+>   (sum_coordinates4 $ fromO $ (toO a) * v')
+>   (sum_coordinates4 $ fromO $ (toO b) * v')
+>   (sum_coordinates4 $ fromO $ (toO c) * v')
+>   (sum_coordinates4 $ fromO $ (toO d) * v')
 >  where v' = toO v
->        zipO' = zipFVec4
 
 >fast_multiply2_double :: Matrix2 Double -> Vector2 Double -> Vector2 Double
 >fast_multiply2_double (Matrix (Vector2 a b)) v = Vector2
->   (sum_coordinates2 $ fromO $ zipFVec2 (*) (toO a) v')
->   (sum_coordinates2 $ fromO $ zipFVec2 (*) (toO b) v')
+>   (sum_coordinates2 $ fromO $ (toO a) * v')
+>   (sum_coordinates2 $ fromO $ (toO b) * v')
 >  where v' = toO v
 
 >instance {-# OVERLAPS #-} LinearTransform Vector2 Vector2 Double where
