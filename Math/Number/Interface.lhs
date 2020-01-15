@@ -12,6 +12,13 @@
 >logroot :: (Floating a) => a -> a -> a
 >logroot x k = exp (log x / log k)
 
+>class Approximations a where
+>   floating_approximations :: a -> Stream Double
+>   rational_approximations :: a -> Stream Rational
+
+>class Numerics a where
+>   newtons_method :: (a -> a) -> a -> a
+
 >class RationalRoots a where
 >   rational_power :: a -> Rational -> a
 
@@ -24,6 +31,9 @@
 >class (Num r) => DifferentiallyClosed r where
 >   derivate :: (r -> r) -> r -> r
 >   integral :: (r,r) -> (r -> r) -> r
+
+>class (Show r) => ShowPrecision r where
+>   show_at_precision :: r -> Integer -> String
 
 
 >-- | <https://en.wikipedia.org/wiki/Differential_form>
@@ -50,8 +60,81 @@
 >         der = derivates f <*> constant a
 >         sub_powers = cells $ stream_powers (s_z-fromNum a)
 
+
+>-- | <http://en.wikipedia.org/wiki/Atan2 Atan2>
+>atan2_generic :: (Floating a) => a -> a -> a
+>atan2_generic y x = 2 * atan ((sqrt (x*x+y*y) - x) / y)
+
+>-- | <https://en.wikipedia.org/wiki/Trigonometric_functions>
+>cot :: (Floating a) => a -> a
+>cot x = cos x / sin x
+
+>-- | <https://en.wikipedia.org/wiki/Trigonometric_functions>
+>sec :: (Floating a) => a -> a
+>sec x = 1 / cos x
+
+>-- | <https://en.wikipedia.org/wiki/Trigonometric_functions>
+>csc :: (Floating a) => a -> a
+>csc x = 1 / sin x
+
+>-- | <https://en.wikipedia.org/wiki/Hyperbolic_function>
+>arsinh :: (Floating a) => a -> a
+>arsinh = asinh
+>
+>-- | <https://en.wikipedia.org/wiki/Hyperbolic_function>
+>arcosh :: (Floating a) => a -> a
+>arcosh = acosh
+>
+>-- | <https://en.wikipedia.org/wiki/Hyperbolic_function>
+>artanh :: (Floating a) => a -> a
+>artanh = atanh
+>
+>-- | <https://en.wikipedia.org/wiki/Hyperbolic_function>
+>arcoth :: (Floating a) => a -> a
+>arcoth x = log ((1 + x)/(x - 1)) / 2
+>
+>-- | <https://en.wikipedia.org/wiki/Hyperbolic_function>
+>arsech :: (Floating a) => a -> a
+>arsech x = log ((1/x) + sqrt(1/(x*x)-1))
+>
+>-- | <https://en.wikipedia.org/wiki/Hyperbolic_function>
+>arcsch :: (Floating a) => a -> a
+>arcsch x = log ((1/x) + sqrt(1/(x*x)+1))
+
+>-- | <https://en.wikipedia.org/wiki/Hyperbolic_function>
+>coth :: (Floating a) => a -> a
+>coth x = cosh x / sinh x
+>
+>-- | <https://en.wikipedia.org/wiki/Hyperbolic_function>
+>sech :: (Floating a) => a -> a
+>sech x = 1 / cosh x
+>
+>-- | <https://en.wikipedia.org/wiki/Hyperbolic_function>
+>csch :: (Floating a) => a -> a
+>csch x = 1 / sinh x
+
 >-- | <https://en.wikipedia.org/wiki/Line_integral Line integral>
 
 >line_integral :: (DifferentiallyClosed r) => (r -> r) -> (r -> r) -> (r,r) -> r
 >line_integral f r (a,b) = integral (a,b) $ \t ->
 >   f (r t) * abs (derivate r t)
+
+>instance ShowPrecision Double where
+>  show_at_precision r _ = show r
+
+>instance ShowPrecision Int where
+>  show_at_precision r _ = show r
+
+>instance ShowPrecision Integer where
+>  show_at_precision r _ = show r
+
+>instance ShowPrecision Float where
+>  show_at_precision r _ = show r
+
+>instance Approximations Float where
+>  floating_approximations = constant . realToFrac
+>  rational_approximations = constant . toRational
+
+>instance Approximations Double where
+>  floating_approximations = constant
+>  rational_approximations = constant . toRational

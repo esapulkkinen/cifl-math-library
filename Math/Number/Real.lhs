@@ -1,7 +1,35 @@
 >-- -*- coding: utf-8 -*-
 >{-# LANGUAGE Safe,FlexibleInstances, MultiParamTypeClasses, FlexibleContexts, ScopedTypeVariables, TypeOperators, TypeFamilies, PatternGuards, UnicodeSyntax #-}
 >{-# LANGUAGE DataKinds, UndecidableInstances #-}
->module Math.Number.Real where
+>module Math.Number.Real
+> (
+> R(Limit), Modulus(..), d, liftReal, convergence_ratio_test,
+> average_convergence_ratio, list_average, cauchy, cseq_difference_matrix,
+> cauchy_sequence_equivalence, cseq_equivalence_matrix, cseq_convergence,
+> cseq_equivalence_list, converges, increase_accuracy_by,
+> partial_derive, partial_derivate_closure, partial_derivate,
+> partial_derivate_endo, complex_derivate, average, completenessOfReals,
+> liftRClosure, limit_real, lift_real, series, supremum_gen, negate_limit,
+> infimum_gen, infinity, infinity_gen, negative_infinity_gen,
+> limit_below, limit_above, limit_both, negative_infinity, epsilon_linear,
+> increase_accuracy, lessthan_precision, limiting_distance, distance_matrix,
+> at_precision_rational, at_precision, precision_rational,
+> real_derivate, real_exp, derivate_closed, vector_derivate, pseudo_derivate,
+> derivates_at, derivate_around, partial_derivate1_2, partial_derivate2_2,
+> partial_derivate1_3, partial_derivate2_3, partial_derivate3_3, agm,
+> expo, newtons_method, eigenvalue, integrate_vector, integrate,
+> integral_real, integral_rational, integrate_curve, gamma_via_integral,
+> approximately_equal, approximately_eq, constructively_less, equality,
+> signum_real, show_at_precision_real, properFraction_real, enumFromThenToReal,
+> fromThenTo, fromTo, enumFromToReal, realEnumFromThenTo, strEnumFromThenTo,
+> toReal, logarithm, euler_constant, napiers_constant, logarithm_by_newton,
+> invert_by_newton, exp_by_powers, exp_by_powers_real,
+> sum_generating_function, riemann_zeta, riemann_zeta_real, riemann_zeta_complex,
+> encodeInBase, fromFloat, golden_ratio, slow_golden_ratio, logistic,
+> floating_approximations, logarithm_by_power, tetrate, tetrate2,
+> log_newton, exp_by_series2, exp_by_series, sin_by_series, cos_by_series,
+> approximate_sums_modulus, withInverseModulus
+> ) where
 >import Prelude hiding (zipWith,take,zip,zip3)
 >import Control.Monad.Fix (fix)
 >import Control.Applicative
@@ -222,11 +250,11 @@ instance MedianAlgebra R where
 >  a %* b = a * b
 
 >instance VectorDerivative R where
->  divergence f = Covector $ real_derivate f
->  grad (Covector f) x = real_derivate f x
+>  divergence f = covector $ real_derivate ((-!<) f)
+>  grad (Covector (LinearMap f)) = LinearMap $ \x -> real_derivate f x
 
 >instance VectorCrossProduct R where
->  curl f x = real_derivate f x
+>  curl f = LinearMap $ \x -> real_derivate ((-!<) f) x
 
 >-- | The following instance declaration represents the completeness of the
 >-- real number system. This maps to isomorphism \(Closure R \cong R\).
@@ -431,6 +459,8 @@ infimum = negate_limit . supremum_gen . map negate_limit
 >    eps <- epsilon_stream
 >    return $! (f (x + eps) - f x) / eps
 
+>vector_derivate :: (Infinitesimal (Scalar a), VectorSpace a, Limiting a)
+> => (Scalar a -> a) -> Scalar a -> Closure a
 >vector_derivate f x = limit $ do
 >   eps <- epsilon_stream
 >   return $! (1 / (2*eps)) %* (f (x + eps) %- f (x - eps))
@@ -506,8 +536,11 @@ infimum = negate_limit . supremum_gen . map negate_limit
 >           (xr,n) <- approximate x <&> power_integral 10
 >           return $! (1 + (xr/fromIntegral n))^^n
 
->newtons_method :: (Infinitesimal a, Closed a) => (a -> a) -> a -> Closure a
->newtons_method f x = limit $ iterate_stream iteration x
+>instance Numerics R where
+>   newtons_method f x = accumulation_point $ newtons_method_real f x
+
+>newtons_method_real :: (Infinitesimal a, Closed a) => (a -> a) -> a -> Closure a
+>newtons_method_real f x = limit $ iterate_stream iteration x
 >   where iteration z' = z' - f z' / accumulation_point (derivate_closed f z')
 
 >eigenvalue :: (Infinitesimal a, Closed a,
@@ -516,7 +549,7 @@ infimum = negate_limit . supremum_gen . map negate_limit
 >               Scalar ((m :*: m) a) ~ a
 >               )
 >           => (m :*: m) a -> Closure a
->eigenvalue m = newtons_method (characteristicPolynomial m) 0
+>eigenvalue m = newtons_method_real (characteristicPolynomial m) 0
 
 >integrate_vector :: (Enum (Scalar a), VectorSpace a, Limiting a,
 >                     Limiting (Scalar a))
@@ -592,26 +625,12 @@ infimum = negate_limit . supremum_gen . map negate_limit
 >        astr' = fmap approximate $ approximations str'
 >        aeps  = fmap approximate $ epsilon_stream
 
->class (Show r) => ShowPrecision r where
->   show_at_precision :: r -> Integer -> String
 
->instance ShowPrecision R where
->   show_at_precision = show_at_precision_real
+instance Show (Complex R) where
+  showsPrec x (a :+ b) = show_at_precision_real a p
+    . showString ":+" . show_at_precision_real b p
+   where p = fromIntegral x
 
->instance (ShowPrecision a) => ShowPrecision (Complex a) where
->   show_at_precision ~(a :+ b) x = show_at_precision a x ++ ":+" ++ show_at_precision b x
-
->instance ShowPrecision Double where
->   show_at_precision r _ = show r
-
->instance ShowPrecision Int where
->   show_at_precision r _ = show r
-
->instance ShowPrecision Integer where
->   show_at_precision r _ = show r
-
->instance ShowPrecision Float where
->   show_at_precision r _ = show r
 
 >signum_real :: R -> Int -> Int
 >signum_real _ 0 = 0
@@ -622,18 +641,18 @@ infimum = negate_limit . supremum_gen . map negate_limit
 >         else signum a
 
 >show_at_precision_real :: R -> Integer -> String
->show_at_precision_real r i = signcorr r ++ show a ++ "." ++ decs
->   where signcorr r = if signum a == 0 && signum_real b 30 == -1 then "-" else ""
+>show_at_precision_real r i = (signcorr r . shows a . showString "." . decs) []
+>   where signcorr r = if signum a == 0 && signum_real b 30 == -1 then ('-':) else id
 >         decs = if a == 0 then decimals_str2 (abs b) i
 >                          else decimals (abs (b `at_precision` i)) i
 >         (a,b) = properFraction_real r
->         decimals x 0 = ""
+>         decimals x 0 = id
 >         decimals x i
->             | ~(a',b') <- properFraction_real (x*10), r <- decimals b' (pred i) = show a' ++ r
+>             | ~(a',b') <- properFraction_real (x*10), r <- decimals b' (pred i) = shows a' . r
 >         decimals_str2 x i = case decimals2 x i of
 >           (0,res) -> decimals (res `at_precision` i) i 
 >           (j,res) -> decimals (res `at_precision` i) i 
->                        ++ "e" ++ show j
+>                        . showString "e" . shows j
 >         decimals2 x 0 = (0,x)
 >         decimals2 x i = let ~(a',b') = properFraction_real (x*10) 
 >                           in case a' of
@@ -642,6 +661,9 @@ infimum = negate_limit . supremum_gen . map negate_limit
 
 >instance Show R where
 >    show s = show_at_precision s 20
+
+>instance ShowPrecision R where
+>    show_at_precision = show_at_precision_real
 
 >instance PpShow R where
 >    pp s = pp (show_at_precision s 10)
@@ -664,12 +686,12 @@ instance RealFrac R where
     floor = fst . properFraction
     round = floor . (+ 0.5)
 
+>properFraction_real :: (Num a) => R -> (a, R)
 >properFraction_real r = (fromIntegral wholepart,lift_real (snd . properFraction) r)
 >      where rat = shead $ approximate $ r `at_precision` 2
 >            wholepart = sign * ((abs $ numerator rat)
 >                                `div` (abs $ denominator rat))
 >            sign = signum (numerator rat) * signum (denominator rat)
-
 
 >-- | Enum instance for reals is undecidable with respect to end of
 >-- real intervals, since comparison of two real numbers is undecidable.
@@ -749,14 +771,14 @@ instance RealFrac R where
 >napiers_constant = exp 1.0
 
 >logarithm_by_newton :: R -> Closure R
->logarithm_by_newton e = newtons_method (\x -> exp x - e) 1
+>logarithm_by_newton e = newtons_method_real (\x -> exp x - e) 1
 
 >invert_by_newton :: (Closed a, Infinitesimal a) => (a -> a) -> a -> Closure a
->invert_by_newton f e = newtons_method (\x -> f x - e) 1
+>invert_by_newton f e = newtons_method_real (\x -> f x - e) 1
 
 >-- computes x from equation @(Df)(x) = y@ by newton's method
 >differential_equation1 :: (Closed a, Infinitesimal a) => (a -> a) -> a -> Closure a
->differential_equation1 f y = newtons_method (\x -> accumulation_point (derivate_closed f x) - y) 1
+>differential_equation1 f y = newtons_method_real (\x -> accumulation_point (derivate_closed f x) - y) 1
 
 
 >exp_by_powers :: (Fractional r, Limiting r) => r -> Closure r
@@ -802,7 +824,6 @@ instance RealFloat R where
    isNaN x = False
    isDenormalized _ = False
    isIEEE _ = False
-   -- | <http://en.wikipedia.org/wiki/Atan2 Atan2>
    atan2 y x = 2 * atan ((sqrt (x*x+y*y) - x) / y)
 
 decodeInBase :: Integer -> Int -> R -> (Integer,Int)
@@ -847,8 +868,12 @@ primitive_root_of_unity i = newtons_method (\x -> x ^^ i - (1 :+ 0)) (0 :+ 1)
 
 >-- | this converts a real to a sequence of doubles, each item
 >-- attempting to approximate the real to higher accuracy.
->floating_approximations :: R -> Stream Double
->floating_approximations = fmap fromRational . approximate
+>floating_approximations_real :: R -> Stream Double
+>floating_approximations_real = fmap fromRational . approximate
+
+>instance Approximations R where
+>   floating_approximations = floating_approximations_real
+>   rational_approximations = approximate
 
 
 >logarithm_by_power :: (Floating a, Limiting a) => a -> Closure a
@@ -875,7 +900,7 @@ ssrt is Inverse function for tetration. Don't have implementation.
 >   where xln = x*log(x)
 
 >log_newton :: (Floating a, Infinitesimal a, Closed a) => a -> a
->log_newton a = accumulation_point $ newtons_method (\x -> exp x - a) 1
+>log_newton a = accumulation_point $ newtons_method_real (\x -> exp x - a) 1
 
 >cos_generating_function_ = Pre 1 $ Pre 0 $ liftA2 (*) signs fact
 > where signs = stail $ stail $ alternating_possibly_negative_bits
@@ -928,7 +953,7 @@ it means there are always two adjacent equal elements.
 >                                       - 1/(8*kr+5) - 1/(8*kr+6))
 >    exp (Limit x) = Limit $ Stream.drop 3 $ x >>= \xappr -> sum_stream $
 >         liftA2 (/) (index_powers (constant xappr)) factorial
->    sqrt v = accumulation_point $ newtons_method (\x -> x*x - v) 1
+>    sqrt v = newtons_method (\x -> x*x - v) 1
 >    log a = 2* (Limit $ Stream.sum_stream $ do
 >                  (n,aaprx) <- naturals <&> approximate a'
 >                  return $! (1 / (2*fromIntegral n+1))*aaprx^(2*n+1))

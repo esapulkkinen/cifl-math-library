@@ -100,8 +100,8 @@ import qualified Model.Nondeterminism as Nondet
 
 
 >instance (Num a) => FiniteDimensional (Stream a) where
->   finite (Matrix (Covector f)) = Pre (f (Covector shead))
->                                      (fmap (\x -> f $ Covector (shead . x)) tls)
+>   finite (Matrix (Covector (LinearMap f))) = Pre (f (covector shead))
+>                                      (fmap (\x -> f $ covector (shead . x)) tls)
 >    where tls = stail `Pre` (fmap (\x -> x . stail) tls)
 
 >-- | Idea: 'limit' produces an exact value from a monotone sequence of

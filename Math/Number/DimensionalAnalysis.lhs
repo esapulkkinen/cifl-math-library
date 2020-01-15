@@ -55,7 +55,7 @@
 >import Math.Matrix.Interface
 >import Math.Number.Stream (Stream(..), Limiting(..), Closed(..), Infinitesimal(..))
 >import qualified Math.Number.Stream as Stream
->import Math.Number.Real ( ShowPrecision(..))
+>import Math.Number.Interface ( ShowPrecision(..))
 >import Math.Number.Group
 >import Math.Number.Interface
 >import qualified Text.ParserCombinators.ReadPrec as ReadPrec

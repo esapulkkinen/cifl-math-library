@@ -22,10 +22,10 @@
 >data Vector1 a = Vector1 { vector_element :: !a }
 >  deriving (Eq, Ord, Typeable, Data, Generic)
 
->cov1 :: Vector1 (Dual (Vector1 a))
->cov1 = Vector1 (Covector vector_element)
+>cov1 :: (a ~ Scalar a) => Vector1 (Dual (Vector1 a))
+>cov1 = Vector1 (covector $ vector_element)
 
->instance ProjectionDual Vector1 a where
+>instance (a ~ Scalar a) => ProjectionDual Vector1 a where
 >   projection_dual = cov1
 
 >instance (Bin.Binary s) => Bin.Binary (Vector1 s) where
@@ -39,8 +39,8 @@
 >instance (ConjugateSymmetric a) => ConjugateSymmetric ((Vector1 :*: Vector1) a) where
 >   conj = fmap conj . transpose
 
->instance (Num a) => FiniteDimensional (Vector1 a) where
->   finite (Matrix (Covector f)) = Vector1 (f (Covector vector_element))
+>instance (Num a, a ~ Scalar a) => FiniteDimensional (Vector1 a) where
+>   finite (Matrix (Covector (LinearMap f))) = Vector1 (f (covector $ vector_element))
 
 >instance Foldable Vector1 where
 >   foldMap f (Vector1 x) = f x
@@ -149,12 +149,12 @@ http://en.wikipedia.org/wiki/Bra%E2%80%93ket_notation
 
 >partial_derivate1x :: (Infinitesimal a, Closed a)
 >              => Dual (Vector1 a) -> Dual (Vector1 a)
->partial_derivate1x (Covector f) = Covector $ partial_derivate ch f
+>partial_derivate1x (Covector (LinearMap f)) = covector $ partial_derivate ch f
 >   where ch eps (Vector1 x) = Vector1 (x+eps)
 
->instance (Infinitesimal a, Closed a) => VectorDerivative (Vector1 a) where
->   divergence f = partial_derivate1x (Covector (vector_element . f))
->   grad f z = Vector1 (partial_derivate1x f `bracket` z)
+>instance (a ~ Scalar a, Infinitesimal a, Closed a) => VectorDerivative (Vector1 a) where
+>   divergence f = partial_derivate1x (covector (vector_element . (-!<) f))
+>   grad f = LinearMap $ \z -> Vector1 (partial_derivate1x f `bracket` z)
 
 >instance (MedianAlgebra a) => MedianAlgebra (Vector1 a) where
 >   med (Vector1 a) (Vector1 b) (Vector1 c) = Vector1 (med a b c)

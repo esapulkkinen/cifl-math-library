@@ -16,6 +16,7 @@
 >import qualified Data.Sequence as Seq
 >import qualified Data.Monoid as Mon
 >import Math.Tools.Functor
+>import Math.Number.Interface
 >import Math.Matrix.Interface
 >import Math.Matrix.Covector
 >import Math.Tools.CoMonad
@@ -44,10 +45,22 @@
 >   zcoord3 :: s }
 >       deriving (Eq, Typeable, Data, Generic)
 
->cov3 :: Vector3 (Dual (Vector3 a))
->cov3 = Vector3 (Covector xcoord3) (Covector ycoord3) (Covector zcoord3)
+>-- | this computes partial derivates of the scalar-value 3D vector field
+>-- along each variable simultaneously.
+>-- \[\del {\mathbb{v}} = \frac{\partial \mathbb{v}}{\partial x}{\mathbb{i}}
+>--                     + \frac{\partial \mathbb{v}}{\partial y}{\mathbb{j}}
+>--                     + \frac{\partial \mathbb{v}}{\partial z}{\mathbb{k}}\]
+>del_vector3 :: (Infinitesimal a)
+>  => (Vector3 a -> a) -> Vector3 a -> Vector3 (Closure a)
+>del_vector3 f (Vector3 x y z) = Vector3 (partial_derivate1_3 ff x y z)
+>                                        (partial_derivate2_3 ff x y z)
+>                                        (partial_derivate3_3 ff x y z)
+>  where ff a b c = f (Vector3 a b c)
 
->instance ProjectionDual Vector3 a where
+>cov3 :: (a ~ Scalar a) => Vector3 (Dual (Vector3 a))
+>cov3 = Vector3 (covector xcoord3) (covector ycoord3) (covector zcoord3)
+
+>instance (a ~ Scalar a) => ProjectionDual Vector3 a where
 >   projection_dual = cov3
 
 >instance (Binary s) => Binary (Vector3 s) where
@@ -88,11 +101,11 @@
 
 >-- | <https://en.wikipedia.org/wiki/Dual_space#Injection_into_the_double-dual>
 
->instance (Num a) => FiniteDimensional (Vector3 a) where
+>instance (Num a, a ~ Scalar a) => FiniteDimensional (Vector3 a) where
 >   finite (Matrix (Covector f)) = Vector3
->                                    (f (Covector xcoord3))
->                                    (f (Covector ycoord3))
->                                    (f (Covector zcoord3)) 
+>                                    (f -!< (covector xcoord3))
+>                                    (f -!< (covector ycoord3))
+>                                    (f -!< (covector zcoord3)) 
 
 >type Matrix3 a = (Vector3 :*: Vector3) a
 
@@ -387,86 +400,87 @@ approximations_vector3 (Vector3 x y z) = do
 >dz3 :: (Num a) => a -> Vector3 a -> Vector3 a
 >dz3 eps = \case { (Vector3 x y z) -> Vector3 x y (z + eps) }
 
->partial_derivate3x :: (Infinitesimal a, Closed a)
+>partial_derivate3x :: (a ~ Scalar a, Infinitesimal a, Closed a)
 >                   => Dual (Vector3 a) -> Dual (Vector3 a)
->partial_derivate3x (Covector f) = Covector $ partial_derivate dx3 f
+>partial_derivate3x (Covector f) = covector $ partial_derivate dx3 ((-!<) f)
 
->partial_derivate3y :: (Infinitesimal a, Closed a) => Dual (Vector3 a) -> Dual (Vector3 a)
->partial_derivate3y (Covector f) = Covector $ partial_derivate dy3 f
+>partial_derivate3y :: (a ~ Scalar a,Infinitesimal a, Closed a) => Dual (Vector3 a) -> Dual (Vector3 a)
+>partial_derivate3y (Covector f) = covector $ partial_derivate dy3 ((-!<) f)
           
->partial_derivate3z :: (Infinitesimal a, Closed a) => Dual (Vector3 a) -> Dual (Vector3 a)
->partial_derivate3z (Covector f) = Covector $ partial_derivate dz3 f
+>partial_derivate3z :: (a ~ Scalar a,Infinitesimal a, Closed a) => Dual (Vector3 a) -> Dual (Vector3 a)
+>partial_derivate3z (Covector f) = covector $ partial_derivate dz3 ((-!<) f)
 
 >-- | \[\nabla_3\], three-dimensional partial derivate. Use Applicative.<*> for applying it.
->del3 :: (Infinitesimal v, Closed v) => Vector3 (Dual (Vector3 v) -> Dual (Vector3 v))
+>del3 :: (v ~ Scalar v, Infinitesimal v, Closed v) => Vector3 (Dual (Vector3 v) -> Dual (Vector3 v))
 >del3 = Vector3 partial_derivate3x partial_derivate3y partial_derivate3z
 
 
 >-- outer product \[\nabla_3 \otimes \nabla_3\] operator for three-dimensional vectors.
->del3_squared :: (Infinitesimal v, Closed v)
+>del3_squared :: (v ~ Scalar v, Infinitesimal v, Closed v)
 >  => (Vector3 :*: Vector3) (Dual (Vector3 v) -> Dual (Vector3 v))
 >del3_squared = matrix (.) del3 del3
 
 >op_dot :: (Num b) => Vector3 (a -> b) -> a -> b
 >op_dot (Vector3 f g h) z = f z + g z + h z
 
->hessian3 :: (Infinitesimal v, Closed v)
+>hessian3 :: (v ~ Scalar v,Infinitesimal v, Closed v)
 > => Dual (Vector3 v) -> (Vector3 :*: Vector3) (Dual (Vector3 v))
 >hessian3 f = matrix (\a b -> a (b f)) del3 del3
 
->instance (Infinitesimal a, Closed a) => VectorDerivative (Vector3 a) where
+>instance (a ~ Scalar a, Infinitesimal a, Closed a) => VectorDerivative (Vector3 a) where
 >  divergence = divergence3
 >  grad = grad3
 
->instance (Infinitesimal a, Closed a) => VectorCrossProduct (Vector3 a) where
+>instance (a ~ Scalar a, Infinitesimal a, Closed a) => VectorCrossProduct (Vector3 a) where
 >  curl = curl3
 
->instance (Infinitesimal a, Closed a) => VectorLaplacian (Vector3 a) where
+>instance (a ~ Scalar a, Infinitesimal a, Closed a) => VectorLaplacian (Vector3 a) where
 >  vector_laplace = vector_laplace3
 
->vector_laplace3 :: (VectorDerivative v) =>
->  (v -> Vector3 (Scalar v)) -> v -> Vector3 (Scalar v)
->vector_laplace3 f x = Vector3
-> ((laplace $ Covector (xcoord3 . f)) `bracket` x)
-> ((laplace $ Covector (ycoord3 . f)) `bracket` x)
-> ((laplace $ Covector (zcoord3 . f)) `bracket` x)
+>vector_laplace3 :: (VectorDerivative v, Scalar (Scalar v) ~ Scalar v) =>
+>  LinearMap v (Vector3 (Scalar v)) -> LinearMap v (Vector3 (Scalar v))
+>vector_laplace3 f = LinearMap $ \x -> Vector3
+> ((laplace $ covector (xcoord3 . (-!<) f)) `bracket` x)
+> ((laplace $ covector (ycoord3 . (-!<) f)) `bracket` x)
+> ((laplace $ covector (zcoord3 . (-!<) f)) `bracket` x)
 
 >-- | <https://en.wikipedia.org/wiki/Divergence>
->divergence3 :: (Infinitesimal a, Closed a) => (Vector3 a -> Vector3 a) -> Dual (Vector3 a)
+>divergence3 :: (a ~ Scalar a, Infinitesimal a, Closed a)
+> => LinearMap (Vector3 a) (Vector3 a) -> Dual (Vector3 a)
 >divergence3 f = partial_derivate3x fx 
 >              + partial_derivate3y fy
 >              + partial_derivate3z fz
->   where fx = Covector (xcoord3 . f)
->         fy = Covector (ycoord3 . f)          
->         fz = Covector (zcoord3 . f)
+>   where fx = covector (xcoord3 . (-!<) f)
+>         fy = covector (ycoord3 . (-!<) f)          
+>         fz = covector (zcoord3 . (-!<) f)
 
 >cycle3 :: Vector3 a -> Stream a
 >cycle3 z@(Vector3 a b c) = a `Pre` b `Pre` c `Pre` cycle3 z
 
 
 >-- | <https://en.wikipedia.org/wiki/Gradient>
->grad3 :: (Infinitesimal s, Closed s) => Dual (Vector3 s) -> Vector3 s -> Vector3 s
->grad3 f z = Vector3 (partial_derivate3x f `bracket` z)
->                    (partial_derivate3y f `bracket` z)
->                    (partial_derivate3z f `bracket` z)
+>grad3 :: (s ~ Scalar s, Infinitesimal s, Closed s) => Dual (Vector3 s) -> LinearMap (Vector3 s) (Vector3 s)
+>grad3 f = LinearMap $ \z -> Vector3 (partial_derivate3x f `bracket` z)
+>                                    (partial_derivate3y f `bracket` z)
+>                                    (partial_derivate3z f `bracket` z)
 
 >-- | <https://en.wikipedia.org/wiki/Laplace_operator>
->laplace3 :: (Infinitesimal a, Closed a) => Dual (Vector3 a) -> Dual (Vector3 a)
+>laplace3 :: (a ~ Scalar a, Infinitesimal a, Closed a) => Dual (Vector3 a) -> Dual (Vector3 a)
 >laplace3 f = divergence3 (grad3 f)
 
 
 >-- | <https://en.wikipedia.org/wiki/Curl_(mathematics)>
->curl3 :: (Infinitesimal a, Closed a) => (Vector3 a -> Vector3 a)
->                           -> Vector3 a -> Vector3 a
->curl3 f z = Vector3 ((partial_derivate3y fz - partial_derivate3z fy)
+>curl3 :: (a ~ Scalar a, Infinitesimal a, Closed a) => LinearMap (Vector3 a) (Vector3 a)
+>                           -> LinearMap (Vector3 a) (Vector3 a)
+>curl3 f = LinearMap $ \z -> Vector3 ((partial_derivate3y fz - partial_derivate3z fy)
 >                       `bracket` z)
 >                    ((partial_derivate3z fx - partial_derivate3x fz)
 >                       `bracket` z)
 >                    ((partial_derivate3x fy - partial_derivate3y fx)
 >                       `bracket` z)
->  where fx = Covector (xcoord3 . f)
->        fy = Covector (ycoord3 . f)
->        fz = Covector (zcoord3 . f)
+>  where fx = covector (xcoord3 . (-!<) f)
+>        fy = covector (ycoord3 . (-!<) f)
+>        fz = covector (zcoord3 . (-!<) f)
 
 >instance Applicative Vector3 where
 >   pure x = Vector3 x x x

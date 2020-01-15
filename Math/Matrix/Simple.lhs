@@ -102,26 +102,26 @@
 
 >partial_derivate_ind :: (Closed a, Infinitesimal a, Eq ind)
 >   => ind -> (Dual (ind -> a) -> Dual (ind -> a))
->partial_derivate_ind ind (Covector f) = Covector $ partial_derivate (index_delta ind) f
+>partial_derivate_ind ind (Covector (LinearMap f)) = covector $ partial_derivate (index_delta ind) f
 
 >partial_derivate_list :: (Closed a, Infinitesimal a, Eq ind, Universe ind)
 >   => [Dual (ind -> a) -> Dual (ind -> a)]
 >partial_derivate_list = map partial_derivate_ind all_elements
 
->divergence_index :: (Closed b, Infinitesimal b, Eq ind, Universe a, Universe ind)
-> => ((ind -> b) -> a -> b) -> Dual (ind -> b)
->divergence_index f = sum (partial_derivate_list <*> flst)
->   where flst = map (\i -> Covector (($ i) . f)) all_elements
+>divergence_index :: (Scalar b ~ b, Closed b, Infinitesimal b, Eq ind, Universe a, Universe ind)
+> => (LinearMap (ind -> b) (a -> b)) -> Dual (ind -> b)
+>divergence_index (LinearMap f) = sum (partial_derivate_list <*> flst)
+>   where flst = map (\i -> covector (($ i) . f)) all_elements
 
->grad_index :: (Closed a, Infinitesimal a, Eq ind)
->  => Dual (ind -> a) -> (ind -> a) -> (ind -> a)
->grad_index f z = \ind -> partial_derivate_ind ind f `bracket` z
+>grad_index :: (Scalar a ~ Scalar ind, Closed a, Infinitesimal a, Eq ind)
+>  => Dual (ind -> a) -> LinearMap (ind -> a) (ind -> a)
+>grad_index f = LinearMap $ \z ind -> partial_derivate_ind ind f `bracket` z
 
->laplace_index :: (Closed a, Infinitesimal a, Eq ind, Universe ind)
+>laplace_index :: (a ~ Scalar ind, Scalar a ~ a, Closed a, Infinitesimal a, Eq ind, Universe ind)
 >  => Dual (ind -> a) -> Dual (ind -> a)
 >laplace_index f = divergence_index (grad_index f)
 
->instance (Closed b, Infinitesimal b, Eq a, Universe a)
+>instance (b ~ Scalar a, a ~ Scalar a, Closed b, Infinitesimal b, Eq a, Universe a)
 > => VectorDerivative (a -> b) where
 >  grad = grad_index
 >  divergence = divergence_index
@@ -140,10 +140,10 @@
 >productS :: (Num b, Universe a) => (a -> b) -> b
 >productS f = product [f i | i <- all_elements]
 
->cov_index :: a -> Dual (a -> b)
->cov_index x = Covector (\f -> f x)
+>cov_index :: (b ~ Scalar b) => a -> Dual (a -> b)
+>cov_index x = Covector $ LinearMap $ \f -> f x
 >
->instance ProjectionDual ((->) a) b where
+>instance (b ~ Scalar b) => ProjectionDual ((->) a) b where
 >   projection_dual = cov_index
 
 >instance (Floating a, Universe row, Universe col, ConjugateSymmetric a)

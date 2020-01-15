@@ -1,6 +1,15 @@
 >{-# LANGUAGE TypeFamilies, FlexibleInstances, ScopedTypeVariables #-}
 >{-# LANGUAGE TypeOperators, DataKinds, UndecidableInstances #-}
->module Math.Number.R where
+>module Math.Number.R (
+> R(Limit), lim, real, approximate, rational_approximations,
+> floating_approximations, epsilon, infinite, liftR,
+> liftR2, inverseImage, liftWithAccuracy, approximate_as,
+> limit_compose, inverseImageEndo, differentialLiftR, derivate_rational,
+> derivate_r, newtons_method, sqrt_r, log_by_newton,
+> exp_r, pi_r, log_r, integral_r, foldable_integral, foldable_simple_integral,
+> integral_accuracy, asin_r, acos_r, atan_r, sin_by_series,
+> cos_by_series
+> ) where
 >import Control.Applicative
 >import Control.Monad
 >import Data.Char
@@ -47,11 +56,15 @@
 >approximate :: R -> Rational -> Rational
 >approximate = appEndo . approximate_endo
 
->rational_approximations :: R -> Stream Rational
->rational_approximations r = fmap (approximate r) $ fmap (1/) $ power 10
+>rational_approximations_r :: R -> Stream Rational
+>rational_approximations_r r = fmap (approximate r) $ fmap (1/) $ power 10
 
->floating_approximations :: R -> Stream Double
->floating_approximations r = fmap fromRational $ rational_approximations r
+>instance Approximations R where
+>   floating_approximations = floating_approximations_r
+>   rational_approximations = rational_approximations_r
+
+>floating_approximations_r :: R -> Stream Double
+>floating_approximations_r r = fmap fromRational $ rational_approximations r
 
 >instance Show R where
 >   show x = show $! (fromRational (x `approximate` (1 % 1000000000000000)) :: Double)
@@ -150,17 +163,14 @@
 >   derivate = derivate_r
 >   integral = integral_r
 
->taylor :: (R -> R) -> R -> (Stream :*: Stream) R
->taylor f a = Matrix $ sum_stream $ fmap mapper sub_powers
->  where mapper p = liftA3 (\a b c -> (a*c)/b) der factorial p
->        der = derivates f <*> constant a
->        sub_powers = cells $ stream_powers (s_z - fromNum a)
-
 >-- | newton's method for finding root of function.
 >-- \[x_{i+1} = x_i - {{f(x_i)}\over{f'(x_i)}}\]
->newtons_method :: (R -> R) -> R -> R
->newtons_method f x = lim $ iterate_stream iteration x 
+>newtons_method_r :: (R -> R) -> R -> R
+>newtons_method_r f x = lim $ iterate_stream iteration x 
 >  where iteration z' = z' - f z' / derivate f z'
+
+>instance Numerics R where
+>   newtons_method = newtons_method_r
 
 >sqrt_r :: R -> R
 >sqrt_r v = newtons_method (\x -> x*x - v) 1
@@ -203,13 +213,14 @@
 
 >integral_accuracy :: (Fractional t) => (t -> R) -> R -> R -> Rational -> [Rational]
 >integral_accuracy f x y eps = [x',x'+eps..y']
->  where accuracy z = derivate_rational eps (\i -> f (fromRational i) `approximate` eps) z
+>  where accuracy z = derivate_rational eps mf z
+>        mf i = f (fromRational i) `approximate` eps
 >        x' = x `approximate` (eps / accuracy (x `approximate` eps))
 >        y' = y `approximate` (eps / accuracy (y `approximate` eps))
 
 >-- | <https://en.wikipedia.org/wiki/Inverse_trigonometric_functions>
 >asin_r :: R -> R
->asin_r x = integral (0,x) (\z -> 1 / sqrt(1 - z*z))
+>asin_r x = integral (0,x) $ \z -> 1 / sqrt(1 - z*z)
 >
 >-- | <https://en.wikipedia.org/wiki/Inverse_trigonometric_functions>
 >acos_r :: R -> R
@@ -217,8 +228,7 @@
 >
 >-- | <https://en.wikipedia.org/wiki/Inverse_trigonometric_functions>
 >atan_r :: R -> R
->atan_r x = integral (0,x) (\z -> (1 / (z*z+1)))
-
+>atan_r x = integral (0,x) $ \z -> (1 / (z*z+1))
 
 >-- | <http://en.wikipedia.org/wiki/Trigonometric_functions trigonometric functions>
 >sin_by_series :: R -> R

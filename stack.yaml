@@ -63,3 +63,10 @@ system-ghc: false
 #
 # Allow a newer minor version of GHC than the snapshot specifies
 # compiler-check: newer-minor
+
+apply-ghc-options: targets
+
+ghc-options:
+        "$locals": -fobject-code
+        "$targets": -fobject-code
+        "$everything": -fobject-code
