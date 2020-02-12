@@ -123,8 +123,6 @@
 >   fromInteger i = real $ const (fromInteger i)
 
 
-
-
 >instance Fractional R where
 >   (Limit f) / (Limit g) = real $ \eps -> f `appEndo` (eps / 2)
 >                                        / g `appEndo` (eps / 2)

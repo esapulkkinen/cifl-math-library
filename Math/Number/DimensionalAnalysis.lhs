@@ -36,6 +36,8 @@
 >-- @(3 %* meter) =/ kilogram == error "..."@
 >--
 >-- @convert lightyear (kilo meter) == return 9.4607304725808e12@
+>--
+>-- @3 `logarithmic` dBV == 1000.0 %* volt@
 >module Math.Number.DimensionalAnalysis where
 >import qualified Text.PrettyPrint as Pretty (Doc,vcat,nest, (<+>), empty) 
 >import Data.Complex
@@ -97,11 +99,16 @@
 >   substance_power   :: {-# UNPACK #-} !Rational }
 >  deriving (Eq, Typeable, Ord, Data, Generic)
 
+>instance StandardBasis Dimension where
+>  unit_vectors = [meter_dimension,kilogram_dimension,second_dimension,
+>                   ampere_dimension, kelvin_dimension, candela_dimension,
+>                   mol_dimension]
+
 >dimension_multiples :: Dimension -> Stream Dimension
 >dimension_multiples d = Pre d $ fmap (%+ d) $ dimension_multiples d
 
 >quantity_powers :: (Num a, Show a) => Quantity a -> Stream (Quantity a)
->quantity_powers z = Pre z $ fmap (z *) $ quantity_powers z
+>quantity_powers u = Stream.iterate_stream (* u) u
 
 >instance Applicative Quantity where
 >  pure x = x `As` dimensionless
@@ -161,7 +168,6 @@
 >ratioQuantity r = ((a % b) `As` (d - d'))
 >    where (a `As` d) = numerator  r
 >          (b `As` d') = denominator r
-
 
 >-- | the Unit class should be defined by any newtype based
 >-- types that should interact well with the dimensional analysis mechanism.
@@ -784,11 +790,27 @@ order in the table is significant
 >                      && (abs e >= abs e') && (signum e == signum e' || signum e' == 0)
 >                      && (abs f >= abs f') && (signum f == signum f' || signum f' == 0)
 >                      && (abs g >= abs g') && (signum g == signum g' || signum g' == 0)
->                            = Just (pp p Pretty.<+> pp (z %- z'))
+>                            = Just $ pp p Pretty.<+> pp (z %- z')
 >                    | otherwise = Nothing
 >           check (Just x) _ = Just x                      
 >           def (Dimension 0 0 0 0 0 0 0) = Pretty.empty
->           def z = pp (show_dimension z)
+>           def z = pp_dimension z
+
+>-- | pp_dimension prints dimension in a simple way without interpreting derived dimensions
+>-- for example, @pp_dimension newton_dimension == pp "kg m s^-2"@
+>pp_dimension :: Dimension -> Pretty.Doc
+>pp_dimension (Dimension a b c d e f g) = def b "kg" Pretty.<+> def a "m"
+>                                           Pretty.<+> def c "s"
+>                                           Pretty.<+> def d "A"
+>                                           Pretty.<+> def e "K"
+>                                           Pretty.<+> def f "cd"
+>                                           Pretty.<+> def g "mol"
+>  where def x str | x == 1 = pp str
+>                  | x == 0 = Pretty.empty
+>                  | otherwise = pp str <> pp '^' <> pp_ratio x
+>        pp_ratio z
+>           | denominator z == 1 = pp (numerator z)
+>           | otherwise = pp '{' <> pp z <> pp '}'
 
 >instance Show Dimension where
 >  show z@(Dimension a b c d e f g) = maybe (def z) id $ foldl check Nothing full_dimension_table

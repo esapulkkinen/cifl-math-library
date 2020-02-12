@@ -37,10 +37,12 @@
 >  deriving (Typeable, Data, Generic)
 
 
+
 >-- | This method of matrix construction is especially nice.
 >matrix :: (Functor m, Functor n) => (a -> b -> c) -> m a -> n b -> (m :*: n) c
 >matrix f x y = Matrix $ flip fmap x $ \a -> 
 >                        flip fmap y $ \b -> f a b
+
 
 >applicativeMatrix :: (Applicative f, Functor m, Functor n)
 >                  => f (a -> b -> c)
@@ -62,6 +64,7 @@
 >  (%*)  :: Scalar v -> v -> v -- scalar product
 
 >type VectorSpaceOver v a = (VectorSpace v, Scalar v ~ a)
+>type PrimitiveSpace v = (v ~ Scalar v, VectorSpace v)
 >type ComplexVectorSpace v a = VectorSpaceOver v (Complex a)
 >type Linear a b = (VectorSpace a, VectorSpace b, Scalar a ~ Scalar b)
 >type LinearInnerProductSpace a b = (Linear a b, InnerProductSpace a, InnerProductSpace b)
@@ -145,16 +148,6 @@
 >   (|\|) :: m a -> Codiagonal m a -> (m :*: m) a
 >   down_project  :: Codiagonal m a -> m \\ a
 >   right_project :: Codiagonal m a -> m \\ a
-
-
-codiagonal_project :: (m :*: n) a -> ((m \\ m') :*: (n \\ n')) a
-
-data Codiagonal m n a = Codiagonal {
-    down_project :: (m \\ n) a,
-    right_project :: (m \\ n) a,
-    diagonal_project :: Codiagonal (m \\ n) Id a
-  }
-
 
 >class (SquareMatrix m a) => FiniteSquareMatrix m a where
 >  determinant :: (m :*: m) a -> a

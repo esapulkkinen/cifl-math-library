@@ -1,0 +1,96 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"><html xmlns="http://www.w3.org/1999/xhtml"><head><link rel="stylesheet" type="text/css" href="style.css" /><script type="text/javascript" src="highlight.js"></script></head><body><pre><span> </span><span class="hs-pragma">{-# LANGUAGE Safe #-}</span><span>
+</span><a name="line-2"></a><span> </span><span class="hs-pragma">{-# OPTIONS_HADDOCK not-home #-}</span><span>
+</span><a name="line-3"></a><span> </span><span class="hs-comment">-- |</span><span>
+</span><a name="line-4"></a><span> </span><span class="hs-comment">-- Module: Graph</span><span>
+</span><a name="line-5"></a><span> </span><span class="hs-comment">-- Description: Graph implementation</span><span>
+</span><a name="line-6"></a><span> </span><span class="hs-comment">-- Copyright: (c) Esa Pulkkinen, 2018</span><span>
+</span><a name="line-7"></a><span> </span><span class="hs-comment">-- Maintainer: esa.pulkkinen@iki.fi</span><span>
+</span><a name="line-8"></a><span> </span><span class="hs-comment">-- Stability: experimental</span><span>
+</span><a name="line-9"></a><span> </span><span class="hs-comment">-- Portability: POSIX</span><span>
+</span><a name="line-10"></a><span> </span><span class="hs-comment">-- </span><span>
+</span><a name="line-11"></a><span> </span><span class="hs-comment">-- These exported modules implement graphs as specified in</span><span>
+</span><a name="line-12"></a><span> </span><span class="hs-comment">-- Lawvere, Rosebrugh: Sets for mathematics.</span><span>
+</span><a name="line-13"></a><span> </span><span class="hs-comment">-- </span><span>
+</span><a name="line-14"></a><span> </span><span class="hs-comment">-- Compact representation of the graph is:</span><span>
+</span><a name="line-15"></a><span> </span><span class="hs-comment">-- </span><span>
+</span><a name="line-16"></a><span> </span><span class="hs-comment">--   * digraphs: left and right actions of a three-element non-trivial monoid on endomorphisms of the two-element set</span><span>
+</span><a name="line-17"></a><span> </span><span class="hs-comment">-- </span><span>
+</span><a name="line-18"></a><span> </span><span class="hs-comment">--   * graphs  : left and right actions of a four-element non-trivial monoid on endomorphisms of the two-element set</span><span>
+</span><a name="line-19"></a><span> </span><span class="hs-comment">-- </span><span>
+</span><a name="line-20"></a><span> </span><span class="hs-comment">-- The graph representation is based on just single set which contains both</span><span>
+</span><a name="line-21"></a><span> </span><span class="hs-comment">-- vertices and edges. This means we have operation,</span><span>
+</span><a name="line-22"></a><span> </span><span class="hs-comment">-- 'Math.Graph.InGraphMonad.isVertexM', for determining whether an element</span><span>
+</span><a name="line-23"></a><span> </span><span class="hs-comment">-- of the set is a vertex or an edge.</span><span>
+</span><a name="line-24"></a><span> </span><span class="hs-comment">-- </span><span>
+</span><a name="line-25"></a><span> </span><span class="hs-comment">-- For non-mathematicians, think of a database table with</span><span>
+</span><a name="line-26"></a><span> </span><span class="hs-comment">-- three or four fields, where fields are called</span><span>
+</span><a name="line-27"></a><span> </span><span class="hs-comment">-- </span><span>
+</span><a name="line-28"></a><span> </span><span class="hs-comment">--   * id</span><span>
+</span><a name="line-29"></a><span> </span><span class="hs-comment">-- </span><span>
+</span><a name="line-30"></a><span> </span><span class="hs-comment">--   * source</span><span>
+</span><a name="line-31"></a><span> </span><span class="hs-comment">-- </span><span>
+</span><a name="line-32"></a><span> </span><span class="hs-comment">--   * target</span><span>
+</span><a name="line-33"></a><span> </span><span class="hs-comment">-- </span><span>
+</span><a name="line-34"></a><span> </span><span class="hs-comment">--   * invert</span><span>
+</span><a name="line-35"></a><span> </span><span class="hs-comment">-- </span><span>
+</span><a name="line-36"></a><span> </span><span class="hs-comment">-- The invert field is not present in a digraph.</span><span>
+</span><a name="line-37"></a><span> </span><span class="hs-comment">-- </span><span>
+</span><a name="line-38"></a><span> </span><span class="hs-comment">-- The monoid structure provides basic properties of source and target actions.</span><span>
+</span><a name="line-39"></a><span> </span><span class="hs-comment">-- </span><span>
+</span><a name="line-40"></a><span> </span><span class="hs-comment">-- prop&gt; source . target == source</span><span>
+</span><a name="line-41"></a><span> </span><span class="hs-comment">-- </span><span>
+</span><a name="line-42"></a><span> </span><span class="hs-comment">-- prop&gt; target . source == target</span><span>
+</span><a name="line-43"></a><span> </span><span class="hs-comment">-- </span><span>
+</span><a name="line-44"></a><span> </span><span class="hs-comment">-- prop&gt; source . source == source</span><span>
+</span><a name="line-45"></a><span> </span><span class="hs-comment">-- </span><span>
+</span><a name="line-46"></a><span> </span><span class="hs-comment">-- prop&gt; target . target == target</span><span>
+</span><a name="line-47"></a><span> </span><span class="hs-comment">-- </span><span>
+</span><a name="line-48"></a><span> </span><span class="hs-comment">-- Think of the actions in terms of state machines, from any element,</span><span>
+</span><a name="line-49"></a><span> </span><span class="hs-comment">-- we can always ask for source and target, but above equations mean</span><span>
+</span><a name="line-50"></a><span> </span><span class="hs-comment">-- that for vertices,</span><span>
+</span><a name="line-51"></a><span> </span><span class="hs-comment">-- </span><span>
+</span><a name="line-52"></a><span> </span><span class="hs-comment">-- prop&gt; isVertex v =&gt; source v == v</span><span>
+</span><a name="line-53"></a><span> </span><span class="hs-comment">-- </span><span>
+</span><a name="line-54"></a><span> </span><span class="hs-comment">-- prop&gt; isVertex v =&gt; target v == v</span><span>
+</span><a name="line-55"></a><span> </span><span class="hs-comment">-- </span><span>
+</span><a name="line-56"></a><span> </span><span class="hs-keyword">module</span><span> </span><span class="hs-identifier">Math.Graph</span><span> </span><span class="hs-special">(</span><span>
+</span><a name="line-57"></a><span> </span><span class="hs-comment">-- * operations for building graphs</span><span>
+</span><a name="line-58"></a><span>     </span><span class="hs-keyword">module</span><span> </span><a href="Math.Graph.Reversible.html"><span class="hs-identifier">Math.Graph.Reversible</span></a><span class="hs-special">,</span><span>
+</span><a name="line-59"></a><span> </span><span class="hs-comment">-- ** labeled graphs</span><span>
+</span><a name="line-60"></a><span>     </span><span class="hs-keyword">module</span><span> </span><a href="Math.Graph.Labeled.html"><span class="hs-identifier">Math.Graph.Labeled</span></a><span class="hs-special">,</span><span>
+</span><a name="line-61"></a><span> </span><span class="hs-comment">-- * graph algorithms</span><span>
+</span><a name="line-62"></a><span>     </span><span class="hs-keyword">module</span><span> </span><a href="Math.Graph.Algorithms.html"><span class="hs-identifier">Math.Graph.Algorithms</span></a><span class="hs-special">,</span><span>
+</span><a name="line-63"></a><span> </span><span class="hs-comment">-- ** transformations between graphs</span><span>
+</span><a name="line-64"></a><span>     </span><span class="hs-keyword">module</span><span> </span><a href="Math.Graph.GraphMap.html"><span class="hs-identifier">Math.Graph.GraphMap</span></a><span class="hs-special">,</span><span>
+</span><a name="line-65"></a><span> </span><span class="hs-comment">-- * string conversion for graphs</span><span>
+</span><a name="line-66"></a><span>     </span><span class="hs-keyword">module</span><span> </span><a href="Math.Graph.Show.html"><span class="hs-identifier">Math.Graph.Show</span></a><span class="hs-special">,</span><span>
+</span><a name="line-67"></a><span> </span><span class="hs-comment">-- * xml conversion for graphs</span><span>
+</span><a name="line-68"></a><span>     </span><span class="hs-keyword">module</span><span> </span><a href="Math.Graph.XML.html"><span class="hs-identifier">Math.Graph.XML</span></a><span class="hs-special">,</span><span>
+</span><a name="line-69"></a><span> </span><span class="hs-comment">-- * dot conversion for graphs</span><span>
+</span><a name="line-70"></a><span>     </span><span class="hs-keyword">module</span><span> </span><a href="Math.Graph.Dot.html"><span class="hs-identifier">Math.Graph.Dot</span></a><span class="hs-special">,</span><span>
+</span><a name="line-71"></a><span> </span><span class="hs-comment">-- * monoid for id,source,target,invert operations</span><span>
+</span><a name="line-72"></a><span>     </span><span class="hs-keyword">module</span><span> </span><a href="Math.Graph.GraphMonoid.html"><span class="hs-identifier">Math.Graph.GraphMonoid</span></a><span class="hs-special">,</span><span>
+</span><a name="line-73"></a><span> </span><span class="hs-comment">-- * interface for graph monad and arrows</span><span>
+</span><a name="line-74"></a><span>     </span><span class="hs-keyword">module</span><span> </span><a href="Math.Graph.Interface.html"><span class="hs-identifier">Math.Graph.Interface</span></a><span class="hs-special">,</span><span>
+</span><a name="line-75"></a><span> </span><span class="hs-comment">-- * arrow for inspecting graph data</span><span>
+</span><a name="line-76"></a><span>     </span><span class="hs-keyword">module</span><span> </span><a href="Math.Graph.InGraphA.html"><span class="hs-identifier">Math.Graph.InGraphA</span></a><span class="hs-special">,</span><span>
+</span><a name="line-77"></a><span> </span><span class="hs-comment">-- * monad for inspecting graph data</span><span>
+</span><a name="line-78"></a><span>     </span><span class="hs-keyword">module</span><span> </span><a href="Math.Graph.InGraphMonad.html"><span class="hs-identifier">Math.Graph.InGraphMonad</span></a><span class="hs-special">,</span><span>
+</span><a name="line-79"></a><span> </span><span class="hs-comment">-- ** library for general actions of a monoid</span><span>
+</span><a name="line-80"></a><span>     </span><span class="hs-keyword">module</span><span> </span><a href="Math.Graph.Action.html"><span class="hs-identifier">Math.Graph.Action</span></a><span>
+</span><a name="line-81"></a><span>   </span><span class="hs-special">)</span><span> </span><span class="hs-keyword">where</span><span>
+</span><a name="line-82"></a><span> </span><span class="hs-keyword">import</span><span> </span><span class="hs-keyword">qualified</span><span> </span><a href="Math.Graph.Action.html"><span class="hs-identifier">Math.Graph.Action</span></a><span>
+</span><a name="line-83"></a><span> </span><span class="hs-keyword">import</span><span> </span><a href="Math.Graph.Reversible.html"><span class="hs-identifier">Math.Graph.Reversible</span></a><span>
+</span><a name="line-84"></a><span> </span><span class="hs-keyword">import</span><span> </span><a href="Math.Graph.TransformationMonoid.html"><span class="hs-identifier">Math.Graph.TransformationMonoid</span></a><span>
+</span><a name="line-85"></a><span> </span><span class="hs-keyword">import</span><span> </span><a href="Math.Graph.Labeled.html"><span class="hs-identifier">Math.Graph.Labeled</span></a><span>
+</span><a name="line-86"></a><span> </span><span class="hs-keyword">import</span><span> </span><a href="Math.Graph.Algorithms.html"><span class="hs-identifier">Math.Graph.Algorithms</span></a><span>
+</span><a name="line-87"></a><span> </span><span class="hs-keyword">import</span><span> </span><a href="Math.Graph.GraphMap.html"><span class="hs-identifier">Math.Graph.GraphMap</span></a><span>
+</span><a name="line-88"></a><span> </span><span class="hs-keyword">import</span><span> </span><a href="Math.Graph.Show.html"><span class="hs-identifier">Math.Graph.Show</span></a><span>
+</span><a name="line-89"></a><span> </span><span class="hs-keyword">import</span><span> </span><a href="Math.Graph.InGraphMonad.html"><span class="hs-identifier">Math.Graph.InGraphMonad</span></a><span>
+</span><a name="line-90"></a><span> </span><span class="hs-keyword">import</span><span> </span><a href="Math.Graph.GraphMonoid.html"><span class="hs-identifier">Math.Graph.GraphMonoid</span></a><span>
+</span><a name="line-91"></a><span> </span><span class="hs-keyword">import</span><span> </span><a href="Math.Graph.InGraphA.html"><span class="hs-identifier">Math.Graph.InGraphA</span></a><span>
+</span><a name="line-92"></a><span> </span><span class="hs-keyword">import</span><span> </span><a href="Math.Graph.Interface.html"><span class="hs-identifier">Math.Graph.Interface</span></a><span>
+</span><a name="line-93"></a><span> </span><span class="hs-keyword">import</span><span> </span><a href="Math.Graph.XML.html"><span class="hs-identifier">Math.Graph.XML</span></a><span>
+</span><a name="line-94"></a><span> </span><span class="hs-keyword">import</span><span> </span><a href="Math.Graph.Dot.html"><span class="hs-identifier">Math.Graph.Dot</span></a><span>
+</span><a name="line-95"></a><span>
+</span><a name="line-96"></a></pre></body></html>

@@ -472,6 +472,11 @@
 > deriving newtype (Binary)
 >instance Show Force where { show = show_unit }
 
+>newtype Torque = NewtonMeters { newtonmeters :: Double }
+>  deriving (Eq, Ord, Typeable, Data, Generic)
+>  deriving newtype (Binary)
+>instance Show Torque where { show = show_unit }
+
 >newtype Pressure = Pascals { pascals :: Double }
 > deriving (Eq,Ord, Typeable, Data, Generic)
 > deriving newtype (Binary)
@@ -665,6 +670,13 @@
 >   dimension _ = newton_dimension
 >   fromQuantity = fromQuantityDef newton_dimension Newtons
 >   unitOf _ = "N"
+>instance Unit Torque where
+>   amount = newtonmeters
+>   fromAmount = NewtonMeters
+>   dimension _ = joule_dimension %- radian_dimension
+>   fromQuantity = fromQuantityDef (joule_dimension %- radian_dimension) NewtonMeters
+>   unitOf _ = "N m" -- notice not displayed similarly than joule.
+
 >instance Unit Frequency where
 >   amount = hertzs
 >   fromAmount = Hertz
@@ -754,7 +766,7 @@
 >deriving via Dimensionless instance VectorSpace (SquareLength)
 >deriving via Dimensionless instance VectorSpace (Acceleration)
 >deriving via Dimensionless instance VectorSpace (Velocity)
-
+>deriving via Dimensionless instance VectorSpace (Torque)
 #else
 
 >instance VectorSpace Velocity where
@@ -979,5 +991,12 @@
 >   vnegate (Henrys x) = Henrys $ negate x
 >   (Henrys x) %+ (Henrys y) = Henrys $ x + y
 >   k %* (Henrys x) = Henrys $ k * x
+
+>instance VectorSpace Torque where
+>   type Scalar Torque = Double
+>   vzero = NewtonMeters 0
+>   vnegate (NewtonMeters x) = NewtonMeters $ negate x
+>   (NewtonMeters x) %+ (NewtonMeters y) = NewtonMeters $ x + y
+>   k %* (NewtonMeters x) = NewtonMeters $ k * x
 
 #endif

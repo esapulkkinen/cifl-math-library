@@ -45,11 +45,11 @@
 >   zcoord3 :: s }
 >       deriving (Eq, Typeable, Data, Generic)
 
->-- | this computes partial derivates of the scalar-value 3D vector field
+>-- | this computes partial derivates of the scalar-valued 3D vector field
 >-- along each variable simultaneously.
->-- \[\del {\mathbb{v}} = \frac{\partial \mathbb{v}}{\partial x}{\mathbb{i}}
->--                     + \frac{\partial \mathbb{v}}{\partial y}{\mathbb{j}}
->--                     + \frac{\partial \mathbb{v}}{\partial z}{\mathbb{k}}\]
+>-- \[\nabla f({\mathbb{v}}) = \frac{\partial \mathbb{f}}{\partial x}{\mathbb{i}}
+>--                     + \frac{\partial \mathbb{f}}{\partial y}{\mathbb{j}}
+>--                     + \frac{\partial \mathbb{f}}{\partial z}{\mathbb{k}}\]
 >del_vector3 :: (Infinitesimal a)
 >  => (Vector3 a -> a) -> Vector3 a -> Vector3 (Closure a)
 >del_vector3 f (Vector3 x y z) = Vector3 (partial_derivate1_3 ff x y z)

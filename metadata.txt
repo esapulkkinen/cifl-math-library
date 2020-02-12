@@ -7,6 +7,7 @@
 <meta name="description" content="Haskell library for linear algebra"/>
 <meta name="author" content="Esa Pulkkinen, esa.pulkkinen@iki.fi"/>
 <meta name="generator" content="Haddock"/>
+<meta name="generator" content="standalone-haddock"/>
 <meta name="language" content="English"/>
 <meta name="distribution" content="Global"/>
 <link rel="schema.dc" href="http://purl.org/dc/elements/1.1"/>

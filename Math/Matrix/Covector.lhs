@@ -279,7 +279,8 @@ instance (Scalar ((f :*: g) a) ~ Scalar (f (Scalar (g a))),
 >-- | This computes
 >-- \(DDM(\otimes,{\bar{x}},{\bar{y}}) = [({\bar{x}} \cdot \nabla) \times ({\bar{y}} \cdot \nabla)]\)
 >-- where \(\times\) is the outer product for linear operators derived
->-- from product of dual spaces \(\otimes\). Notice \({\bar{x}} \cdot \nabla\) is normally called the directional derivative, so this is really a
+>-- from product of dual spaces \(\otimes\). Notice \({\bar{x}} \cdot \nabla\)
+>-- is normally called the directional derivative, so this is really a
 >-- two dimensional version of directional derivative with some possibility
 >-- to choose how two dual vectors are combined.
 >dual_derivative ::

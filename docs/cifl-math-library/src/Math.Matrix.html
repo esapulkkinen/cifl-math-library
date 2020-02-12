@@ -1,0 +1,56 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"><html xmlns="http://www.w3.org/1999/xhtml"><head><link rel="stylesheet" type="text/css" href="style.css" /><script type="text/javascript" src="highlight.js"></script></head><body><pre><span> </span><span class="hs-pragma">{-# LANGUAGE Safe, GADTs, QuasiQuotes #-}</span><span>
+</span><a name="line-2"></a><span> </span><span class="hs-pragma">{-# OPTIONS_HADDOCK not-home, ignore-exports #-}</span><span>
+</span><a name="line-3"></a><span> </span><span class="hs-comment">-- |</span><span>
+</span><a name="line-4"></a><span> </span><span class="hs-comment">-- Module: Math.Matrix</span><span>
+</span><a name="line-5"></a><span> </span><span class="hs-comment">-- Description: Matrix computations</span><span>
+</span><a name="line-6"></a><span> </span><span class="hs-comment">-- Copyright: (c) Esa Pulkkinen, 2000..2018</span><span>
+</span><a name="line-7"></a><span> </span><span class="hs-comment">-- License: LGPL</span><span>
+</span><a name="line-8"></a><span> </span><span class="hs-comment">-- Maintainer: esa.pulkkinen@iki.fi</span><span>
+</span><a name="line-9"></a><span> </span><span class="hs-comment">-- Stability: experimental</span><span>
+</span><a name="line-10"></a><span> </span><span class="hs-keyword">module</span><span> </span><span class="hs-identifier">Math.Matrix</span><span> </span><span class="hs-special">(</span><span>
+</span><a name="line-11"></a><span> </span><span class="hs-comment">-- * Matrix interface type classes</span><span>
+</span><a name="line-12"></a><span>    </span><span class="hs-keyword">module</span><span> </span><a href="Math.Matrix.Interface.html"><span class="hs-identifier">Math.Matrix.Interface</span></a><span class="hs-special">,</span><span>
+</span><a name="line-13"></a><span> </span><span class="hs-comment">-- * Matrix syntactic sugar</span><span>
+</span><a name="line-14"></a><span>    </span><span class="hs-keyword">module</span><span> </span><a href="Math.Matrix.QuasiQuoter.html"><span class="hs-identifier">Math.Matrix.QuasiQuoter</span></a><span class="hs-special">,</span><span>
+</span><a name="line-15"></a><span> </span><span class="hs-comment">-- ** Matrix data structure</span><span>
+</span><a name="line-16"></a><span>    </span><span class="hs-keyword">module</span><span> </span><a href="Math.Matrix.Matrix.html"><span class="hs-identifier">Math.Matrix.Matrix</span></a><span class="hs-special">,</span><span>
+</span><a name="line-17"></a><span> </span><span class="hs-comment">-- * one dimensional vector</span><span>
+</span><a name="line-18"></a><span>    </span><span class="hs-keyword">module</span><span> </span><a href="Math.Matrix.Vector1.html"><span class="hs-identifier">Math.Matrix.Vector1</span></a><span class="hs-special">,</span><span>
+</span><a name="line-19"></a><span> </span><span class="hs-comment">-- * two dimensional vector</span><span>
+</span><a name="line-20"></a><span>    </span><span class="hs-keyword">module</span><span> </span><a href="Math.Matrix.Vector2.html"><span class="hs-identifier">Math.Matrix.Vector2</span></a><span class="hs-special">,</span><span>
+</span><a name="line-21"></a><span> </span><span class="hs-comment">-- * three dimensional vector</span><span>
+</span><a name="line-22"></a><span>    </span><span class="hs-keyword">module</span><span> </span><a href="Math.Matrix.Vector3.html"><span class="hs-identifier">Math.Matrix.Vector3</span></a><span class="hs-special">,</span><span>
+</span><a name="line-23"></a><span> </span><span class="hs-comment">-- * four dimensional vector</span><span>
+</span><a name="line-24"></a><span>    </span><span class="hs-keyword">module</span><span> </span><a href="Math.Matrix.Vector4.html"><span class="hs-identifier">Math.Matrix.Vector4</span></a><span class="hs-special">,</span><span>
+</span><a name="line-25"></a><span> </span><span class="hs-comment">-- * arbitrary dimensional vector</span><span>
+</span><a name="line-26"></a><span>    </span><span class="hs-keyword">module</span><span> </span><a href="Math.Matrix.Simple.html"><span class="hs-identifier">Math.Matrix.Simple</span></a><span class="hs-special">,</span><span>
+</span><a name="line-27"></a><span> </span><span class="hs-comment">-- ** vectors optimized for SIMD</span><span>
+</span><a name="line-28"></a><span>    </span><span class="hs-keyword">module</span><span> </span><a href="Math.Matrix.SIMD.html"><span class="hs-identifier">Math.Matrix.SIMD</span></a><span class="hs-special">,</span><span>
+</span><a name="line-29"></a><span> </span><span class="hs-comment">-- * Dual vector</span><span>
+</span><a name="line-30"></a><span>    </span><span class="hs-keyword">module</span><span> </span><a href="Math.Matrix.Covector.html"><span class="hs-identifier">Math.Matrix.Covector</span></a><span class="hs-special">,</span><span>
+</span><a name="line-31"></a><span> </span><span class="hs-comment">-- ** data structure for linear arrows</span><span>
+</span><a name="line-32"></a><span>    </span><span class="hs-keyword">module</span><span> </span><a href="Math.Matrix.Linear.html"><span class="hs-identifier">Math.Matrix.Linear</span></a><span class="hs-special">,</span><span>
+</span><a name="line-33"></a><span> </span><span class="hs-comment">-- ** unicode syntax</span><span>
+</span><a name="line-34"></a><span>    </span><span class="hs-keyword">module</span><span> </span><a href="Math.Matrix.Unicode.html"><span class="hs-identifier">Math.Matrix.Unicode</span></a><span class="hs-special">,</span><span>
+</span><a name="line-35"></a><span> </span><span class="hs-comment">-- ** commutator and characteristic polynomials</span><span>
+</span><a name="line-36"></a><span>    </span><span class="hs-keyword">module</span><span> </span><a href="Math.Matrix.Instances.html"><span class="hs-identifier">Math.Matrix.Instances</span></a><span class="hs-special">,</span><span>
+</span><a name="line-37"></a><span> </span><span class="hs-comment">-- ** concurrent evaluation of matrices</span><span>
+</span><a name="line-38"></a><span>    </span><span class="hs-keyword">module</span><span> </span><a href="Math.Matrix.Concurrent.html"><span class="hs-identifier">Math.Matrix.Concurrent</span></a><span>
+</span><a name="line-39"></a><span>   </span><span class="hs-special">)</span><span> </span><span class="hs-keyword">where</span><span>
+</span><a name="line-40"></a><span> </span><span class="hs-keyword">import</span><span> </span><a href="Math.Matrix.Interface.html"><span class="hs-identifier">Math.Matrix.Interface</span></a><span>
+</span><a name="line-41"></a><span> </span><span class="hs-keyword">import</span><span> </span><a href="Math.Matrix.Matrix.html"><span class="hs-identifier">Math.Matrix.Matrix</span></a><span>
+</span><a name="line-42"></a><span> </span><span class="hs-keyword">import</span><span> </span><a href="Math.Matrix.Covector.html"><span class="hs-identifier">Math.Matrix.Covector</span></a><span>
+</span><a name="line-43"></a><span> </span><span class="hs-keyword">import</span><span> </span><a href="Math.Matrix.Vector1.html"><span class="hs-identifier">Math.Matrix.Vector1</span></a><span>
+</span><a name="line-44"></a><span> </span><span class="hs-keyword">import</span><span> </span><a href="Math.Matrix.Vector2.html"><span class="hs-identifier">Math.Matrix.Vector2</span></a><span>
+</span><a name="line-45"></a><span> </span><span class="hs-keyword">import</span><span> </span><a href="Math.Matrix.Vector3.html"><span class="hs-identifier">Math.Matrix.Vector3</span></a><span>
+</span><a name="line-46"></a><span> </span><span class="hs-keyword">import</span><span> </span><a href="Math.Matrix.Vector4.html"><span class="hs-identifier">Math.Matrix.Vector4</span></a><span>
+</span><a name="line-47"></a><span> </span><span class="hs-keyword">import</span><span> </span><a href="Math.Matrix.Simple.html"><span class="hs-identifier">Math.Matrix.Simple</span></a><span>
+</span><a name="line-48"></a><span> </span><span class="hs-keyword">import</span><span> </span><a href="Math.Matrix.Instances.html"><span class="hs-identifier">Math.Matrix.Instances</span></a><span>
+</span><a name="line-49"></a><span> </span><span class="hs-keyword">import</span><span> </span><a href="Math.Matrix.Transpose.html"><span class="hs-identifier">Math.Matrix.Transpose</span></a><span>
+</span><a name="line-50"></a><span> </span><span class="hs-keyword">import</span><span> </span><a href="Math.Matrix.Linear.html"><span class="hs-identifier">Math.Matrix.Linear</span></a><span>
+</span><a name="line-51"></a><span> </span><span class="hs-keyword">import</span><span> </span><a href="Math.Matrix.QuasiQuoter.html"><span class="hs-identifier">Math.Matrix.QuasiQuoter</span></a><span>
+</span><a name="line-52"></a><span> </span><span class="hs-keyword">import</span><span> </span><a href="Math.Matrix.Unicode.html"><span class="hs-identifier">Math.Matrix.Unicode</span></a><span>
+</span><a name="line-53"></a><span> </span><span class="hs-keyword">import</span><span> </span><a href="Math.Matrix.SIMD.html"><span class="hs-identifier">Math.Matrix.SIMD</span></a><span>
+</span><a name="line-54"></a><span> </span><span class="hs-keyword">import</span><span> </span><a href="Math.Matrix.Concurrent.html"><span class="hs-identifier">Math.Matrix.Concurrent</span></a><span>
+</span><a name="line-55"></a><span>
+</span><a name="line-56"></a></pre></body></html>
