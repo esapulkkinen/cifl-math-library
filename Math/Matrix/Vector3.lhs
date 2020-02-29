@@ -631,6 +631,8 @@ approximations_vector3 (Vector3 x y z) = do
 >   (%<>%) = matrix_commutator
 
 >-- | <https://en.wikipedia.org/wiki/Cross_product>
+>-- WARNING: a cross product produces an axial vector.
+>-- <https://en.wikipedia.org/wiki/Pseudovector>
 >cross_product :: (Num a) => Vector3 a -> Vector3 a -> Vector3 a
 >cross_product (Vector3 u1 u2 u3) (Vector3 v1 v2 v3) =
 >      Vector3 (u2*v3 - u3*v2) (u3*v1 - u1*v3) (u1*v2 - u2*v1)

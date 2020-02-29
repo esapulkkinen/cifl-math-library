@@ -822,7 +822,10 @@ order in the table is significant
 >                      && (abs e >= abs e') && (signum e == signum e' || signum e' == 0)
 >                      && (abs f >= abs f') && (signum f == signum f' || signum f' == 0)
 >                      && (abs g >= abs g') && (signum g == signum g' || signum g' == 0)
->                            = Just (p ++ " " ++ show (z %- z'))
+>                            = let rest = z %- z'
+>                               in if isDimensionless rest
+>                                    then Just p
+>                                    else Just (p ++ " " ++ show rest)
 >                    | otherwise = Nothing
 >          check (Just x) _ = Just x                      
 >          def (Dimension 0 0 0 0 0 0 0) = ""
@@ -1226,6 +1229,49 @@ order in the table is significant
 >liter = (1 / 1000) %* (meter * meter * meter)
 >-- | <https://en.wikipedia.org/wiki/Litre>
 >litre = liter
+
+>siDimensions :: [(String, Dimension)]
+>siDimensions = [
+>  ("eV", joule_dimension),
+>  ("m", meter_dimension),
+>  ("rad", radian_dimension),
+>  ("sr", steradian_dimension),
+>  ("K", kelvin_dimension),
+>  ("s", second_dimension),
+>  ("kg", kilogram_dimension),
+>  ("g", kilogram_dimension),
+>  ("mol", mol_dimension),
+>  ("cd", candela_dimension),
+>  ("A", ampere_dimension),
+>  ("C", coulomb_dimension),
+>  ("T", tesla_dimension),
+>  ("H", henry_dimension),
+>  ("N", newton_dimension),
+>  ("Pa", pascal_dimension),
+>  ("J", joule_dimension),
+>  ("Wb", weber_dimension),
+>  ("V", volt_dimension),
+>  ("Sv", sievert_dimension),
+>  ("S", siemens_dimension),
+>  ("Ω", ohm_dimension),
+>  ("ohm", ohm_dimension),
+>  ("F", farad_dimension),
+>  ("W", watt_dimension),
+>  ("°C", kelvin_dimension),
+>  ("°F", kelvin_dimension),
+>  ("°", radian_dimension),
+>  ("lm", lumen_dimension),
+>  ("lx", lux_dimension),
+>  ("Bq", becquerel_dimension),
+>  ("Gy", gray_dimension),
+>  ("kat", katal_dimension),
+>  ("Hz", hertz_dimension),
+>  ("ly", meter_dimension),
+>  ("AU", meter_dimension),
+>  ("pc", meter_dimension),
+>  ("l", 3 %* meter_dimension),
+>  ("B", dimensionless),
+>  ("b", dimensionless)]
 
 >-- | <https://en.wikipedia.org/wiki/Parsec>
 >--   <https://en.wikipedia.org/wiki/International_System_of_Units>

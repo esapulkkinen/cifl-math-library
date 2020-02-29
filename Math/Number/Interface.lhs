@@ -138,3 +138,8 @@
 >instance Approximations Double where
 >  floating_approximations = constant
 >  rational_approximations = constant . toRational
+
+>-- | compare to a certain precision, appropriate for floating point
+>-- style numeric types. first argument is precision.
+>precisionCompare :: (Ord a, Num a) => a -> a -> a -> Bool
+>precisionCompare prec a b = abs (a - b) < prec

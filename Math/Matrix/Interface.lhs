@@ -154,6 +154,7 @@
 >  trace       :: (m :*: m) a -> a
 
 >-- | <http://en.wikipedia.org/wiki/Adjugate>
+>-- \(cofactor(A) = |A|(A^{-1})^T\) <https://en.wikipedia.org/wiki/Cross_product>
 >class (FiniteSquareMatrix m a) => InvertibleMatrix m a where
 >   cofactor :: (m :*: m) a -> (m :*: m) a
 >   adjucate :: (m :*: m) a -> (m :*: m) a
@@ -392,17 +393,6 @@ index2 (row,col) (C e) = index col (index row e)
 >  Applicative t) => t (Scalar v) -> t v -> v
 >convex_combination a b = (1/sum a) %* vsum (liftA2 (%*) a b)
 
->-- | <https://en.wikipedia.org/wiki/Conjugate_transpose>
->is_hermitian :: (Eq a, ConjugateSymmetric a) => a -> Bool
->is_hermitian a = a == conj a
->
->-- | <https://en.wikipedia.org/wiki/Conjugate_transpose>
->is_skew_hermitian :: (Num a, Eq a, ConjugateSymmetric a) => a -> Bool
->is_skew_hermitian a = a == (negate $! (conj $! a))
->
->-- | <https://en.wikipedia.org/wiki/Conjugate_transpose>
->is_normal :: (Num a, Eq a, ConjugateSymmetric a) => a -> Bool
->is_normal a = conj a * a == a * conj a
 >                      
 >instance (Integral a) => VectorSpace (Ratio a) where
 >   type Scalar (Ratio a) = Ratio a

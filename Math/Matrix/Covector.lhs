@@ -148,6 +148,24 @@ instance (Scalar ((f :*: g) a) ~ Scalar (f (Scalar (g a))),
 >                    => (m :*: n) a -> (n :*: m) a
 >conjugate_transpose = transpose . fmap conj
 
+>-- | unicode alias (unicode HERMITIAN CONJUGATE MATRIX character)
+>(⊹) :: (Transposable m n, ConjugateSymmetric a)
+>                    => (m :*: n) a -> (n :*: m) a
+>(⊹) = conjugate_transpose
+
+>-- | <https://en.wikipedia.org/wiki/Conjugate_transpose>
+>is_hermitian :: (Eq a, ConjugateSymmetric a, Transposable m m, Applicative m, Foldable m)
+>  => (m :*: m) a -> Bool
+>is_hermitian a = a == conjugate_transpose a
+>
+>-- | <https://en.wikipedia.org/wiki/Conjugate_transpose>
+>is_skew_hermitian :: (Num a, Eq a, ConjugateSymmetric a, Applicative m, Transposable m m, Foldable m) => (m :*: m) a -> Bool
+>is_skew_hermitian a = a == (fmap negate $! (conjugate_transpose $! a))
+>
+>-- | <https://en.wikipedia.org/wiki/Conjugate_transpose>
+>is_normal :: (Num a, Eq (Scalar (m a)), ConjugateSymmetric a, Foldable m, Applicative m, Transposable m m, InnerProductSpace (m a)) => (m :*: m) a -> Bool
+>is_normal a = conjugate_transpose a %*% a == a %*% conjugate_transpose a
+
 >-- | partial application of dot product on second argument @(- %. v)@.
 >bravector :: (InnerProductSpace v, Scalar (Scalar v) ~ Scalar v) => v -> Dual v
 >bravector x = covector $ \u -> u %. x
