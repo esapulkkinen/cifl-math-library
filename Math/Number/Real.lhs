@@ -251,7 +251,7 @@ instance MedianAlgebra R where
 
 >instance VectorDerivative R where
 >  divergence f = covector $ real_derivate ((-!<) f)
->  grad (Covector (LinearMap f)) = LinearMap $ \x -> real_derivate f x
+>  grad (Covector f) = LinearMap $ \x -> real_derivate f x
 
 >instance VectorCrossProduct R where
 >  curl f = LinearMap $ \x -> real_derivate ((-!<) f) x

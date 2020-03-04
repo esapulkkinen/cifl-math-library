@@ -40,7 +40,7 @@
 >   conj = fmap conj . transpose
 
 >instance (Num a, a ~ Scalar a) => FiniteDimensional (Vector1 a) where
->   finite (Matrix (Covector (LinearMap f))) = Vector1 (f (covector $ vector_element))
+>   finite (Matrix (Covector f)) = Vector1 (f (covector $ vector_element))
 
 >instance Foldable Vector1 where
 >   foldMap f (Vector1 x) = f x
@@ -149,7 +149,7 @@ http://en.wikipedia.org/wiki/Bra%E2%80%93ket_notation
 
 >partial_derivate1x :: (Infinitesimal a, Closed a)
 >              => Dual (Vector1 a) -> Dual (Vector1 a)
->partial_derivate1x (Covector (LinearMap f)) = covector $ partial_derivate ch f
+>partial_derivate1x (Covector f) = covector $ partial_derivate ch f
 >   where ch eps (Vector1 x) = Vector1 (x+eps)
 
 >instance (a ~ Scalar a, Infinitesimal a, Closed a) => VectorDerivative (Vector1 a) where

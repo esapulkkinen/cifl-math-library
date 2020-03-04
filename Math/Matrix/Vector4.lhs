@@ -84,10 +84,10 @@ import Math.Matrix.Dimension
 
 >instance (Num a, a ~ Scalar a) => FiniteDimensional (Vector4 a) where
 >   finite (Matrix (Covector f)) = Vector4
->                                    (f -!< (covector tcoord4))
->                                    (f -!< (covector xcoord4))
->                                    (f -!< (covector ycoord4))
->                                    (f -!< (covector zcoord4))
+>                                    (f (covector tcoord4))
+>                                    (f (covector xcoord4))
+>                                    (f (covector ycoord4))
+>                                    (f (covector zcoord4))
 
 >x4 :: (Num a) => Vector4 a
 >x4 = xcoord4 (cells identity4)
@@ -393,23 +393,23 @@ instance FractionalSpace (Vector4 (Complex R))
 
 >derivate4t_squared :: (Closed a, Infinitesimal a, a ~ Scalar a)
 >     => Covector.Dual (Vector4 a) -> Covector.Dual (Vector4 a)
->derivate4t_squared = operator_map (LinearMap . partial_derivate4t . partial_derivate4t . (-!<))
+>derivate4t_squared = operator_map (partial_derivate4t . partial_derivate4t)
 
->derivate4t :: (Closed a, Infinitesimal a, a ~ Scalar a) =>
+>derivate4t :: (Closed a, Infinitesimal a) =>
 >  Covector.Dual (Vector4 a) -> Covector.Dual (Vector4 a)
->derivate4t = operator_map (LinearMap . partial_derivate4t . (-!<))
+>derivate4t = operator_map partial_derivate4t
 
 >derivate4x :: (Closed a, Infinitesimal a, a ~ Scalar a) =>
 >  Covector.Dual (Vector4 a) -> Covector.Dual (Vector4 a)
->derivate4x = operator_map (LinearMap . partial_derivate4x . (-!<))
+>derivate4x = operator_map (partial_derivate4x)
 
 >derivate4y :: (Closed a, Infinitesimal a, a ~ Scalar a) =>
 >  Covector.Dual (Vector4 a) -> Covector.Dual (Vector4 a)
->derivate4y = operator_map (LinearMap . partial_derivate4y . (-!<))
+>derivate4y = operator_map (partial_derivate4y)
 > 
 >derivate4z :: (Closed a, Infinitesimal a, a ~ Scalar a) =>
 >  Covector.Dual (Vector4 a) -> Covector.Dual (Vector4 a)
->derivate4z = operator_map (LinearMap . partial_derivate4z . (-!<))
+>derivate4z = operator_map (partial_derivate4z)
 
 >del4 :: (Closed a, Infinitesimal a, a ~ Scalar a)
 >      => Vector4 (Dual (Vector4 a) -> Dual (Vector4 a))
@@ -424,7 +424,7 @@ instance FractionalSpace (Vector4 (Complex R))
 >hessian4 f = matrix (\a b -> a (b f)) del4 del4
 
 >grad4 :: (Infinitesimal a, Closed a) => Covector.Dual (Vector4 a) -> LinearMap (Vector4 a) (Vector4 a)
->grad4 (Covector (LinearMap f)) = LinearMap $ \x -> Vector4
+>grad4 (Covector f) = LinearMap $ \x -> Vector4
 >    (partial_derivate4t f x)
 >    (partial_derivate4x f x)
 >    (partial_derivate4y f x)
@@ -433,10 +433,10 @@ instance FractionalSpace (Vector4 (Complex R))
 >curl4 :: (Infinitesimal a, Closed a) => Vector4 (Covector.Dual (Vector4 a))
 >                                    -> Vector4 a
 >                                    -> (Vector4 :*: Vector4) a
->curl4 (Vector4 (Covector (LinearMap ft))
->               (Covector (LinearMap fx))
->               (Covector (LinearMap fy))
->               (Covector (LinearMap fz)))
+>curl4 (Vector4 (Covector ft)
+>               (Covector fx)
+>               (Covector fy)
+>               (Covector fz))
 >    v@(Vector4 t x y z) = Matrix $ Vector4
 >               (Vector4 0
 >                        (partial_derivate4x ft v - partial_derivate4t fx v)

@@ -103,9 +103,9 @@
 
 >instance (Num a, a ~ Scalar a) => FiniteDimensional (Vector3 a) where
 >   finite (Matrix (Covector f)) = Vector3
->                                    (f -!< (covector xcoord3))
->                                    (f -!< (covector ycoord3))
->                                    (f -!< (covector zcoord3)) 
+>                                    (f (covector xcoord3))
+>                                    (f (covector ycoord3))
+>                                    (f (covector zcoord3)) 
 
 >type Matrix3 a = (Vector3 :*: Vector3) a
 
@@ -402,13 +402,13 @@ approximations_vector3 (Vector3 x y z) = do
 
 >partial_derivate3x :: (a ~ Scalar a, Infinitesimal a, Closed a)
 >                   => Dual (Vector3 a) -> Dual (Vector3 a)
->partial_derivate3x (Covector f) = covector $ partial_derivate dx3 ((-!<) f)
+>partial_derivate3x (Covector f) = covector $ partial_derivate dx3 f
 
 >partial_derivate3y :: (a ~ Scalar a,Infinitesimal a, Closed a) => Dual (Vector3 a) -> Dual (Vector3 a)
->partial_derivate3y (Covector f) = covector $ partial_derivate dy3 ((-!<) f)
+>partial_derivate3y (Covector f) = covector $ partial_derivate dy3 f
           
 >partial_derivate3z :: (a ~ Scalar a,Infinitesimal a, Closed a) => Dual (Vector3 a) -> Dual (Vector3 a)
->partial_derivate3z (Covector f) = covector $ partial_derivate dz3 ((-!<) f)
+>partial_derivate3z (Covector f) = covector $ partial_derivate dz3 f
 
 >-- | \[\nabla_3\], three-dimensional partial derivate. Use Applicative.<*> for applying it.
 >del3 :: (v ~ Scalar v, Infinitesimal v, Closed v) => Vector3 (Dual (Vector3 v) -> Dual (Vector3 v))

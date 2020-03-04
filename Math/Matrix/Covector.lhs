@@ -24,14 +24,14 @@
 >import Math.Matrix.Matrix
 
 >-- | Data type for dual vectors.
->data Dual v = Covector { bracketMap :: LinearMap v (Scalar v) }
+>data Dual v = Covector { bracketMap :: v -> (Scalar v) }
 >  deriving (Typeable, Generic)
 
 >bracket :: Dual v -> v -> Scalar v
->bracket (Covector (LinearMap f)) = f
+>bracket (Covector f) = f
 
->covector :: (Scalar (Scalar v) ~ Scalar v) => (v -> Scalar v) -> Dual v
->covector = Covector . LinearMap
+>covector :: (v -> Scalar v) -> Dual v
+>covector = Covector 
 
 >(*><) :: Dual v -> v -> Scalar v
 >(*><) = bracket
@@ -120,11 +120,11 @@ instance (Scalar ((f :*: g) a) ~ Scalar (f (Scalar (g a))),
 >   finite :: (Dual :*: Dual) v -> v
 
 >instance (Semigroup (Scalar v)) => Semigroup (Dual v) where
->   (Covector (LinearMap f)) <> (Covector (LinearMap g)) = covector $ \v -> f v <> g v
+>   (Covector f) <> (Covector g) = covector $ \v -> f v <> g v
 
 >instance (Monoid (Scalar v), Scalar (Scalar v) ~ Scalar v) => Monoid (Dual v) where
->   mempty = Covector $ LinearMap $ \_ -> mempty
->   mappend (Covector (LinearMap f)) (Covector (LinearMap g))
+>   mempty = Covector $ \_ -> mempty
+>   mappend (Covector f) (Covector g)
 >     = covector $ \v -> mappend (f v) (g v)
 
 >directional_derivative :: (VectorDerivative v,
@@ -137,11 +137,11 @@ instance (Scalar ((f :*: g) a) ~ Scalar (f (Scalar (g a))),
 >  => v -> Endo (Dual v)
 >directional_derivative_endo v = Endo $ directional_derivative v
 
->dconst :: (Scalar (Scalar v) ~ Scalar v) => Scalar v -> Dual v
+>dconst :: Scalar v -> Dual v
 >dconst x = covector (\a -> x)
 
->outer_vector :: (VectorSpace v, Scalar (Scalar v) ~ Scalar v, Scalar w ~ Scalar v) => Dual w -> v -> w -> v
->outer_vector (Covector y) x w = y -!< w %* x
+>outer_vector :: (VectorSpace v, Scalar w ~ Scalar v) => Dual w -> v -> w -> v
+>outer_vector (Covector y) x w = y w %* x
 
 >-- | <http://en.wikipedia.org/wiki/Conjugate_transpose>
 >conjugate_transpose :: (Transposable m n, ConjugateSymmetric a)
@@ -180,8 +180,8 @@ instance (Scalar ((f :*: g) a) ~ Scalar (f (Scalar (g a))),
 >dual_tensor :: 
 >   (Scalar a -> Scalar b -> Scalar (a,b))
 >  -> Dual a -> Dual b -> Dual (a,b)
->dual_tensor h (Covector (LinearMap f)) (Covector (LinearMap g)) =
->   Covector $ LinearMap $ \(a,b) -> h (f a) (g b) 
+>dual_tensor h (Covector f) (Covector g) =
+>   Covector $ \(a,b) -> h (f a) (g b) 
 
 >bilinear :: (Scalar (Scalar v) ~ Scalar v) => (v -> v -> Scalar v) -> v -> Dual v
 >bilinear bra x = covector $ \y -> x `bra` y
@@ -191,19 +191,19 @@ instance (Scalar ((f :*: g) a) ~ Scalar (f (Scalar (g a))),
 
 >-- | <https://en.wikipedia.org/wiki/Dual_space#Injection_into_the_double-dual>
 
->natural_double_dual :: (Scalar (Scalar v) ~ Scalar v) => v -> (Dual :*: Dual) v
->natural_double_dual v = Matrix $ Covector $ LinearMap $ \ dv -> dv `bracket` v
+>natural_double_dual :: v -> (Dual :*: Dual) v
+>natural_double_dual v = Matrix $ Covector $ \ dv -> dv `bracket` v
 
 >covector_kernel :: (Num (Scalar v), Eq (Scalar v)) => Dual v -> v -> Bool
->covector_kernel (Covector (LinearMap f)) x = f x == 0
+>covector_kernel (Covector f) x = f x == 0
 
 >-- | would like to make 'adjoint' as instance of CoFunctor,
 >-- but the constraint prevents. Instead we declare LinearMap.
 >adjoint :: LinearMap a b -> LinearMap (Dual b) (Dual a)
->adjoint (LinearMap f) = LinearMap $ \ (Covector (LinearMap g)) -> Covector $ LinearMap $ g . f
+>adjoint (LinearMap f) = LinearMap $ \ (Covector g) -> Covector $ g . f
 
->adjoint_map :: LinearMap (Scalar b) (Scalar a) -> LinearMap a b -> Dual b -> Dual a
->adjoint_map sca f (Covector x) = Covector (sca . x . f)
+>adjoint_map :: (Scalar b ~ Scalar a) => (Scalar b -> Scalar a) -> LinearMap a b -> Dual b -> Dual a
+>adjoint_map sca f (Covector x) = Covector (sca . x . (-!<) f)
 
 >instance (Semigroup v) => Semigroup (LinearMap v v) where
 >  (LinearMap f) <> (LinearMap g) = LinearMap (f <> g)
@@ -229,9 +229,9 @@ instance (Scalar ((f :*: g) a) ~ Scalar (f (Scalar (g a))),
 >   inverseImage = adjoint
 
 >scalar_map :: LinearMap (Scalar a) (Scalar a) -> Dual a -> Dual a
->scalar_map f (Covector g) = Covector (f . g)
+>scalar_map (LinearMap f) (Covector g) = Covector (f . g)
 
->operator_map :: (LinearMap v (Scalar v) -> LinearMap w (Scalar w)) -> Dual v -> Dual w
+>operator_map :: ((v -> Scalar v) -> w -> Scalar w) -> Dual v -> Dual w
 >operator_map f (Covector g) = Covector (f g)
 
 >-- | vector space with scalars in Num class
@@ -241,42 +241,42 @@ instance (Scalar ((f :*: g) a) ~ Scalar (f (Scalar (g a))),
 >class (Fractional (Scalar v), NumSpace v) => FractionalSpace v 
 
 >instance (StandardBasis v, Show (Scalar v)) => Show (Dual v) where
->   show (Covector (LinearMap f)) = "dual" ++ (show $ map f $ unit_vectors)
+>   show (Covector f) = "dual" ++ (show $ map f $ unit_vectors)
 
 >instance (VectorSpace v, Scalar (Scalar v) ~ Scalar v) => VectorSpace (Dual v) where
 >   type Scalar (Dual v) = Scalar v
->   vzero = Covector $ LinearMap $ \_ -> 0
->   vnegate (Covector x) = Covector (LinearMap negate . x)
->   (Covector (LinearMap f)) %+ (Covector (LinearMap g)) = Covector (LinearMap (\x -> f x + g x))
->   a %* (Covector (LinearMap f)) = Covector $ LinearMap $ \b -> a * f b
+>   vzero = Covector $ \_ -> 0
+>   vnegate (Covector x) = Covector (negate . x)
+>   (Covector f) %+ (Covector g) = Covector (\x -> f x + g x)
+>   a %* (Covector f) = Covector $ \b -> a * f b
 
 >instance (StandardBasis v, Num (Scalar v)) => InnerProductSpace (Dual v) where
->   (Covector (LinearMap f)) %. (Covector (LinearMap g)) =
+>   (Covector f) %. (Covector g) =
 >     sum [f x * g x | x <- unit_vectors]
 
 >instance (VectorSpace v, Scalar (Scalar v) ~ Scalar v) => LieAlgebra (Dual v) where
 >  f %<>% g = f*g - g*f
 
 >instance (VectorSpace v, Scalar (Scalar v) ~ Scalar v) => Num (Dual v) where
->  (Covector (LinearMap f)) + (Covector (LinearMap g)) =
->    Covector $ LinearMap $ \a -> f a + g a
->  (Covector (LinearMap f)) - (Covector (LinearMap g)) =
->    Covector $ LinearMap $ \a -> f a - g a
->  (Covector (LinearMap f)) * (Covector (LinearMap g)) =
->    Covector $ LinearMap $ \a -> f a * g a
->  negate (Covector (LinearMap f)) = Covector $ LinearMap $ negate . f
->  abs (Covector (LinearMap f)) = Covector $ LinearMap $ abs . f
->  signum (Covector (LinearMap f)) = Covector $ LinearMap $ signum . f
->  fromInteger i = Covector $ LinearMap $ \_ -> fromInteger i
+>  (Covector f) + (Covector g) =
+>    Covector $ \a -> f a + g a
+>  (Covector f) - (Covector g) =
+>    Covector $ \a -> f a - g a
+>  (Covector f) * (Covector g) =
+>    Covector $ \a -> f a * g a
+>  negate (Covector f) = Covector $ negate . f
+>  abs (Covector f) = Covector $ abs . f
+>  signum (Covector f) = Covector $ signum . f
+>  fromInteger i = Covector $ \_ -> fromInteger i
 
 >instance (Scalar (Scalar v) ~ Scalar v, FractionalSpace v) => Fractional (Dual v) where
->  (Covector (LinearMap f)) / (Covector (LinearMap g)) =
->     Covector $ LinearMap $ \a -> f a / g a
+>  (Covector f) / (Covector g) =
+>     Covector $ \a -> f a / g a
 >  recip = scalar_map (LinearMap recip)
->  fromRational r = Covector $ LinearMap $ \_ -> fromRational r
+>  fromRational r = Covector $ \_ -> fromRational r
 > 
 >instance (Scalar (Scalar v) ~ Scalar v, FractionalSpace v, Floating (Scalar v)) => Floating (Dual v) where
->   pi = Covector $ LinearMap $ const pi
+>   pi = Covector $ const pi
 >   exp = scalar_map (LinearMap exp)
 >   log = scalar_map (LinearMap log)
 >   sqrt = scalar_map (LinearMap sqrt)
@@ -318,4 +318,4 @@ instance (Scalar ((f :*: g) a) ~ Scalar (f (Scalar (g a))),
 >dual_differential_dot_product = dual_derivative (%.)
 
 >norm_covector :: (NormedSpace v, Scalar (Scalar v) ~ Scalar v) => Dual v
->norm_covector = Covector $ LinearMap $ norm
+>norm_covector = Covector $ norm

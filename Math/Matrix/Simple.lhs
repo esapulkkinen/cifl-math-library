@@ -102,7 +102,7 @@
 
 >partial_derivate_ind :: (Closed a, Infinitesimal a, Eq ind)
 >   => ind -> (Dual (ind -> a) -> Dual (ind -> a))
->partial_derivate_ind ind (Covector (LinearMap f)) = covector $ partial_derivate (index_delta ind) f
+>partial_derivate_ind ind (Covector f) = covector $ partial_derivate (index_delta ind) f
 
 >partial_derivate_list :: (Closed a, Infinitesimal a, Eq ind, Universe ind)
 >   => [Dual (ind -> a) -> Dual (ind -> a)]
@@ -141,7 +141,7 @@
 >productS f = product [f i | i <- all_elements]
 
 >cov_index :: (b ~ Scalar b) => a -> Dual (a -> b)
->cov_index x = Covector $ LinearMap $ \f -> f x
+>cov_index x = Covector $ \f -> f x
 >
 >instance (b ~ Scalar b) => ProjectionDual ((->) a) b where
 >   projection_dual = cov_index

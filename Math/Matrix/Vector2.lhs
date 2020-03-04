@@ -98,8 +98,8 @@
 >   rotate (Vector2 x y) = Vector2 y x
 
 >instance (Num a) => FiniteDimensional (Vector2 a) where
->   finite (Matrix (Covector (LinearMap f))) = Vector2 (f (covector xcoord2))
->                                                      (f (covector ycoord2))
+>   finite (Matrix (Covector f)) = Vector2 (f (covector xcoord2))
+>                                          (f (covector ycoord2))
 
 >x2_op :: (s ~ Scalar s) => Dual (Vector2 s)
 >x2_op = covector xcoord2
@@ -366,12 +366,12 @@ deriving instance (Show a) => Show (Codiagonal Vector2 a)
 
 >partial_derivate2x :: (Fractional a,Infinitesimal a, Closed a) 
 >                   => Dual (Vector2 a) -> Dual (Vector2 a)
->partial_derivate2x (Covector (LinearMap f)) = covector $ partial_derivate ch f
+>partial_derivate2x (Covector f) = covector $ partial_derivate ch f
 >  where ch eps (Vector2 x y) = Vector2 (x+eps) y
 
 >partial_derivate2y :: (Fractional a,Infinitesimal a, Closed a)
 >                   => Dual (Vector2 a) -> Dual (Vector2 a)
->partial_derivate2y (Covector (LinearMap f)) = covector $ partial_derivate ch f
+>partial_derivate2y (Covector f) = covector $ partial_derivate ch f
 >  where ch eps (Vector2 x y) = Vector2 x (y+eps)
 
 >vector_vector2 :: [a] -> Vector2 a
