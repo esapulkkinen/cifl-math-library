@@ -79,16 +79,16 @@
 >-- ** library for general actions of a monoid
 >    module Math.Graph.Action
 >  ) where
->import qualified Math.Graph.Action
->import Math.Graph.Reversible
->import Math.Graph.TransformationMonoid
->import Math.Graph.Labeled
->import Math.Graph.Algorithms
->import Math.Graph.GraphMap
->import Math.Graph.Show
->import Math.Graph.InGraphMonad
->import Math.Graph.GraphMonoid
->import Math.Graph.InGraphA
->import Math.Graph.Interface
->import Math.Graph.XML
->import Math.Graph.Dot
+>import safe qualified Math.Graph.Action
+>import safe Math.Graph.Reversible
+>import safe Math.Graph.TransformationMonoid
+>import safe Math.Graph.Labeled
+>import safe Math.Graph.Algorithms
+>import safe Math.Graph.GraphMap
+>import safe Math.Graph.Show
+>import safe Math.Graph.InGraphMonad
+>import safe Math.Graph.GraphMonoid
+>import safe Math.Graph.InGraphA
+>import safe Math.Graph.Interface
+>import safe Math.Graph.XML
+>import safe Math.Graph.Dot

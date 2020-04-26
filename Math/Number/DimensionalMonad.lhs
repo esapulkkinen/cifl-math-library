@@ -1,10 +1,10 @@
->{-# LANGUAGE TypeFamilies #-}
+>{-# LANGUAGE Safe, TypeFamilies #-}
 >module Math.Number.DimensionalMonad where
->import Text.PrettyPrint (Doc)
->import qualified Text.PrettyPrint as Pretty
->import Math.Tools.PrettyP
->import Math.Matrix.Interface
->import Math.Number.DimensionalAnalysis
+>import safe Text.PrettyPrint (Doc)
+>import safe qualified Text.PrettyPrint as Pretty
+>import safe Math.Tools.PrettyP
+>import safe Math.Matrix.Interface
+>import safe Math.Number.DimensionalAnalysis
 
 >-- | A monad that checks dimensions
 >data QuantityM a = QuantityM { runQuantifyM :: Dimension -> a }

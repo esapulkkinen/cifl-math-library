@@ -3,9 +3,9 @@
 >import Math.Tools.Orthogonal
 >import Math.Tools.Functor
 >import Math.Tools.List
->import Data.Monoid
->import Data.Int
->import Data.Word
+>import safe Data.Monoid
+>import safe Data.Int
+>import safe Data.Word
 
 >-- | The universe class describes a listing of elements of type a, not
 >-- including the 'undefined'.

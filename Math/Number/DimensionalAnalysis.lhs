@@ -39,17 +39,17 @@
 >--
 >-- @3 `logarithmic` dBV == 1000.0 %* volt@
 >module Math.Number.DimensionalAnalysis where
->import qualified Text.PrettyPrint as Pretty (Doc,vcat,nest, (<+>), empty) 
->import Data.Complex
->import Data.Typeable
->import GHC.Generics
->import Data.Data
->import Data.Ratio
->import Data.Char
->import qualified Data.Binary as Binary
->import Control.Monad (guard, mplus, foldM)
->import Control.Applicative (Alternative(many,some,(<|>)))
->import Control.Exception
+>import safe qualified Text.PrettyPrint as Pretty (Doc,vcat,nest, (<+>), empty) 
+>import safe Data.Complex
+>import safe Data.Typeable
+>import safe GHC.Generics
+>import safe Data.Data
+>import safe Data.Ratio
+>import safe Data.Char
+>import safe qualified Data.Binary as Binary
+>import safe Control.Monad (guard, mplus, foldM)
+>import safe Control.Applicative (Alternative(many,some,(<|>)))
+>import safe Control.Exception
 >import Math.Tools.PrettyP hiding (parens)
 >import Math.Tools.Functor (interleave)
 >import Math.Tools.List ()
@@ -60,13 +60,19 @@
 >import Math.Number.Interface ( ShowPrecision(..))
 >import Math.Number.Group
 >import Math.Number.Interface
->import qualified Text.ParserCombinators.ReadPrec as ReadPrec
->import qualified Text.Read as TRead
+>import safe qualified Text.ParserCombinators.ReadPrec as ReadPrec
+>import safe qualified Text.Read as TRead
+>import safe qualified Math.Matrix.Covector as Covector
 
 >data Quantity r = As {
 >   value_amount :: r,
 >   value_dimension :: !Dimension }
 >  deriving (Typeable, Data, Generic)
+
+>-- | checked projection
+>dimensionless_amount :: (Show r) => Quantity r -> r
+>dimensionless_amount (x `As` d) | isDimensionless d = x
+>                             | otherwise = invalidDimensions "dimensionless_amount" d dimensionless x x
 
 >instance (Show r, DifferentiallyClosed r, VectorSpace r) => DifferentiallyClosed (Quantity r) where
 >  derivate f (x `As` d) = derivate (\x' -> value_amount $ f (x' `As` d)) x
@@ -76,9 +82,6 @@
 >         integral (a,b) (\x -> value_amount (f (x `As` da)))
 >         `As` ((dimension $! f (a `As` da)) %+ da)
 >     | otherwise = error $ "integral: invalid dimensions: " ++ show da ++ " != " ++ show db
-
->default_tolerance :: (Floating a) => a
->default_tolerance = 0.00000001
 
 >instance (Show r, Ord r) => Eq (Quantity r) where
 >   (x `As` d) == (y `As` d') | d == d' = x == y
@@ -144,8 +147,7 @@
 >   epsilon_closure = limit $ fmap (`As` dimensionless) epsilon_stream
 
 >instance (Show r, InnerProductSpace r, Scalar (Quantity r) ~ Scalar r) => InnerProductSpace (Quantity r) where
->   (x `As` d) %. (y `As` d') | d == d' = x %. y
->                      | otherwise = invalidDimensions "%." d d' x y
+>   (x `As` d) %. (y `As` d') = x %. y
 
 >mapQuantity :: (a -> b)
 >            -> (Dimension -> Dimension)
@@ -202,23 +204,20 @@
 >data Level r = Level {
 >   reference_value :: Quantity r,
 >   base_of_logarithm :: r }
->  deriving (Show)
 
 >deriving instance Read (Level Double)
 
 >scale :: (Show a, Floating a, Real a) => Quantity a -> Level a -> Quantity a
->scale x (Level q b) = log (x / q) / (log b `As` dimensionless)
+>scale x (Level q b) = log (x / q) / log (pure b)
 
->logarithmic :: (Floating a) => a -> Level a -> Quantity a
 >logarithmic x (Level q b) = (b ** x) %* q
 
->hyperbolic :: (RealFloat a) => Complex a -> Level (Complex a) -> Quantity (Complex a)
 >hyperbolic x (Level q b) = (b ** ((0 :+ 1) * x)) %* q
 
 >-- | This is a way to convert radians to complex numbers
 >-- e.g. @(pi/2) `logarithmic` radian_scale == 0 :+ 1@.
 >radian_scale :: (RealFloat a) => Level (Complex a)
->radian_scale = Level ((1 :+ 0) `As` dimensionless) (exp (0 :+ 1))
+>radian_scale = Level (pure (1 :+ 0)) (exp (0 :+ 1))
 
 >bit_scale :: (Num a) => Level a
 >bit_scale = Level (1 `As` dimensionless) 2
@@ -234,7 +233,7 @@
 >-- | <https://en.wikipedia.org/wiki/Decibel>
 >-- logarithmic voltage in base 10 relative to \(\sqrt{0.6}V\).
 >dBu :: (Floating a) => Level a
->dBu = Level (sqrt(0.6) %* volt) 10
+>dBu = Level ((sqrt(0.6)) %* volt) 10
 
 >-- | <https://en.wikipedia.org/wiki/Decibel>
 >-- logarithmic pressure in base 10 compared to 20 micro pascals.
@@ -270,7 +269,7 @@
 
 >-- | <https://en.wikipedia.org/wiki/Moment_magnitude_scale>
 >moment_magnitude_scale :: (Show a, Floating a) => Level a
->moment_magnitude_scale = Level (10 ** (-7) %* (newton * meter)) 10
+>moment_magnitude_scale = Level ((10 ** (-7)) %* (newton * meter)) 10
 
 >-- | <https://en.wikipedia.org/wiki/Entropy>
 >entropy_scale :: (Floating a) => Level a
@@ -291,7 +290,7 @@
 >-- | compute how many nines a probability has. @nines 0.99999 == 5.0@.
 >-- <https://en.wikipedia.org/wiki/9#Probability>
 >nines :: Double -> Double
->nines prob = value_amount $ negate $ (1.0 `As` dimensionless - prob `As` dimensionless) `scale` Level (1.0 `As` dimensionless) 10
+>nines prob = value_amount $ negate $ (1.0 `As` dimensionless - prob `As` dimensionless) `scale` bel_scale
 
 >-- | compute probability when given number of nines.
 >-- <https://en.wikipedia.org/wiki/9#Probability>
@@ -694,7 +693,6 @@
 >  signum (x `As` r) = (signum x) `As` dimensionless
 >  fromInteger a = (fromInteger a) `As` dimensionless
 
-
 >instance (Num r) => VectorSpace (Quantity r) where
 >   type Scalar (Quantity r) = r
 >   vzero = 0 `As` dimensionless
@@ -706,6 +704,8 @@
 
 >instance (Num r, NormedSpace r) => NormedSpace (Quantity r) where
 >   norm (x `As` _) = x
+
+
 
 >show_dimension :: Dimension -> String
 >show_dimension (Dimension a b c d e f g) = if str /= "" then take (length str - 1) str else ""

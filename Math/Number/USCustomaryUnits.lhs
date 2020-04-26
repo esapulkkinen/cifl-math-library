@@ -1,6 +1,7 @@
+>{-# LANGUAGE Safe #-}
 >module Math.Number.USCustomaryUnits where
->import Math.Number.DimensionalAnalysis
->import Math.Matrix.Interface
+>import safe Math.Number.DimensionalAnalysis
+>import safe Math.Matrix.Interface
 >
 >-- | <https://en.wikipedia.org/wiki/United_States_customary_units>
 >point = (127/360) %* milli meter

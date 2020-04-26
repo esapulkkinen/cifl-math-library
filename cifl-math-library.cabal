@@ -143,6 +143,7 @@ executable mathgui
            other-modules: Math.Tools.PrettyP
            other-modules: Math.Tools.Universe
            build-depends: network
+           build-depends: byte-order >= 0.1.2.0
   
 Test-Suite doctests
         import: options
@@ -184,4 +185,4 @@ Test-Suite unit-tests
         other-modules: Math.Matrix.Vector4, Math.Matrix.Vector4
         other-modules: Math.Tools.LineInfo
         other-modules: Math.Tools.ParseMonad, Math.Tools.ParserInterface
-        build-depends: HUnit, QuickCheck 
+        build-depends: HUnit, QuickCheck

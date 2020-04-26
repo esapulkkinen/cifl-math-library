@@ -1,7 +1,12 @@
 >{-# LANGUAGE LambdaCase, TypeOperators, FlexibleInstances, TemplateHaskell, ScopedTypeVariables, GADTs, FlexibleContexts, Trustworthy #-}
 >-- | This module provides QuasiQuoter syntactic sugar for matrices.
 >-- based on GHC's "Language.Haskell.TH" quasi quoters.
->-- 
+>--
+>-- To use these you should use:
+>-- @{-# LANGUAGE QuasiQuotes #-}@
+>--
+>-- Or corresponding compiler option "-XQuasiQuotes".
+>--
 >-- The syntax is:
 >-- 
 >-- @[mat3x4|1 2 3 4;3 4 5 6;5 6 7 8|] :: (Vector3 :*: Vector4) Integer@
@@ -26,6 +31,7 @@
 >-- 
 >module Math.Matrix.QuasiQuoter where
 >import Control.Monad
+>import Data.Text
 >import Math.Tools.Lexer
 >import Math.Tools.ParseMonad
 >import Math.Tools.LineInfo
@@ -50,7 +56,7 @@
 >intmat = Quote.QuasiQuoter quoteExpr notQuote notQuote notQuote
 
 >quoteExpr :: String -> Syntax.Q Syntax.Exp
->quoteExpr s = parseNumberMatrix s >>= Syntax.lift
+>quoteExpr s = parseNumberMatrix (pack s) >>= Syntax.lift
 
 >-- | Quasiquoters for various matrix sizes
 >mat1x1,mat2x1,mat3x1,mat4x1 :: Quote.QuasiQuoter
@@ -64,6 +70,7 @@
 >mat2x2 = quoter parse2x2mat
 >mat3x2 = quoter parse3x2mat
 >mat4x2 = quoter parse4x2mat
+
 >-- | Quasiquoters for various matrix sizes
 >mat1x3,mat2x3,mat3x3,mat4x3 :: Quote.QuasiQuoter
 >mat1x3 = quoter parse1x3mat
@@ -101,7 +108,7 @@
 >            Scalar (Scalar (f (g a))) ~ Integer)
 >           => (f (g a) -> ()) -> String -> Syntax.Q Syntax.Exp
 >parseMat (t :: f (g a) -> ()) s = do
->   s' <- parseNumberMatrix s
+>   s' <- parseNumberMatrix (pack s)
 >   let res :: f (g a)
 >       res = s' <!> (listVector,listVector)
 >   TH.appE [| Matrix |] (Syntax.lift res)
@@ -112,11 +119,10 @@
 >            Scalar (Scalar (f (g a))) ~ Double)
 >           => (f (g a) -> ()) -> String -> Syntax.Q Syntax.Exp
 >parseDbl (t :: f (g a) -> ()) s = do
->   s' <- parseDoubleMatrix s
+>   s' <- parseDoubleMatrix (pack s)
 >   let res :: f (g a)
 >       res = s' <!> (listVector,listVector)
 >   TH.appE [| Matrix |] (Syntax.lift res)
-
 
 >parse1x4mat = parseMat (const () :: Vector1 (Vector4 Integer) -> ())
 >parse2x4mat = parseMat (const () :: Vector2 (Vector4 Integer) -> ())
@@ -154,20 +160,20 @@
 
 
 >   
->parseStringMatrix :: (Monad m) => String -> m (([] :*: []) String) 
+>parseStringMatrix :: (Monad m) => Text -> m (([] :*: []) Text) 
 >parseStringMatrix = parseToMatrix stringLitP
 >
 >stringLitP (StringLit tok) = return tok
 >stringLitP _ = fail "Matrix element is not a string"
 
->parseDoubleMatrix :: (Monad m) => String -> m (([] :*: []) Double) 
+>parseDoubleMatrix :: (Monad m) => Text -> m (([] :*: []) Double) 
 >parseDoubleMatrix = parseToMatrix floatLitP
 
 >floatLitP (FloatNumber v) = return v
 >floatLitP (Number v) = return (fromInteger v)
 >floatLitP _ = fail "Matrix element is not a floating point number"
 
->parseNumberMatrix :: (Monad m) => String -> m (([] :*: []) Integer)
+>parseNumberMatrix :: (Monad m) => Text -> m (([] :*: []) Integer)
 >parseNumberMatrix = parseToMatrix numberP 
 
 >instance Syntax.Lift ((Vector3 :*: Vector3) Integer) where
@@ -195,7 +201,7 @@
 >numberP (Number tok) = return tok
 >numberP _ = fail "Matrix element is not a number"
 
->parseToMatrix :: (Monad m) => (Token -> ParseM a) -> String -> m (([] :*: []) a)
+>parseToMatrix :: (Monad m) => (Token -> ParseM a) -> Text -> m (([] :*: []) a)
 >parseToMatrix f s = parseResultToMonad pr
 >   where pr = runParseM (parseMatrix f) s emptyLineInfo
 

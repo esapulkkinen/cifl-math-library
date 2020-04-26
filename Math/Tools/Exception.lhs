@@ -6,8 +6,7 @@
 >class (MonadIO m) => ExceptionalMonad m where
 >   throwM :: (Exception e) => e -> m a
 
->
-
 >instance ExceptionalMonad IO where
 >   throwM = throwIO
+
 

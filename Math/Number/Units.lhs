@@ -16,6 +16,7 @@
 >-- | This module contains auxiliary definitions related to dimensional analysis.
 >--   This is based on the SI system of units.
 >--   This module supports compile-time checking for dimensional units.
+>--   This is accomplished by a set of newtype wrappers of Double.
 >--
 >--   It is not necessarily a good idea to make the checking in compile-time.
 >--   In particular, this can prevent operations to be available, e.g. Num 
@@ -43,30 +44,28 @@
 >--   Also it's not possible to cast input data directly without run-time check
 >--   to a compile-time checked quantity.
 >--
->--   Notice: Read instances exists only for run-time checked quantities.
->--
 >--   See "Barton&Nackman: Scientific and Engineering C++" for C++ approach
 >--   to dimensional analysis.
 >--  
 >--   <https://en.wikipedia.org/wiki/International_System_of_Units>
 >module Math.Number.Units where
->import Control.Monad (guard)
->import Control.Applicative
->import Data.Typeable
->import Data.Data
->import GHC.Generics hiding (R)
->import Data.Binary
->import Data.Ratio
->import Data.Complex
+>import safe Control.Monad (guard)
+>import safe Control.Applicative
+>import safe Data.Typeable
+>import safe Data.Data
+>import safe GHC.Generics hiding (R)
+>import safe Data.Binary
+>import safe Data.Ratio
+>import safe Data.Complex
 >import Math.Matrix.Interface
 >import Math.Number.DimensionalAnalysis
 >import Math.Number.TypeRational
->import Data.Ratio
+>import safe Data.Ratio
 >import Math.Number.Real (R)
->import qualified Text.ParserCombinators.ReadPrec
->import GHC.Read (readPrec)
->import Text.ParserCombinators.ReadPrec (lift)
->import Text.ParserCombinators.ReadP (skipSpaces, string)
+>import safe qualified Text.ParserCombinators.ReadPrec
+>import safe GHC.Read (readPrec)
+>import safe Text.ParserCombinators.ReadPrec (lift)
+>import safe Text.ParserCombinators.ReadP (skipSpaces, string)
 
 >-- | Notice that 'Math.Number.DimensionalAnalysis.fromAmount' from Unit class
 >-- has type @(Unit u) => UnitName u@.

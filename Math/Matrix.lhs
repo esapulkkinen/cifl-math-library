@@ -34,21 +34,18 @@
 >   module Math.Matrix.Unicode,
 >-- ** commutator and characteristic polynomials
 >   module Math.Matrix.Instances,
->-- ** concurrent evaluation of matrices
->   module Math.Matrix.Concurrent
 >  ) where
->import Math.Matrix.Interface 
->import Math.Matrix.Matrix
->import Math.Matrix.Covector 
->import Math.Matrix.Vector1
->import Math.Matrix.Vector2
->import Math.Matrix.Vector3
->import Math.Matrix.Vector4
->import Math.Matrix.Simple
->import Math.Matrix.Instances
->import Math.Matrix.Transpose
->import Math.Matrix.Linear
->import Math.Matrix.QuasiQuoter
->import Math.Matrix.Unicode
->import Math.Matrix.SIMD
->import Math.Matrix.Concurrent
+>import safe Math.Matrix.Interface 
+>import safe Math.Matrix.Matrix
+>import safe Math.Matrix.Covector 
+>import safe Math.Matrix.Vector1
+>import safe Math.Matrix.Vector2
+>import safe Math.Matrix.Vector3
+>import safe Math.Matrix.Vector4
+>import safe Math.Matrix.Simple
+>import safe Math.Matrix.Instances
+>import safe Math.Matrix.Transpose
+>import safe Math.Matrix.Linear
+>import safe Math.Matrix.QuasiQuoter
+>import safe Math.Matrix.Unicode
+>import safe Math.Matrix.SIMD

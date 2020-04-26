@@ -34,40 +34,40 @@
 >   module Math.Tools.Visitor
 > ) where
 
->import Math.Tools.Adjunction
->import Math.Tools.Category
->import Math.Tools.CoFunctor
->import Math.Tools.CoMonad
->import Math.Tools.Complex
->import qualified Math.Tools.Expression
->import Math.Tools.Functor
->import Math.Tools.Group
->import qualified Math.Tools.Identity
->import qualified Math.Tools.Id
->import Math.Tools.I
->import Math.Tools.Integer 
->import qualified Math.Tools.Integer 
->import Math.Tools.Isomorphism 
->import Math.Tools.LineInfo
->import Math.Tools.List 
->import Math.Tools.Map 
->import qualified Math.Tools.Map
->import Math.Tools.Maybe
->import Math.Tools.Median
->import qualified Math.Tools.Monad
->import Math.Tools.Monoid
->import qualified Math.Tools.NaturalAPI
->import qualified Math.Tools.NaturalNumber
->import Math.Tools.NaturalTransformation
->import qualified Math.Tools.Nondeterministic
->import qualified Math.Tools.OppositeArrow
->import Math.Tools.Orthogonal 
->import qualified Math.Tools.ParseMonad
->import qualified Math.Tools.ParserInterface
->import qualified Math.Tools.Parser
->import qualified Math.Tools.ParsingCombinators
->import Math.Tools.PrettyP
->import Math.Tools.Set
->import qualified Math.Tools.Tree
->import Math.Tools.Universe
->import Math.Tools.Visitor
+>import safe Math.Tools.Adjunction
+>import safe Math.Tools.Category
+>import safe Math.Tools.CoFunctor
+>import safe Math.Tools.CoMonad
+>import safe Math.Tools.Complex
+>import safe qualified Math.Tools.Expression
+>import safe Math.Tools.Functor
+>import safe Math.Tools.Group
+>import safe qualified Math.Tools.Identity
+>import safe qualified Math.Tools.Id
+>import safe Math.Tools.I
+>import safe Math.Tools.Integer 
+>import safe qualified Math.Tools.Integer 
+>import safe Math.Tools.Isomorphism 
+>import safe Math.Tools.LineInfo
+>import safe Math.Tools.List 
+>import safe Math.Tools.Map 
+>import safe qualified Math.Tools.Map
+>import safe Math.Tools.Maybe
+>import safe Math.Tools.Median
+>import safe qualified Math.Tools.Monad
+>import safe Math.Tools.Monoid
+>import safe qualified Math.Tools.NaturalAPI
+>import safe qualified Math.Tools.NaturalNumber
+>import safe Math.Tools.NaturalTransformation
+>import safe qualified Math.Tools.Nondeterministic
+>import safe qualified Math.Tools.OppositeArrow
+>import safe Math.Tools.Orthogonal 
+>import safe qualified Math.Tools.ParseMonad
+>import safe qualified Math.Tools.ParserInterface
+>import safe qualified Math.Tools.Parser
+>import safe qualified Math.Tools.ParsingCombinators
+>import safe Math.Tools.PrettyP
+>import safe Math.Tools.Set
+>import safe qualified Math.Tools.Tree
+>import safe Math.Tools.Universe
+>import safe Math.Tools.Visitor

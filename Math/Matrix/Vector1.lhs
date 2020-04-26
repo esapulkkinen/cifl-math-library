@@ -1,17 +1,18 @@
 >{-# LANGUAGE Safe,MultiParamTypeClasses, TypeSynonymInstances, FlexibleInstances, StandaloneDeriving, FlexibleContexts, TypeOperators, TypeFamilies, DeriveGeneric, DeriveDataTypeable #-}
 >module Math.Matrix.Vector1 where
->import Control.Applicative
->import GHC.Generics hiding ((:*:), (:+:))
->import Data.Data
->import Data.Typeable
->import Data.Monoid hiding (Dual)
->import Data.Complex
->import Data.Sequence (Seq)
->import qualified Data.Binary as Bin
->import qualified Data.Sequence as Seq
+>import safe Control.Applicative
+>import safe GHC.Generics hiding ((:*:), (:+:))
+>import safe Data.Data
+>import safe Data.Typeable
+>import safe Data.Monoid hiding (Dual)
+>import safe Data.Complex
+>import safe Data.Sequence (Seq)
+>import safe qualified Data.Binary as Bin
+>import safe qualified Data.Sequence as Seq
 >import Math.Tools.I
 >import Math.Tools.CoMonad
 >import Math.Tools.Median
+>import Math.Tools.Universe
 >import Math.Matrix.Covector
 >import Math.Matrix.Matrix
 >import Math.Matrix.Interface
@@ -19,7 +20,7 @@
 >import Math.Number.Stream
 >import Math.Number.Real
 
->data Vector1 a = Vector1 { vector_element :: !a }
+>data Vector1 a = Vector1 { vector_element :: a }
 >  deriving (Eq, Ord, Typeable, Data, Generic)
 
 >cov1 :: (a ~ Scalar a) => Vector1 (Dual (Vector1 a))
@@ -31,6 +32,9 @@
 >instance (Bin.Binary s) => Bin.Binary (Vector1 s) where
 >   put (Vector1 x) = Bin.put x
 >   get = do { x <- Bin.get ; return (Vector1 x) }
+
+>instance (Universe a) => Universe (Vector1 a) where
+>   all_elements = Vector1 <$> all_elements
 
 >instance (ConjugateSymmetric a) => ConjugateSymmetric (Vector1 a) where
 >   conj = fmap conj

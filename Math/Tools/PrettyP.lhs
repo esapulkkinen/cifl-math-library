@@ -15,6 +15,7 @@
 > import Data.Word
 > import Data.Ratio
 > import Data.Complex
+> import qualified Data.Text as Text
 > import qualified Data.Set as Set
 > import qualified Data.Map as Map
 
@@ -116,6 +117,9 @@ instance PpShow a => PpShow [a] where
 
 > instance PpShow String where
 >	  pp = Pretty.ptext
+>
+> instance PpShow Text.Text where
+>         pp = Pretty.ptext . Text.unpack
 
 > instance PpShow Char where
 >	  pp = Pretty.char

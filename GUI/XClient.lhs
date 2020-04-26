@@ -1,4 +1,4 @@
->{-# LANGUAGE RecursiveDo, ScopedTypeVariables, OverloadedStrings #-}
+>{-# LANGUAGE RecursiveDo, ScopedTypeVariables, OverloadedStrings, ImplicitParams #-}
 >module GUI.XClient where
 >import GUI.XProto
 >import Control.Concurrent.Chan
@@ -40,8 +40,9 @@
 >       closing sock = do
 >             shutdown sock ShutdownBoth
 >             close sock
->debug = True
->xproto_connector :: String 
+>debug :: (?debug :: Bool) => Bool
+>debug = ?debug
+>xproto_connector :: (?debug :: Bool) => String 
 > -> Chan XRequest
 > -> Chan XRequestResponse
 > -> IO ()
@@ -50,7 +51,7 @@
 >                 status <- init sock (ConnectionSetup 11 0 [] [])
 >                 Prelude.putStrLn (show status)
 >                 loop sock
-> where init :: Socket -> XSetupRequest -> IO XSetupResponseSuccess
+> where init :: (?debug :: Bool) => Socket -> XSetupRequest -> IO XSetupResponseSuccess
 >       init sock req = do
 >         when debug $ Prelude.putStrLn (show req)
 >         let initbytes = encode req

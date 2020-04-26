@@ -1,24 +1,24 @@
->{-# LANGUAGE GADTs, UndecidableInstances, MultiParamTypeClasses, TypeOperators, TypeFamilies, LambdaCase, ScopedTypeVariables, FlexibleInstances, FlexibleContexts, Arrows, Rank2Types, StandaloneDeriving, DeriveGeneric, DeriveDataTypeable #-}
+>{-# LANGUAGE Safe, GADTs, UndecidableInstances, MultiParamTypeClasses, TypeOperators, TypeFamilies, LambdaCase, ScopedTypeVariables, FlexibleInstances, FlexibleContexts, Arrows, Rank2Types, StandaloneDeriving, DeriveGeneric, DeriveDataTypeable #-}
 >module Math.Number.NumericExpression where
->import Prelude hiding (id,(.))
->import Text.PrettyPrint ((<+>))
->import GHC.Generics hiding ((:*:), (:+:))
->import Data.Data
->import Data.Typeable
->import Control.Category
->import Control.Arrow hiding ((<+>))
->import Math.Tools.PrettyP
->import Data.Map (Map)
->import qualified Data.Map as Map
->import Control.Applicative
->import Math.Tools.Functor
->import Math.Tools.Show
->import Math.Tools.Visitor hiding (var)
->import Math.Tools.Functor
->import Math.Tools.Isomorphism
->import Math.Tools.Arrow
->import Math.Matrix.Interface
->import Math.Matrix.Matrix
+>import safe Prelude hiding (id,(.))
+>import safe Text.PrettyPrint ((<+>))
+>import safe GHC.Generics hiding ((:*:), (:+:))
+>import safe Data.Data
+>import safe Data.Typeable
+>import safe Control.Category
+>import safe Control.Arrow hiding ((<+>))
+>import safe Math.Tools.PrettyP
+>import safe Data.Map (Map)
+>import safe qualified Data.Map as Map
+>import safe Control.Applicative
+>import safe Math.Tools.Functor
+>import safe Math.Tools.Show
+>import safe Math.Tools.Visitor hiding (var)
+>import safe Math.Tools.Functor
+>import safe Math.Tools.Isomorphism
+>import safe Math.Tools.Arrow
+>import safe Math.Matrix.Interface
+>import safe Math.Matrix.Matrix
 
 >data Var a = Var { var_name :: !String, var_debruijn_index :: !Integer }
 >           | Val !a

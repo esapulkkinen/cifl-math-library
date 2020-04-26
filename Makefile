@@ -9,7 +9,7 @@ CABALOPTS ?=
 CABAL=cabal
 STACK=stack
 
-unit : build test
+unit : test
 
 .PHONY: unit all build test all_with_install install_dependencies configure force-configure document hscolor dependencegraph build-llvm test-llvm interpreter latex-document publish_document install clean
 
@@ -34,13 +34,16 @@ force-configure :
 
 #--enable-shared --enable-executable-dynamic
 
+watch :
+	$(STACK) build --file-watch --fast --ghc-options "-j3 +RTS -A128m -n2m -qg -RTS"
+
 build : build-stack
 
 build-cabal : 
 	$(CABAL) $(CABALOPTS) $(CABALFLAGS) new-build -j4 
 
 build-stack :
-	$(STACK) build -j 3
+	$(STACK) build --fast cifl-math-library:lib
 
 build-stack-llvm :
 	$(STACK) build --ghc-options="-fllvm"
@@ -55,13 +58,16 @@ test-llvm:
 	$(CABAL) $(CABALOPTS) $(CABALFLAGS) new-test -j4 --ghc-options="-fllvm"
 
 interpreter :
+	$(STACK) repl --no-build --ghc-options -fobject-code
+
+cabal-interpreter :
 	cabal $(CABALOPTS) $(CABALFLAGS) new-configure -flibrary-only
-	cabal $(CABALOPTS) $(CABALFLAGS) new-repl --ghc-option="-dynamic" --ghc-option="-fobject-code"
+	cabal $(CABALOPTS) $(CABALFLAGS) new-repl --ghc-option="-dynamic" --ghc-option="-fobject-code" 
 
 test : test-stack
 
 test-stack :
-	$(STACK) test
+	$(STACK) test --fast cifl-math-library:unit-tests
 
 
 test-cabal : 
@@ -109,7 +115,7 @@ install :
 	cabal $(CABALOPTS) $(CABALFLAGS) new-install -j2 --enable-documentation 
 
 clean :
-	stack clean
+	stack clean --full
 	rm -f dependencies-*.ps dependencies-*.pdf
 
 old-clean :

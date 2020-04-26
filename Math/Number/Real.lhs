@@ -30,30 +30,30 @@
 > log_newton, exp_by_series2, exp_by_series, sin_by_series, cos_by_series,
 > approximate_sums_modulus, withInverseModulus
 > ) where
->import Prelude hiding (zipWith,take,zip,zip3)
->import Control.Monad.Fix (fix)
->import Control.Applicative
->import Data.Complex
->import Data.Ratio
->import Data.Monoid
->import Math.Tools.Functor
->import Math.Tools.Visitor
->import Math.Tools.Median
->import Math.Tools.Orthogonal
->import Math.Tools.Adjunction
->import Math.Tools.PrettyP
->import Math.Tools.Arrow (BiArrow (..))
->import Math.Tools.Isomorphism ((:==:)(..))
->import Math.Matrix.Interface
->import Math.Matrix.Covector
->import Math.Matrix.Matrix
->import Math.Number.Interface
->import Math.Number.Stream hiding (logarithm)
->import qualified Math.Number.Stream as Stream
->import Math.Tools.Prop
->import GHC.TypeLits
+>import safe Prelude hiding (zipWith,take,zip,zip3)
+>import safe Control.Monad.Fix (fix)
+>import safe Control.Applicative
+>import safe Data.Complex
+>import safe Data.Ratio
+>import safe Data.Monoid
+>import safe Math.Tools.Functor
+>import safe Math.Tools.Visitor
+>import safe Math.Tools.Median
+>import safe Math.Tools.Orthogonal
+>import safe Math.Tools.Adjunction
+>import safe Math.Tools.PrettyP
+>import safe Math.Tools.Arrow (BiArrow (..))
+>import safe Math.Tools.Isomorphism ((:==:)(..))
+>import safe Math.Matrix.Interface
+>import safe Math.Matrix.Covector
+>import safe Math.Matrix.Matrix
+>import safe Math.Number.Interface
+>import safe Math.Number.Stream hiding (logarithm)
+>import safe qualified Math.Number.Stream as Stream
+>import safe Math.Tools.Prop
+>import safe GHC.TypeLits
 
->import Math.Matrix.Instances (characteristicPolynomial)
+>import safe Math.Matrix.Instances (characteristicPolynomial)
 
 >-- | Problem with this representation: real number ranges cannot be represented.
 >-- given two rational numbers \(r_1 < r_2\), it should be there are infinitely
@@ -257,12 +257,16 @@ instance MedianAlgebra R where
 >  curl f = LinearMap $ \x -> real_derivate ((-!<) f) x
 
 >-- | The following instance declaration represents the completeness of the
->-- real number system. This maps to isomorphism \(Closure R \cong R\).
+>-- real number system. 
 >instance Limiting R where
 >  data Closure R = RClosure { runRClosure :: R }
 >  limit str = RClosure $ limit_real str
 >  approximations = fmap (Limit . return) . approximate . runRClosure
 
+>instance Infinitary (Closure R) where
+>   infinite = RClosure infinite
+
+>-- | An isomorphism \(Cl(R) \cong R\).
 >completenessOfReals :: Closure R :==: R
 >completenessOfReals = runRClosure <-> RClosure
 
@@ -353,6 +357,9 @@ infimum = negate_limit . supremum_gen . map negate_limit
 
 >infimum_gen :: (Fractional a, Ord a, Limiting a) => [Closure a] -> Closure a
 >infimum_gen = negate_limit . supremum_gen . map negate_limit
+
+>instance Infinitary R where
+>   infinite = infinity
 
 >infinity :: R
 >infinity = Limit $ Stream.power 10

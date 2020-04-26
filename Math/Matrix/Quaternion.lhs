@@ -1,11 +1,11 @@
->{-# LANGUAGE TypeFamilies, TypeOperators, PatternSynonyms #-}
+>{-# LANGUAGE Safe, TypeFamilies, TypeOperators, PatternSynonyms #-}
 >module Math.Matrix.Quaternion where
->import Data.Complex
->import Math.Matrix.Interface
->import Math.Matrix.Vector2
->import Math.Matrix.Vector3
->import Math.Matrix.Vector4
->import Math.Matrix.SIMD
+>import safe Data.Complex
+>import safe Math.Matrix.Interface
+>import safe Math.Matrix.Vector2
+>import safe Math.Matrix.Vector3
+>import safe Math.Matrix.Vector4
+>import safe Math.Matrix.SIMD
 >
 >-- | Quaternion interpretation of four-component vectors.
 >newtype Quaternion a = Quaternion { quaternion_vector :: Vector4 a }

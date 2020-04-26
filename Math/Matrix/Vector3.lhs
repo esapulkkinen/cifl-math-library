@@ -4,39 +4,39 @@
 >{-# LANGUAGE StandaloneDeriving, DeriveGeneric, DeriveDataTypeable #-}
 >{-# LANGUAGE PatternSynonyms #-}
 >module Math.Matrix.Vector3 where
->import Text.PrettyPrint (sep,vcat,nest, Doc)
->import Control.Applicative
->import Control.Monad
->import GHC.Generics hiding ((:*:), (:+:), R)
->import Data.Data
->import Data.Typeable
->import Data.Complex
->import Data.Sequence (Seq)
->import Data.Binary
->import qualified Data.Sequence as Seq
->import qualified Data.Monoid as Mon
->import Math.Tools.Functor
->import Math.Number.Interface
->import Math.Matrix.Interface
->import Math.Matrix.Covector
->import Math.Tools.CoMonad
->import Math.Tools.Median
->import Math.Tools.NaturalTransformation
->import Math.Tools.Orthogonal hiding (outer3)
->import Math.Tools.Visitor
->import Math.Tools.PrettyP
->import Math.Matrix.Matrix
->import Math.Tools.Prop
->import Math.Number.Group
->import Math.Matrix.Vector1
->import Math.Matrix.Vector2
->import Math.Matrix.Indexable
->import Math.Matrix.Simple
->import Math.Matrix.FiniteVector
->import qualified Math.Number.Stream as Stream
->import Math.Number.Stream (Limiting(..), Infinitesimal(..), Stream(..), Closed(..))
->import Math.Number.Real
-
+>import safe Text.PrettyPrint (sep,vcat,nest, Doc)
+>import safe Control.Applicative
+>import safe Control.Monad
+>import safe GHC.Generics hiding ((:*:), (:+:), R)
+>import safe Data.Data
+>import safe Data.Typeable
+>import safe Data.Complex
+>import safe Data.Sequence (Seq)
+>import safe Data.Binary
+>import safe qualified Data.Sequence as Seq
+>import safe qualified Data.Monoid as Mon
+>import safe Math.Tools.Universe
+>import safe Math.Tools.Functor
+>import safe Math.Number.Interface
+>import safe Math.Matrix.Interface
+>import safe Math.Matrix.Covector
+>import safe Math.Tools.CoMonad
+>import safe Math.Tools.Median
+>import safe Math.Tools.NaturalTransformation
+>import safe Math.Tools.Orthogonal hiding (outer3)
+>import safe Math.Tools.Visitor
+>import safe Math.Tools.PrettyP
+>import safe Math.Matrix.Matrix
+>import safe Math.Tools.Prop
+>import safe Math.Number.Group
+>import safe Math.Matrix.Vector1
+>import safe Math.Matrix.Vector2
+>import safe Math.Matrix.Indexable
+>import safe Math.Matrix.Simple
+>import safe Math.Matrix.FiniteVector
+>import safe qualified Math.Number.Stream as Stream
+>import safe Math.Number.Stream (Limiting(..), Infinitesimal(..), Stream(..), Closed(..))
+>import safe Math.Number.Real
 
 >-- | Three element vector
 >data Vector3 s = Vector3 { 
@@ -56,6 +56,31 @@
 >                                        (partial_derivate2_3 ff x y z)
 >                                        (partial_derivate3_3 ff x y z)
 >  where ff a b c = f (Vector3 a b c)
+
+>instance DifferentialOperator Vector3 where
+>   partial = del_partial3
+
+>del_partial3 :: (DifferentiallyClosed a) => (Vector3 a -> a) -> Vector3 a -> Vector3 a
+>del_partial3 f (Vector3 x y z) = Vector3 (partial1_3 ff x y z)
+>                                         (partial2_3 ff x y z)
+>                                         (partial3_3 ff x y z)
+>  where ff a b c = f (Vector3 a b c)
+
+>partial_derivate_vector3 :: (Infinitesimal (Scalar a)
+> , VectorSpace a, Num a, Limiting a)
+>   => (Vector3 (Scalar a) -> a) -> Vector3 (Scalar a) -> Closure (Vector3 a)
+>partial_derivate_vector3 f (Vector3 x y z) = Vector3Closure $
+>      Vector3 (pd1 (callf f) x y z)
+>              (pd2 (callf f) x y z)
+>              (pd3 (callf f) x y z)
+>   where
+>      callf ff a b c = ff (Vector3 a b c)
+>      pd1 ff a b c = limit $ epsilon_stream >>= \ eps ->
+>            return $ (1/(2*eps)) %* (ff (a+eps) b c - ff (a-eps) b c)
+>      pd2 ff a b c = limit $ epsilon_stream >>= \ eps ->
+>            return $ (1/(2*eps)) %* (ff a (b+eps) c - ff a (b-eps) c)
+>      pd3 ff a b c = limit $ epsilon_stream >>= \ eps ->
+>            return $ (1/(2*eps)) %* (ff a b (c+eps) - ff a b (c-eps))
 
 >cov3 :: (a ~ Scalar a) => Vector3 (Dual (Vector3 a))
 >cov3 = Vector3 (covector xcoord3) (covector ycoord3) (covector zcoord3)
@@ -86,6 +111,9 @@
 >   
 >instance FiniteComonad Vector3 where
 >   inverseRotate (Vector3 x y z) = Vector3 z x y
+
+>instance (Universe a) => Universe (Vector3 a) where
+>   all_elements = Vector3 <$> all_elements <*> all_elements <*> all_elements
 
 >instance Comonad Vector3 where
 >   extract (Vector3 x _ _) = x
@@ -358,6 +386,12 @@ instance (PpShow (f a)) => PpShow ((Vector3 :*: f) a) where
 >                         (approximations b)
 >                         (approximations c)
 >     return $! Vector3 a' b' c'
+
+>instance (Show a, Limiting a) => Show (Closure (Vector3 a)) where
+>   showsPrec _ v = shows $ shead $ approximations v
+
+>instance (PpShow a, Limiting a) => PpShow (Closure (Vector3 a)) where
+>   pp v = pp $ shead $ approximations v
 
 
 approximations_vector3 :: Vector3 R -> Stream (Vector3 R)

@@ -26,7 +26,7 @@ Lawvere&Rosebrugh: Set for Mathematics
 >data ST alpha a b = ST (a -> b) (Action a alpha -> Action b alpha)
 
 >isoAct :: a :==: b -> (alpha -> a -> a) -> alpha -> b -> b
->isoAct i f j s = epimorphism i $ f j $ section i s
+>isoAct i f j s = isomorphism_epimorphism i $ f j $ isomorphism_section i s
 
 >unyoneda :: ST (a -> a) a b -> Action b (a -> a)
 >unyoneda (ST _ g) = g (Action id)
@@ -39,7 +39,7 @@ Lawvere&Rosebrugh: Set for Mathematics
 
 
 >isoToST :: a :==: b -> ST alpha a b
->isoToST i = ST (epimorphism i) $ \ (Action f) -> Action (isoAct i f)
+>isoToST i = ST (isomorphism_epimorphism i) $ \ (Action f) -> Action (isoAct i f)
 
 >instance ArrowTransformation (:==:) (ST alpha) where
 >  mapA = isoToST

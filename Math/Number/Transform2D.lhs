@@ -1,15 +1,15 @@
->{-# LANGUAGE TypeOperators, GADTs, FlexibleContexts #-}
+>{-# LANGUAGE Safe, TypeOperators, GADTs, FlexibleContexts #-}
 >module Math.Number.Transform2D where
->import Data.Sequence (Seq, (<|), (|>))
->import qualified Data.Sequence as Seq
->import qualified Data.Set as Set
->import qualified Control.Category as C
->import Control.Applicative
->import Control.Arrow
->import Math.Number.Stream
->import Math.Matrix.Interface
->import Math.Tools.Median
->import Math.Tools.Arrow as TArrow
+>import safe Data.Sequence (Seq, (<|), (|>))
+>import safe qualified Data.Sequence as Seq
+>import safe qualified Data.Set as Set
+>import safe qualified Control.Category as C
+>import safe Control.Applicative
+>import safe Control.Arrow
+>import safe Math.Number.Stream
+>import safe Math.Matrix.Interface
+>import safe Math.Tools.Median
+>import safe Math.Tools.Arrow as TArrow
 >
 >data Transform2D a b = Transform2D {
 >   transform_diagonal   :: a -> b,

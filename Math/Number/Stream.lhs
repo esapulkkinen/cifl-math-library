@@ -21,40 +21,40 @@
 >-- @alternating_bits = cycle [0,1]@
 >
 >module Math.Number.Stream where
->import Data.Monoid
->import Data.Complex
->import qualified Data.Foldable
->import qualified Control.Category as C
->import Control.Applicative
->import qualified Prelude as P
->import Prelude hiding (zip,unzip, zipWith,cycle,take,filter,drop,zipWith3,sin,cos,either,takeWhile,dropWhile,span,splitAt)
->import Math.Tools.Functor
->import qualified Math.Tools.Arrow as TArrow
->import Math.Tools.Visitor
->import Math.Matrix.Covector
->import Math.Tools.CoMonad hiding (copy)
->import Math.Tools.PrettyP
->import Math.Tools.FixedPoint (Rec(..))
->import Math.Tools.Adjunction hiding (swap)
->import Math.Tools.Isomorphism
->import Math.Tools.Integer
->import qualified Math.Tools.Queue as Q
->import qualified Data.Sequence as Seq
->import qualified Text.PrettyPrint as Pretty
->import Math.Tools.Queue (Queue)
->import Control.Arrow
->import Data.Ratio
->import GHC.Generics hiding ((:+:),(:*:))
->import Data.Typeable
->import Data.Data
+>import safe Data.Monoid
+>import safe Data.Complex
+>import safe qualified Data.Foldable
+>import safe qualified Control.Category as C
+>import safe Control.Applicative
+>import safe qualified Prelude as P
+>import safe Prelude hiding (zip,unzip, zipWith,cycle,take,filter,drop,zipWith3,sin,cos,either,takeWhile,dropWhile,span,splitAt)
+>import safe Math.Tools.Functor
+>import safe qualified Math.Tools.Arrow as TArrow
+>import safe Math.Tools.Visitor
+>import safe Math.Matrix.Covector
+>import safe Math.Tools.CoMonad hiding (copy)
+>import safe Math.Tools.PrettyP
+>import safe Math.Tools.FixedPoint (Rec(..))
+>import safe Math.Tools.Adjunction hiding (swap)
+>import safe Math.Tools.Isomorphism
+>import safe Math.Tools.Integer
+>import safe qualified Math.Tools.Queue as Q
+>import safe qualified Data.Sequence as Seq
+>import safe qualified Text.PrettyPrint as Pretty
+>import safe Math.Tools.Queue (Queue)
+>import safe Control.Arrow
+>import safe Data.Ratio
+>import safe GHC.Generics hiding ((:+:),(:*:))
+>import safe Data.Typeable
+>import safe Data.Data
 
 import qualified Model.Nondeterminism as Nondet
 
->import qualified Math.Tools.Nondeterministic as Nondeterministic
->import qualified Data.List as List
->import qualified Math.Matrix.Interface as Matrix
->import Math.Matrix.Interface hiding ((|>))
->import Math.Matrix.Matrix
+>import safe qualified Math.Tools.Nondeterministic as Nondeterministic
+>import safe qualified Data.List as List
+>import safe qualified Math.Matrix.Interface as Matrix
+>import safe Math.Matrix.Interface hiding ((|>))
+>import safe Math.Matrix.Matrix
 
 >infixr 5 `Pre`
 >infixl 4 !

@@ -1,10 +1,10 @@
->{-# LANGUAGE Safe, TypeOperators, UnicodeSyntax #-}
+>{-# LANGUAGE Safe, TypeOperators, UnicodeSyntax, FlexibleInstances #-}
 >module Math.Number.Interface where
->import Control.Applicative
->import Data.Monoid
->import Data.Ratio
->import Math.Number.Stream
->import Math.Matrix.Interface
+>import safe Control.Applicative
+>import safe Data.Monoid
+>import safe Data.Ratio
+>import safe Math.Number.Stream
+>import safe Math.Matrix.Interface
 
 >nthroot :: (Floating a) => a -> a -> a
 >nthroot x k = exp (log x / k)
@@ -15,6 +15,12 @@
 >class Approximations a where
 >   floating_approximations :: a -> Stream Double
 >   rational_approximations :: a -> Stream Rational
+
+>class Infinitary a where
+>   infinite :: a
+> 
+>class (Infinitary a) => PotentiallyInfinite a where
+>   is_infinite :: a -> Bool
 
 >class Numerics a where
 >   newtons_method :: (a -> a) -> a -> a
@@ -31,6 +37,36 @@
 >class (Num r) => DifferentiallyClosed r where
 >   derivate :: (r -> r) -> r -> r
 >   integral :: (r,r) -> (r -> r) -> r
+
+>class DifferentialOperator t where
+>   partial :: (DifferentiallyClosed a) => (t a -> a) -> t a -> t a
+
+>partial1_2 :: (DifferentiallyClosed a) => (a -> b -> a) -> a -> b -> a
+>partial1_2 f x y = derivate (\x0 -> f x0 y) x
+
+>partial2_2 :: (DifferentiallyClosed a) => (b -> a -> a) -> b -> a -> a
+>partial2_2 f x y = derivate (\y0 -> f x y0) y
+
+>partial1_3 :: (DifferentiallyClosed a) => (a -> b -> c -> a) -> a -> b -> c -> a
+>partial1_3 f x y z = derivate (\x0 -> f x0 y z) x
+
+>partial2_3 :: (DifferentiallyClosed a) => (b -> a -> c -> a) -> b -> a -> c -> a
+>partial2_3 f x y z = derivate (\y0 -> f x y0 z) y
+
+>partial3_3 :: (DifferentiallyClosed a) => (b -> c -> a -> a) -> b -> c -> a -> a
+>partial3_3 f x y z = derivate (\z0 -> f x y z0) z
+
+>partial1_4 :: (DifferentiallyClosed a) => (a -> b -> c -> d -> a) -> a -> b -> c -> d -> a
+>partial1_4 f x y z t = derivate (\x0 -> f x0 y z t) x
+
+>partial2_4 :: (DifferentiallyClosed a) => (b -> a -> c -> d -> a) -> b -> a -> c -> d -> a
+>partial2_4 f x y z t = derivate (\y0 -> f x y0 z t) y
+
+>partial3_4 :: (DifferentiallyClosed a) => (b -> c -> a -> d -> a) -> b -> c -> a -> d -> a
+>partial3_4 f x y z t = derivate (\z0 -> f x y z0 t) z
+
+>partial4_4 :: (DifferentiallyClosed a) => (b -> c -> d -> a -> a) -> b -> c -> d -> a -> a
+>partial4_4 f x y z t = derivate (\t0 -> f x y z t0) t
 
 >class (Show r) => ShowPrecision r where
 >   show_at_precision :: r -> Integer -> String
@@ -143,3 +179,9 @@
 >-- style numeric types. first argument is precision.
 >precisionCompare :: (Ord a, Num a) => a -> a -> a -> Bool
 >precisionCompare prec a b = abs (a - b) < prec
+
+>instance Infinitary (Closure Rational) where
+>   infinite = InfiniteRational
+
+>instance Infinitary (Closure Integer) where
+>   infinite = InfiniteInteger

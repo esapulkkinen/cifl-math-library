@@ -1,8 +1,9 @@
->{-# LANGUAGE TypeFamilies, FlexibleInstances, ScopedTypeVariables #-}
+>{-# LANGUAGE Safe, TypeFamilies, FlexibleInstances, ScopedTypeVariables #-}
 >{-# LANGUAGE TypeOperators, DataKinds, UndecidableInstances #-}
+>{-# LANGUAGE StandaloneDeriving, DeriveAnyClass #-}
 >module Math.Number.R (
 > R(Limit), lim, real, approximate, rational_approximations,
-> floating_approximations, epsilon, infinite, liftR,
+> floating_approximations, epsilon, infinite_r, liftR,
 > liftR2, inverseImage, liftWithAccuracy, approximate_as,
 > limit_compose, inverseImageEndo, differentialLiftR, derivate_rational,
 > derivate_r, newtons_method, sqrt_r, log_by_newton,
@@ -10,20 +11,20 @@
 > integral_accuracy, asin_r, acos_r, atan_r, sin_by_series,
 > cos_by_series
 > ) where
->import Control.Applicative
->import Control.Monad
->import Data.Char
->import Data.Ratio
->import Data.Monoid
->import Data.Complex
->import Math.Tools.PrettyP
->import Math.Matrix.Covector
->import Math.Matrix.Interface
->import Math.Tools.Median
->import Math.Number.Interface
->import Math.Number.Stream
->import qualified Control.Monad.Fix
->import GHC.TypeLits
+>import safe Control.Applicative
+>import safe Control.Monad
+>import safe Data.Char
+>import safe Data.Ratio
+>import safe Data.Monoid
+>import safe Data.Complex
+>import safe Math.Tools.PrettyP
+>import safe Math.Matrix.Covector
+>import safe Math.Matrix.Interface
+>import safe Math.Tools.Median
+>import safe Math.Number.Interface
+>import safe Math.Number.Stream
+>import safe qualified Control.Monad.Fix
+>import safe GHC.TypeLits
 >
 >
 >-- | This real representation takes 'epsilon' as input as in epsilon-delta proof.
@@ -43,6 +44,50 @@
 >         else runRClosure (limit z) `approximate` eps
 >   approximations (RClosure r) = fmap f $ fmap (1 /) $ power 10
 >      where f p = real $ \eps -> r `approximate` min p eps
+
+>instance Fractional (Closure R) where
+>  (RClosure x) / (RClosure y) = RClosure (x/y)
+>  recip (RClosure x) = RClosure (recip x)
+>  fromRational r = RClosure (fromRational r)
+>
+>liftRClosure :: (R -> R) -> Closure R -> Closure R
+>liftRClosure f (RClosure x) = RClosure (f x)
+> 
+>liftRClosure2 :: (R -> R -> R) -> Closure R -> Closure R -> Closure R
+>liftRClosure2 f (RClosure x) (RClosure y) = RClosure (f x y)
+>
+>instance Floating (Closure R) where
+>  pi = RClosure pi
+>  exp = liftRClosure exp
+>  log = liftRClosure log
+>  sqrt = liftRClosure sqrt
+>  (**) = liftRClosure2 (**)
+>  logBase = liftRClosure2 logBase
+>  sin = liftRClosure sin
+>  cos = liftRClosure cos
+>  tan = liftRClosure tan
+>  asin = liftRClosure asin
+>  acos = liftRClosure acos
+>  atan = liftRClosure atan
+>  sinh = liftRClosure sinh
+>  cosh = liftRClosure cosh
+>  tanh = liftRClosure tanh
+>  asinh = liftRClosure asinh
+>  acosh = liftRClosure acosh
+>  atanh = liftRClosure atanh
+
+>instance Num (Closure R) where
+>  (RClosure x) + (RClosure y) = RClosure (x + y)
+>  (RClosure x) - (RClosure y) = RClosure (x - y)
+>  (RClosure x) * (RClosure y) = RClosure (x * y)
+>  abs (RClosure x) = RClosure (abs x)
+>  signum (RClosure x) = RClosure (signum x)
+>  negate (RClosure x) = RClosure (negate x)
+>  fromInteger i = RClosure (fromInteger i)
+
+>instance Infinitary (Closure R) where
+>   infinite = RClosure infinite
+
 
 >instance Closed R where
 >   accumulation_point = runRClosure
@@ -77,8 +122,11 @@
 >epsilon :: R
 >epsilon = real id
 
->infinite :: R
->infinite = liftR (1/) epsilon
+>infinite_r :: R
+>infinite_r = liftR (1/) epsilon
+
+>instance Infinitary R where
+>   infinite = infinite_r
 
 >-- | this propagates accuracy without changing it.
 >liftR :: (Rational -> Rational) -> R -> R
@@ -156,6 +204,7 @@
 >    ((f (real $ \eps' -> x `appEndo` eps' + eps)
 >      - f (real $ \eps'' -> x `appEndo` eps'' - eps))
 >     `approximate` eps)/(2*eps)
+
 
 >instance DifferentiallyClosed R where
 >   derivate = derivate_r

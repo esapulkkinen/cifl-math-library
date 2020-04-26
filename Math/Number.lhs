@@ -28,16 +28,16 @@
 >-- ** symbolic expressions
 >   module Math.Number.NumericExpression
 > ) where
->import qualified Math.Number.Real
->import qualified Math.Number.R
->import Math.Number.Stream
->import Math.Number.BiStream
->import Math.Number.DimensionalAnalysis
->import Math.Number.Units
->import Math.Number.USCustomaryUnits
->import Math.Number.NumericExpression
->import Math.Number.Complex
->import Math.Number.TypeRational
->import Math.Number.TypeUnits
->import Math.Number.Interface
->import Math.Number.Transform2D
+>import safe qualified Math.Number.Real
+>import safe qualified Math.Number.R
+>import safe Math.Number.Stream
+>import safe Math.Number.BiStream
+>import safe Math.Number.DimensionalAnalysis
+>import safe Math.Number.Units
+>import safe Math.Number.USCustomaryUnits
+>import safe Math.Number.NumericExpression
+>import safe Math.Number.Complex
+>import safe Math.Number.TypeRational
+>import safe Math.Number.TypeUnits
+>import safe Math.Number.Interface
+>import safe Math.Number.Transform2D

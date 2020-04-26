@@ -1,28 +1,30 @@
->{-# LANGUAGE DeriveGeneric, DeriveDataTypeable #-}
+>{-# LANGUAGE DeriveGeneric, DeriveDataTypeable, ImplicitParams, Rank2Types, ViewPatterns, OverloadedLists, OverloadedStrings #-}
 >module Math.Tools.Cmdline where
+>import Data.Text
+>import qualified Data.Text as Text
 >import Control.Monad
 >import Control.Monad.IO.Class
 >import Control.Exception.Base
->import Control.Applicative
+>import qualified Control.Applicative as Applicative
 >import Data.Typeable
 >import Data.Data
 >import GHC.Generics
 >import Data.Map (Map)
 >import qualified Data.Map as Map
->import Math.Tools.Map
+>import Math.Tools.Map hiding (empty)
 >import Math.Tools.Exception
 >import System.Environment
 
->data ParseExceptions = CannotParseException !String
->                     | IncompleteParseException !String !String
->                     | AmbiguousParseException [(String,String)]
+>data ParseExceptions = CannotParseException !Text
+>                     | IncompleteParseException !Text !Text
+>                     | AmbiguousParseException [(Text,Text)]
 >  deriving (Show, Typeable, Data, Generic)
 
 
 >instance Exception ParseExceptions
 
 >data CmdlineParsingMT m a = CmdlineParsingMT {
->   runCmdlineParsingMT :: Map String String -> m a
+>   runCmdlineParsingMT :: Map Text Text -> m a
 >   }
 
 >instance (Functor m) => Functor (CmdlineParsingMT m) where
@@ -36,7 +38,7 @@
 >   pure x = CmdlineParsingMT $ const (pure x)
 >   (CmdlineParsingMT f) <*> (CmdlineParsingMT x) = CmdlineParsingMT $ \m -> f m <*> x m
 
->data LookupExceptions = NotFoundException !String
+>data LookupExceptions = NotFoundException !Text
 >  deriving (Show,Typeable, Data, Generic)
 
 >instance Exception LookupExceptions
@@ -44,47 +46,53 @@
 >instance (MonadIO m) => MonadIO (CmdlineParsingMT m) where
 >   liftIO io = CmdlineParsingMT $ const $ liftIO io
 
->instance (Alternative m) => Alternative (CmdlineParsingMT m) where
->   (CmdlineParsingMT f) <|> (CmdlineParsingMT g) = CmdlineParsingMT $ \m -> f m <|> g m
->   empty = CmdlineParsingMT (const empty)
+>instance (Applicative.Alternative m) => Applicative.Alternative (CmdlineParsingMT m) where
+>   (CmdlineParsingMT f) <|> (CmdlineParsingMT g) = CmdlineParsingMT $ \m -> f m Applicative.<|> g m
+>   empty = CmdlineParsingMT (const Applicative.empty)
 
 >instance (MonadIO m) => ExceptionalMonad (CmdlineParsingMT m) where
 >   throwM e = liftIO (throwIO e)
 
->hasOption :: (Monad m) => String -> CmdlineParsingMT m Bool
+>hasOption :: (Monad m) => Text -> CmdlineParsingMT m Bool
 >hasOption i = CmdlineParsingMT $ \m -> return (i `Map.member` m)
 
->lookupOption :: (ExceptionalMonad m, Read a, Show a) => String -> CmdlineParsingMT m a
->lookupOption i = lookupOptionString i >>= readerParse
+>lookupOption :: (ExceptionalMonad m, Read a, Show a) => Text -> CmdlineParsingMT m a
+>lookupOption i = lookupOptionText i >>= readerParse
 
->lookupOptionString :: (ExceptionalMonad m) => String -> CmdlineParsingMT m String
->lookupOptionString i = CmdlineParsingMT $ \m -> maybe (throwM $ NotFoundException i)
+>lookupOptionText :: (ExceptionalMonad m) => Text -> CmdlineParsingMT m Text
+>lookupOptionText i = CmdlineParsingMT $ \m -> maybe (throwM $ NotFoundException i)
 >                                                return (Map.lookup i m)
 
->readOption :: (Read b, Show b) => Map String String -> String -> IO b
+>readOption :: (Read b, Show b) => Map Text Text -> Text -> IO b
 >readOption opts i = lookupMapM opts i >>= readerParse
 
->readerParse :: (Show a,Read a, ExceptionalMonad m) => String -> m a
->readerParse str = case reads str of
+>readerParse :: (Show a,Read a, ExceptionalMonad m) => Text -> m a
+>readerParse str = case reads $ unpack str of
 >   [] -> throwM $ CannotParseException $ str
 >   [(v,[])] -> return v
->   [(v,r)]  -> throwM $ IncompleteParseException str r
->   r -> throwM $ AmbiguousParseException $ map (\ (a,b) -> (show a,b)) r
+>   [(v,r)]  -> throwM $ IncompleteParseException str (pack r)
+>   r -> throwM $ AmbiguousParseException $ fmap (\ (a,b) -> (pack (show a),pack b)) r
 
->data CommandLineException = MissingCommandLineArgument !String
->                          | InvalidCommandLineArgument !String
+>data CommandLineException = MissingCommandLineArgument !Text
+>                          | InvalidCommandLineArgument !Text
 >   deriving (Show, Typeable, Data, Generic)
 
 >instance Exception CommandLineException
 
 >splitArgs :: (ExceptionalMonad m)
->          => [String] -> Map String String -> m (Map String String)
->splitArgs (('-':'-':arg):val:re) m = splitArgs re m >>= (return . Map.insert arg val)
->splitArgs ['-':'-':arg] m = throwM $ MissingCommandLineArgument $ arg
+>          => [Text] -> Map Text Text -> m (Map Text Text)
+>splitArgs ((stripPrefix "--" -> Just arg):val:re) m = splitArgs re m >>= (return . Map.insert arg val)
+>splitArgs [(stripPrefix "--" -> Just arg)] m = throwM $ MissingCommandLineArgument $ arg
 >splitArgs [] m = return m
 >splitArgs (c:_) _ = throwM $ InvalidCommandLineArgument $ c
 
->parseCmdline :: IO (Map String String)
+>parseCmdline :: IO (Map Text Text)
 >parseCmdline = do
 >   args <- getArgs
->   splitArgs args Map.empty
+>   splitArgs (fmap pack args) Map.empty
+
+>withOptions :: Map Text Text -> ((?cmdlineoptions :: Map Text Text) => IO a) -> IO a
+>withOptions opts action = let ?cmdlineoptions = opts in action
+
+>findOption :: (?cmdlineoptions :: Map Text Text, Read b, Show b) => Text -> IO b
+>findOption = readOption ?cmdlineoptions

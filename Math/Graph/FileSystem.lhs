@@ -1,4 +1,4 @@
->{-# LANGUAGE PackageImports #-}
+>{-# LANGUAGE PackageImports, ImplicitParams, Rank2Types #-}
 >module Math.Graph.FileSystem where
 >import Math.Graph.Reversible
 >import Math.Graph.GraphMonoid
@@ -35,3 +35,9 @@
 >                               | otherwise = lst
 >deletePrefix [] [] = []
 >deletePrefix [] lst = lst
+
+>currentDirectory :: (?currentDirectory :: FilePath) => IO FilePath
+>currentDirectory = return ?currentDirectory
+
+>inDirectory :: FilePath -> (?currentDirectory :: FilePath => IO a) -> IO a
+>inDirectory path action = let ?currentDirectory = path in action

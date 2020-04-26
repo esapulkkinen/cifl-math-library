@@ -1,6 +1,9 @@
 >{-# LANGUAGE Rank2Types, FlexibleInstances #-}
 >module Math.Tools.Parser where
+>import Prelude hiding (null, take, span, length, take)
 >import Text.PrettyPrint (Doc, (<+>), empty)
+>import Data.Text
+>import qualified Data.Text as Text
 >import Control.Applicative
 >import Control.Monad
 >import Math.Tools.ParserInterface
@@ -37,7 +40,7 @@
 >   (ParserM f) `mplus` (ParserM g) = 
 >      ParserM (\s err i li -> f s (\_ _ -> g s err i li) i li)
 
->instance ParserCombinators (ParserM String) where
+>instance ParserCombinators (ParserM Text) where
 >   readChar = readChar'
 >   eof = eof'
 >   newline = newline'
@@ -55,36 +58,41 @@
 >syntaxError' :: Doc -> ParserM i a
 >syntaxError' d = ParserM $ \f err i li -> err d li
 
->readChar' :: ParserM [c] c
->readChar' = ParserM $ \f err i li -> case i of
->                        (c:cr) -> f c cr (next_column li)
->                        [] -> err (pp "Expected any character, found EOF") li
+>readChar' :: ParserM Text Char
+>readChar' = ParserM $ \f err i li -> case uncons i of
+>                        Just (c,cr) -> f c cr (next_column li)
+>                        Nothing -> err (pp "Expected any character, found EOF") li
 
->one_of' :: (PpShow c) => (c -> Bool) -> ParserM [c] c
->one_of' check = ParserM $ \f err (c:cr) li -> if check c then f c cr (next_column li) else err (pp "Bad character:" <> enclose c) li
+>one_of' :: (Char -> Bool) -> ParserM Text Char
+>one_of' check = ParserM $ \f err lst li -> case uncons lst of
+>   (Just (c,cr)) -> if check c then f c cr (next_column li)
+>                               else err (pp "Bad character:" <> enclose c) li
+>   Nothing -> err (pp "Expected a character, found EOF") li
 
->eof' :: (PpShow c) => ParserM [c] ()
->eof' = ParserM $ \f err i li -> case i of
->                   [] -> f () [] li
->                   str -> err (pp "Expected EOF, found:" <+> bracketize (take 10 str)) li
+>eof' :: ParserM Text ()
+>eof' = ParserM $ \f err i li -> case null i of
+>                   True -> f () Text.empty li
+>                   False -> err (pp "Expected EOF, found:" <+> bracketize (unpack $ take 10 i)) li
 
->newline' :: ParserM String ()
->newline' = ParserM $ \f err i li -> case i of
->                       ('\n':cr) -> f () cr (next_line li)
->                       (_:_) -> err (pp "Expected a newline") li
->                       [] -> err (pp "Unexpected end of file") li
+>newline' :: ParserM Text ()
+>newline' = ParserM $ \f err i li -> case uncons i of
+>                       Just ('\n',cr) -> f () cr (next_line li)
+>                       Just (_,_) -> err (pp "Expected a newline") li
+>                       Nothing -> err (pp "Unexpected end of file") li
 
->readWhile' :: (PpShow c) => (c -> Bool) -> ParserM [c] [c]
+>readWhile' :: (Char -> Bool) -> ParserM Text Text
 >readWhile' ch = ParserM $ \f err i li -> let (s,r) = span ch i
->                            in if null s then err (pp "unexpected character in input:" <+> bracketize (take 10 r)) li
+>                            in if null s then err (pp "unexpected character in input:" <+> bracketize (unpack $ take 10 r)) li
 >                                         else f s r (add_to_column (length s) li)
 
->require' :: (PpShow c, Eq c) => c -> ParserM [c] c
->require' c = ParserM $ \f err i li -> case i of
->                          (c':cr) -> if c' == c then f c' cr (next_column li)
->                                                else err (pp "Unexpected character: expected" <+> (enclose c <> pp ',') <+> (pp "found:" <> enclose c')) li
->                          [] -> err (pp "Unexpected EOF, expected" <+> enclose c) li
-
+>require' :: Char -> ParserM Text Char
+>require' c = ParserM $ \f err i li -> case uncons i of
+>                          Just (c',cr) -> if c' == c then f c' cr (next_column li)
+>                                                    else err (unexpected c c') li
+>                          Nothing -> err (pp "Unexpected EOF, expected" <+> enclose c) li
+>    where unexpected c c' = pp "Unexpected character: expected"
+>                                    <+> (enclose c <> pp ',')
+>                                    <+> (pp "found:" <> enclose c')
 >getRemainingInput' :: ParserM a a
 >getRemainingInput' = ParserM $ \f _ i li -> f i i li
 

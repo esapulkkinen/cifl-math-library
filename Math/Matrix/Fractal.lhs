@@ -6,4 +6,4 @@
 
 >mandelbrot_iters :: Integer -> FVec2 Double -> [FVec2 Double] -> [FVec2 Double]
 >mandelbrot_iters 0 c lst = lst
->mandelbrot_iters i c lst = mandelbrot c (mandelbrot_iters (i-1) c lst)
+>mandelbrot_iters i c lst = mandelbrot c $ mandelbrot_iters (i-1) c lst

@@ -17,6 +17,7 @@
 >class (Monoid g) => Group g where
 >   ginvert :: g -> g
 
+
 >class SetLike s where
 >   sintersection :: s -> s -> s
 >   sunion :: s -> s -> s

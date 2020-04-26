@@ -37,7 +37,14 @@ packages:
 # Dependency packages to be pulled from upstream that are not in the resolver
 # using the same syntax as the packages field.
 # (e.g., acme-missiles-0.3)
-extra-deps: [arrows-0.4.4.2, Stream-0.4.7.2, lazysmallcheck-0.6, graphviz-2999.20.0.3, Cabal-2.4.1.0]
+extra-deps:
+ - arrows-0.4.4.2
+ - Stream-0.4.7.2
+ - lazysmallcheck-0.6
+ - graphviz-2999.20.0.3
+ - Cabal-2.4.1.0
+ - byte-order-0.1.2.0
+ - primitive-unaligned-0.1.1.1
 
 # Override default flag values for local packages and extra-deps
 # flags: {}
@@ -65,6 +72,8 @@ system-ghc: false
 # compiler-check: newer-minor
 
 apply-ghc-options: targets
+
+rebuild-ghc-options: false
 
 ghc-options:
         "$locals": -fobject-code

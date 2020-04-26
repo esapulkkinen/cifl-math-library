@@ -7,5 +7,3 @@
 > infmatrix_upper_triangular_matrix :: InfMatrix a,
 > infmatrix_lower_triangular_matrix :: InfMatrix a }
 
->toStreamMatrix :: InfMatrix a -> (Stream :*: Stream) abs
->toStreamMatrix (InfMatrix di up low) = 

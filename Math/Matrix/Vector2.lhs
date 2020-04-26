@@ -1,32 +1,34 @@
 >{-# LANGUAGE Safe,FlexibleInstances, MultiParamTypeClasses, FlexibleContexts, TypeOperators, TypeFamilies, PatternGuards, ScopedTypeVariables, StandaloneDeriving, DeriveGeneric, DeriveDataTypeable #-}
 >module Math.Matrix.Vector2 where
->import Text.PrettyPrint (vcat,nest,(<+>))
->import Data.Monoid hiding (Dual)
->import Data.Complex
->import Data.Sequence (Seq, (<|))
->import GHC.Generics hiding ((:*:), (:+:))
->import Data.Data
->import Data.Typeable
->import qualified Data.Binary as Bin
->import qualified Data.Sequence as Seq
->import Control.Applicative
->import Math.Tools.Arrow
->import Math.Tools.Functor
->import Math.Matrix.Matrix
->import Math.Tools.PrettyP
->import Math.Tools.Median
->import Math.Tools.Isomorphism
->import Math.Matrix.Interface
->import Math.Matrix.Covector
->import Math.Tools.Visitor
->import Math.Tools.CoMonad
->import Math.Matrix.Vector1
->import Math.Matrix.Simple hiding (determinant2)
->import Math.Number.Group
->import Math.Number.Real
->import Math.Number.Stream
+>import safe Text.PrettyPrint (vcat,nest,(<+>))
+>import safe Data.Monoid hiding (Dual)
+>import safe Data.Complex
+>import safe Data.Sequence (Seq, (<|))
+>import safe GHC.Generics hiding ((:*:), (:+:))
+>import safe Data.Data
+>import safe Data.Typeable
+>import safe qualified Data.Binary as Bin
+>import safe qualified Data.Sequence as Seq
+>import safe Control.Applicative
+>import safe Math.Tools.Arrow
+>import safe Math.Tools.Functor
+>import safe Math.Matrix.Matrix
+>import safe Math.Tools.PrettyP
+>import safe Math.Tools.Median
+>import safe Math.Tools.Isomorphism
+>import safe Math.Matrix.Interface
+>import safe Math.Matrix.Covector
+>import safe Math.Tools.Visitor
+>import safe Math.Tools.CoMonad
+>import safe Math.Tools.Universe
+>import safe Math.Matrix.Vector1
+>import safe Math.Matrix.Simple hiding (determinant2)
+>import safe Math.Number.Interface
+>import safe Math.Number.Group
+>import safe Math.Number.Real
+>import safe Math.Number.Stream
 
->data Vector2 s = Vector2 { xcoord2 :: !s, ycoord2 :: !s }
+>data Vector2 s = Vector2 { xcoord2 :: s, ycoord2 :: s }
 >   deriving (Eq, Typeable, Data, Generic)
 
 >-- | this computes partial derivates of the scalar-value 2D vector field
@@ -35,6 +37,7 @@
 >del_vector2 f (Vector2 x y) = Vector2 (partial_derivate1_2 ff x y)
 >                                      (partial_derivate2_2 ff x y)
 >  where ff a b = f (Vector2 a b)
+
 
 >cov2 :: (a ~ Scalar a) => Vector2 (Dual (Vector2 a))
 >cov2 = Vector2 (covector xcoord2) (covector ycoord2)
@@ -56,6 +59,9 @@
 >   where char ch (ch2:cr) | ch == ch2 = return cr
 >                          | otherwise = []
 >         char ch [] = []
+
+>instance (Universe a) => Universe (Vector2 a) where
+>   all_elements = Vector2 <$> all_elements <*> all_elements
 
 
 >type ComplexVector2 a = (Vector2 :*: Complex) a
@@ -154,6 +160,13 @@ deriving instance (Show a) => Show (Codiagonal Vector2 a)
 >                             (Vector2 x _))) =
 >   Codiagonal2 (Vector1 x) (Vector1 y)
 
+
+>del_partial2 :: (DifferentiallyClosed a) => (Vector2 a -> a) -> Vector2 a -> Vector2 a
+>del_partial2 f (Vector2 x y) = Vector2 (partial1_2 ff x y) (partial2_2 ff x y)
+>   where ff a b = f (Vector2 a b)
+
+>instance DifferentialOperator Vector2 where
+>   partial = del_partial2
 
 >diagonal_matrix2 :: (Num a) => Vector2 a -> (Vector2 :*: Vector2) a
 >diagonal_matrix2 v = v |\| zero_codiagonal2

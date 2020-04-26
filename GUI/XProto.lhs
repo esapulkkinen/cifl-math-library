@@ -1,7 +1,8 @@
 >{-# LANGUAGE GeneralizedNewtypeDeriving, DerivingStrategies #-}
->{-# LANGUAGE ScopedTypeVariables #-}
+>{-# LANGUAGE ScopedTypeVariables, PackageImports #-}
 >module GUI.XProto where
 >import qualified Data.Map as Map
+>import "byte-order" System.ByteOrder
 >import Data.Binary
 >import Data.Binary.Get
 >import Data.ByteString.Lazy hiding (length)
@@ -141,23 +142,31 @@
 >getMany :: (Integral a, Binary b) => a -> Get [b]
 >getMany 0 = return []
 >getMany i = do { v <- get ; w <- getMany (i-1) ; return (v:w) }
+
+>getBig :: (Binary a, Bytes a) => Get a
+>getBig = do x <- get
+>            return $ fromBigEndian x
+>
+>putBig :: (Binary a, Bytes a) => a -> Put
+>putBig x = put $ toBigEndian x
+
 >instance Binary XSetupRequest where
 >   put (ConnectionSetup major minor pname pdata) = do
 >     put (108 :: CARD8)
 >     put (0 :: CARD8)
->     put major
->     put minor
->     put (fromIntegral (length pname) :: CARD16)
+>     putBig major
+>     putBig minor
+>     putBig (fromIntegral (length pname) :: CARD16)
 >     put pname
->     put (fromIntegral (length pdata) :: CARD16)
+>     putBig (fromIntegral (length pdata) :: CARD16)
 >     put pdata
 >   get = do
 >     (_ :: CARD16) <- get
 >     ma <- get
 >     mi <- get
->     (pnamelen :: CARD16) <- get
+>     (pnamelen :: CARD16) <- getBig
 >     pname <- getMany pnamelen
->     (pdatalen :: CARD16) <- get
+>     (pdatalen :: CARD16) <- getBig
 >     pdata <- getMany pdatalen
 >     return $ ConnectionSetup ma mi pname pdata
 
@@ -196,9 +205,9 @@
 >     case su of
 >       0 -> do
 >          (reasonlen :: CARD8) <- get
->          major <- get
->          minor <- get
->          (adatalen :: CARD16) <- get
+>          major <- getBig
+>          minor <- getBig
+>          (adatalen :: CARD16) <- getBig
 >          reason <- getMany (fromIntegral reasonlen)
 >          (unused :: [CARD8]) <- getMany (pad reasonlen)
 >          return $ XSRFailed major minor reason
@@ -209,15 +218,15 @@
 >          return $ XSRAuthenticate reason
 >       1 -> do
 >          (_ :: CARD8) <- get
->          major <- get
->          minor <- get
->          (adddatalen :: CARD16) <- get
->          releaseno <- get
->          rid_base <- get
->          rid_mask <- get
->          mbuffersize <- get
->          (vendorlen :: CARD16) <- get
->          maxreqlen <- get
+>          major <- getBig
+>          minor <- getBig
+>          (adddatalen :: CARD16) <- getBig
+>          releaseno <- getBig
+>          rid_base <- getBig
+>          rid_mask <- getBig
+>          mbuffersize <- getBig
+>          (vendorlen :: CARD16) <- getBig
+>          maxreqlen <- getBig
 >          (rootslen :: CARD8) <- get
 >          (formatslen :: CARD8) <- get
 >          byteorder <- get
@@ -300,15 +309,15 @@
 >   get = do
 >     sr <- get
 >     sdc <- get
->     swp <- get
->     sbp <- get
+>     swp <- getBig
+>     sbp <- getBig
 >     scim <- get
->     swip <- get
->     ship <- get
->     swimm <- get
->     shimm <- get
->     smim <- get
->     smam <- get
+>     swip <- getBig
+>     ship <- getBig
+>     swimm <- getBig
+>     shimm <- getBig
+>     smim <- getBig
+>     smam <- getBig
 >     srv <- get
 >     sbs <- get
 >     ssu <- get
@@ -320,16 +329,16 @@
 >   put s = do
 >     put (screen_root s)
 >     put (screen_default_colormap s)
->     put (screen_white_pixel s)
->     put (screen_black_pixel s)
+>     putBig (screen_white_pixel s)
+>     putBig (screen_black_pixel s)
 >     put (screen_current_input_masks s)
->     put (screen_width_in_pixels s)
->     put (screen_height_in_pixels s)
->     put (screen_width_in_millimeters s)
->     put (screen_height_in_millimeters s)
->     put (screen_min_installed_maps s)
->     put (screen_max_installed_maps s)
->     put (screen_root_visual s)
+>     putBig (screen_width_in_pixels s)
+>     putBig (screen_height_in_pixels s)
+>     putBig (screen_width_in_millimeters s)
+>     putBig (screen_height_in_millimeters s)
+>     putBig (screen_min_installed_maps s)
+>     putBig (screen_max_installed_maps s)
+>     putBig (screen_root_visual s)
 >     put (screen_backing_stores s)
 >     put (screen_save_unders s)
 >     put (screen_root_depth s)
@@ -362,7 +371,7 @@
 >       3 -> return VCPseudoColor
 >       4 -> return VCTrueColor
 >       5 -> return VCDirectColor
->       _ -> error "invalid VisualClass"
+>       _ -> error $ "invalid VisualClass: " ++ show u
 >data Depth = Depth {
 >   depth_depth :: CARD8,
 >   depth_visuals :: [VisualType] }
@@ -373,14 +382,14 @@
 >  get = do
 >    depth <- get
 >    (_ :: CARD8) <- get
->    (visualslen :: CARD16) <- get
->    (_ :: CARD16) <- get
+>    (visualslen :: CARD16) <- getBig
+>    (_ :: CARD16) <- getBig
 >    visuals <- getMany visualslen
 >    return $ Depth depth visuals
 >  put dep = do
 >    put (depth_depth dep)
 >    put (0 :: CARD8)
->    put ((fromIntegral $ length $ depth_visuals dep) :: CARD16)
+>    putBig ((fromIntegral $ length $ depth_visuals dep) :: CARD16)
 >    putMany (depth_visuals dep)
 >data VisualType = VisualType {
 >  vt_visual_id :: VisualID,
@@ -393,22 +402,22 @@
 >  deriving (Show)
 >instance Binary VisualType where
 >   put vt = do
->     put (vt_visual_id vt)
+>     putBig (vt_visual_id vt)
 >     put (vt_visual_class vt)
 >     put (vt_bits_per_rgb_value vt)
->     put (vt_colormap_entries vt)
->     put (vt_red_mask vt)
->     put (vt_green_mask vt)
->     put (vt_blue_mask vt)
->     put (0 :: CARD32)
+>     putBig (vt_colormap_entries vt)
+>     putBig (vt_red_mask vt)
+>     putBig (vt_green_mask vt)
+>     putBig (vt_blue_mask vt)
+>     putBig (0 :: CARD32)
 >   get = do
->     visualid <- get
+>     visualid <- getBig
 >     visualclass <- get
 >     bp_rgb_value <- get
->     cm_entries <- get
->     rmask <- get
->     gmask <- get
->     bmask <- get
+>     cm_entries <- getBig
+>     rmask <- getBig
+>     gmask <- getBig
+>     bmask <- getBig
 >     (_ :: CARD32) <- get
 >     return $ VisualType visualid visualclass rmask gmask bmask
 >                         bp_rgb_value cm_entries
@@ -613,22 +622,22 @@
 >instance Binary XRequest where
 >  get = do
 >     (opcode :: Int8) <- get
->     (len :: Int16) <- get
+>     (len :: Int16) <- getBig
 >     opcodetable_get Map.! opcode
 >  put z = do
 >    let opc = opcode z
 >    put opc
->    put (request_length z)
+>    putBig (fromIntegral (request_length z) :: Int16)
 >    (opcodetable_put Map.! opc) z
 
 >changeWindowPut z = do
->    put (xr_wid z)
->    put (xchangewindowattributes_value_mask z)
+>    putBig (xr_wid z)
+>    putBig (xchangewindowattributes_value_mask z)
 >    put (xchangewindowattributes_value_list z)
 
 >changeWindowAttributesGet = do
->    wid <- get
->    valuemask <- get
+>    wid <- getBig
+>    valuemask <- getBig
 >    valuelist <- get
 >    return $ XChangeWindowAttributes wid valuemask valuelist
 
@@ -638,36 +647,36 @@
 >changeWindowAttributesResponseGet = return XRRChangeWindowAttributes
 >mapWindowResponseGet = return XRRMapWindow
 >mapWindowGet = do
->    wid <- get
+>    wid <- getBig
 >    return $ XMapWindow wid
 
 >createWindowGet = do
->    wid <- get
->    parent <- get
->    depth <- get
->    visual <- get
->    x <- get
->    y <- get
->    width <- get
->    height <- get
->    bw <- get
->    vm <- get
+>    wid <- getBig
+>    parent <- getBig
+>    depth <- getBig
+>    visual <- getBig
+>    x <- getBig
+>    y <- getBig
+>    width <- getBig
+>    height <- getBig
+>    bw <- getBig
+>    vm <- getBig
 >    vl <- get
 >    return $ XCreateWindow wid parent depth visual x y width height bw vm vl
 >createWindowPut z = do
->    put (xr_wid z)
->    put (xr_parent z)
->    put (xcreatewindow_depth z)
->    put (xcreatewindow_visual z)
->    put (xcreatewindow_x z)
->    put (xcreatewindow_y z)
->    put (xcreatewindow_width z)
->    put (xcreatewindow_height z)
->    put (xcreatewindow_border_width z)
->    put (xcreatewindow_value_mask z)
+>    putBig (xr_wid z)
+>    putBig (xr_parent z)
+>    putBig (xcreatewindow_depth z)
+>    putBig (xcreatewindow_visual z)
+>    putBig (xcreatewindow_x z)
+>    putBig (xcreatewindow_y z)
+>    putBig (xcreatewindow_width z)
+>    putBig (xcreatewindow_height z)
+>    putBig (xcreatewindow_border_width z)
+>    putBig (xcreatewindow_value_mask z)
 >    put (xcreatewindow_value_list z)
 
->mapWindowPut z = put (xr_wid z)
+>mapWindowPut z = putBig (xr_wid z)
 
 >data XRequest = XCreateWindow {
 >     xr_wid :: Window,

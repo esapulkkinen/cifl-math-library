@@ -13,8 +13,8 @@
 >   module Math.Number,
 >   module Math.Tools
 >   ) where
->import Math.Graph
->import Math.Matrix
->import Math.Number
->import Math.Tools
+>import safe Math.Graph
+>import safe Math.Matrix
+>import safe Math.Number
+>import safe Math.Tools
 

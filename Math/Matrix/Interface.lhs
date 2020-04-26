@@ -1,26 +1,26 @@
 >-- -*- coding: utf-8 -*-
->{-# LANGUAGE Trustworthy,MultiParamTypeClasses, ScopedTypeVariables, FlexibleContexts, FunctionalDependencies, FlexibleInstances, TypeOperators, TypeFamilies, DefaultSignatures, UnicodeSyntax, DeriveGeneric, DeriveDataTypeable, ConstraintKinds, UndecidableInstances #-}
+>{-# LANGUAGE Safe,MultiParamTypeClasses, ScopedTypeVariables, FlexibleContexts, FunctionalDependencies, FlexibleInstances, TypeOperators, TypeFamilies, DefaultSignatures, UnicodeSyntax, DeriveGeneric, DeriveDataTypeable, ConstraintKinds, UndecidableInstances #-}
 >-- | These should match standard definitions of vector spaces.
 >-- Used for reference: K. Chandrasekhara Rao: Functional Analysis.
 >-- also see Warner: Modern algebra.
 >module Math.Matrix.Interface where
->import GHC.Generics hiding ((:*:),(:+:))
->import Text.PrettyPrint hiding ((<>))
->import Data.Data
->import Data.Typeable
->import Data.Monoid
->import Data.Ratio
->import Data.Traversable
->import Data.Complex
->import Data.List (intersperse)
->import qualified Data.Set
->import Control.Applicative
->import Control.Monad.Fix (fix)
->import Math.Tools.PrettyP
->import Math.Tools.Visitor
->import Math.Tools.FixedPoint
->import Math.Tools.Universe
->import Math.Tools.I
+>import safe GHC.Generics hiding ((:*:),(:+:))
+>import safe Text.PrettyPrint hiding ((<>))
+>import safe Data.Data
+>import safe Data.Typeable
+>import safe Data.Monoid
+>import safe Data.Ratio
+>import safe Data.Traversable
+>import safe Data.Complex
+>import safe Data.List (intersperse)
+>import safe qualified Data.Set
+>import safe Control.Applicative
+>import safe Control.Monad.Fix (fix)
+>import safe Math.Tools.PrettyP
+>import safe Math.Tools.Visitor
+>import safe Math.Tools.FixedPoint
+>import safe Math.Tools.Universe
+>import safe Math.Tools.I
 
 
 >infixl 7 %.%
@@ -68,6 +68,7 @@
 >type ComplexVectorSpace v a = VectorSpaceOver v (Complex a)
 >type Linear a b = (VectorSpace a, VectorSpace b, Scalar a ~ Scalar b)
 >type LinearInnerProductSpace a b = (Linear a b, InnerProductSpace a, InnerProductSpace b)
+
 
 >class (VectorSpace v) => BilinearVectorSpace v where
 >   biLin :: v -> v -> Scalar v
@@ -129,18 +130,17 @@
 >  diagonal :: (m :*: m) a -> m a
 >  diagonal_matrix :: m a -> (m :*: m) a
 
->-- | CodiagonalMatrix represents a matrix that can be split along the diagonal.
->-- The Codiagonal type represents a matrix without its diagonal.
->-- The ProjectionVector type represents a vector down from first element of diagonal
->-- when the diagonal is removed. This vector often has less elements than the original vector.
->-- Similarly for vector right from the first element of diagonal.
-
 >class (Functor m, Functor n) => ProjectionSpace (m :: * -> *) (n :: * -> *) where
 >   data (m \\\ n) a
 >   project_first   :: m a -> n a
 >   project_second  :: m a -> (m \\\ n) a
 >   join_vector :: n a -> (m \\\ n) a -> m a
 
+>-- | CodiagonalMatrix represents a matrix that can be split along the diagonal.
+>-- The Codiagonal type represents a matrix without its diagonal.
+>-- The ProjectionVector type represents a vector down from first element of diagonal
+>-- when the diagonal is removed. This vector often has less elements than the original vector.
+>-- Similarly for vector right from the first element of diagonal.
 >class CodiagonalMatrix m a where
 >   data Codiagonal m a
 >   type (m \\ a)
@@ -684,3 +684,4 @@ instance (Functor m) => Unital (:*:) m where
 >  vnegate (I x) = I (negate x)
 >  (I x) %+ (I y) = I (x + y)
 >  k %* (I x) = I (k * x)
+

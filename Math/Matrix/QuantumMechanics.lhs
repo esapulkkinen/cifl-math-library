@@ -92,12 +92,13 @@ momentum :: (Infinitesimal a, Closed a, RealFloat a)
 >resistance permit permea rt = sqrt ( permea rt / permit rt)
 
 >u_func :: (Floating (Scalar v), VectorDerivative v) => Dual v -> Dual v -> v -> v
->u_func (Covector permit) (Covector permea) rt = (1 / (2 * velocity permit permea rt))
-> %* (∇) (Covector $ velocity permit permea) rt
+>u_func (Covector permit) (Covector permea) rt =
+>   (1 / (2 * velocity permit permea rt))
+>   %* (∇) (Covector $ velocity permit permea) -!< rt
 
 >w_func :: (Floating (Scalar v), VectorDerivative v) => Dual v -> Dual v -> v -> v
 >w_func (Covector permit) (Covector permea) rt = (1 / (2 * resistance permit permea rt))
-> %* (∇) (Covector $ resistance permit permea) rt
+> %* (∇) (Covector $ resistance permit permea) -!< rt
 
 
 >-- <http://en.wikipedia.org/wiki/Matrix_representation_of_Maxwell's_equations>
@@ -153,6 +154,6 @@ momentum :: (Infinitesimal a, Closed a, RealFloat a)
 >            -> Dual (Vector4 (Quantity (Complex a)))
 >            -> Dual (Vector4 (Quantity (Complex a)))
 >schrodinger μ ϕ v = Covector $ \ rt ->
->   (i %* ħ) * derivate4t ϕ *>< rt
+>   (i %* ħ) * (derivate4t ϕ *>< rt)
 >  %+ (1 / (2 * μ)) * ħ^2 * ((∇·∇) ϕ *>< rt)
->  %- v `bracket` rt * ϕ *>< rt
+>  %- (v `bracket` rt) * (ϕ *>< rt)

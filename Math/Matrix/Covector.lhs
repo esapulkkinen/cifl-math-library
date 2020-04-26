@@ -11,21 +11,25 @@
 >-- 
 >-- See also: <http://theoreticalminimum.com/courses/advanced-quantum-mechanics/2013/fall/lecture-1>
 >module Math.Matrix.Covector where
->import Data.Complex
->import Data.Monoid hiding (Dual)
->import Prelude hiding (id,(.))
->import Data.Typeable
->import GHC.Generics hiding ((:*:))
->import Control.Category
->import Math.Tools.CoFunctor
->import Math.Tools.CoMonad
->import Math.Tools.Arrow
->import Math.Matrix.Interface
->import Math.Matrix.Matrix
+>import safe Data.Complex
+>import safe Data.Monoid hiding (Dual)
+>import safe Prelude hiding (id,(.))
+>import safe Data.Typeable
+>import safe GHC.Generics hiding ((:*:))
+>import safe Control.Category
+>import safe Math.Tools.CoFunctor
+>import safe Math.Tools.CoMonad
+>import safe Math.Tools.Arrow
+>import safe Math.Matrix.Interface
+>import safe Math.Matrix.Matrix
+>import safe Math.Tools.I
 
 >-- | Data type for dual vectors.
 >data Dual v = Covector { bracketMap :: v -> (Scalar v) }
 >  deriving (Typeable, Generic)
+
+>contract :: (Dual :*: v) a -> (I :*: v) a ->  Scalar (v a)
+>contract (Matrix (Covector f)) (Matrix (I w)) = f w
 
 >bracket :: Dual v -> v -> Scalar v
 >bracket (Covector f) = f
@@ -82,7 +86,7 @@ instance (Scalar ((f :*: g) a) ~ Scalar (f (Scalar (g a))),
 >(∇·) = divergence
 
 >-- | unicode support for directional derivative. Binary operator.
->(·∇) :: (Scalar (Scalar v) ~ Scalar v, VectorDerivative v, InnerProductSpace v) => v -> Dual v -> Dual v
+>(·∇) :: (VectorDerivative v, InnerProductSpace v) => v -> Dual v -> Dual v
 >(·∇) = directional_derivative
 > 
 >-- | unicode support for curl. Use with parenthesis.
@@ -122,18 +126,16 @@ instance (Scalar ((f :*: g) a) ~ Scalar (f (Scalar (g a))),
 >instance (Semigroup (Scalar v)) => Semigroup (Dual v) where
 >   (Covector f) <> (Covector g) = covector $ \v -> f v <> g v
 
->instance (Monoid (Scalar v), Scalar (Scalar v) ~ Scalar v) => Monoid (Dual v) where
+>instance (Monoid (Scalar v)) => Monoid (Dual v) where
 >   mempty = Covector $ \_ -> mempty
 >   mappend (Covector f) (Covector g)
 >     = covector $ \v -> mappend (f v) (g v)
 
->directional_derivative :: (VectorDerivative v,
-> Scalar (Scalar v) ~ Scalar v,
-> InnerProductSpace v)
+>directional_derivative :: (VectorDerivative v, InnerProductSpace v)
 >                       => v -> Dual v -> Dual v
 >directional_derivative v f = covector $ \x -> v %. (∇) f -!< x
 
->directional_derivative_endo :: (VectorDerivative v, InnerProductSpace v, Scalar (Scalar v) ~ Scalar v)
+>directional_derivative_endo :: (VectorDerivative v, InnerProductSpace v)
 >  => v -> Endo (Dual v)
 >directional_derivative_endo v = Endo $ directional_derivative v
 
@@ -167,11 +169,11 @@ instance (Scalar ((f :*: g) a) ~ Scalar (f (Scalar (g a))),
 >is_normal a = conjugate_transpose a %*% a == a %*% conjugate_transpose a
 
 >-- | partial application of dot product on second argument @(- %. v)@.
->bravector :: (InnerProductSpace v, Scalar (Scalar v) ~ Scalar v) => v -> Dual v
+>bravector :: (InnerProductSpace v) => v -> Dual v
 >bravector x = covector $ \u -> u %. x
 
 >-- | partial application of dot product on first argument: @(v %. -)@.
->ketvector :: (InnerProductSpace v, Scalar (Scalar v) ~ Scalar v) => v -> Dual v
+>ketvector :: (InnerProductSpace v) => v -> Dual v
 >ketvector x = covector $ \u -> x %. u
 
 >kronecker :: (Eq i, Functor n, Functor m, Num c) => m i -> n i -> (m :*: n) c
@@ -183,10 +185,10 @@ instance (Scalar ((f :*: g) a) ~ Scalar (f (Scalar (g a))),
 >dual_tensor h (Covector f) (Covector g) =
 >   Covector $ \(a,b) -> h (f a) (g b) 
 
->bilinear :: (Scalar (Scalar v) ~ Scalar v) => (v -> v -> Scalar v) -> v -> Dual v
+>bilinear :: (v -> v -> Scalar v) -> v -> Dual v
 >bilinear bra x = covector $ \y -> x `bra` y
 
->kronecker_dual :: (Eq a, Num (Scalar a), Scalar (Scalar a) ~ Scalar a) => a -> Dual a
+>kronecker_dual :: (Eq a, Num (Scalar a)) => a -> Dual a
 >kronecker_dual = bilinear (\x y -> if x == y then 1 else 0)
 
 >-- | <https://en.wikipedia.org/wiki/Dual_space#Injection_into_the_double-dual>
@@ -205,25 +207,8 @@ instance (Scalar ((f :*: g) a) ~ Scalar (f (Scalar (g a))),
 >adjoint_map :: (Scalar b ~ Scalar a) => (Scalar b -> Scalar a) -> LinearMap a b -> Dual b -> Dual a
 >adjoint_map sca f (Covector x) = Covector (sca . x . (-!<) f)
 
->instance (Semigroup v) => Semigroup (LinearMap v v) where
->  (LinearMap f) <> (LinearMap g) = LinearMap (f <> g)
-
->instance (Semigroup v) => Monoid (LinearMap v v) where
->  mempty = LinearMap id
->  mappend (LinearMap f) (LinearMap g) = LinearMap (f . g)
-
->data LinearMap v w where
->   LinearMap :: (Scalar w ~ Scalar v) => (v -> w) -> LinearMap v w
-
->(-!<) :: (Scalar w ~ Scalar v) => LinearMap v w -> v -> w
->(-!<) (LinearMap f) = f
-
 >matrix_arrow :: (LinearTransform f g a) => (f :*: g) a -> LinearMap (f a) (g a)
 >matrix_arrow m = LinearMap $ \v -> m <<*> v
-
->instance Category LinearMap where
->   id = LinearMap id
->   (LinearMap f) . (LinearMap g) = LinearMap (f . g)
 
 >instance CoFunctorArrow Dual LinearMap where
 >   inverseImage = adjoint
@@ -243,21 +228,39 @@ instance (Scalar ((f :*: g) a) ~ Scalar (f (Scalar (g a))),
 >instance (StandardBasis v, Show (Scalar v)) => Show (Dual v) where
 >   show (Covector f) = "dual" ++ (show $ map f $ unit_vectors)
 
->instance (VectorSpace v, Scalar (Scalar v) ~ Scalar v) => VectorSpace (Dual v) where
+>instance (VectorSpace v) => VectorSpace (Dual v) where
 >   type Scalar (Dual v) = Scalar v
 >   vzero = Covector $ \_ -> 0
 >   vnegate (Covector x) = Covector (negate . x)
 >   (Covector f) %+ (Covector g) = Covector (\x -> f x + g x)
 >   a %* (Covector f) = Covector $ \b -> a * f b
 
+>(-!<) :: (Scalar w ~ Scalar v) => LinearMap v w -> v -> w
+>(-!<) (LinearMap f) = f
+
+>data LinearMap v w where
+>   LinearMap :: (Scalar w ~ Scalar v) => (v -> w) -> LinearMap v w
+
+>instance (Semigroup v) => Semigroup (LinearMap v v) where
+>  (LinearMap f) <> (LinearMap g) = LinearMap (f <> g)
+
+>instance (Semigroup v) => Monoid (LinearMap v v) where
+>  mempty = LinearMap id
+>  mappend (LinearMap f) (LinearMap g) = LinearMap (f . g)
+
+>instance Category LinearMap where
+>   id = LinearMap id
+>   (LinearMap f) . (LinearMap g) = LinearMap (f . g)
+
+
 >instance (StandardBasis v, Num (Scalar v)) => InnerProductSpace (Dual v) where
 >   (Covector f) %. (Covector g) =
 >     sum [f x * g x | x <- unit_vectors]
 
->instance (VectorSpace v, Scalar (Scalar v) ~ Scalar v) => LieAlgebra (Dual v) where
+>instance (VectorSpace v) => LieAlgebra (Dual v) where
 >  f %<>% g = f*g - g*f
 
->instance (VectorSpace v, Scalar (Scalar v) ~ Scalar v) => Num (Dual v) where
+>instance (VectorSpace v) => Num (Dual v) where
 >  (Covector f) + (Covector g) =
 >    Covector $ \a -> f a + g a
 >  (Covector f) - (Covector g) =
@@ -269,13 +272,13 @@ instance (Scalar ((f :*: g) a) ~ Scalar (f (Scalar (g a))),
 >  signum (Covector f) = Covector $ signum . f
 >  fromInteger i = Covector $ \_ -> fromInteger i
 
->instance (Scalar (Scalar v) ~ Scalar v, FractionalSpace v) => Fractional (Dual v) where
+>instance (FractionalSpace v) => Fractional (Dual v) where
 >  (Covector f) / (Covector g) =
 >     Covector $ \a -> f a / g a
 >  recip = scalar_map (LinearMap recip)
 >  fromRational r = Covector $ \_ -> fromRational r
 > 
->instance (Scalar (Scalar v) ~ Scalar v, FractionalSpace v, Floating (Scalar v)) => Floating (Dual v) where
+>instance (FractionalSpace v, Floating (Scalar v)) => Floating (Dual v) where
 >   pi = Covector $ const pi
 >   exp = scalar_map (LinearMap exp)
 >   log = scalar_map (LinearMap log)
@@ -302,20 +305,18 @@ instance (Scalar ((f :*: g) a) ~ Scalar (f (Scalar (g a))),
 >-- two dimensional version of directional derivative with some possibility
 >-- to choose how two dual vectors are combined.
 >dual_derivative ::
-> (Scalar (Scalar v) ~ Scalar v,
-> Scalar (Scalar w) ~ Scalar w,
-> VectorDerivative v, VectorDerivative w,
+> (VectorDerivative v, VectorDerivative w,
 > InnerProductSpace v, InnerProductSpace w)
 > => (Dual v -> Dual w  -> c) -> v -> w -> (Dual v -> Dual w -> c)
 >dual_derivative f x y = cells $ matrix f (x ·∇) (y ·∇)
 
->dual_differential_outer_product :: (Scalar (Scalar v) ~ Scalar v, VectorDerivative v, InnerProductSpace v)
+>dual_differential_outer_product :: (VectorDerivative v, InnerProductSpace v)
 > => v -> v -> Dual v -> Dual v  -> Dual v
 >dual_differential_outer_product = dual_derivative (*)
 
->dual_differential_dot_product :: (Scalar (Scalar v) ~ Scalar v, VectorDerivative v, InnerProductSpace v, StandardBasis v)
+>dual_differential_dot_product :: (VectorDerivative v, InnerProductSpace v, StandardBasis v)
 >  => v -> v -> Dual v -> Dual v -> Scalar v
 >dual_differential_dot_product = dual_derivative (%.)
 
->norm_covector :: (NormedSpace v, Scalar (Scalar v) ~ Scalar v) => Dual v
+>norm_covector :: (NormedSpace v) => Dual v
 >norm_covector = Covector $ norm

@@ -1,37 +1,37 @@
 >{-# LANGUAGE Safe,FlexibleInstances, MultiParamTypeClasses,FlexibleContexts, TypeOperators, TypeFamilies, NoMonomorphismRestriction, StandaloneDeriving, DeriveGeneric, DeriveDataTypeable, LambdaCase #-}
 >module Math.Matrix.Vector4 where
->import Text.PrettyPrint (nest,vcat)
->import Control.Applicative
->import Math.Tools.Functor
->import GHC.Generics hiding ((:+:), (:*:), R)
->import Data.Data
->import Data.Typeable
+>import safe Text.PrettyPrint (nest,vcat)
+>import safe Control.Applicative
+>import safe Math.Tools.Functor
+>import safe GHC.Generics hiding ((:+:), (:*:), R)
+>import safe Data.Data
+>import safe Data.Typeable
 
 import Math.Matrix.Dimension
 
->import Math.Tools.PrettyP
->import Math.Tools.Universe
->import Math.Matrix.Matrix
->import Data.Complex
->import Math.Tools.Isomorphism
->import Math.Tools.Orthogonal
->import Math.Matrix.Interface
->import qualified Data.Binary as Bin
->import qualified Math.Matrix.Covector as Covector
->import Math.Matrix.Covector
->import Math.Tools.Median
->import Math.Tools.Visitor
->import Math.Tools.CoMonad
->import Math.Matrix.Covector
->import Math.Matrix.Vector1
->import Math.Matrix.Vector2
->import Math.Matrix.Vector3
->import Math.Matrix.Simple
->import Math.Number.Interface
->import Math.Number.Real
->import Math.Number.Group
->import qualified Math.Number.Stream as Stream
->import Math.Number.Stream (Stream(..),Limiting(..), Closed(..), Infinitesimal(..))
+>import safe Math.Tools.PrettyP
+>import safe Math.Tools.Universe
+>import safe Math.Matrix.Matrix
+>import safe Data.Complex
+>import safe Math.Tools.Isomorphism
+>import safe Math.Tools.Orthogonal
+>import safe Math.Matrix.Interface
+>import safe qualified Data.Binary as Bin
+>import safe qualified Math.Matrix.Covector as Covector
+>import safe Math.Matrix.Covector
+>import safe Math.Tools.Median
+>import safe Math.Tools.Visitor
+>import safe Math.Tools.CoMonad
+>import safe Math.Matrix.Covector
+>import safe Math.Matrix.Vector1
+>import safe Math.Matrix.Vector2
+>import safe Math.Matrix.Vector3
+>import safe Math.Matrix.Simple
+>import safe Math.Number.Interface
+>import safe Math.Number.Real
+>import safe Math.Number.Group
+>import safe qualified Math.Number.Stream as Stream
+>import safe Math.Number.Stream (Stream(..),Limiting(..), Closed(..), Infinitesimal(..))
 
 >data Vector4 s = Vector4 {
 >  tcoord4 :: !s,
@@ -391,7 +391,7 @@ instance FractionalSpace (Vector4 (Complex R))
 >partial_derivate4t :: (Infinitesimal a, Closed a) => (Vector4 a -> a) -> Vector4 a -> a
 >partial_derivate4t = partial_derivate dt_4
 
->derivate4t_squared :: (Closed a, Infinitesimal a, a ~ Scalar a)
+>derivate4t_squared :: (Closed a, Infinitesimal a)
 >     => Covector.Dual (Vector4 a) -> Covector.Dual (Vector4 a)
 >derivate4t_squared = operator_map (partial_derivate4t . partial_derivate4t)
 
@@ -399,17 +399,27 @@ instance FractionalSpace (Vector4 (Complex R))
 >  Covector.Dual (Vector4 a) -> Covector.Dual (Vector4 a)
 >derivate4t = operator_map partial_derivate4t
 
->derivate4x :: (Closed a, Infinitesimal a, a ~ Scalar a) =>
+>derivate4x :: (Closed a, Infinitesimal a) =>
 >  Covector.Dual (Vector4 a) -> Covector.Dual (Vector4 a)
 >derivate4x = operator_map (partial_derivate4x)
 
->derivate4y :: (Closed a, Infinitesimal a, a ~ Scalar a) =>
+>derivate4y :: (Closed a, Infinitesimal a) =>
 >  Covector.Dual (Vector4 a) -> Covector.Dual (Vector4 a)
 >derivate4y = operator_map (partial_derivate4y)
 > 
->derivate4z :: (Closed a, Infinitesimal a, a ~ Scalar a) =>
+>derivate4z :: (Closed a, Infinitesimal a) =>
 >  Covector.Dual (Vector4 a) -> Covector.Dual (Vector4 a)
 >derivate4z = operator_map (partial_derivate4z)
+
+>del_partial4 :: (DifferentiallyClosed a) => (Vector4 a -> a) -> Vector4 a -> Vector4 a
+>del_partial4 f (Vector4 x y z t) = Vector4 (partial1_4 ff x y z t)
+>                                           (partial2_4 ff x y z t)
+>                                           (partial3_4 ff x y z t)
+>                                           (partial4_4 ff x y z t)
+>   where ff a b c d = f (Vector4 a b c d)
+
+>instance DifferentialOperator Vector4 where
+>   partial = del_partial4
 
 >del4 :: (Closed a, Infinitesimal a, a ~ Scalar a)
 >      => Vector4 (Dual (Vector4 a) -> Dual (Vector4 a))
