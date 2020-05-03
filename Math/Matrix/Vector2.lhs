@@ -39,10 +39,10 @@
 >  where ff a b = f (Vector2 a b)
 
 
->cov2 :: (a ~ Scalar a) => Vector2 (Dual (Vector2 a))
+>cov2 :: Vector2 (Dual (Vector2 a))
 >cov2 = Vector2 (covector xcoord2) (covector ycoord2)
 
->instance (a ~ Scalar a) => ProjectionDual Vector2 a where
+>instance ProjectionDual Vector2 a where
 >   projection_dual = cov2
 
 >instance (Bin.Binary s) => Bin.Binary (Vector2 s) where
@@ -107,10 +107,10 @@
 >   finite (Matrix (Covector f)) = Vector2 (f (covector xcoord2))
 >                                          (f (covector ycoord2))
 
->x2_op :: (s ~ Scalar s) => Dual (Vector2 s)
+>x2_op :: Dual (Vector2 s)
 >x2_op = covector xcoord2
 
->y2_op :: (s ~ Scalar s) => Dual (Vector2 s)
+>y2_op :: Dual (Vector2 s)
 >y2_op = covector ycoord2
 
 >type Matrix2 a = (Vector2 :*: Vector2) a
@@ -232,27 +232,33 @@ deriving instance (Show a) => Show (Codiagonal Vector2 a)
 >     (a',b') <- approximations x <&> approximations y
 >     return $ Vector2 a' b'
 
->instance (a ~ Scalar a, Infinitesimal a, Closed a) => VectorDerivative (Vector2 a) where
+>instance (Infinitesimal a, Closed a) => VectorDerivative (Vector2 a) where
 >   divergence = divergence2
 >   grad = grad2
 
 
 
->divergence2 :: (a ~ Scalar a, Infinitesimal a, Closed a) => LinearMap (Vector2 a) (Vector2 a) -> Dual (Vector2 a)
->divergence2 f = partial_derivate2x (covector (xcoord2 . (-!<) f))
->             %+ partial_derivate2y (covector (ycoord2 . (-!<) f))
+>divergence2 :: (Infinitesimal a, Closed a) => LinearMap (Vector2 a) (Vector2 a) -> Dual (Vector2 a)
+>divergence2 f = partial_derivate2x (linear_dual_2x f)
+>             %+ partial_derivate2y (linear_dual_2y f)
+
+>linear_dual_2x :: LinearMap v (Vector2 (Scalar v)) -> Dual v
+>linear_dual_2x f = covector (xcoord2 . (-!<) f)
+>
+>linear_dual_2y :: LinearMap v (Vector2 (Scalar v)) -> Dual v
+>linear_dual_2y f = covector (ycoord2 . (-!<) f)
 
 >grad2 :: (Infinitesimal a, Closed a) => Dual (Vector2 a) -> LinearMap (Vector2 a) (Vector2 a)
 >grad2 f = LinearMap $ \z -> Vector2 (partial_derivate2x f `bracket` z)
 >                                    (partial_derivate2y f `bracket` z)
 
->curl2 :: (a ~ Scalar a, Infinitesimal a, Closed a) => LinearMap (Vector2 a) (Vector2 a) -> LinearMap (Vector2 a) (Vector2 a)
+>curl2 :: (Infinitesimal a, Closed a) => LinearMap (Vector2 a) (Vector2 a) -> LinearMap (Vector2 a) (Vector2 a)
 >curl2 f = LinearMap $ \z -> Vector2 (partial_derivate2y fx `bracket` z
 >                     - partial_derivate2x fy `bracket` z)
 >                    (partial_derivate2x fy `bracket` z 
 >                     - partial_derivate2y fx `bracket` z)
->  where fx = covector (xcoord2 . (-!<) f)
->        fy = covector (ycoord2 . (-!<) f)
+>  where fx = linear_dual_2x f
+>        fy = linear_dual_2y f
 
 >del2 :: (Infinitesimal v, Closed v) => Vector2 (Dual (Vector2 v) -> Dual (Vector2 v))
 >del2 = Vector2 partial_derivate2x partial_derivate2y
@@ -261,10 +267,10 @@ deriving instance (Show a) => Show (Codiagonal Vector2 a)
 > => Dual (Vector2 a) -> (Vector2 :*: Vector2) (Dual (Vector2 a))
 >hessian2 f = matrix (\a b -> a (b f)) del2 del2
 > 
->instance (a ~ Scalar a, Infinitesimal a, Closed a) => VectorCrossProduct (Vector2 a) where
+>instance (Infinitesimal a, Closed a) => VectorCrossProduct (Vector2 a) where
 >  curl = curl2
 >
->instance (a ~ Scalar a, Infinitesimal a, Closed a) => VectorLaplacian (Vector2 a)
+>instance (Infinitesimal a, Closed a) => VectorLaplacian (Vector2 a)
 
 >instance Monad Vector2 where
 >   return x = Vector2 x x

@@ -1,5 +1,4 @@
->{-# LANGUAGE Safe,TypeFamilies, FlexibleInstances, MultiParamTypeClasses,
->             FlexibleContexts #-}
+>{-# LANGUAGE Safe #-}
 >module Math.Tools.I where
 >data I a = I { unI :: !a }
 

@@ -79,6 +79,13 @@ common options
   Else
      build-depends:
 
+common testdepends
+  build-depends: HUnit, QuickCheck
+  build-depends: Cabal >= 2.4.1.0
+  build-depends: doctest
+  build-depends: byte-order
+  build-depends: network
+     
 common builddepends
   build-depends: base, ghc-prim >= 0.5.2, random >=1.1 && <1.2
   build-depends: mtl >=2.2 && <2.3
@@ -97,7 +104,7 @@ common builddepends
   build-depends: directory >= 1.3.3.0
                                  
 library
-    import: options, builddepends
+    import: options, builddepends, testdepends
     exposed-modules: Math,Math.Number,Math.Tools,Math.Number.Real,Math.Number.R,Math.Matrix,Math.Tools.Cmdline, Math.Matrix.Interface, Math.Matrix.Simple, Math.Matrix.Instances,Math.Number.NumericExpression, Math.Tools.Nondeterministic, Math.Tools.Set, Math.Tools.Monoid, Math.Tools.PrettyP, Math.Tools.Show, Math.Number.DimensionalAnalysis, Math.Tools.BDD, Math.Tools.NaturalNumber, Math.Tools.Id,  Math.Tools.Queue, Math.Tools.List, Math.Tools.Integer, Math.Tools.LeafTree, Math.Tools.Maybe, Math.Tools.CoFunctor, Math.Matrix.Covector, Math.Matrix.Indexable, Math.Tools.Monad, Math.Tools.CoMonad, Math.Tools.Map, Math.Tools.Parser, Math.Tools.Expression, Math.Tools.Identity, Math.Tools.Functor, Math.Tools.LineInfo, Math.Tools.ParserInterface, Math.Tools.Universe, Math.Tools.NaturalTransformation, Math.Tools.Isomorphism, Math.Matrix.Linear, Math.Matrix.Matrix, Math.Tools.I, Math.Tools.Tree, Math.Tools.Orthogonal, Math.Tools.Endomorphism, Math.Tools.ParseMonad, Math.Matrix.Unicode, Math.Tools.StateArrow,  Math.Tools.ParsingCombinators, Math.Number.Group, Math.Tools.Adjunction, Math.Tools.Median, Math.Tools.Visitor, Math.Tools.Complex,  Math.Number.Stream, Math.Graph, Math.Matrix.Vector1, Math.Matrix.Vector2, Math.Matrix.Vector4, Math.Matrix.QuasiQuoter, Math.Number.BiStream, Math.Matrix.Transpose, Math.Matrix.Vector3, Math.Graph.GraphReader, Math.Graph.Reversible, Math.Graph.Monoid, Math.Graph.Labeled, Math.Graph.GraphMonoid, Math.Graph.Show, Math.Graph.Action, Math.Graph.InGraphMonad, Math.Graph.ActionSet, Math.Graph.GraphMap, Math.Graph.Interface, Math.Graph.GraphMonad, Math.Graph.TransformationMonoid, Math.Graph.Algorithms, Math.Graph.InGraphA, Math.Graph.Dot, Math.Graph.XML, Math.Graph.Inductive, Math.Matrix.SIMD, Math.Number.Units, Math.Number.Complex, Math.Number.TypeUnits, Math.Number.TypeRational, Math.Number.USCustomaryUnits, Math.Number.Interface, Math.Number.Transform2D, Math.Matrix.Concurrent
 --  ghc-shared-options: -j -shared -fPIC -feager-blackholing
   -- +RTS -N -A128m -n2m -RTS  
@@ -146,13 +153,13 @@ executable mathgui
            build-depends: byte-order >= 0.1.2.0
   
 Test-Suite doctests
-        import: options
-        type: exitcode-stdio-1.0
-        main-is: Math/Test/DocTest.lhs
-        build-depends: base, doctest >= 0.8
+         import: options
+         type: exitcode-stdio-1.0
+         main-is: Math/Test/DocTest.lhs
+         build-depends: base, doctest >= 0.8
                           
 Test-Suite unit-tests
-        import: options, builddepends
+        import: options, builddepends, testdepends
         type:    exitcode-stdio-1.0
         main-is:   UnitTest.lhs
         other-modules: Math.Tools.Test.ToolsTests, Math.Number.Test.RealTest, Math.Matrix.Test.Vector3Test
@@ -185,4 +192,3 @@ Test-Suite unit-tests
         other-modules: Math.Matrix.Vector4, Math.Matrix.Vector4
         other-modules: Math.Tools.LineInfo
         other-modules: Math.Tools.ParseMonad, Math.Tools.ParserInterface
-        build-depends: HUnit, QuickCheck

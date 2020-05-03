@@ -19,7 +19,7 @@
 >import Control.Category
 >import Data.Monoid
 >import Prelude hiding (id,(.))
->import Math.Tools.PrettyP (render,pp)
+>import safe Math.Tools.PrettyP (render,pp)
 
 >class (Category ar, Category ar') => ArrowTransformation ar ar' where
 >      mapA :: ar a b -> ar' a b

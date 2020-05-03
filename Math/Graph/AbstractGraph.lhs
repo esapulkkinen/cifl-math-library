@@ -20,16 +20,16 @@
 >   c <- ag_cod -< e
 >   returnA -< Pair d c
 
->data GraphArr arr a b where
->  GraphArr :: (forall edge node edge' node'.
->              (AGraph arr edge node -> arr a a),
->              (AGraph arr edge' node' -> arr b b),
->              ((AGraph arr edge node -> AGraph arr edge' node') -> arr a b))
->           -> GraphArr arr a b
+data GraphArr arr a b where
+  GraphArr :: (forall edge node edge' node'.
+              (AGraph arr edge node -> arr a a),
+              (AGraph arr edge' node' -> arr b b),
+              ((AGraph arr edge node -> AGraph arr edge' node') -> arr a b))
+           -> GraphArr arr a b
            
 
->instance (Category arr) => Category (GraphArr arr) where
->   id = GraphArr (\m -> m (const id) (const id) id)
->   (GraphArr f) . (GraphArr f') =
->     GraphArr (\m -> m (\domg -> id) (\codg -> id)
->                    (\h -> f (const id) . h . f' (const id)))
+instance (Category arr) => Category (GraphArr arr) where
+   id = GraphArr (\m -> m (const id) (const id) id)
+   (GraphArr f) . (GraphArr f') =
+     GraphArr (\m -> m (\domg -> id) (\codg -> id)
+                    (\h -> f (const id) . h . f' (const id)))

@@ -41,10 +41,10 @@ import Math.Matrix.Dimension
 > }
 >    deriving (Eq, Typeable, Data, Generic)
 
->cov4 :: (a ~ Scalar a) => Vector4 (Dual (Vector4 a))
+>cov4 :: Vector4 (Dual (Vector4 a))
 >cov4 = Vector4 (covector tcoord4) (covector xcoord4) (covector ycoord4) (covector zcoord4)
 
->instance (a ~ Scalar a) => ProjectionDual Vector4 a where
+>instance ProjectionDual Vector4 a where
 >   projection_dual = cov4
 
 >instance (ShowPrecision s) => ShowPrecision (Vector4 s) where
@@ -82,7 +82,7 @@ import Math.Matrix.Dimension
 >                                         (Vector4 y z t x)
 >                                         (Vector4 z t x y)
 
->instance (Num a, a ~ Scalar a) => FiniteDimensional (Vector4 a) where
+>instance (Num a) => FiniteDimensional (Vector4 a) where
 >   finite (Matrix (Covector f)) = Vector4
 >                                    (f (covector tcoord4))
 >                                    (f (covector xcoord4))
@@ -357,7 +357,7 @@ instance FractionalSpace (Vector4 (Complex R))
 >index4 2 = ycoord4
 >index4 3 = zcoord4
 
->index4_dual :: (a ~ Scalar a) => Int -> Covector.Dual (Vector4 a)
+>index4_dual :: Int -> Covector.Dual (Vector4 a)
 >index4_dual = Covector.covector . index4
 
 >vector4_to_vec4 :: Vector4 a -> FourD -> a
@@ -366,7 +366,7 @@ instance FractionalSpace (Vector4 (Complex R))
 >diagonal4 :: (Vector4 :*: Vector4) a -> Vector4 a
 >diagonal4 (Matrix x) = diagonal_projections <*> x
 
->diagonal_projections4 :: (a ~ Scalar a) => Vector4 (Covector.Dual (Vector4 a))
+>diagonal_projections4 :: Vector4 (Covector.Dual (Vector4 a))
 >diagonal_projections4 = Vector4 (covector tcoord4)
 >                                (covector xcoord4)
 >                                (covector ycoord4)
@@ -421,7 +421,7 @@ instance FractionalSpace (Vector4 (Complex R))
 >instance DifferentialOperator Vector4 where
 >   partial = del_partial4
 
->del4 :: (Closed a, Infinitesimal a, a ~ Scalar a)
+>del4 :: (Closed a, Infinitesimal a)
 >      => Vector4 (Dual (Vector4 a) -> Dual (Vector4 a))
 >del4 = Vector4 derivate4t derivate4x derivate4y derivate4z
 
@@ -429,7 +429,7 @@ instance FractionalSpace (Vector4 (Complex R))
 >del4_ = Vector4 partial_derivate4t partial_derivate4x partial_derivate4y
 >               partial_derivate4z
 
->hessian4 :: (Infinitesimal v, Closed v, v ~ Scalar v)
+>hessian4 :: (Infinitesimal v, Closed v)
 >  => Dual (Vector4 v) -> (Vector4 :*: Vector4) (Dual (Vector4 v))
 >hessian4 f = matrix (\a b -> a (b f)) del4 del4
 
@@ -467,29 +467,41 @@ instance FractionalSpace (Vector4 (Complex R))
 >                        0)
 >         
 
->instance (Num a, Closed a, Infinitesimal a, a ~ Scalar a) => VectorDerivative (Vector4 a) where
+>instance (Num a, Closed a, Infinitesimal a) => VectorDerivative (Vector4 a) where
 >   divergence = divergence4
 >   grad = grad4
 
->divergence4 :: (Infinitesimal a, Closed a, a ~ Scalar a) => LinearMap (Vector4 a) (Vector4 a) -> Covector.Dual (Vector4 a)
+>divergence4 :: (Infinitesimal a, Closed a) => LinearMap (Vector4 a) (Vector4 a) -> Covector.Dual (Vector4 a)
 >divergence4 f = covector $ \z -> partial_derivate4t (tcoord4 . (-!<) f) z +
 >                                partial_derivate4x (xcoord4 . (-!<) f) z +
 >                                partial_derivate4y (ycoord4 . (-!<) f) z +
 >                                partial_derivate4z (zcoord4 . (-!<) f) z
 
->laplace4 :: (Infinitesimal a, Closed a, a ~ Scalar a) => Covector.Dual (Vector4 a) -> Covector.Dual (Vector4 a)
+>laplace4 :: (Infinitesimal a, Closed a) => Covector.Dual (Vector4 a) -> Covector.Dual (Vector4 a)
 >laplace4 f = divergence4 (grad4 f)
 
->instance (Infinitesimal a, Closed a, a ~ Scalar a) => VectorLaplacian (Vector4 a) where
+>instance (Infinitesimal a, Closed a) => VectorLaplacian (Vector4 a) where
 >  vector_laplace = vector_laplace4
 
->vector_laplace4 :: (VectorDerivative v, Scalar (Scalar v) ~ Scalar v)
+>vector_laplace4 :: (VectorDerivative v)
 > => LinearMap v (Vector4 (Scalar v)) -> LinearMap v (Vector4 (Scalar v))
 >vector_laplace4 f = LinearMap $ \x -> Vector4
->   ((laplace $ covector (tcoord4 . (-!<) f)) `bracket` x)
->   ((laplace $ covector (xcoord4 . (-!<) f)) `bracket` x)
->   ((laplace $ covector (ycoord4 . (-!<) f)) `bracket` x)
->   ((laplace $ covector (zcoord4 . (-!<) f)) `bracket` x)
+>   ((laplace $ linear_dual_4t f) `bracket` x)
+>   ((laplace $ linear_dual_4x f) `bracket` x)
+>   ((laplace $ linear_dual_4y f) `bracket` x)
+>   ((laplace $ linear_dual_4z f) `bracket` x)
+
+>linear_dual_4t :: LinearMap v (Vector4 (Scalar v)) -> Dual v
+>linear_dual_4t f = covector (tcoord4 . (-!<) f)
+
+>linear_dual_4x :: LinearMap v (Vector4 (Scalar v)) -> Dual v
+>linear_dual_4x f = covector (xcoord4 . (-!<) f)
+
+>linear_dual_4y :: LinearMap v (Vector4 (Scalar v)) -> Dual v
+>linear_dual_4y f = covector (ycoord4 . (-!<) f)
+
+>linear_dual_4z :: LinearMap v (Vector4 (Scalar v)) -> Dual v
+>linear_dual_4z f = covector (zcoord4 . (-!<) f)
 
 >-- | 1 x 4 matrices:
 >instance (Num a) => VectorSpace ((Vector1 :*: Vector4) a) where

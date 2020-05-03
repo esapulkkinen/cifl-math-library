@@ -17,6 +17,9 @@
 >   pure x = IdentifierM $ \i -> return (x,i)
 >   (IdentifierM f) <*> (IdentifierM x) = IdentifierM $ \i -> x i >>= \ (xv,j) -> f j >>= \ (fv,k) -> return (fv xv,k)
 
+>instance Semigroup Integer where
+>  (<>) = (+)
+
 >instance Monoid Integer where
 >  mempty = 0
 >  mappend = (+)

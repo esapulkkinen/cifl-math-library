@@ -44,17 +44,17 @@
 >  firstQ :: q t -> t
 >  lastQ  :: q t -> t
 
->instance QueueOps Q where
->   show_first (PushQ EmptyQ a _) = show a
->   show_first (PushQ (PushQ x a' y) a b) = show_first (PushQ x a' y)
->   show_last (PushQ _ a EmptyQ) = show a
->   show_last (PushQ b a (PushQ x a' y)) = show_last (PushQ x a' y)
->   firstQ (PushQ EmptyQ x _) = x
->   firstQ (PushQ z@(PushQ _ _ _) _ _) = firstQ z
->   firstQ EmptyQ = undefined
->   lastQ (PushQ _ a EmptyQ) = a
->   lastQ (PushQ _ a z@(PushQ _ _ _)) = lastQ z
->   lastQ EmptyQ = undefined
+instance QueueOps Q where
+   show_first (PushQ EmptyQ a _) = show a
+   show_first (PushQ (PushQ x a' y) a b) = show_first (PushQ x a' y)
+   show_last (PushQ _ a EmptyQ) = show a
+   show_last (PushQ b a (PushQ x a' y)) = show_last (PushQ x a' y)
+   firstQ (PushQ EmptyQ x _) = x
+   firstQ (PushQ z@(PushQ _ _ _) _ _) = firstQ z
+   firstQ EmptyQ = undefined
+   lastQ (PushQ _ a EmptyQ) = a
+   lastQ (PushQ _ a z@(PushQ _ _ _)) = lastQ z
+   lastQ EmptyQ = undefined
 
 >type family Last t
 >type instance Last (a,t,()) = t

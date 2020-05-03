@@ -43,8 +43,19 @@ extra-deps:
  - lazysmallcheck-0.6
  - graphviz-2999.20.0.3
  - Cabal-2.4.1.0
+ - HUnit-1.6.0.0
+ - QuickCheck-2.12.6.1
  - byte-order-0.1.2.0
  - primitive-unaligned-0.1.1.1
+ - fuzzy-0.1.0.0@sha256:123b9581c587ae5422b67bbad7e81186b1ecbf86941a8049f921ddf136f2234e,833
+ - haddock-library-1.8.0@sha256:293544a80c3d817a021fec69c430e808914a9d86db0c6bd6e96a386607a66627,3850
+ - haskell-lsp-0.19.0.0@sha256:03a1a05fbdea9376cb1edec358866dc5781925badc3f4b5029ccf4174e765efd,5271
+ - haskell-lsp-types-0.19.0.0@sha256:b8b462948f506226f324e0e56010cc9b47df90ec9ebad3b18caa9390d5427287,2941
+ - hie-bios-0.4.0@sha256:01bb3a9c99173ad6a7c7bd3f2f58ef5019c415b365ae5d573dc489e0940a39f3,8389
+ - regex-tdfa-1.3.1.0@sha256:c77808a0d68d275c75fb84dc9ced340536574c9aa7961604036a606a232d585b,6274
+ - rope-utf16-splay-0.3.1.0@sha256:15a53c57f8413d193054bb5f045929edae3b2669def4c6af63197b30dc1d5003,2029
+ - shake-0.18.5@sha256:a4775c96499e1ed89462903cac292ba209420af85665f34fc792630734025353,15340
+ - regex-base-0.94.0.0@sha256:d514eab2aa9ba4b9d14900ac40cbdea1993372466a6cc6ffeeab59a1975563c0,2166
 
 # Override default flag values for local packages and extra-deps
 # flags: {}

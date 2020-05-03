@@ -434,18 +434,18 @@ approximations_vector3 (Vector3 x y z) = do
 >dz3 :: (Num a) => a -> Vector3 a -> Vector3 a
 >dz3 eps = \case { (Vector3 x y z) -> Vector3 x y (z + eps) }
 
->partial_derivate3x :: (a ~ Scalar a, Infinitesimal a, Closed a)
+>partial_derivate3x :: (Infinitesimal a, Closed a)
 >                   => Dual (Vector3 a) -> Dual (Vector3 a)
 >partial_derivate3x (Covector f) = covector $ partial_derivate dx3 f
 
->partial_derivate3y :: (a ~ Scalar a,Infinitesimal a, Closed a) => Dual (Vector3 a) -> Dual (Vector3 a)
+>partial_derivate3y :: (Infinitesimal a, Closed a) => Dual (Vector3 a) -> Dual (Vector3 a)
 >partial_derivate3y (Covector f) = covector $ partial_derivate dy3 f
           
->partial_derivate3z :: (a ~ Scalar a,Infinitesimal a, Closed a) => Dual (Vector3 a) -> Dual (Vector3 a)
+>partial_derivate3z :: (Infinitesimal a, Closed a) => Dual (Vector3 a) -> Dual (Vector3 a)
 >partial_derivate3z (Covector f) = covector $ partial_derivate dz3 f
 
 >-- | \[\nabla_3\], three-dimensional partial derivate. Use Applicative.<*> for applying it.
->del3 :: (v ~ Scalar v, Infinitesimal v, Closed v) => Vector3 (Dual (Vector3 v) -> Dual (Vector3 v))
+>del3 :: (Infinitesimal v, Closed v) => Vector3 (Dual (Vector3 v) -> Dual (Vector3 v))
 >del3 = Vector3 partial_derivate3x partial_derivate3y partial_derivate3z
 
 
@@ -461,50 +461,57 @@ approximations_vector3 (Vector3 x y z) = do
 > => Dual (Vector3 v) -> (Vector3 :*: Vector3) (Dual (Vector3 v))
 >hessian3 f = matrix (\a b -> a (b f)) del3 del3
 
->instance (a ~ Scalar a, Infinitesimal a, Closed a) => VectorDerivative (Vector3 a) where
+>instance (Infinitesimal a, Closed a) => VectorDerivative (Vector3 a) where
 >  divergence = divergence3
 >  grad = grad3
 
->instance (a ~ Scalar a, Infinitesimal a, Closed a) => VectorCrossProduct (Vector3 a) where
+>instance (Infinitesimal a, Closed a) => VectorCrossProduct (Vector3 a) where
 >  curl = curl3
 
->instance (a ~ Scalar a, Infinitesimal a, Closed a) => VectorLaplacian (Vector3 a) where
+>instance (Infinitesimal a, Closed a) => VectorLaplacian (Vector3 a) where
 >  vector_laplace = vector_laplace3
 
->vector_laplace3 :: (VectorDerivative v, Scalar (Scalar v) ~ Scalar v) =>
+>vector_laplace3 :: (VectorDerivative v) =>
 >  LinearMap v (Vector3 (Scalar v)) -> LinearMap v (Vector3 (Scalar v))
 >vector_laplace3 f = LinearMap $ \x -> Vector3
-> ((laplace $ covector (xcoord3 . (-!<) f)) `bracket` x)
-> ((laplace $ covector (ycoord3 . (-!<) f)) `bracket` x)
-> ((laplace $ covector (zcoord3 . (-!<) f)) `bracket` x)
+> ((laplace $ linear_dual_3x f) `bracket` x)
+> ((laplace $ linear_dual_3y f) `bracket` x)
+> ((laplace $ linear_dual_3z f) `bracket` x)
 
 >-- | <https://en.wikipedia.org/wiki/Divergence>
->divergence3 :: (a ~ Scalar a, Infinitesimal a, Closed a)
+>divergence3 :: (Infinitesimal a, Closed a)
 > => LinearMap (Vector3 a) (Vector3 a) -> Dual (Vector3 a)
->divergence3 f = partial_derivate3x fx 
->              + partial_derivate3y fy
->              + partial_derivate3z fz
->   where fx = covector (xcoord3 . (-!<) f)
->         fy = covector (ycoord3 . (-!<) f)          
->         fz = covector (zcoord3 . (-!<) f)
+>divergence3 f = partial_derivate3x (linear_dual_3x f)
+>              + partial_derivate3y (linear_dual_3y f)
+>              + partial_derivate3z (linear_dual_3z f)
+
+>linear_dual_3x :: LinearMap v (Vector3 (Scalar v)) -> Dual v
+>linear_dual_3x f = covector (xcoord3 . (-!<) f)
+
+>linear_dual_3y :: LinearMap v (Vector3 (Scalar v)) -> Dual v
+>linear_dual_3y f = covector (ycoord3 . (-!<) f)
+
+>linear_dual_3z :: LinearMap v (Vector3 (Scalar v)) -> Dual v
+>linear_dual_3z f = covector (zcoord3 . (-!<) f)
 
 >cycle3 :: Vector3 a -> Stream a
 >cycle3 z@(Vector3 a b c) = a `Pre` b `Pre` c `Pre` cycle3 z
 
 
 >-- | <https://en.wikipedia.org/wiki/Gradient>
->grad3 :: (s ~ Scalar s, Infinitesimal s, Closed s) => Dual (Vector3 s) -> LinearMap (Vector3 s) (Vector3 s)
+>grad3 :: (Infinitesimal s, Closed s) => Dual (Vector3 s) -> LinearMap (Vector3 s) (Vector3 s)
 >grad3 f = LinearMap $ \z -> Vector3 (partial_derivate3x f `bracket` z)
 >                                    (partial_derivate3y f `bracket` z)
 >                                    (partial_derivate3z f `bracket` z)
 
 >-- | <https://en.wikipedia.org/wiki/Laplace_operator>
->laplace3 :: (a ~ Scalar a, Infinitesimal a, Closed a) => Dual (Vector3 a) -> Dual (Vector3 a)
+>laplace3 :: (Infinitesimal a, Closed a) => Dual (Vector3 a) -> Dual (Vector3 a)
 >laplace3 f = divergence3 (grad3 f)
 
 
 >-- | <https://en.wikipedia.org/wiki/Curl_(mathematics)>
->curl3 :: (a ~ Scalar a, Infinitesimal a, Closed a) => LinearMap (Vector3 a) (Vector3 a)
+
+>curl3 :: (Infinitesimal a, Closed a) => LinearMap (Vector3 a) (Vector3 a)
 >                           -> LinearMap (Vector3 a) (Vector3 a)
 >curl3 f = LinearMap $ \z -> Vector3 ((partial_derivate3y fz - partial_derivate3z fy)
 >                       `bracket` z)
@@ -512,9 +519,9 @@ approximations_vector3 (Vector3 x y z) = do
 >                       `bracket` z)
 >                    ((partial_derivate3x fy - partial_derivate3y fx)
 >                       `bracket` z)
->  where fx = covector (xcoord3 . (-!<) f)
->        fy = covector (ycoord3 . (-!<) f)
->        fz = covector (zcoord3 . (-!<) f)
+>  where fx = linear_dual_3x f
+>        fy = linear_dual_3y f
+>        fz = linear_dual_3z f
 
 >instance Applicative Vector3 where
 >   pure x = Vector3 x x x

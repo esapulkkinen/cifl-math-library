@@ -39,5 +39,5 @@
 >currentDirectory :: (?currentDirectory :: FilePath) => IO FilePath
 >currentDirectory = return ?currentDirectory
 
->inDirectory :: FilePath -> (?currentDirectory :: FilePath => IO a) -> IO a
+>inDirectory :: FilePath -> ((?currentDirectory :: FilePath) => IO a) -> IO a
 >inDirectory path action = let ?currentDirectory = path in action

@@ -70,6 +70,7 @@
 > (a :&: b) c -> m a -> n b -> (m :*: n) c
 >simpleMatrix m = m <!> (matrix,id)
 
+
 >dimensionFlip :: (Functor m, Functor n) =>
 > (a :&: b) (c -> d) -> m a -> n c -> (m :*: n) (b -> d)
 >dimensionFlip m = m <!> (matrix,flip)
@@ -423,7 +424,7 @@ to map indices.
 
 >remove21 :: OneD -> TwoD
 >remove21 = svec1 TwoD1
-> 
+
 >remove22 :: OneD -> TwoD
 >remove22 = svec1 TwoD0
 

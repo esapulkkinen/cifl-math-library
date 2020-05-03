@@ -2,7 +2,7 @@
 >             FlexibleInstances, GADTs, LambdaCase
 >  #-}
 >module Math.Tools.Visitor where
->import Math.Tools.I
+>import safe Math.Tools.I
 >import Data.Array (Array,array,assocs)
 >import Data.Ix
 >import Data.Complex

@@ -1,0 +1,17 @@
+cradle:
+  multi:
+    - path: "./Math/Test/"
+      config: { cradle: {stack: { component: "cifl-math-library:test:doctests" }}}
+    - path: "./"
+      config: { cradle: {stack: { component: "cifl-math-library:lib" }}}
+    - path: "./Math/Tools/Test/"
+      config: { cradle: {stack: { component: "cifl-math-library:test:unit-tests" }}}
+    - path: "./Math/Matrix/Test/"
+      config: { cradle: {stack: { component: "cifl-math-library:test:unit-tests" }}}
+    - path: "./Math/Number/Test/"
+      config: { cradle: {stack: { component: "cifl-math-library:test:unit-tests" }}}
+    - path: "./GUI/"
+      config: { cradle: {stack: { component: "cifl-math-library:exe:mathgui" }}}
+    - path: "./Server/"
+      config: { cradle: {none: }}
+

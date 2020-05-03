@@ -1,4 +1,4 @@
->{-# LANGUAGE Safe, TypeSynonymInstances, FlexibleInstances #-}
+>{-# LANGUAGE Trustworthy, TypeSynonymInstances, FlexibleInstances #-}
 >module Math.Tools.PrettyP (
 >   PpShow(..), LeveledPpShow(..), enclose,
 >   parenthesize, render, bracketize, verticalize, pPrint, pp_list, render132,

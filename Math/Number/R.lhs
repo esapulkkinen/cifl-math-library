@@ -215,7 +215,7 @@
 >newtons_method_r :: (R -> R) -> R -> R
 >newtons_method_r f x = lim $ iterate_stream iteration x 
 >  where iteration z' = z' - f z' / derivate f z'
-
+> 
 >instance Numerics R where
 >   newtons_method = newtons_method_r
 
@@ -280,15 +280,15 @@
 >-- | <http://en.wikipedia.org/wiki/Trigonometric_functions trigonometric functions>
 >sin_by_series :: R -> R
 >sin_by_series x = lim $ fst $ uninterleave $ sum_stream $ liftA2 (*) filterStream
->                                   $ liftA2 (/) (index_powers $ constant x)
->                                   $ factorial
->        where filterStream = Pre 0 $ Pre 1 $ Pre 0 $ Pre (negate 1) $ filterStream
+>                  $ liftA2 (/) (index_powers $ constant x)
+>                  $ factorial
+>   where filterStream = Pre 0 $ Pre 1 $ Pre 0 $ Pre (negate 1) $ filterStream
 >              
 >-- | <http://en.wikipedia.org/wiki/Trigonometric_functions trigonometric functions>
 >cos_by_series :: R -> R
 >cos_by_series x = lim $ fst $ uninterleave $ sum_stream $ liftA2 (*) filterStream
->                                   $ liftA2 (/) (index_powers $ constant x) factorial
->        where filterStream = Pre 1 $ Pre 0 $ Pre (negate 1) $ Pre 0 $ filterStream
+>                  $ liftA2 (/) (index_powers $ constant x) factorial
+>   where filterStream = Pre 1 $ Pre 0 $ Pre (negate 1) $ Pre 0 $ filterStream
 
 >-- | <http://en.wikipedia.org/wiki/Trigonometric_functions trigonometric functions>
 >-- <https://en.wikipedia.org/wiki/Inverse_trigonometric_functions inverse trigonometric functions>
