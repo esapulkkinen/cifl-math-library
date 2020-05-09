@@ -1,6 +1,7 @@
 <meta property="og:url" content="https://esapulkkinen.github.io/cifl-math-library"/>
 <meta property="og:title" content="CIFL math library"/>
-<meta property="og:description" content="Haskell library for linear algebra"/>
+<meta property="og:description" content="Documentation for Haskell library for linear algebra"/>
+<meta property="og:type" content="website"/>
 <meta name="twitter:card" content="summary"/>
 <meta name="twitter:creator" content="@PulkkinenEsa"/>
 <meta name="keywords" content="math, linear algebra, haskell"/>
@@ -21,8 +22,8 @@
 <meta name="dc.type" content="Software"/>
 <meta name="dc.rights" content="Copyright 2000-2019, Esa Pulkkinen. All rights reserved."/>
 <meta name="dc.keywords" content="math, linear algebra, haskell"/>
-<meta name="dc.description" content="Haskell library for linear algebra"/>
-<meta name="dc.source" content="https://esapulkkinen.github.io/cifl-math-library"/>
-<link href="https://github.com/esapulkkinen/cifl-math-library/blob/master/COPYRIGHT" rel="license"/>
-<link href="https://www.gnu.org/licenses/lgpl-3.0.txt" rel="license"/>
-<link href="https://github.com/esapulkkinen/cifl-math-library/blob/master/AUTHORS" rel="author"/>
+<meta name="dc.description" content="Software documentation for Haskell library for linear algebra"/>
+<meta name="dc.source" content="https://github.com/esapulkkinen/cifl-math-library/"/>
+<link rel="license" href="https://github.com/esapulkkinen/cifl-math-library/blob/master/COPYRIGHT""/>
+<link rel="license" href="https://www.gnu.org/licenses/lgpl-3.0.txt"/>
+<link rel="author" href="https://github.com/esapulkkinen/cifl-math-library/blob/master/AUTHORS"/>
