@@ -1,0 +1,25 @@
+<rdf:RDF xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+         xmlns:doap="http://usefulinc.com/ns/doap#"
+         xmlns:foaf="http://xmlns.com/foaf/0.1/">
+ <doap:Project>
+   <doap:name>CIFL math library</doap:name>
+   <doap:homepage rdf:resource="https://esapulkkinen.github.io/cifl-math-library/"/>
+   <doap:programming-language>Haskell</doap:programming-language>
+   <doap:license rdf:resource="https://github.com/esapulkkinen/cifl-math-library/blob/master/COPYRIGHT"/>
+   <doap:license rdf:resource="https://www.gnu.org/licenses/lgpl-3.0.txt"/>
+   <doap:shortdesc xml:lang="en">Haskell library for linear algebra</doap:shortdesc>
+   <doap:description xml:lang="en">Haskell library for linear algebra</doap:description>
+   <doap:maintainer>
+     <foaf:Person>
+       <foaf:name>Esa Pulkkinen</foaf:name>
+       <foaf:mbox>mailto:esa.pulkkinen@iki.fi</foaf:mbox>
+     </foaf:Person>
+   </doap:maintainer>
+   <doap:repository>
+        <doap:GitRepository>
+           <doap:location rdf:resource="https://github.com/esapulkkinen/cifl-math-library.git"/>
+           <doap:browse rdf:resource="https://github.com/esapulkkinen/cifl-math-library"/>
+        </doap:GitRepository>
+   </doap:repository>
+ </doap:Project>
+</rdf:RDF>
