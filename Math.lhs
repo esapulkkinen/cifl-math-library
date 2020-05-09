@@ -7,6 +7,27 @@
 >-- Maintainer: esa.pulkkinen@iki.fi
 >-- Stability: experimental
 >-- Portability: POSIX
+>--
+>-- Haskell libraries containing graphs, vector spaces, matrices,               
+>--           real numbers.
+>--               
+>--           Haskell libraries for conversion of graphs to XML and DOT format
+>--              
+>--          See Github page at <https://github.com/esapulkkinen/cifl-math-library>.
+>--             See documentation at <https://esapulkkinen.github.io/cifl-math-library/>.
+>--               
+>--          <https://esapulkkinen.github.io/cifl-math-library/dependencies-Tools.pdf Tools dependencies>
+>--              
+>--          <https://esapulkkinen.github.io/cifl-math-library/dependencies-Matrix.pdf Matrix dependencies>
+>--
+>--  <https://esapulkkinen.github.io/cifl-math-library/dependencies-Graph.pdf Graph dependencies>
+>-- 
+>--          <https://esapulkkinen.github.io/cifl-math-library/dependencies-Number.pdf Number dependencies>
+>-- 
+>--              <https://esapulkkinen.github.io/cifl-math-library/external-deps.pdf External dependencies>
+>-- 
+>--               <https://github.com/esapulkkinen/cifl-math-library/blob/master/COPYRIGHT COPYRIGHT>.
+>-- 
 >module Math (
 >   module Math.Graph,
 >   module Math.Matrix,
