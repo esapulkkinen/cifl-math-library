@@ -27,3 +27,8 @@
 <link rel="license" href="https://github.com/esapulkkinen/cifl-math-library/blob/master/COPYRIGHT"/>
 <link rel="license" href="https://www.gnu.org/licenses/lgpl-3.0.txt"/>
 <link rel="author" href="https://github.com/esapulkkinen/cifl-math-library/blob/master/AUTHORS"/>
+<meta itemprop="about" content="https://github.com/esapulkkinen/cifl-math-library/"/>
+<meta itemprop="targetPlatform" content="Haskell"/>
+<meta itemprop="proficiencyLevel" content="expert"/>
+<meta itemprop="abstract" content="Haskell library for linear algebra"/>
+<meta itemprop="author" content="Esa Pulkkinen"/>
