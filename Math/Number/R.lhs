@@ -1,6 +1,7 @@
 >{-# LANGUAGE Safe, TypeFamilies, FlexibleInstances, ScopedTypeVariables #-}
 >{-# LANGUAGE TypeOperators, DataKinds, UndecidableInstances #-}
 >{-# LANGUAGE StandaloneDeriving, DeriveAnyClass #-}
+>{-# LANGUAGE MultiParamTypeClasses #-}
 >module Math.Number.R (
 > R(Limit), lim, real, approximate, rational_approximations,
 > floating_approximations, epsilon, infinite_r, liftR,
@@ -28,13 +29,48 @@
 >
 >
 >-- | This real representation takes 'epsilon' as input as in epsilon-delta proof.
->data R = Limit { approximate_endo :: (Endo Rational) }
+>newtype R = Limit { approximate_endo :: (Endo Rational) }
 
 >instance (TypeError (Text "Cannot compare reals for equality." :$$:
->                     Text "Real equality is undecidable."))
+>                     Text "Real equality is undecidable." :$$:
+>                     Text "Please use (<%) and (%<) from Math.Number.Interface.DedekindCut class"))
 >  => Eq R where
 >   x == y = error "cannot compare reals for equality"
 
+>-- | tricky stuff. We use the denominator from the rational to determine
+>-- what accuracy to use for comparison, then use rational comparison.
+>instance DedekindCut Rational R where
+>  r %< (Limit e) = r < (e `appEndo` (eps_rational r))
+>  (Limit e) <% r = (e `appEndo` (eps_rational r)) < r
+
+>eps_rational :: Rational -> Rational
+>eps_rational r = 1 % denominator r
+
+>instance DedekindCut Float R where
+>  r %< (Limit e) = r < fromRational (e `appEndo` eps_float)
+>  (Limit e) <% r = fromRational (e `appEndo` eps_float) < r
+
+>eps_float :: Rational
+>eps_float = 1 % (floatRadix (1 :: Float) ^ floatDigits (1 :: Float))
+
+>instance DedekindCut Double R where
+>  r %< (Limit e) = r < fromRational (e `appEndo` eps_double)
+>  (Limit e) <% r = fromRational (e `appEndo` eps_double) < r
+
+>eps_double :: Rational
+>eps_double = 1 % (floatRadix (1 :: Double) ^ floatDigits (1 :: Double))
+
+>instance DedekindCut Int R where
+>  r %< x = (fromIntegral r :: Rational) %< x
+>  x <% r = x <% (fromIntegral r :: Rational)
+
+>instance DedekindCut Integer R where
+>  r %< x = (fromIntegral r :: Rational) %< x
+>  x <% r = x <% (fromIntegral r :: Rational)
+
+>instance DedekindCut Word R where
+>  r %< x = (fromIntegral r :: Rational) %< x
+>  x <% r = x <% (fromIntegral r :: Rational)
 
 >instance Limiting R where
 >   data Closure R = RClosure { runRClosure :: !R }

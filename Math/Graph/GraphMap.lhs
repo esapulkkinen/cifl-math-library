@@ -8,7 +8,7 @@
 >import Control.Category 
 >import Math.Graph.Reversible
 
->data GraphMap m a b = GraphMap { runGraphMap :: Graph m a -> Graph m b }                                                           
+>newtype GraphMap m a b = GraphMap { runGraphMap :: Graph m a -> Graph m b }                                                           
 >instance Category (GraphMap m) where
 >  id = GraphMap id
 >  (GraphMap f) . (GraphMap g) = GraphMap (f . g)

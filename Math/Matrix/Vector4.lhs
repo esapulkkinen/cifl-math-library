@@ -1,5 +1,7 @@
 >{-# LANGUAGE Safe,FlexibleInstances, MultiParamTypeClasses,FlexibleContexts, TypeOperators, TypeFamilies, NoMonomorphismRestriction, StandaloneDeriving, DeriveGeneric, DeriveDataTypeable, LambdaCase #-}
 >module Math.Matrix.Vector4 where
+>import safe qualified Data.Monoid as Mon
+>import safe qualified Text.PrettyPrint as Pretty
 >import safe Text.PrettyPrint (nest,vcat)
 >import safe Control.Applicative
 >import safe Math.Tools.Functor
@@ -60,6 +62,13 @@ import Math.Matrix.Dimension
 >     y <- Bin.get
 >     z <- Bin.get
 >     return $! Vector4 t x y z
+
+
+
+>instance PpShowVerticalF Vector4 where
+>   ppf_vertical (Vector4 x y z t) = pp '[' <> vcat [pp x,pp y, pp z, pp t] <> pp ']'
+>instance PpShowF Vector4 where
+>   ppf (Vector4 x y z t) = pp '[' Mon.<> (Pretty.sep [pp x,pp ',', pp y, pp ',',pp z, pp ',', pp t]) Mon.<> pp ']'
 
 
 >instance (Num a) => Num (Vector4 a) where
@@ -327,7 +336,7 @@ instance FractionalSpace (Vector4 (Complex R))
 >instance (Floating a, ConjugateSymmetric a) => NormedSpace (Vector4 a) where
 >  norm v = sqrt (v %. v)
 
->instance (Num a, ConjugateSymmetric a) => InnerProductSpace (Vector4 a) where
+>instance {-# OVERLAPPABLE #-} (Num a, ConjugateSymmetric a) => InnerProductSpace (Vector4 a) where
 >  v %. w = sum_coordinates4 $ pure (*) <*> v <*> (conj <$> w)
 
 

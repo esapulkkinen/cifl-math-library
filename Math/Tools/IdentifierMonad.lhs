@@ -6,7 +6,7 @@
 >import Control.Monad.Writer
 >import Control.Monad.Except
 
->data IdentifierM m a = IdentifierM { 
+>newtype IdentifierM m a = IdentifierM { 
 >     runIdentifierM :: Integer -> m (a,Integer)
 >   }
 

@@ -11,7 +11,7 @@
 >import Math.Tools.NaturalTransformation hiding (unyoneda)
 >import qualified Math.Tools.NaturalTransformation as NT
 
->data ASet a b = ASet { runASet :: (Action a) :~> (Action b) }
+>newtype ASet a b = ASet { runASet :: (Action a) :~> (Action b) }
 
 >instance Category ASet where
 >   id = ASet id_trans

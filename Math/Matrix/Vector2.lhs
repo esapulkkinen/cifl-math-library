@@ -1,6 +1,8 @@
 >{-# LANGUAGE Safe,FlexibleInstances, MultiParamTypeClasses, FlexibleContexts, TypeOperators, TypeFamilies, PatternGuards, ScopedTypeVariables, StandaloneDeriving, DeriveGeneric, DeriveDataTypeable #-}
 >module Math.Matrix.Vector2 where
+>import safe qualified Text.PrettyPrint as Pretty
 >import safe Text.PrettyPrint (vcat,nest,(<+>))
+>import safe qualified Data.Monoid as Mon
 >import safe Data.Monoid hiding (Dual)
 >import safe Data.Complex
 >import safe Data.Sequence (Seq, (<|))
@@ -306,6 +308,12 @@ deriving instance (Show a) => Show (Codiagonal Vector2 a)
 >instance (PpShow (f a)) => PpShow ((Vector2 :*: f) a) where
 >  pp (Matrix (Vector2 x y)) = verticalize $ map pp [x,y]
 
+>instance PpShowVerticalF Vector2 where
+>   ppf_vertical (Vector2 x y) = pp '[' <> vcat [pp x,pp y] <> pp ']'
+
+>instance PpShowF Vector2 where
+>   ppf (Vector2 x y) = pp '[' Mon.<> (Pretty.sep [pp x,pp ',', pp y]) Mon.<> pp ']'
+
 
 >instance (Show (f a)) => Show ((Vector2 :*: f) a) where
 >  show (Matrix (Vector2 a b)) = show a ++ "\n" ++ show b
@@ -476,7 +484,7 @@ deriving instance (Show a) => Show (Codiagonal Vector2 a)
 >instance (Floating a, ConjugateSymmetric a) => NormedSpace (Vector2 a) where
 >  norm v = sqrt (v %. v)
 
->instance (Num a, ConjugateSymmetric a) => InnerProductSpace (Vector2 a) where
+>instance {-# OVERLAPPABLE #-} (Num a, ConjugateSymmetric a) => InnerProductSpace (Vector2 a) where
 >  (Vector2 x y) %. (Vector2 x' y') = x*conj x' + y*conj y'
 
 >instance (Num a) => SquareMatrix Vector2 a where

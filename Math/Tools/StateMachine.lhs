@@ -8,7 +8,7 @@
 
 Lawvere&Rosebrugh: Set for Mathematics
 
->data Action s alpha = Action { readCharacter :: alpha -> s -> s }
+>newtype Action s alpha = Action { readCharacter :: alpha -> s -> s }
 
 >readChar :: Action String Char
 >readChar = Action (:)

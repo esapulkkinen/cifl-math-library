@@ -73,11 +73,14 @@ set.
 >                                                  return (Map.insert k a m))
 >                           (return Map.empty)
 
->sequenceByKey :: (Monad m, Ord i) => Map i (i -> m a) -> m (Map i a)
->sequenceByKey = Map.foldrWithKey (\k act res -> do a <- act k
->                                                   m <- res
->                                                   return (Map.insert k a m))
+>sequenceByKeyM :: (Monad m, Ord i) => Map i (i -> m a) -> m (Map i a)
+>sequenceByKeyM = Map.foldrWithKey (\k act res -> do a <- act k
+>                                                    m <- res
+>                                                    return (Map.insert k a m))
 >                          (return Map.empty)
+
+>mapByKeyM :: (Monad m, Ord i) => (i -> a -> m b) -> Map i a -> m (Map i b)
+>mapByKeyM f m = sequenceByKeyM (fmap (\a i -> f i a) m)
 
 >joinMap :: Map String (Map String a) -> Map String a
 >joinMap = Map.foldrWithKey (\ k m1 r -> Map.union (Map.mapKeys (\x -> k ++ ('.':x)) m1) r)
@@ -151,7 +154,7 @@ that do not match in the maps are returned separately.
 >              unifiedMap <- intersectMapA f -< (m1,m2)
 >              returnA -< (m1 Map.\\ m2) `Map.union` (m2 Map.\\ m1) `Map.union` unifiedMap
 
->sequenceMap :: (Ord i) => Map i (IO b) -> IO (Map i b)
+>sequenceMap :: (Ord i, Monad m) => Map i (m b) -> m (Map i b)
 >sequenceMap = Map.foldrWithKey (\ k iob iom -> do b <- iob
 >                                                  r <- iom
 >                                                  return (Map.insert k b r))

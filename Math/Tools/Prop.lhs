@@ -23,7 +23,7 @@
 >-- elements of 'a'.  See the Universe type class for a solution.
 >-- For exposition of classical logic used here,
 >-- see "Lawvere,Rosebrugh: Sets for mathematics".
->data Prop a = Characteristic { runCharacteristic :: a -> Bool }
+>newtype Prop a = Characteristic { runCharacteristic :: a -> Bool }
 
 >instance (Universe a) => Ord (Prop a) where { (<=) = subseteq }
 
@@ -503,7 +503,7 @@ existential_map f p = { b | p `intersect` f^-1({b}) }
 >forevery :: (Universe b) => Prop b -> Prop ()
 >forevery = prop_universal Cat.. prop_iso_terminal_inverse
 
->data (b :\: a) = PSub { runpsub :: PProp a -> PProp b }
+>newtype (b :\: a) = PSub { runpsub :: PProp a -> PProp b }
 
 >data PProp a where
 >   PProp :: Prop a -> PProp a

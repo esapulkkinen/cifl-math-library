@@ -56,6 +56,7 @@
 >type SMatrix3 elem = (ThreeD :&: ThreeD) elem
 >type SMatrix4 elem = (FourD :&: FourD) elem
 >type InfMatrix elem = (Integer :&: Integer) elem
+>type RatioMatrix elem = (Rational :&: Rational) elem
 
 >instance (Universe a) => PpShowF ((->) a) where
 >   ppf f = (hsep $ take 10 lst) <> if null lst2 then Pretty.empty else pp ".." 

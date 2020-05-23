@@ -8,6 +8,8 @@
 >import Data.Binary
 >import Control.Monad
 >import Math.Tools.Visitor
+>import qualified Text.PrettyPrint as Pretty
+>import Math.Tools.PrettyP
 
 >data Tree e n = Node { root_label :: n, children :: [(e,Tree e n)] }
 >  deriving (F.Foldable, Traversable)
@@ -68,6 +70,10 @@
 
 >map_edges :: (e -> e') -> Tree e n -> Tree e' n
 >map_edges f = map_tree f id
+
+>instance (PpShow n, PpShow e) => PpShow (Tree e n) where
+>  pp (Node n lst) = pp n <> if null lst then Pretty.empty else pp ':' <> pp_list (map pp_edge lst)
+>    where pp_edge (e,t) = pp e <> pp '=' <> pp t
 
 >instance (Show n, Show e) => Show (Tree e n) where
 >  show (Node n lst) = show n ++ if null lst then "" else ":" ++ show_edgelist lst

@@ -69,6 +69,32 @@
 >   value_dimension :: !Dimension }
 >  deriving (Typeable, Data, Generic)
 
+>instance (DedekindCut a b, Show a, Num a) => DedekindCut (Quantity a) (Quantity b) where
+>  (r `As` d') %< (x `As` d)
+>     | d == d' = r %< x
+>     | otherwise = invalidDimensions "%<" d' d "" ""
+>  (x `As` d) <% (r `As` d')
+>     | d == d' = x <% r
+>     | otherwise = invalidDimensions "<%" d d' "" ""
+
+
+>instance DedekindCut Double (Quantity Double) where
+>  r %< (x `As` d)
+>     | isDimensionless d = r %< x
+>     | otherwise = invalidDimensions "%<" dimensionless d r x
+>  (x `As` d) <% r
+>     | isDimensionless d = x <% r
+>     | otherwise = invalidDimensions "<%" d dimensionless x r
+
+>instance DedekindCut Float (Quantity Float) where
+>  r %< (x `As` d)
+>     | isDimensionless d = r %< x
+>     | otherwise = invalidDimensions "%<" dimensionless d r x
+>  (x `As` d) <% r
+>     | isDimensionless d = x <% r
+>     | otherwise = invalidDimensions "<%" d dimensionless x r
+
+
 >-- | checked projection
 >dimensionless_amount :: (Show r) => Quantity r -> r
 >dimensionless_amount (x `As` d) | isDimensionless d = x

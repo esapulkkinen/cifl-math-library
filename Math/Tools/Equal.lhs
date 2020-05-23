@@ -75,7 +75,7 @@ Equality is from Baars, Swierstra: Typing Dynamic Typing
 >map_eqtype :: EqType a b -> f a -> f b
 >map_eqtype eqt = coerce (arg eqt)
 
->data Pair x = Pair { unPair :: (x,x) }
+>newtype Pair x = Pair { unPair :: (x,x) }
 
 >data MapEqTypeSecond f a c = MapEqTypeSecond { unmap_eqtype_second :: f c a }
 >data MapEqTypeThird f a b c = MapEqTypeThird { unmap_eqtype_third  :: f c b a }

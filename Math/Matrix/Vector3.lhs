@@ -544,7 +544,7 @@ approximations_vector3 (Vector3 x y z) = do
 >instance (Floating a, ConjugateSymmetric a) => NormedSpace (Vector3 a) where
 >  norm = innerproductspace_norm 
 
->instance (ConjugateSymmetric a, Num a) => InnerProductSpace (Vector3 a) where
+>instance {-# OVERLAPPABLE #-} (ConjugateSymmetric a, Num a) => InnerProductSpace (Vector3 a) where
 >  (Vector3 x y z) %. (Vector3 x' y' z') = x * conj x' + y * conj y' + z * conj z'
 
 >sum_coordinates3 :: (Num a) => Vector3 a -> a
@@ -587,7 +587,7 @@ approximations_vector3 (Vector3 x y z) = do
 >instance Transposable Vector3 Vector3 where
 >  transpose = transpose3
 
->instance (Num a) => LinearTransform Vector3 Vector3 a where
+>instance {-# OVERLAPPABLE #-} (Num a) => LinearTransform Vector3 Vector3 a where
 >  (<*>>) = left_multiply3
 >  (<<*>) = right_multiply3
 

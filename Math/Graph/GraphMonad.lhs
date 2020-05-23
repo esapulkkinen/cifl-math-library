@@ -9,7 +9,7 @@
 >-- mathematician" e.g. monad defined by the functor T(A) = G x A, where G
 >-- is a group or monoid.
 
->data GraphM g a = GraphM { runGraphM :: (g,a) }
+>newtype GraphM g a = GraphM { runGraphM :: (g,a) }
 
 >instance Functor (GraphM g) where
 >   fmap f (GraphM (a,b)) = GraphM (a,f b)

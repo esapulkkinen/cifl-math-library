@@ -9,10 +9,13 @@
 >import safe Data.Sequence (Seq)
 >import safe qualified Data.Binary as Bin
 >import safe qualified Data.Sequence as Seq
+>import safe qualified Data.Monoid as Mon
+>import safe qualified Text.PrettyPrint as Pretty
 >import Math.Tools.I
 >import Math.Tools.CoMonad
 >import Math.Tools.Median
 >import Math.Tools.Universe
+>import Math.Tools.PrettyP
 >import Math.Matrix.Covector
 >import Math.Matrix.Matrix
 >import Math.Matrix.Interface
@@ -51,6 +54,13 @@
 
 >instance Traversable Vector1 where
 >   traverse f (Vector1 x) = Vector1 <$> f x
+
+>instance PpShowVerticalF Vector1 where
+>   ppf_vertical (Vector1 x) = pp '[' <> Pretty.vcat [pp x] <> pp ']'
+
+>instance PpShowF Vector1 where
+>   ppf (Vector1 x) = pp '[' Mon.<> (Pretty.sep [pp x]) Mon.<> pp ']'
+
 
 >instance ProjectionSpace Vector1 Vector1 where
 >   data (Vector1 \\\ Vector1) a = S11Vector

@@ -8,10 +8,10 @@
 >import Math.Tools.CoFunctor
 >import Math.Tools.NaturalTransformation
 
->data LAct x a b = LAct { runLAct :: (x -> a) -> x -> b }
->data RAct x a b = RAct { runRAct :: (a -> x) -> b -> x }
->data Op x a  = Op { runOp :: a -> x }
->data LeftASets arr a b = LeftASets { runLeftASet :: arr a :~> arr b }
+>newtype LAct x a b = LAct { runLAct :: (x -> a) -> x -> b }
+>newtype RAct x a b = RAct { runRAct :: (a -> x) -> b -> x }
+>newtype Op x a  = Op { runOp :: a -> x }
+>newtype LeftASets arr a b = LeftASets { runLeftASet :: arr a :~> arr b }
 
 >instance Category (LeftASets arr) where
 >  id = LeftASets (NatTrans id)

@@ -43,7 +43,7 @@
 >   fmap f (Parsed s li (Left x)) = Parsed s li (Left (f x))
 >   fmap _ (Parsed s li (Right d)) = Parsed s li (Right d)
 
->data ParsingA i o = ParsingA { 
+>newtype ParsingA i o = ParsingA { 
 >    runParsingA  :: (ParseResult i) :==: (ParseResult o)
 >  }
 

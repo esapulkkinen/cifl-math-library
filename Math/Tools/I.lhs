@@ -1,6 +1,6 @@
 >{-# LANGUAGE Safe #-}
 >module Math.Tools.I where
->data I a = I { unI :: !a }
+>newtype I a = I { unI :: a }
 
 >instance Applicative I where
 >   pure x = I x

@@ -3,7 +3,7 @@
 >module Math.Tools.Equality where
 >import Prelude hiding (EQ)
 
->data EQ a = EQ (a -> a -> Bool)
+>newtype EQ a = EQ (a -> a -> Bool)
 
 >data EQMap a = EQMap (a -> a -> Bool) a
 

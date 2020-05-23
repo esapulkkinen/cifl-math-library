@@ -1,4 +1,5 @@
 >{-# LANGUAGE Safe, TypeOperators, UnicodeSyntax, FlexibleInstances #-}
+>{-# LANGUAGE MultiParamTypeClasses #-}
 >module Math.Number.Interface where
 >import safe Control.Applicative
 >import safe Data.Monoid
@@ -11,6 +12,21 @@
 
 >logroot :: (Floating a) => a -> a -> a
 >logroot x k = exp (log x / log k)
+
+>-- | Dedekind cut. Notice typically in constructive reals,
+>-- it's possible to implement comparison between rational and real
+>-- by utilizing denominator of the rational as describing desired accuracy
+>-- but comparison between two reals is undecidable.
+>-- Note, naming is chosen so the percentage mark is at side that
+>-- can always be compared.
+>class (Ord q) => DedekindCut q r where
+>  {-# MINIMAL (%<), (<%) #-}
+>  (%<) :: q -> r -> Bool
+>  (<%) :: r -> q -> Bool
+>  (%>) :: q -> r -> Bool
+>  (>%) :: r -> q -> Bool
+>  x %> y = y <% x
+>  x >% y = y %< x
 
 >class Approximations a where
 >   floating_approximations :: a -> Stream Double
@@ -185,3 +201,70 @@
 
 >instance Infinitary (Closure Integer) where
 >   infinite = InfiniteInteger
+
+>instance DedekindCut Rational Rational where
+>   x <% y = x < y
+>   x %< y = x < y
+
+>instance DedekindCut Rational Float where
+>   x <% r = x < fromRational r
+>   r %< x = fromRational r < x
+
+>instance DedekindCut Float Float where
+>   x <% r = x < r
+>   r %< x = r < x
+>instance DedekindCut Double Double where
+>   x <% r = x < r
+>   r %< x = r < x
+
+>instance DedekindCut Rational Double where
+>   x <% r = x < fromRational r
+>   r %< x = fromRational r < x
+
+>instance DedekindCut Integer Float where
+>   x <% r = x < fromInteger r
+>   r %< x = fromInteger r < x
+>
+>instance DedekindCut Integer Double where
+>   x <% i = x < fromInteger i
+>   i %< x = fromInteger i < x
+
+>instance DedekindCut Integer Rational where
+>   x %< y = fromInteger x < y
+>   x <% y = x < fromInteger y
+
+>instance DedekindCut Int Rational where
+>   x %< y = fromIntegral x < y
+>   x <% y = x < fromIntegral y
+
+>instance DedekindCut Int Float where
+>   x %< y = fromIntegral x < y
+>   x <% y = x < fromIntegral y
+
+>instance DedekindCut Int Double where
+>   x %< y = fromIntegral x < y
+>   x <% y = x < fromIntegral y
+
+>instance DedekindCut Word Word where
+>   x %< y = x < y
+>   x <% y = x < y
+>instance DedekindCut Int Int where
+>   x %< y = x < y
+>   x <% y = x < y
+
+>instance DedekindCut Word Rational where
+>   x %< y = fromIntegral x < y
+>   x <% y = x < fromIntegral y
+
+>instance DedekindCut Word Float where
+>   x %< y = fromIntegral x < y
+>   x <% y = x < fromIntegral y
+
+>instance DedekindCut Word Double where
+>   x %< y = fromIntegral x < y
+>   x <% y = x < fromIntegral y
+
+>instance DedekindCut Integer Integer where
+>   x %< y = x < y
+>   x <% y = x < y
+

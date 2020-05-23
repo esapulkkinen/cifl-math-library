@@ -40,8 +40,7 @@
 >syntaxError' :: Doc -> ParseM a
 >syntaxError' d = ParseM (\ _ li -> SyntaxError li d)
 
->data ParseM a where
->     ParseM :: (Text -> LineInfo -> ParseResult a) -> ParseM a
+>newtype ParseM a = ParseM (Text -> LineInfo -> ParseResult a)
 
 
 >instance Functor ParseM where

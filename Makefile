@@ -46,7 +46,7 @@ build-stack :
 	$(STACK) build --fast cifl-math-library:lib
 
 build-stack-llvm :
-	$(STACK) build --ghc-options="-fllvm"
+	$(STACK) build --ghc-options="-fllvm -O3"
 
 build-llvm:
 	$(CABAL) $(CABALOPTS) $(CABALFLAGS) new-build -j4 --ghc-options="-fllvm"

@@ -124,9 +124,6 @@ import qualified Model.Nondeterminism as Nondet
 >  epsilon_closure = limit epsilon_stream
 >  epsilon_stream = approximations epsilon_closure
 
->ε :: (Infinitesimal a) => Closure a
->ε = epsilon_closure
-
 >instance Limiting Rational where
 >   data Closure Rational = FiniteRational (Stream Rational) | MinusInfiniteRational | InfiniteRational
 >   limit = FiniteRational
@@ -994,6 +991,25 @@ matrix_convolution_product :: (Num a) => (Stream :*: Stream) a -> (Stream :*: St
 >   where ~(Pre d  dr) = stream_diagonal y
 >         ~(Pre zz cr) = stream_codiagonal y
 
+>-- | codiagonals operation implemented natively on lists.
+>-- This is not efficient due to use of list append (++) operation,
+>-- which is linear-time operation. Use 'codiagonals' function instead.
+>codiagonals_list :: (Stream :*: Stream) a -> Stream [a]
+>codiagonals_list q = Pre [d] $ Pre [x,y] $ liftA3 f xr yr $ codiagonals_list m
+>    where f pr suf r = pr : (r ++ [suf])
+>          ~(d,~(~(Pre x xr), ~(Pre y yr)),m) = dematrix q
+>          
+
+>-- | This is faster than the version for lists, because
+>-- the suffix computation on Seq is constant time rather than linear.
+>-- However, strictness seems to behave differently.
+>codiagonals_seq :: (Stream :*: Stream) a -> Stream (Seq.Seq a)
+>codiagonals_seq q = Pre (Seq.singleton d) $ Pre (Seq.singleton x Seq.|> y) $
+>                      liftA3 f xr yr $ codiagonals_seq m
+>       where f pr suf r = (pr Seq.<| r) Seq.|> suf
+>             ~(d,~(~(Pre x xr), ~(Pre y yr)),m) = dematrix q
+>         
+
 >-- | The 'codiagonals' function will divide a two-dimensional
 >-- stream of streams (where elements are \(e_{(i,j)}\) into a stream of
 >-- lists
@@ -1029,23 +1045,6 @@ matrix_convolution_product :: (Num a) => (Stream :*: Stream) a -> (Stream :*: St
 >-- 
 >-- The resulting lists would be: 
 >--  @[d], [x,y], [xr0,d',yr0], [xr1,x',y',yr1],...@
-                      
-codiagonals :: (Stream :*: Stream) a -> Stream [a]
-codiagonals q
-   | (d,~(~(Pre x xr), ~(Pre y yr)),m) <- dematrix q = Pre [d] $ Pre [x,y] $ liftA3 f xr yr $ codiagonals m
-    where f pr suf r = pr : (r ++ [suf])
-
->-- | This is faster than above commented version of codiagonals, because
->-- the suffix computation on Seq is constant time rather than linear.
->-- However, strictness seems to behave differently.
->codiagonals_seq :: (Stream :*: Stream) a -> Stream (Seq.Seq a)
->codiagonals_seq q
->   | ~(d,~(~(Pre x xr), ~(Pre y yr)),m) <- dematrix q =
->       Pre (Seq.singleton d) $
->       Pre (Seq.singleton x Seq.|> y) $
->       liftA3 f xr yr $ codiagonals_seq m
->    where f pr suf r = (pr Seq.<| r) Seq.|> suf
-
 >codiagonals :: (Stream :*: Stream) a -> Stream [a]
 >codiagonals x = fmap Data.Foldable.toList $ codiagonals_seq x
 

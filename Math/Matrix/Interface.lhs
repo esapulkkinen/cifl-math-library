@@ -33,7 +33,7 @@
 >-- | The primary data type for matrices.
 >-- Note that indices are represented in the functors,
 >-- If you want to use numeric indices, use 'Math.Matrix.Simple'. 
->data (f :*: g) a = Matrix { cells :: f (g a) }
+>newtype (f :*: g) a = Matrix { cells :: f (g a) }
 >  deriving (Typeable, Data, Generic)
 
 
@@ -221,7 +221,7 @@ eigenvectors_generic :: (Fractional (g a), EigenDecomposable f (g a))
    => (f :*: f) (g a) -> (g a -> g a) -> (f :*: g) a
 eigenvectors_generic m a = Matrix $ fmap (fix . (a %/)) (eigenvalues m)
 
->data Basis m = Basis [m]
+>newtype Basis m = Basis [m]
 
 >(%-) :: (VectorSpace v) => v -> v -> v
 >x %- y = x %+ (vnegate y)

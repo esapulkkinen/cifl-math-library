@@ -18,7 +18,7 @@ import Control.Monad.Trans.List
 >class (Monad m) => KnowledgeMonad m where
 >   knownM :: m a -> a
 
->data AdjM f g a = AdjM { runAdjM :: g (f a) }
+>newtype AdjM f g a = AdjM { runAdjM :: g (f a) }
 
 >instance (Monoid a) => ModalMonad ((->) a) where
 >   splitM :: (a -> b) -> (a -> a -> b)

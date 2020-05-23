@@ -62,8 +62,8 @@
 >-- 
 >-- In constructive mathematics, given two real numbers \(r_1' < r_2'\), there
 >-- should exist a rational number r, such that \(r_1' < r\) and \(r < r_2'\).
->-- HOWEVER, these comparisons are a type error. In particular this
->-- cannot be used to _define_ how to compare real numbers.
+>-- HOWEVER, these comparisons are a type error for Eq class. In particular this
+>-- cannot be used to _define_ how to compare two real numbers.
 >-- 
 >-- what is meant is if \(r_1' < r_2'\)
 >--                  then there exists a rational r
@@ -80,9 +80,38 @@
 >-- will not halt if they are same). Would this mean that if \(r_1 < r_2\) is
 >-- computable, wouldn't \(\neg(r_1 < r_2 \lor r_2 < r_1)\) be computable equality of reals;
 >-- This is computable in the limit , but not computable? <https://en.wikipedia.org/wiki/Computation_in_the_limit>
+>--
+>-- So we are forced to consider only comparison between a rational and a real,
+>-- but not between two reals. This is encapsulated in
+>-- the "Math.Tools.Interface.DedekindCut" type class.
+>-- 
+>-- The solution is that when comparing a rational with a real,
+>-- the rational's denominator determines the accuracy used.
+>-- This additional information makes comparison between a rational and a real
+>-- decidable, but doesn't help when comparing two reals.
 
->data R = Limit { approximate :: (Stream Rational) }
+>newtype R = Limit { approximate :: (Stream Rational) }
 >data Modulus = Modulus { modulus_value :: R, modulus :: Rational -> Integer }
+
+>instance DedekindCut Rational R where
+>  ~(Limit ~(Pre x xr)) <% q
+>     | denominator x > denominator q = x < q
+>     | otherwise = (Limit xr) <% q
+>  q %< ~(Limit ~(Pre x xr))
+>     | denominator x > denominator q = q < x
+>     | otherwise = q %< (Limit xr)
+
+>instance DedekindCut Int R where
+>  r %< x = (fromIntegral r :: Rational) %< x
+>  x <% r = x <% (fromIntegral r :: Rational)
+
+>instance DedekindCut Integer R where
+>  r %< x = (fromIntegral r :: Rational) %< x
+>  x <% r = x <% (fromIntegral r :: Rational)
+
+>instance DedekindCut Word R where
+>  r %< x = (fromIntegral r :: Rational) %< x
+>  x <% r = x <% (fromIntegral r :: Rational)
 
 >-- | d x = partial_derivate x 
 
@@ -602,7 +631,8 @@ infimum = negate_limit . supremum_gen . map negate_limit
 >gamma_via_integral :: R -> Closure R  
 >gamma_via_integral zz = integral (close 0,infinity_gen) $ \t -> exp (negate t) * (t ** RClosure (zz-1))
     
->instance (TypeError (Text "Equality of constructive reals is undecidable")) => Eq R where
+>instance (TypeError (Text "Equality of constructive reals is undecidable." :$$:
+>                     Text "Please use (<%) and (%<) from Math.Number.Interface.DedekindCut class")) => Eq R where
 >  xs == ys = error "equality of constructive reals is undecidable"
 
 >instance Limiting Bool where
