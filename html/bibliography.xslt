@@ -30,7 +30,7 @@
       </xsl:for-each>
     </table>
     </div>
-    <script type="text/javascript" src="http://github.io/esapulkkinen/cifl-math-library/copyright.js">
+    <script type="text/javascript" src="https://esapulkkinen.github.io/cifl-math-library/copyright.js">
     </script>
     </body>
     </html>
