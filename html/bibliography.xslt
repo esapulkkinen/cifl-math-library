@@ -14,7 +14,7 @@
         <tr itemscope="itemscope" itemtype="http://schema.org/CreativeWork">
           <td>
             <details>
-              <summary itemprop="name"><b><xsl:value-of select="summary"/></b></summary>
+              <summary itemprop="name"><xsl:value-of select="summary"/></summary>
               <xsl:for-each select="field">
                 <xsl:sort select="attribute::name"/>
                 <div>
