@@ -11,15 +11,13 @@ for (i = 0; i < results.length; ++i) {
     for (j = 0; j < fields.length; ++j) {
         if (fields[j]) {
             var name = fields[j].getAttribute('itemprop');
-            if (name != 'name') {
-                var row = document.createElement("TR");
-                var header = document.createElement("TH");
-                header.width="15%";          
-                header.padding="5px";
-                header.style.textAlign="right";             
-                header.textContent = name + ":";
-                row.appendChild(header);
-            }
+            var row = document.createElement("TR");
+            var header = document.createElement("TH");
+            header.width="15%";          
+            header.padding="5px";
+            header.style.textAlign="right";             
+            header.textContent = name + ":";
+            row.appendChild(header);
             var col = document.createElement("TD");
             col.padding = "5px";
             col.width="85%";           
