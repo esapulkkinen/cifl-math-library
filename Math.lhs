@@ -27,6 +27,7 @@
 >--              <https://esapulkkinen.github.io/cifl-math-library/external-deps.pdf External dependencies>
 >-- 
 >--               <https://github.com/esapulkkinen/cifl-math-library/blob/master/COPYRIGHT COPYRIGHT>.
+>--               <https://esapulkkinen.github.io/cifl-math-library/bibliography.html Bibliography>
 >-- 
 >module Math (
 >   module Math.Graph,

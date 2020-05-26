@@ -69,6 +69,10 @@
 >   value_dimension :: !Dimension }
 >  deriving (Typeable, Data, Generic)
 
+>instance Applicative Quantity where
+>   pure x = x `As` dimensionless
+>   (f `As` d) <*> (x `As` d') = (f x) `As` (d %+ d')
+
 >instance (DedekindCut a b, Show a, Num a) => DedekindCut (Quantity a) (Quantity b) where
 >  (r `As` d') %< (x `As` d)
 >     | d == d' = r %< x
@@ -138,12 +142,6 @@
 
 >quantity_powers :: (Num a, Show a) => Quantity a -> Stream (Quantity a)
 >quantity_powers u = Stream.iterate_stream (* u) u
-
->instance Applicative Quantity where
->  pure x = x `As` dimensionless
->  (f `As` d) <*> (x `As` d')
->    | d == d' = f x `As` d
->    | otherwise = error $ "invalidDimensions: <*>: " ++ show d ++ " != " ++ show d'
 
 >-- | isFractionalDimensional checks if a dimension is fractional dimensional
 >isFractionalDimensional :: Dimension -> Bool
@@ -1391,3 +1389,4 @@ order in the table is significant
 >    ("°F", fromFahrenheit 0),
 >    ("℉", fromFahrenheit 0)
 >   ]
+

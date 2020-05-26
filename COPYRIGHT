@@ -4,6 +4,8 @@ For exact terms, see http://www.gnu.org/copyleft/lgpl.txt.
 See <https://github.com/esapulkkinen/cifl-math-library>.
 Documentation is at: <https://esapulkkinen.github.io/cifl-math-library/>.
 
+Bibliography is at: <https://esapulkkinen.github.io/cifl-math-library/bibliography.html>
+
 There are portions that I have read from internet from various places
 and by nature of the library's use of the data must be incorporated to
 the Haskell code. These portions are allowed to be copied also under
