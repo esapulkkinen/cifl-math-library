@@ -210,7 +210,7 @@ authors.
   <creativeWork>
     <summary>time</summary>
     <field name="author">Ashley Yakeley</field>
-    <field name="licsense">BSD-3</field>
+    <field name="license">BSD-3</field>
     <field name="url">http://hackage.haskell.org/package/time</field>
     <field name="genre">haskell-library</field>
     <field name="version">1.5.0.1</field>
