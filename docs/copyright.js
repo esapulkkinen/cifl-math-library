@@ -12,7 +12,7 @@ for (i = 0; i < results.length; ++i) {
         if (fields[j]) {
             var name = fields[j].getAttribute('itemprop');
             var row = document.createElement("TR");
-            if (name != 'name') {
+            if (name != "name") {
                 var header = document.createElement("TH");
                 header.width="15%";          
                 header.padding="5px";
