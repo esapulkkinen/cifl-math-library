@@ -7,22 +7,23 @@ var structured = document.getElementById('structured');
 var results = structured.querySelectorAll(':scope table tr[itemtype="http://schema.org/CreativeWork"] td details');
 for (i = 0; i < results.length; ++i) {
     var copyrightbox = results[i];
-    var fields=copyrightbox.querySelectorAll(':scope summary[itemprop],div[itemprop]');
+    var fields=copyrightbox.querySelectorAll(':scope summary[itemprop],div[itemprop], td[itemprop], tr[itemprop], tbody[itemprop]');
     for (j = 0; j < fields.length; ++j) {
         if (fields[j]) {
             var name = fields[j].getAttribute('itemprop');
             var row = document.createElement("TR");
+            row.style.display='flex';
             if (name != "name") {
                 var header = document.createElement("TH");
-                header.width="15%";          
                 header.padding="5px";
-                header.style.textAlign="right";             
+                header.textAlign="right";             
                 header.textContent = name + ":";
                 row.appendChild(header);
             }
             var col = document.createElement("TD");
+            if (name != "name") { col.style.colspan = 2; }
             col.padding = "5px";
-            col.width="85%";           
+            col.textAlign="left";
             if (name == "about" || name == "url") {             
                 var link = document.createElement("A");
                 link.setAttribute("href",fields[j].textContent);

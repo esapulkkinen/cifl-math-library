@@ -3,16 +3,35 @@
   <xsl:template match="/">
     <html>
     <head>
-     <title>Bibliography</title>
+      <title>Bibliography</title>
+      <style>
+        body { background-color: white; color: black; }
+        nav tr { display: grid; background-color: lightblue; color: black; }
+        nav td { display: grid; background-color: lightblue; color: black; }
+        div { background-color: lightgrey; color: black; }
+        table { table-layout: auto; width:100% border: 1px solid black; border-collapse: collapse; }
+        th { display: flex; color: red; width: 30%;  text-align: right; }
+        td { display: flex; width: 70%; text-align: left; }
+      </style>
     </head>
     <body>
+      <nav>
+        <table>
+          <tr>
+            <td><a href="https://esapulkkinen.github.io/cifl-math-library/">Contents</a></td>
+            <td><a href="https://github.com/esapulkkinen/cifl-math-library/">Repository</a></td>
+            <td><a href="https://esapulkkinen.github.io/cifl-math-library/doc-index.html">Index</a></td>
+          </tr>
+        </table>
+      </nav>
+      
     <h1>Bibliography</h1>
     <div id="structured">
-    <table width="500" padding="5px" border-collapse="collapse">
+      <table frame="vsides" padding="5px" border-collapse="collapse">
       <xsl:for-each select="bibliography/creativeWork">
         <xsl:sort select="summary"/>
         <tr itemscope="itemscope" itemtype="http://schema.org/CreativeWork">
-          <td>
+          <td colspan="2">
             <details>
               <summary><xsl:value-of select="summary"/></summary>
               <xsl:for-each select="field">
@@ -30,7 +49,8 @@
       </xsl:for-each>
     </table>
     </div>
-    <script type="text/javascript" src="https://esapulkkinen.github.io/cifl-math-library/copyright.js">
+    <script type="text/javascript"
+      src="https://esapulkkinen.github.io/cifl-math-library/copyright.js">
     </script>
     </body>
     </html>

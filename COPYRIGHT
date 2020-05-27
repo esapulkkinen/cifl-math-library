@@ -16,6 +16,9 @@ reference or copy of the corresponding license in this file. The code
 contains many such references. Usually they are visible in the
 automatically generated documentation as well, but to be sure to find
 all of them, please read the actual Haskell code.
+I've attempted to collect a bibliography of references that is mostly
+based on URLs collected years ago and that were included in the
+Haskell code, which contains more details on them.
 
 Due to nature of basic mathematical theory, very few portions of the
 code contain original mathematics. I do not attempt to claim to have
@@ -26,8 +29,8 @@ of mathematics.
 Portions that are based on data from Wikipedia
 <http://en.wikipedia.org> are copyright by Wikipedia authors with
 creative commons attribute share-alike license version 3.0 (CC BY-SA
-3.0), <http://creativecommons.org/licenses/by-sa/3.0/>, and co-licensed
-with GFDL <http://www.gnu.org/copyleft/fdl.html>.
+3.0), <http://creativecommons.org/licenses/by-sa/3.0/>, and
+co-licensed with GFDL <http://www.gnu.org/copyleft/fdl.html>.
 
 Portions also refer to Haskell wiki (https://wiki.haskell.org) which
 is under simple permissive license
