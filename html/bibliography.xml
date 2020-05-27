@@ -375,15 +375,6 @@ authors.
     <field name="isPartOf">http://hackage.haskell.org</field>
   </creativeWork>
   <creativeWork>
-    <summary>parallel</summary>
-    <field name="maintainer">mailto:libraries@haskell.org</field>
-    <field name="license">BSD-3</field>
-    <field name="url">http://hackage.haskell.org/package/parallel</field>
-    <field name="genre">haskell-library</field>
-    <field name="version">3.2.0.6</field>
-    <field name="isPartOf">http://hackage.haskell.org</field>
-  </creativeWork>
-  <creativeWork>
     <summary>binary</summary>
     <field name="author">Lennert Kolmodin</field>
     <field name="maintainer">Lennart Kolmodin</field>

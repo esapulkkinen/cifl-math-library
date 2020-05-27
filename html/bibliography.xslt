@@ -9,7 +9,7 @@
         nav tr { display: grid; background-color: lightblue; color: black; }
         nav td { display: grid; background-color: lightblue; color: black; }
         div { background-color: lightgrey; color: black; }
-        table { table-layout: auto; width:100% border: 1px solid black; border-collapse: collapse; }
+        table { table-layout: auto; width:100% border-collapse: collapse; }
         th { display: flex; color: red; width: 30%;  text-align: right; }
         td { display: flex; width: 70%; text-align: left; }
       </style>
