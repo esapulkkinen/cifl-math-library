@@ -20,9 +20,12 @@
   <SoftwareApplication>
     <summary>GHC compiler</summary>
     <field name="url">http://www.haskell.org/ghc/</field>
+    <field name="applicationCategory">Compiler</field>
     <field name="license"><a href="https://www.haskell.org/license">GHC License</a></field>
-    <field name="year">2004</field>
-    <field name="copyright">Copyright 2004, The University Court of the University of Glasgow</field>
+    <field name="copyrightYear">2004</field>
+    <field name="operatingSystem">Linux</field>
+    <field name="operatingSystem">Windows</field>
+    <field name="copyrightHolder">The University Court of the University of Glasgow</field>
     <field name="license">
       All rights reserved.
 
@@ -90,18 +93,23 @@ authors.
   <SoftwareApplication>
     <summary>Haddock</summary>
     <field name="url">https://www.haskell.org/haddock/</field>
+    <field name="applicationCategory">Text</field>
+    <field name="operatingSystem">Linux</field>
     <field name="license">BSD-style</field>
     <field name="license">https://www.haskell.org/haddock/doc/html/license.html</field>
     <field name="author">Simon Marlow</field>
   </SoftwareApplication>
   <SoftwareApplication>
     <summary>Stack</summary>
+    <field name="applicationCategory">Build tool</field>
+    <field name="operatingSystem">Linux</field>
     <field name="url">https://docs.haskellstack.org/en/stable/README/</field>
   </SoftwareApplication>
   <SoftwareApplication>
     <summary>Graphviz</summary>
     <field name="url">https://www.graphviz.org</field>
-    <field name="credits">https://www.graphviz.org/credits/</field>
+    <field name="applicationCategory">Visualization</field>
+    <field name="operatingSystem">Linux</field>
     <field name="contributor">John Ellson</field>
     <field name="contributor">Emden Hansner</field>
     <field name="contributor">Yifan Hu</field>
@@ -124,6 +132,8 @@ authors.
   <SoftwareApplication>
     <summary>ps2pdf</summary>
     <field name="origin">ghostscript</field>
+    <field name="operatingSystem">Linux</field>
+    <field name="applicationCategory">Text</field>
     <field name="license">GPL</field>
     <field name="maintainer">Ubuntu Developers</field>
     <field name="contact">mailto:ubuntu-devel-discuss@lists.ubuntu.com</field>
@@ -150,6 +160,8 @@ authors.
   <SoftwareApplication>
     <summary>Cabal</summary>
     <field name="author">Cabal Development Team</field>
+    <field name="applicationCategory">Build tool</field>
+    <field name="operatingSystem">Linux</field>
     <field name="maintainer">mailto:cabal-devel@haskell.org</field>
     <field name="url">http://hackage.haskell.org/package/Cabal</field>
     <field name="version">2.4.1.0</field>
@@ -240,14 +252,14 @@ authors.
     <field name="version">0.5.1.0</field>
     <field name="isPartOf">http://hackage.haskell.org</field>
   </SoftwareSourceCode>
-  <SoftwareSourceCode>
+  <Article>
     <summary>The Zipper Pattern</summary>
     <field name="url">http://www.haskell.org/haskellwiki/Zipper</field>
     <field name="genre">wiki</field>
     <field name="title">Zipper</field>
     <field name="isPartOf">http://wiki.haskell.org</field>
     <field name="retrieved">27 May 2020</field>
-  </SoftwareSourceCode>
+  </Article>
   <SoftwareSourceCode>
     <summary>template-haskell</summary>
     <field name="maintainer">mailto:libraries@haskell.org</field>

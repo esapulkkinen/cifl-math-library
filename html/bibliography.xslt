@@ -26,11 +26,11 @@
       </nav>
       
     <h1>Bibliography</h1>
-    <div id="structured">
+    <div id="structured" itemscope="itemscope" itemtype="http://schema.org/APIReference" itemid="http://esapulkkinen.github.io/cifl-math-library/">
       <table frame="vsides" padding="5px" border-collapse="collapse">
       <xsl:for-each select="bibliography/CreativeWork|bibliography/Article|bibliography/Report|bibliography/Book|bibliography/ScholarlyArticle|bibliography/BlogPosting|bibliography/TechArticle|bibliography/DigitalDocument|bibliography/PublicationIssue|bibliography/SoftwareApplication|bibliography/WebPage|bibliography/WebSite|bibliography/SoftwareSourceCode|bibliography/Comment|bibliography/QAPage|bibliography/BlogPosting|bibliography/DigitalDocument">
         <xsl:sort select="summary"/>
-        <tr itemscope="itemscope">
+        <tr itemprop="citation" itemscope="itemscope">
           <xsl:attribute name="itemtype">http://schema.org/<xsl:value-of select="local-name()"/></xsl:attribute>
           <td colspan="2">
             <details>
