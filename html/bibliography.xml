@@ -88,7 +88,7 @@ authors.
     <field name="doi">doi:10.1145/355578.366316</field>
     <field name="year">1961</field>
     <field name="publisher">Communications of the ACM</field>
-    <field name="title">Eigenvalues of symmetric 3x3 matrix</field>
+    <field name="headline">Eigenvalues of symmetric 3x3 matrix</field>
   </Article>
   <SoftwareApplication>
     <summary>Haddock</summary>
@@ -241,7 +241,7 @@ authors.
     <summary>Haskell-Cafe mailing list post by Koen Classen</summary>
     <field name="url">https://mail.haskell.org/pipermail/haskell-cafe/2002-June/003122.html</field>
     <field name="author">Koen Claessen</field>
-    <field name="title">Generating the n! permutations in Haskell</field>
+    <field name="headline">Generating the n! permutations in Haskell</field>
   </Comment>
   <SoftwareSourceCode>
     <summary>array</summary>
@@ -256,7 +256,7 @@ authors.
     <summary>The Zipper Pattern</summary>
     <field name="url">http://www.haskell.org/haskellwiki/Zipper</field>
     <field name="genre">wiki</field>
-    <field name="title">Zipper</field>
+    <field name="headline">Zipper</field>
     <field name="isPartOf">http://wiki.haskell.org</field>
     <field name="retrieved">27 May 2020</field>
   </Article>
@@ -272,7 +272,7 @@ authors.
     <summary>The stream monad</summary>
     <field name="url">http://patternsinfp.wordpress.com/2010/12/31/stream-monad/</field>
     <field name="alternateType">article</field>
-    <field name="title">The stream monad</field>
+    <field name="headline">The stream monad</field>
     <field name="isPartOf">Patterns in Functional Programming</field>
     <field name="genre">blog</field>
     <field name="year">2010</field>
@@ -418,9 +418,11 @@ authors.
     <field name="url">http://math.andrej.com/2008/11/21/a-haskell-monad-for-infinite-search-in-finite-time/</field>
     <field name="author">Martin Escardo</field>
     <field name="contributor">Andrej Bauer</field>
-    <field name="genre">blog</field>
     <field name="isPartOf">Mathematics and Computation</field>
-    <field name="year">2008</field>
+    <field name="copyrightYear">2008</field>
+    <field name="datePublished">21.11.2008</field>
+    <field name="headline">A haskell monad for infinite search in finite time</field>
+    <field name="publisher">Andrej Bauer</field>
   </Article>
   <Article>
     <summary>Wadler: Comprehending Monads</summary>
@@ -526,7 +528,7 @@ authors.
     <summary>Simpson: Power Series</summary>
     <field name="author">David G. Simpson</field>
     <field name="organization">NASA Goddard Space Flight Center</field>
-    <field name="title">Power Series</field>
+    <field name="headline">Power Series</field>
     <field name="url">http://caps.gsfc.nasa.gov/simpson/ref/series.pdf</field>
     <field name="year">2005</field>
     <field name="month">April</field>
@@ -535,19 +537,21 @@ authors.
   <QAPage>
     <summary>General formula for dot and cross products in spherical coordinates</summary>
     <field name="url">https://math.stackexchange.com/questions/243142/what-is-the-general-formula-for-calculating-dot-and-cross-products-in-spherical</field>
-    <field name="title">What is the general formula for calculating dot and cross products in spherical coordinates</field>
+    <field name="headline">What is the general formula for calculating dot and cross products in spherical coordinates</field>
     <field name="isPartOf">Mathematics Stack Exchange</field>
     <field name="genre">Questions and answers</field>
   </QAPage>
-  <Article>
+  <BlogPosting>
     <summary>Fixed-Length Vector Types in Haskell</summary>
     <field name="author">Justin Le</field>
-    <field name="title">Fixed Length Vector Types in Haskell (an Update for 2017)</field>
+    <field name="headline">Fixed Length Vector Types in Haskell (an Update for 2017)</field>
     <field name="url">https://blog.jle.im/entry/fixed-length-vector-types-in-haskell.html</field>
-    <field name="year">2017</field>
+    <field name="copyrightYear">2017</field>
     <field name="license">CC-BY-NC-ND 3.0</field>
-
-  </Article>
+    <field name="datePublished">2017</field>
+    <field name="headline">Fixed-Length Vector Types in Haskell</field>
+    <field name="publisher">Justin Le</field>
+  </BlogPosting>
   <BlogPosting>
     <summary>Fixed Length Vector Types in Haskell</summary>
     <field name="author">Justin Le</field>
