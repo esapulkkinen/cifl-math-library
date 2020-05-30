@@ -4,7 +4,7 @@
 // And produces additional presentation details on the data.
 //
 var structured = document.getElementById('structured');
-var results = structured.querySelectorAll(':scope table tr[itemtype="http://schema.org/CreativeWork"] td details');
+var results = structured.querySelectorAll(':scope table tr[itemtype^="http://schema.org/"] td details');
 for (i = 0; i < results.length; ++i) {
     var copyrightbox = results[i];
     var fields=copyrightbox.querySelectorAll(':scope summary[itemprop],div[itemprop], td[itemprop], tr[itemprop], tbody[itemprop]');

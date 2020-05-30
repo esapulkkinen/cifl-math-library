@@ -1,23 +1,23 @@
 <bibliography>
-  <creativeWork>
+  <Book>
     <summary>Lawvere, Rosebrugh: Sets for Mathematics</summary>
     <field name="author">F. William Lawvere</field>
     <field name="author">Robert Rosebrugh</field>
     <field name="isbn">0-521-01060-8</field>
-  </creativeWork>
-  <creativeWork>
+  </Book>
+  <WebSite>
     <summary>Haskell Wiki</summary>
     <field name="license">Permissive</field>
     <field name="url">http://wiki.haskell.org/</field>
-  </creativeWork>
-  <creativeWork>
+  </WebSite>
+  <WebSite>
     <summary>Wikipedia, the free encyclopedia that anyone can edit</summary>
     <field name="license"><a href="https://creativecommons.org/licenses/by-sa/3.0/">CC BY-SA 3.0</a></field>
     <field name="publisher">Wikimedia Foundation, Inc.</field>
     <field name="url">https://en.wikipedia.org/wiki/Main_Page</field>
-  </creativeWork>
+  </WebSite>
 
-  <creativeWork>
+  <SoftwareApplication>
     <summary>GHC compiler</summary>
     <field name="url">http://www.haskell.org/ghc/</field>
     <field name="license"><a href="https://www.haskell.org/license">GHC License</a></field>
@@ -50,12 +50,12 @@ ER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) AR
 ISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBI
 LITY OF SUCH DAMAGE.
     </field>
-  </creativeWork>
-  <creativeWork>
+  </SoftwareApplication>
+  <WebSite>
     <summary>Schema.org</summary>
     <field name="url">https://schema.org/</field>
-  </creativeWork>
-  <creativeWork>
+  </WebSite>
+  <DigitalDocument>
     <summary>GLX-1.0.dtd</summary>
     <field name="url"><a href="http://www.gupro.de/GXL/dtd/gxl-1.0.html">glx-1.0.dtd</a></field>
     <field name="license">
@@ -66,31 +66,39 @@ to allow control of its evolution. The specification can be reproduced
 and used without charge, but with explicit acknowledgement of its
 authors.
     </field>
-  </creativeWork>
-  <creativeWork>
+  </DigitalDocument>
+  <SoftwareSourceCode>
     <summary>HaXML</summary>
     <field name="url">https://hackage.haskell.org/package/HaXml</field>
     <field name="license">LGPL</field>
     <field name="author">Malcolm Wallace</field>
-  </creativeWork>
-  <creativeWork>
+  </SoftwareSourceCode>
+  <SoftwareSourceCode>
     <summary>JSON</summary>
     <field name="author">Galois Inc</field>
     <field name="url">http://hackage.haskell.org/package/json</field>
     <field name="license">BSD3</field>
-  </creativeWork>
-  <creativeWork>
+  </SoftwareSourceCode>
+  <Article>
+    <summary>Smith, Oliver K.: Eigenvalues of symmetric 3x3 matrix, 1961, Communications of the ACM</summary>
+    <field name="author">Oliver K. Smith</field>
+    <field name="doi">doi:10.1145/355578.366316</field>
+    <field name="year">1961</field>
+    <field name="publisher">Communications of the ACM</field>
+    <field name="title">Eigenvalues of symmetric 3x3 matrix</field>
+  </Article>
+  <SoftwareApplication>
     <summary>Haddock</summary>
     <field name="url">https://www.haskell.org/haddock/</field>
     <field name="license">BSD-style</field>
     <field name="license">https://www.haskell.org/haddock/doc/html/license.html</field>
     <field name="author">Simon Marlow</field>
-  </creativeWork>
-  <creativeWork>
+  </SoftwareApplication>
+  <SoftwareApplication>
     <summary>Stack</summary>
     <field name="url">https://docs.haskellstack.org/en/stable/README/</field>
-  </creativeWork>
-  <creativeWork>
+  </SoftwareApplication>
+  <SoftwareApplication>
     <summary>Graphviz</summary>
     <field name="url">https://www.graphviz.org</field>
     <field name="credits">https://www.graphviz.org/credits/</field>
@@ -112,143 +120,143 @@ authors.
     <field name="contributor">John Mocenigo</field>
     <field name="contributor">Jeroen Scheerder</field>
     <field name="contributor">Gordon Woolhull</field>
-  </creativeWork>
-  <creativeWork>
+  </SoftwareApplication>
+  <SoftwareApplication>
     <summary>ps2pdf</summary>
     <field name="origin">ghostscript</field>
     <field name="license">GPL</field>
     <field name="maintainer">Ubuntu Developers</field>
     <field name="contact">mailto:ubuntu-devel-discuss@lists.ubuntu.com</field>
-  </creativeWork>
-  <creativeWork>
+  </SoftwareApplication>
+  <DataCatalog>
     <summary>hackage</summary>
     <field name="url">http://hackage.haskell.org</field>
     <field name="additionalType">repository</field>
-  </creativeWork>
-  <creativeWork>
+  </DataCatalog>
+  <SoftwareSourceCode>
     <summary>HUnit</summary>
     <field name="author">Dean Herington</field>
     <field name="maintainer">Simon Hengel</field>
     <field name="url">http://hackage.haskell.org/package/HUnit</field>
     <field name="isPartOf">http://hackage.haskell.org</field>
-  </creativeWork>
-  <creativeWork>
+  </SoftwareSourceCode>
+  <SoftwareSourceCode>
     <summary>QuickCheck</summary>
     <field name="author">Koen Claessen</field>
     <field name="maintainer">Nick Smallbone</field>
     <field name="url">http://hackage.haskell.org/package/QuickCheck</field>
     <field name="isPartOf">http://hackage.haskell.org</field>
-  </creativeWork>
-  <creativeWork>
+  </SoftwareSourceCode>
+  <SoftwareApplication>
     <summary>Cabal</summary>
     <field name="author">Cabal Development Team</field>
     <field name="maintainer">mailto:cabal-devel@haskell.org</field>
     <field name="url">http://hackage.haskell.org/package/Cabal</field>
     <field name="version">2.4.1.0</field>
     <field name="isPartOf">http://hackage.haskell.org</field>
-  </creativeWork>
-  <creativeWork>
+  </SoftwareApplication>
+  <SoftwareSourceCode>
     <summary>doctest</summary>
     <field name="license">MIT</field>
     <field name="url">http://hackage.haskell.org/package/doctest</field>
     <field name="author">Simon Hengel</field>
     <field name="maintainer">mailto:quasicomputational@gmail.com</field>
-    <field name="genre">haskell-library</field>
+    <field name="programmingLanguage">haskell</field>
     <field name="isPartOf">http://hackage.haskell.org</field>
-  </creativeWork>
-  <creativeWork>
+  </SoftwareSourceCode>
+  <SoftwareSourceCode>
     <summary>byte-order</summary>
     <field name="license">BSD-3</field>
     <field name="author">Andrew Martin</field>
     <field name="url">http://hackage.haskell.org/package/byte-order</field>
-    <field name="genre">haskell-library</field>
+    <field name="programmingLanguage">haskell</field>
     <field name="isPartOf">http://hackage.haskell.org</field>
-  </creativeWork>
-  <creativeWork>
+  </SoftwareSourceCode>
+  <SoftwareSourceCode>
     <summary>base</summary>
     <field name="maintainer">mailto:libraries@haskell.org</field>
     <field name="license">BSD-3</field>
     <field name="url">http://hackage.haskell.org/package/base</field>
-    <field name="genre">haskell-library</field>
+    <field name="programmingLanguage">haskell</field>
     <field name="isPartOf">http://hackage.haskell.org</field>
-  </creativeWork>
-  <creativeWork>
+  </SoftwareSourceCode>
+  <SoftwareSourceCode>
     <summary>ghc-prim</summary>
     <field name="maintainer">mailto:libraries@haskell.org</field>
     <field name="license">BSD-3</field>
     <field name="url">http://hackage.haskell.org/package/ghc-prim</field>
-    <field name="genre">haskell-library</field>
+    <field name="programmingLanguage">haskell</field>
     <field name="version">0.5.2</field>
     <field name="isPartOf">http://hackage.haskell.org</field>
-  </creativeWork>
-  <creativeWork>
+  </SoftwareSourceCode>
+  <SoftwareSourceCode>
     <summary>random</summary>
     <field name="license">BSD-3</field>
     <field name="maintainer">mailto:carter.schonwald@googlemail.com</field>
     <field name="url">http://hackage.haskell.org/package/random</field>
-    <field name="genre">haskell-library</field>
+    <field name="programmingLanguage">haskell</field>
     <field name="version">1.1</field>
     <field name="version">1.2</field>
     <field name="isPartOf">http://hackage.haskell.org</field>
-  </creativeWork>
-  <creativeWork>
+  </SoftwareSourceCode>
+  <SoftwareSourceCode>
     <summary>mtl</summary>
     <field name="author">Andy Gill</field>
     <field name="license">BSD-3</field>
     <field name="url">http://hackage.haskell.org/package/mtl</field>
-    <field name="genre">haskell-library</field>
+    <field name="programmingLanguage">haskell</field>
     <field name="version">2.2</field>
     <field name="isPartOf">http://hackage.haskell.org</field>
-  </creativeWork>
-  <creativeWork>
+  </SoftwareSourceCode>
+  <SoftwareSourceCode>
     <summary>adjunctions</summary>
     <field name="url">http://hackage.haskell.org/packages/archive/adjunctions</field>
-    <field name="genre">haskell-library</field>
+    <field name="programmingLanguage">haskell</field>
     <field name="isPartOf">http://hackage.haskell.org</field>
     <field name="version">0.9.0.4</field>
-  </creativeWork>
-  <creativeWork>
+  </SoftwareSourceCode>
+  <SoftwareSourceCode>
     <summary>OpenGL (haskell package)</summary>
     <field name="url">http://lambda.haskell.org/platform/doc/current/packages/OpenGL-2.8.0.0/doc/html/index.html</field>
-    <field name="genre">haskell-library</field>
+    <field name="programmingLanguage">haskell</field>
     <field name="version">2.8.0.0</field>
-  </creativeWork>
-  <creativeWork>
+  </SoftwareSourceCode>
+  <WebSite>
     <summary>nLab</summary>
     <field name="url">http://nlab.mathforge.org/nlab</field>
-  </creativeWork>
-  <creativeWork>
+  </WebSite>
+  <Comment>
     <summary>Haskell-Cafe mailing list post by Koen Classen</summary>
     <field name="url">https://mail.haskell.org/pipermail/haskell-cafe/2002-June/003122.html</field>
     <field name="author">Koen Claessen</field>
     <field name="title">Generating the n! permutations in Haskell</field>
-  </creativeWork>
-  <creativeWork>
+  </Comment>
+  <SoftwareSourceCode>
     <summary>array</summary>
     <field name="maintainer">mailto:libraries@haskell.org</field>
     <field name="license">BSD-3</field>
     <field name="url">http://hackage.haskell.org/package/array</field>
-    <field name="genre">haskell-library</field>
+    <field name="programmingLanguage">haskell</field>
     <field name="version">0.5.1.0</field>
     <field name="isPartOf">http://hackage.haskell.org</field>
-  </creativeWork>
-  <creativeWork>
+  </SoftwareSourceCode>
+  <SoftwareSourceCode>
     <summary>The Zipper Pattern</summary>
     <field name="url">http://www.haskell.org/haskellwiki/Zipper</field>
     <field name="genre">wiki</field>
     <field name="title">Zipper</field>
     <field name="isPartOf">http://wiki.haskell.org</field>
     <field name="retrieved">27 May 2020</field>
-  </creativeWork>
-  <creativeWork>
+  </SoftwareSourceCode>
+  <SoftwareSourceCode>
     <summary>template-haskell</summary>
     <field name="maintainer">mailto:libraries@haskell.org</field>
     <field name="url">http://hackage.haskell.org/package/template-haskell</field>
-    <field name="genre">haskell-library</field>
+    <field name="programmingLanguage">haskell</field>
     <field name="version">2.10.0.0</field>
     <field name="isPartOf">http://hackage.haskell.org</field>
-  </creativeWork>
-  <creativeWork>
+  </SoftwareSourceCode>
+  <Article>
     <summary>The stream monad</summary>
     <field name="url">http://patternsinfp.wordpress.com/2010/12/31/stream-monad/</field>
     <field name="alternateType">article</field>
@@ -256,26 +264,26 @@ authors.
     <field name="isPartOf">Patterns in Functional Programming</field>
     <field name="genre">blog</field>
     <field name="year">2010</field>
-  </creativeWork>
-  <creativeWork>
+  </Article>
+  <SoftwareSourceCode>
     <summary>time</summary>
     <field name="author">Ashley Yakeley</field>
     <field name="license">BSD-3</field>
     <field name="url">http://hackage.haskell.org/package/time</field>
-    <field name="genre">haskell-library</field>
+    <field name="programmingLanguage">haskell</field>
     <field name="version">1.5.0.1</field>
     <field name="isPartOf">http://hackage.haskell.org</field>
-  </creativeWork>
-  <creativeWork>
+  </SoftwareSourceCode>
+  <SoftwareSourceCode>
     <summary>pretty</summary>
     <field name="license">BSD-3</field>
     <field name="maintainer">David Terei</field>
     <field name="url">http://hackage.haskell.org/package/pretty</field>
-    <field name="genre">haskell-library</field>
+    <field name="programmingLanguage">haskell</field>
     <field name="version">1.1.2.0</field>
     <field name="isPartOf">http://hackage.haskell.org</field>
-  </creativeWork>
-  <creativeWork>
+  </SoftwareSourceCode>
+  <SoftwareSourceCode>
     <summary>syb</summary>
     <field name="license">BSD-3</field>
     <field name="author">Ralf Lammel</field>
@@ -283,117 +291,117 @@ authors.
     <field name="author">Jose Pedro Magalhaes</field>
     <field name="maintainer">Sergey Vinokurov</field>
     <field name="url">http://hackage.haskell.org/package/syb</field>
-    <field name="genre">haskell-library</field>
+    <field name="programmingLanguage">haskell</field>
     <field name="version">0.5.1</field>
     <field name="isPartOf">http://hackage.haskell.org</field>
-  </creativeWork>
-  <creativeWork>
+  </SoftwareSourceCode>
+  <SoftwareSourceCode>
     <summary>stm</summary>
     <field name="maintainer">mailto:libraries@haskell.org</field>
     <field name="license">BSD-3</field>
     <field name="url">http://hackage.haskell.org/package/stm</field>
-    <field name="genre">haskell-library</field>
+    <field name="programmingLanguage">haskell</field>
     <field name="version">2.4.4.1</field>
     <field name="isPartOf">http://hackage.haskell.org</field>
-  </creativeWork>
-  <creativeWork>
+  </SoftwareSourceCode>
+  <SoftwareSourceCode>
     <summary>parallel</summary>
     <field name="maintainer">mailto:libraries@haskell.org</field>
     <field name="license">BSD-3</field>
     <field name="url">http://hackage.haskell.org/package/parallel</field>
-    <field name="genre">haskell-library</field>
+    <field name="programmingLanguage">haskell</field>
     <field name="version">3.2.0.6</field>
     <field name="isPartOf">http://hackage.haskell.org</field>
-  </creativeWork>
-  <creativeWork>
+  </SoftwareSourceCode>
+  <SoftwareSourceCode>
     <summary>unix</summary>
     <field name="license">BSD-3</field>
     <field name="maintainer">mailto:libraries@haskell.org</field>
     <field name="url">http://hackage.haskell.org/package/unix</field>
-    <field name="genre">haskell-library</field>
+    <field name="programmingLanguage">haskell</field>
     <field name="version">2.7.1.0</field>
     <field name="isPartOf">http://hackage.haskell.org</field>
-  </creativeWork>
-  <creativeWork>
+  </SoftwareSourceCode>
+  <SoftwareSourceCode>
     <summary>bytestring</summary>
     <field name="author">Don Stewart</field>
     <field name="author">Duncan Coutts</field>
     <field name="maintainer">Duncan Coutts</field>
     <field name="license">BSD-3</field>
     <field name="url">http://hackage.haskell.org/package/bytestring</field>
-    <field name="genre">haskell-library</field>
+    <field name="programmingLanguage">haskell</field>
     <field name="version">0.10.6.0</field>
     <field name="isPartOf">http://hackage.haskell.org</field>
-  </creativeWork>
-  <creativeWork>
+  </SoftwareSourceCode>
+  <SoftwareSourceCode>
     <summary>fgl</summary>
     <field name="author">Martin Erwig</field>
     <field name="author">Ivan Lazar Miljenovic</field>
     <field name="maintainer">mailto:ivan.miljenovic@gmail.com</field>
     <field name="license">BSD-3</field>
     <field name="url">http://hackage.haskell.org/package/fgl</field>
-    <field name="genre">haskell-library</field>
+    <field name="programmingLanguage">haskell</field>
     <field name="isPartOf">http://hackage.haskell.org</field>
-  </creativeWork>
-  <creativeWork>
+  </SoftwareSourceCode>
+  <SoftwareSourceCode>
     <summary>temporary</summary>
     <field name="license">BSD-3</field>
     <field name="maintainer">Mateusz Kowalczyk</field>
     <field name="maintainer">Roman Cheplyaka</field>
     <field name="url">http://hackage.haskell.org/package/temporary</field>
-    <field name="genre">haskell-library</field>
+    <field name="programmingLanguage">haskell</field>
     <field name="isPartOf">http://hackage.haskell.org</field>
-  </creativeWork>
-  <creativeWork>
+  </SoftwareSourceCode>
+  <SoftwareSourceCode>
     <summary>graphviz</summary>
     <field name="author">Matthew Sackman</field>
     <field name="author">Ivan Lazar Miljenovic</field>
     <field name="maintainer">mailto:ivan.miljenovic@gmail.com</field>
     <field name="url">http://hackage.haskell.org/package/graphviz</field>
-    <field name="genre">haskell-library</field>
+    <field name="programmingLanguage">haskell</field>
     <field name="version">2999.18.1.2</field>
     <field name="isPartOf">http://hackage.haskell.org</field>
-  </creativeWork>
-  <creativeWork>
+  </SoftwareSourceCode>
+  <SoftwareSourceCode>
     <summary>text</summary>
     <field name="license">BSD-3</field>
     <field name="author">Bryan O'Sullivan</field>
     <field name="maintainer">Bryan O'Sullivan</field>
     <field name="url">http://hackage.haskell.org/package/text</field>
-    <field name="genre">haskell-library</field>
+    <field name="programmingLanguage">haskell</field>
     <field name="version">1.2.2.1</field>
     <field name="isPartOf">http://hackage.haskell.org</field>
-  </creativeWork>
-  <creativeWork>
+  </SoftwareSourceCode>
+  <SoftwareSourceCode>
     <summary>json</summary>
     <field name="author">Galois Inc.</field>
     <field name="maintainer">Iavor S. Diatchki (iavor.diatchki@gmail.com)</field>
     <field name="license">BSD-3</field>
     <field name="url">http://hackage.haskell.org/package/json</field>
-    <field name="genre">haskell-library</field>
+    <field name="programmingLanguage">haskell</field>
     <field name="version">0.9.1</field>
     <field name="isPartOf">http://hackage.haskell.org</field>
-  </creativeWork>
-  <creativeWork>
+  </SoftwareSourceCode>
+  <SoftwareSourceCode>
     <summary>binary</summary>
     <field name="author">Lennert Kolmodin</field>
     <field name="maintainer">Lennart Kolmodin</field>
     <field name="license">BSD-3</field>
     <field name="url">http://hackage.haskell.org/package/binary</field>
-    <field name="genre">haskell-library</field>
+    <field name="programmingLanguage">haskell</field>
     <field name="version">0.7.5.0</field>
     <field name="isPartOf">http://hackage.haskell.org</field>
-  </creativeWork>
-  <creativeWork>
+  </SoftwareSourceCode>
+  <SoftwareSourceCode>
     <summary>erf</summary>
     <field name="author">Lennart Augustsson</field>
     <field name="license">BSD-3</field>
     <field name="url">http://hackage.haskell.org/package/erf</field>
-    <field name="genre">haskell-library</field>
+    <field name="programmingLanguage">haskell</field>
     <field name="version">2.0.0.0</field>
     <field name="isPartOf">http://hackage.haskell.org</field>
-  </creativeWork>
-  <creativeWork>
+  </SoftwareSourceCode>
+  <Article>
     <summary>A haskell monad for infinite search in finite time</summary>
     <field name="url">http://math.andrej.com/2008/11/21/a-haskell-monad-for-infinite-search-in-finite-time/</field>
     <field name="author">Martin Escardo</field>
@@ -401,99 +409,97 @@ authors.
     <field name="genre">blog</field>
     <field name="isPartOf">Mathematics and Computation</field>
     <field name="year">2008</field>
-  </creativeWork>
-  <creativeWork>
+  </Article>
+  <Article>
     <summary>Wadler: Comprehending Monads</summary>
     <field name="author">Philip Wadler</field>
     <field name="isPartOf">Mathematical Structures in Computer Science</field>
     <field name="issue">Special issue of selected papers from 6'th Conference on Lisp and Functional Programming</field>
     <field name="url">https://homepages.inf.ed.ac.uk/wadler/papers/monads/monads.ps</field>
     <field name="year">1992</field>
-  </creativeWork>
-  <creativeWork>
+  </Article>
+  <Article>
     <summary>Mazur: When is one thing equal to some other thing?</summary>
     <field name="author">Barry Mazur</field>
     <field name="url">http://www.math.harvard.edu/~mazur/preprints/when_is_one.pdf</field>
     <field name="year">2007</field>
-  </creativeWork>
-  <creativeWork>
+  </Article>
+  <Article>
     <summary>Wadler: Recursive types for free!</summary>
     <field name="author">Philip Wadler</field>
     <field name="url">http://homepages.inf.ed.ac.uk/wadler/papers/free-rectypes/free-rectypes.txt</field>
     <field name="genre">paper</field>
     <field name="year">1990</field>
-  </creativeWork>
-  <creativeWork>
+  </Article>
+  <Book>
     <summary>Knuth: The Art of Computer Programming</summary>
     <field name="url">http://www-cs-faculty.stanford.edu/~uno/taocp.html</field>
     <field name="author">Donald Knuth</field>
     <field name="volume">7</field>
-    <field name="alternativeType">book</field>
-  </creativeWork>
-  <creativeWork>
+  </Book>
+  <BlogPosting>
     <summary>Laarhoven: Isomorphism lenses</summary>
     <field name="author">Twan van Laarhoven</field>
     <field name="url">http://twanvl.nl/blog/haskell/isomorphism-lenses</field>
     <field name="license">CC-BY</field>
     <field name="year">2011</field>
-    <field name="genre">blog</field>
-  </creativeWork>
-  <creativeWork>
+  </BlogPosting>
+  <SoftwareSourceCode>
     <summary>base-compat</summary>
     <field name="author">Simon Hengel</field>
     <field name="author">João Cristôvão</field>
     <field name="author">Ryan Scott</field>
     <field name="license">MIT</field>
     <field name="url">http://hackage.haskell.org/package/base-compat</field>
-    <field name="genre">haskell-library</field>
+    <field name="programmingLanguage">haskell</field>
     <field name="version">0.10.4</field>
     <field name="isPartOf">http://hackage.haskell.org</field>
-  </creativeWork>
-  <creativeWork>
+  </SoftwareSourceCode>
+  <SoftwareSourceCode>
     <summary>exceptions</summary>
     <field name="author">Edward A. Kmett</field>
     <field name="maintainer">Edward A. Kmett</field>
     <field name="license">BSD-3</field>
     <field name="url">http://hackage.haskell.org/package/exceptions</field>
-    <field name="genre">haskell-library</field>
+    <field name="programmingLanguage">haskell</field>
     <field name="isPartOf">http://hackage.haskell.org</field>
-  </creativeWork>
-  <creativeWork>
+  </SoftwareSourceCode>
+  <SoftwareSourceCode>
     <summary>arrows</summary>
     <field name="author">Ross Paterson</field>
     <field name="maintainer">Ross Paterson</field>
     <field name="license">BSD-3</field>
     <field name="url">http://hackage.haskell.org/package/arrows</field>
-    <field name="genre">haskell-library</field>
+    <field name="programmingLanguage">haskell</field>
     <field name="isPartOf">http://hackage.haskell.org</field>
-  </creativeWork>
-  <creativeWork>
+  </SoftwareSourceCode>
+  <SoftwareSourceCode>
     <summary>Stream</summary>
     <field name="author">Wouter Swierstra</field>
     <field name="license">BSD-3</field>
     <field name="url">http://hackage.haskell.org/package/Stream</field>
-    <field name="genre">haskell-library</field>
+    <field name="programmingLanguage">haskell</field>
     <field name="isPartOf">http://hackage.haskell.org</field>
-  </creativeWork>
-  <creativeWork>
+  </SoftwareSourceCode>
+  <SoftwareSourceCode>
     <summary>lazysmallcheck</summary>
     <field name="author">Matthew Naytor</field>
     <field name="author">Fredrik Lindblad</field>
     <field name="license">BSD-3</field>
     <field name="url">http://hackage.haskell.org/package/lazysmallcheck</field>
-    <field name="genre">haskell-library</field>
+    <field name="programmingLanguage">haskell</field>
     <field name="isPartOf">http://hackage.haskell.org</field>
-  </creativeWork>
-  <creativeWork>
+  </SoftwareSourceCode>
+  <SoftwareSourceCode>
     <summary>directory</summary>
     <field name="maintainer">mailto:libraries@haskell.org</field>
     <field name="license">BSD-3</field>
     <field name="url">http://hackage.haskell.org/package/directory</field>
     <field name="version">1.3.3.0</field>
-    <field name="genre">haskell-library</field>
+    <field name="programmingLanguage">haskell</field>
     <field name="isPartOf">http://hackage.haskell.org</field>
-  </creativeWork>
-  <creativeWork>
+  </SoftwareSourceCode>
+  <SoftwareSourceCode>
     <summary>rdf4h</summary>
     <field name="author">Rob Stewart</field>
     <field name="author">Pierre Le Marre</field>
@@ -501,10 +507,10 @@ authors.
     <field name="author">Calvin Smith</field>
     <field name="license">BSD-3</field>
     <field name="url">http://hackage.haskell.org/package/rdf4h</field>
-    <field name="genre">haskell-library</field>
+    <field name="programmingLanguage">haskell</field>
     <field name="isPartOf">http://hackage.haskell.org</field>
-  </creativeWork>
-  <creativeWork>
+  </SoftwareSourceCode>
+  <Article>
     <summary>Simpson: Power Series</summary>
     <field name="author">David G. Simpson</field>
     <field name="organization">NASA Goddard Space Flight Center</field>
@@ -513,15 +519,15 @@ authors.
     <field name="year">2005</field>
     <field name="month">April</field>
     <field name="day">29</field>
-  </creativeWork>
-  <creativeWork>
+  </Article>
+  <QAPage>
     <summary>General formula for dot and cross products in spherical coordinates</summary>
     <field name="url">https://math.stackexchange.com/questions/243142/what-is-the-general-formula-for-calculating-dot-and-cross-products-in-spherical</field>
     <field name="title">What is the general formula for calculating dot and cross products in spherical coordinates</field>
     <field name="isPartOf">Mathematics Stack Exchange</field>
     <field name="genre">Questions and answers</field>
-  </creativeWork>
-  <creativeWork>
+  </QAPage>
+  <Article>
     <summary>Fixed-Length Vector Types in Haskell</summary>
     <field name="author">Justin Le</field>
     <field name="title">Fixed Length Vector Types in Haskell (an Update for 2017)</field>
@@ -529,29 +535,29 @@ authors.
     <field name="year">2017</field>
     <field name="license">CC-BY-NC-ND 3.0</field>
 
-  </creativeWork>
-  <creativeWork>
+  </Article>
+  <BlogPosting>
     <summary>Fixed Length Vector Types in Haskell</summary>
     <field name="author">Justin Le</field>
     <field name="url">http://blog.jle.im/entry/fixed-length-vector-types-in-haskell-2015.html</field>
     <field name="year">2015</field>
-  </creativeWork>
-  <creativeWork>
+  </BlogPosting>
+  <DigitalDocument>
     <summary>PPM - Netpbm color image format specification</summary>
     <field name="url">http://netpbm.sourceforge.net/doc/ppm.html</field>
     <field name="isPartOf">http://netpbm.sourceforge.net</field>
     <field name="genre">Manual page</field>
     <field name="maintainer">Bryan Henderson</field>
-  </creativeWork>
-  <creativeWork>
+  </DigitalDocument>
+  <Article>
     <summary>Paterson R.: A new notation for arrows</summary>
     <field name="author">Ross Paterson</field>
     <field name="year">2001</field>
     <field name="url">http://www.staff.city.ac.uk/~ross/papers/notation.html</field>
-  </creativeWork>
-  <creativeWork>
+  </Article>
+  <WebSite>
     <summary>nCatLab</summary>
     <field name="url">https://ncatlab.org</field>
     <field name="genre">wiki</field>
-  </creativeWork>
+  </WebSite>
 </bibliography>

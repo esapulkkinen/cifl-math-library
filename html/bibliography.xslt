@@ -10,8 +10,8 @@
         nav td { display: grid; background-color: lightblue; color: black; }
         div { background-color: lightgrey; color: black; }
         table { table-layout: auto; width:100% border-collapse: collapse; }
-        th { display: flex; color: red; width: 30%;  text-align: right; }
-        td { display: flex; width: 70%; text-align: left; }
+        th { display: flex; color: red; width: 200; text-align: right; }
+        td { display: flex; text-align: left; }
       </style>
     </head>
     <body>
@@ -28,9 +28,10 @@
     <h1>Bibliography</h1>
     <div id="structured">
       <table frame="vsides" padding="5px" border-collapse="collapse">
-      <xsl:for-each select="bibliography/creativeWork">
+      <xsl:for-each select="bibliography/CreativeWork|bibliography/Article|bibliography/Report|bibliography/Book|bibliography/ScholarlyArticle|bibliography/BlogPosting|bibliography/TechArticle|bibliography/DigitalDocument|bibliography/PublicationIssue|bibliography/SoftwareApplication|bibliography/WebPage|bibliography/WebSite|bibliography/SoftwareSourceCode|bibliography/Comment|bibliography/QAPage|bibliography/BlogPosting|bibliography/DigitalDocument">
         <xsl:sort select="summary"/>
-        <tr itemscope="itemscope" itemtype="http://schema.org/CreativeWork">
+        <tr itemscope="itemscope">
+          <xsl:attribute name="itemtype">http://schema.org/<xsl:value-of select="local-name()"/></xsl:attribute>
           <td colspan="2">
             <details>
               <summary><xsl:value-of select="summary"/></summary>
