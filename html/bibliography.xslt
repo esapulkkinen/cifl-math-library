@@ -80,6 +80,9 @@
         <xsl:otherwise>
           <td><xsl:attribute name="itemprop"><xsl:value-of select="@name"/></xsl:attribute>
           <xsl:choose>
+            <xsl:when test="@name='headline'">
+              <cite><xsl:value-of select="node()"/></cite>
+            </xsl:when>
             <xsl:when test="@name='url' or @name='doi'">
               <a>
                 <xsl:attribute name="href"><xsl:value-of select="node()"/></xsl:attribute>

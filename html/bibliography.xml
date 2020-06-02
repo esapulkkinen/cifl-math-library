@@ -88,7 +88,7 @@ authors.
     <summary>Smith, Oliver K.: Eigenvalues of symmetric 3x3 matrix, 1961, Communications of the ACM</summary>
     <field name="author" type="Person"><summary name="name">Oliver K. Smith</summary></field>
     <field name="doi">doi:10.1145/355578.366316</field>
-    <field name="year">1961</field>
+    <field name="copyrigthYear">1961</field>
     <field name="publisher" type="Organization">
       <summary name="name">Communications of the ACM</summary>
     </field>
@@ -297,7 +297,7 @@ authors.
     <field name="headline">The stream monad</field>
     <field name="isPartOf">Patterns in Functional Programming</field>
     <field name="genre">blog</field>
-    <field name="year">2010</field>
+    <field name="copyrigthYear">2010</field>
   </Article>
   <SoftwareSourceCode>
     <summary>time</summary>
@@ -495,7 +495,7 @@ authors.
     <field name="isPartOf">Mathematical Structures in Computer Science</field>
     <field name="issue">Special issue of selected papers from 6&apos;th Conference on Lisp and Functional Programming</field>
     <field name="url">https://homepages.inf.ed.ac.uk/wadler/papers/monads/monads.ps</field>
-    <field name="year">1992</field>
+    <field name="copyrigthYear">1992</field>
   </Article>
   <Article>
     <summary>Mazur: When is one thing equal to some other thing?</summary>
@@ -503,14 +503,14 @@ authors.
       <summary name="name">Barry Mazur</summary>
     </field>
     <field name="url">http://www.math.harvard.edu/~mazur/preprints/when_is_one.pdf</field>
-    <field name="year">2007</field>
+    <field name="copyrigthYear">2007</field>
   </Article>
   <Article>
     <summary>Wadler: Recursive types for free!</summary>
     <field name="author" type="Person"><summary name="name">Philip Wadler</summary></field>
     <field name="url">http://homepages.inf.ed.ac.uk/wadler/papers/free-rectypes/free-rectypes.txt</field>
     <field name="genre">paper</field>
-    <field name="year">1990</field>
+    <field name="copyrigthYear">1990</field>
   </Article>
   <Book>
     <summary>Knuth: The Art of Computer Programming</summary>
@@ -532,7 +532,7 @@ authors.
     <field name="author" type="Person"><summary name="name">Twan van Laarhoven</summary></field>
     <field name="url">http://twanvl.nl/blog/haskell/isomorphism-lenses</field>
     <field name="license">CC-BY</field>
-    <field name="year">2011</field>
+    <field name="copyrigthYear">2011</field>
   </BlogPosting>
   <SoftwareSourceCode>
     <summary>base-compat</summary>
@@ -606,7 +606,7 @@ authors.
     <field name="organization">NASA Goddard Space Flight Center</field>
     <field name="headline">Power Series</field>
     <field name="url">http://caps.gsfc.nasa.gov/simpson/ref/series.pdf</field>
-    <field name="year">2005</field>
+    <field name="copyrigthYear">2005</field>
     <field name="month">April</field>
     <field name="day">29</field>
   </Article>
@@ -638,7 +638,7 @@ authors.
       <summary name="name">Justin Le</summary>
     </field>
     <field name="url">http://blog.jle.im/entry/fixed-length-vector-types-in-haskell-2015.html</field>
-    <field name="year">2015</field>
+    <field name="copyrigthYear">2015</field>
   </BlogPosting>
   <DigitalDocument>
     <summary>PPM - Netpbm color image format specification</summary>
@@ -649,8 +649,8 @@ authors.
   </DigitalDocument>
   <Article>
     <summary>Paterson R.: A new notation for arrows</summary>
-    <field name="author">Ross Paterson</field>
-    <field name="year">2001</field>
+    <field name="author" type="Person"><summary name="name">Ross Paterson</summary></field>
+    <field name="copyrigthYear">2001</field>
     <field name="url">http://www.staff.city.ac.uk/~ross/papers/notation.html</field>
   </Article>
   <WebSite>
