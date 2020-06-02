@@ -105,7 +105,6 @@ publish_document : dependencegraph externaldepgraph document-standalone hscolor
 	cp dist-newstyle/doc/html/cifl-math-library/*.pdf docs/
 	cd html ; $(MAKE) all ; cd ..
 	cp html/bibliography.html docs/bibliography.html
-	cp html/copyright.js docs/copyright.js
 	sed -i 's+COPYRIGHT">COPYRIGHT+COPYRIGHT" rel="license">COPYRIGHT+g' docs/index.html docs/cifl-math-library/index.html
 	sed -i 's+<html+<html itemscope itemtype="http://schema.org/APIReference" lang="en"+' docs/*.html docs/cifl-math-library/*.html
 	sed -i "s+<head>+<head profile=\"http://dublincore.org/specifications/dublin-core/dc-html/2008-08-04/\" prefix=\"og: http://ogp.me/ns#\">$$(cat metadata.txt | tr '\n' ' ')+g" docs/*.html docs/cifl-math-library/*.html

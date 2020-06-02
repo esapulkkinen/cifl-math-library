@@ -1,15 +1,21 @@
 <?xml version="1.0"?>
 <xsl:stylesheet version="1.0" xmlns:xsl="http://www.w3.org/1999/XSL/Transform">
+  <!-- xmlns="http://www.w3.org/1999/xhtml" -->
+  <xsl:output method="html" version="5.0"/>
   <xsl:template match="/">
     <html>
     <head>
       <title>Bibliography</title>
       <style>
+        .noselect { user-select: none; webkit-user-select: none;
+        khtml-user-select: none; moz-user-select: none; ms-user-select: none; }
         body { background-color: white; color: black; }
         nav tr { display: grid; background-color: lightblue; color: black; }
+        nav th { display: grid; background-color: lightblue; color: black; }
         nav td { display: grid; background-color: lightblue; color: black; }
         div { background-color: lightgrey; color: black; }
         table { table-layout: auto; width:100% border-collapse: collapse; }
+        tr { display: flex; color: black; }
         th { display: flex; color: red; width: 200; text-align: right; }
         td { display: flex; text-align: left; }
       </style>
@@ -32,28 +38,64 @@
         <xsl:sort select="summary"/>
         <tr itemprop="citation" itemscope="itemscope">
           <xsl:attribute name="itemtype">http://schema.org/<xsl:value-of select="local-name()"/></xsl:attribute>
-          <td colspan="2">
+          <td colspan="2" width="100%">
             <details>
-              <summary><xsl:value-of select="summary"/></summary>
+              <summary class="noselect"><xsl:value-of select="summary"/></summary>
+              <table frame="vsides" padding="5px" border-collapse="collapse">
               <xsl:for-each select="field">
                 <xsl:sort select="attribute::name"/>
-                <div>
-                  <xsl:attribute name="itemprop">
-                    <xsl:value-of select="attribute::name"/>
-                  </xsl:attribute>
-                  <xsl:apply-templates/>
-                </div>
+                <xsl:call-template name="field"/>
               </xsl:for-each>
+              </table>
             </details>
           </td>
         </tr>
       </xsl:for-each>
     </table>
     </div>
-    <script type="text/javascript"
-      src="https://esapulkkinen.github.io/cifl-math-library/copyright.js">
-    </script>
     </body>
     </html>
+  </xsl:template>
+  
+  <xsl:template name="field">
+    <tr flex="flex">
+      <xsl:for-each select="@type">
+        <xsl:attribute name="itemtype">http://schema.org/<xsl:value-of select="."/></xsl:attribute>
+        <xsl:attribute name="itemscope">itemscope</xsl:attribute>
+      </xsl:for-each>
+      <th><xsl:value-of select="@name"/>:</th>
+      <xsl:choose>
+        <xsl:when test="summary">
+          <td width="100%">
+            <details>
+              <summary class="noselect"><xsl:attribute name="itemprop"><xsl:value-of select="@name"/></xsl:attribute><xsl:value-of select="summary"/></summary>
+              <table frame="vsides" padding="5px" border-collapse="collapse">
+                <xsl:for-each select="field">
+                  <xsl:call-template name="field"/>
+                </xsl:for-each>
+              </table>
+            </details>
+          </td>
+        </xsl:when>
+        <xsl:otherwise>
+          <td><xsl:attribute name="itemprop"><xsl:value-of select="@name"/></xsl:attribute>
+          <xsl:choose>
+            <xsl:when test="@name='url'">
+              <a>
+                <xsl:attribute name="href"><xsl:value-of select="node()"/></xsl:attribute>
+                <xsl:value-of select="node()"/>
+              </a>
+            </xsl:when>
+          <xsl:otherwise>
+            <xsl:value-of select="node()"/>
+          </xsl:otherwise>
+          </xsl:choose>
+        </td>
+        <xsl:if test="@type">
+          <td>[<xsl:value-of select="@type"/>]</td>
+        </xsl:if>
+        </xsl:otherwise>
+      </xsl:choose>
+    </tr>
   </xsl:template>
 </xsl:stylesheet>
