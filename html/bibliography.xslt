@@ -36,7 +36,7 @@
       <table frame="vsides" padding="5px" border-collapse="collapse">
       <xsl:for-each select="bibliography/CreativeWork|bibliography/Article|bibliography/Report|bibliography/Book|bibliography/ScholarlyArticle|bibliography/BlogPosting|bibliography/TechArticle|bibliography/DigitalDocument|bibliography/PublicationIssue|bibliography/SoftwareApplication|bibliography/WebPage|bibliography/WebSite|bibliography/SoftwareSourceCode|bibliography/Comment|bibliography/QAPage|bibliography/BlogPosting|bibliography/DigitalDocument">
         <xsl:sort select="summary"/>
-        <tr itemprop="citation" itemscope="itemscope">
+        <tr itemprop="citation" itemscope="true">
           <xsl:attribute name="itemtype">http://schema.org/<xsl:value-of select="local-name()"/></xsl:attribute>
           <td colspan="2" width="100%">
             <details>
@@ -61,7 +61,7 @@
     <tr flex="flex">
       <xsl:for-each select="@type">
         <xsl:attribute name="itemtype">http://schema.org/<xsl:value-of select="."/></xsl:attribute>
-        <xsl:attribute name="itemscope">itemscope</xsl:attribute>
+        <xsl:attribute name="itemscope">true</xsl:attribute>
       </xsl:for-each>
       <th><xsl:value-of select="@name"/>:</th>
       <xsl:choose>
@@ -80,7 +80,7 @@
         <xsl:otherwise>
           <td><xsl:attribute name="itemprop"><xsl:value-of select="@name"/></xsl:attribute>
           <xsl:choose>
-            <xsl:when test="@name='url'">
+            <xsl:when test="@name='url' or @name='doi'">
               <a>
                 <xsl:attribute name="href"><xsl:value-of select="node()"/></xsl:attribute>
                 <xsl:value-of select="node()"/>
