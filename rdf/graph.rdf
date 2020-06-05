@@ -1,0 +1,71 @@
+<rdf:RDF xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+         xmlns:rdfs="http://www.w3.org/2000/01/rdf-schema#"
+         xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+         xmlns:owl="http://www.w3.org/2002/07/owl# http://www.w3.org/2009/09/owl2-xml.xsd"> 
+  <owl:Ontology rdf:about="">
+    <rdfs:comment>RDF schema for abstract graphs</rdfs:comment>
+    <owl:versionInfo>11 May 2020</owl:versionInfo>
+  </owl:Ontology>
+
+  <owl:Class rdf:ID="graph"/>
+  <owl:Class rdf:ID="vertex"/>  
+  <owl:Class rdf:ID="link"/>
+
+  <owl:Class rdf:ID="element">
+    <owl:unionOf rdf:parseType="Collection">
+      <owl:Class rdf:about="#vertex"/>
+      <owl:Class rdf:about="#link"/>
+    </owl:unionOf>
+  </owl:Class>
+
+  <owl:ObjectProperty rdf:ID="elements">
+    <rdfs:domain rdf:resource="#graph"/>
+    <rdfs:range rdf:resource="#element"/>
+  </owl:ObjectProperty>
+
+  <owl:InverseFunctionalProperty rdf:ID="vertices">
+    <rdfs:subPropertyOf rdf:resource="#elements"/>
+    <rdfs:domain rdf:resource="#graph"/>
+    <rdfs:range rdf:resource="#vertex"/>
+  </owl:InverseFunctionalProperty>
+  
+  <owl:InverseFunctionalProperty rdf:ID="links">
+    <rdfs:subPropertyOf rdf:resource="#elements"/>
+    <rdfs:domain rdf:resource="#graph"/>
+    <rdfs:range rdf:resource="#link"/>
+  </owl:InverseFunctionalProperty>
+
+  <owl:InverseFunctionalProperty rdf:ID="graphname">
+    <rdfs:domain rdf:resource="#graph"/>
+    <rdfs:range rdf:resource="xsd:string"/>
+  </owl:InverseFunctionalProperty>
+
+  <owl:InverseFunctionalProperty rdf:ID="vertexname">
+    <rdfs:domain rdf:resource="#vertex"/>
+    <rdfs:range rdf:resource="xsd:string"/>
+  </owl:InverseFunctionalProperty>
+
+  <owl:InverseFunctionalProperty rdf:ID="linkname">
+    <rdfs:domain rdf:resource="#link"/>
+    <rdfs:range rdf:resource="xsd:string"/>
+  </owl:InverseFunctionalProperty>
+  
+  <owl:ObjectProperty rdf:ID="source">
+    <rdfs:domain rdf:resource="#link"/>
+    <rdfs:range rdf:resource="#vertex"/>
+  </owl:ObjectProperty>
+  <owl:FunctionalProperty rdf:about="#source"/>
+  
+  <owl:ObjectProperty rdf:ID="target">
+    <rdfs:domain rdf:resource="#link"/>
+    <rdfs:range rdf:resource="#vertex"/>
+  </owl:ObjectProperty>
+  <owl:FunctionalProperty rdf:about="#target"/>
+
+  <owl:ObjectProperty rdf:ID="inverse">
+    <rdfs:domain rdf:resource="#link"/>
+    <rdfs:range rdf:resource="#link"/>
+  </owl:ObjectProperty>
+  <owl:FunctionalProperty rdf:about="#inverse"/>
+
+</rdf:RDF>

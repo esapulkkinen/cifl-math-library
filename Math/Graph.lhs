@@ -68,6 +68,8 @@
 >    module Math.Graph.XML,
 >-- * dot conversion for graphs
 >    module Math.Graph.Dot,
+>-- * rdf conversion for graphs
+>    module Math.Graph.RDF,
 >-- * monoid for id,source,target,invert operations
 >    module Math.Graph.GraphMonoid,
 >-- * interface for graph monad and arrows
@@ -92,3 +94,4 @@
 >import safe Math.Graph.Interface
 >import safe Math.Graph.XML
 >import safe Math.Graph.Dot
+>import safe Math.Graph.RDF

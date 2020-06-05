@@ -55,8 +55,8 @@
 >        (y,y') = bounds (cells m ! x)
 >        bnds = ((y,x),(y',x'))
 >    
->(#) :: (Ix i, Ix j) => Bitmap i j a -> (i,j) -> a
->(Matrix m) # (a,b) = (m A.! a) A.! b
+>(<#>) :: (Ix i, Ix j) => Bitmap i j a -> (i,j) -> a
+>(Matrix m) <#> (a,b) = (m A.! a) A.! b
 
 >empty :: (Ix i, Ix j) => (i,i) -> (j,j) -> a -> Bitmap i j a
 >empty xr yr v = Matrix $ array xr $

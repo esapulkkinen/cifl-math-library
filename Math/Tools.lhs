@@ -29,6 +29,7 @@
 >   module Math.Tools.Parser,
 >   module Math.Tools.ParsingCombinators,
 >   module Math.Tools.PrettyP,
+>   module Math.Tools.Prop,
 >   module Math.Tools.Tree,
 >   module Math.Tools.Universe,
 >   module Math.Tools.Visitor
@@ -50,7 +51,8 @@
 >import safe Math.Tools.Isomorphism 
 >import safe Math.Tools.LineInfo
 >import safe Math.Tools.List 
->import safe Math.Tools.Map 
+>import safe Math.Tools.Map
+>import safe Math.Tools.Prop
 >import safe qualified Math.Tools.Map
 >import safe Math.Tools.Maybe
 >import safe Math.Tools.Median

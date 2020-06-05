@@ -1,16 +1,16 @@
->{-# LANGUAGE OverloadedStrings #-}
+>{-# LANGUAGE OverloadedStrings, Trustworthy #-}
 >module Math.Graph.RDF where
 >import Data.RDF
->import qualified Data.Map as Map
->import qualified Data.Set as Set
->import qualified Math.Tools.Map as MapTools
->import Data.Map (Map)
->import Math.Graph.Interface
->import Math.Graph.GraphMonoid
->import Math.Graph.Reversible
->import Math.Graph.InGraphMonad
->import qualified Data.Text as T
->import Data.Text (Text)
+>import safe qualified Data.Map as Map
+>import safe qualified Data.Set as Set
+>import safe qualified Math.Tools.Map as MapTools
+>import safe Data.Map (Map)
+>import safe Math.Graph.Interface
+>import safe Math.Graph.GraphMonoid
+>import safe Math.Graph.Reversible
+>import safe Math.Graph.InGraphMonad
+>import safe qualified Data.Text as T
+>import safe Data.Text (Text)
 
 >baseURL :: Text
 >baseURL = "https://esapulkkinen.github.io/cifl-math-library/graph"
@@ -69,25 +69,23 @@
 
 
 >graphsToRDF :: (Monad m, ReversibleGraphMonoid mon)
->  => Map Text (Graph mon Text) -> m (Map Text (RDF TList))
->graphsToRDF m = do
->  graphTriples <- MapTools.mapByKeyM (\k g -> inGraphM g (graphToTriples k)) m
->  return $ graphTriples ++ [
->                          triple 
->                          ]
->  where vertexTriple gname t = triple (bnode gname) verticesURI (subjectOf t)
->        linkTriple gname t = triple (bnode gname) linksURI (subjectOf t)
+>  => Text -> Map Text (Graph mon Text) -> m (Map Text (RDF TList))
+>graphsToRDF graphURL m = do
+>  graphTriples <- MapTools.mapByKeyM (\k g -> inGraphM g $ namedGraphToTriples k) m
+>  let rdf k tp = mkRdf tp (Just $ BaseUrl $ graphURL <> "/" <> k)
+>             (PrefixMappings $ Map.singleton "graph" baseURL)
+>  return $ Map.mapWithKey rdf graphTriples
 
 >namedGraphToTriples :: (Monad m, ReversibleGraphMonoid mon)
 >  => Text -> InGraphM mon Text m Triples
 >namedGraphToTriples graphname = do
->   let gnode = bnode gname
+>   let gnode = bnode graphname
 >   triples <- graphToTriples
 >   vert <- gvertices
->   let vertTriples = map (\v -> triple gnode verticesURI (unode v)) vert
+>   let vertTriples = Set.map (\v -> triple gnode verticesURI (unode v)) vert
 >   links <- greversibleLinks
->   let linkTriples = map (\l -> triple gnode linksURI (unode l)) links
->   return $ triples ++ vertTriples ++ linkTriples
+>   let linkTriples = Set.map (\((l,_),(_,_)) -> triple gnode linksURI (unode l)) links
+>   return $ triples ++ (Set.toList $ vertTriples `Set.union` linkTriples)
 
 >graphToTriples :: (Monad m, ReversibleGraphMonoid mon)
 >  => InGraphM mon Text m Triples

@@ -45,7 +45,7 @@
 >   children :: w a -> [w a]
 
 >class (Comonad w) => DenseComonad w where
->   split :: w a -> w (a,a)
+>   dense_comonad_split :: w a -> w (a,a)
 
 >class (Comonad w) => NonemptyComonad w where
 >   nonzero :: w a -> Either a (w a)

@@ -24,6 +24,10 @@
 >   module Math.Matrix.Vector4,
 >-- * arbitrary dimensional vector
 >   module Math.Matrix.Simple,
+>-- * bitmaps
+>   module Math.Matrix.Bitmap,
+>-- * quaternions
+>   module Math.Matrix.Quaternion,
 >-- ** vectors optimized for SIMD
 >   module Math.Matrix.SIMD,
 >-- * Dual vector
@@ -42,6 +46,8 @@
 >import safe Math.Matrix.Vector2
 >import safe Math.Matrix.Vector3
 >import safe Math.Matrix.Vector4
+>import safe Math.Matrix.Bitmap
+>import safe Math.Matrix.Quaternion
 >import safe Math.Matrix.Simple
 >import safe Math.Matrix.Instances
 >import safe Math.Matrix.Transpose
