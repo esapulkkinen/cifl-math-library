@@ -3,6 +3,7 @@
     <summary>Lawvere, Rosebrugh: Sets for Mathematics</summary>
     <field name="author" type="Person"><summary name="name">F. William Lawvere</summary></field>
     <field name="author" type="Person"><summary name="name">Robert Rosebrugh</summary></field>
+    <field name="headline">Sets for Mathematics</field>
     <field name="isbn">0-521-01060-8</field>
   </Book>
   <WebSite>
@@ -16,6 +17,7 @@
     <field name="publisher" type="Organization">
       <summary name="name">Wikimedia Foundation, Inc.</summary>
     </field>
+    <field name="headline">Wikipedia, the free encyclopedia that anyone can edit</field>
     <field name="url">https://en.wikipedia.org/wiki/Main_Page</field>
   </WebSite>
 
@@ -502,6 +504,7 @@ authors.
     <field name="author" type="Person">
       <summary name="name">Barry Mazur</summary>
     </field>
+    <field name="headline">When is one thing equal to some other thing?</field>
     <field name="url">http://www.math.harvard.edu/~mazur/preprints/when_is_one.pdf</field>
     <field name="copyrigthYear">2007</field>
   </Article>
@@ -510,6 +513,7 @@ authors.
     <field name="author" type="Person"><summary name="name">Philip Wadler</summary></field>
     <field name="url">http://homepages.inf.ed.ac.uk/wadler/papers/free-rectypes/free-rectypes.txt</field>
     <field name="genre">paper</field>
+    <field name="headline">Recursive types for free!</field>
     <field name="copyrigthYear">1990</field>
   </Article>
   <Book>
@@ -533,6 +537,7 @@ authors.
     <field name="url">http://twanvl.nl/blog/haskell/isomorphism-lenses</field>
     <field name="license">CC-BY</field>
     <field name="copyrigthYear">2011</field>
+    <field name="headline">Isomorphism lenses</field>
   </BlogPosting>
   <SoftwareSourceCode>
     <summary>base-compat</summary>
