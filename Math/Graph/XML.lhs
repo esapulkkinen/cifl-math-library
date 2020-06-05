@@ -8,17 +8,15 @@
 >--  (WARNING: since some time ago, HaXml has conflicted with base package).
 >--  Until those are resolved, compiling with HaXml may be difficult.
 >-- 
->--  JSON uses Text.JSON package from <https://hackage.haskell.org/package/json>
->-- 
 >--  Please see HaXML web page, <https://hackage.haskell.org/package/HaXml>
 >--  and GXL web page <http://www.gupro.de/GXL/> for further details about
 >--  these packages.
 >module Math.Graph.XML where
->import Data.Set (Set)
 >import Data.Map (Map)
->import qualified Data.Set as Set
 >import qualified Data.Map as Map
->
+>import Data.Set (Set)
+>import qualified Data.Set as Set
+
 
 #ifdef WITH_HAXML
 
@@ -30,7 +28,6 @@
 
 #endif
 
->import qualified Text.JSON as JSON
 >import Text.PrettyPrint
 >import Math.Graph.XML.GXL
 >import Math.Graph.Reversible (Graph)
@@ -54,19 +51,6 @@
 >    return $ showXml False v
 
 #endif
-
->digraphToJSON :: (Monad m, GraphMonoid mon) => InGraphM mon String m JSON.JSValue
->digraphToJSON = do edges <- linksM
->                   let edges' = JSON.makeObj $ concatMap 
->                        (\(e,f,t) ->  [(e,JSON.makeObj [("from",JSON.showJSON f),
->                                                        ("to",JSON.showJSON t)])])
->                        (Set.toList edges)
->                   vertices <- verticesM
->                   return $ JSON.makeObj [("vertices",JSON.showJSON vertices),
->                                          ("edges",JSON.showJSON edges')]
-
->digraphToJSONString :: (Monad m, GraphMonoid mon) => InGraphM mon String m String
->digraphToJSONString = digraphToJSON >>= (return . JSON.encode)
 
 #ifdef WITH_HAXML
 

@@ -68,6 +68,8 @@
 >    module Math.Graph.XML,
 >-- * dot conversion for graphs
 >    module Math.Graph.Dot,
+>-- * JSON conversion for graphs
+>    module Math.Graph.JSON,
 >-- * rdf conversion for graphs
 >    module Math.Graph.RDF,
 >-- * monoid for id,source,target,invert operations
@@ -95,3 +97,4 @@
 >import safe Math.Graph.XML
 >import safe Math.Graph.Dot
 >import safe Math.Graph.RDF
+>import safe Math.Graph.JSON
