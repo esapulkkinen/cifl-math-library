@@ -1,4 +1,5 @@
 >{-# LANGUAGE Safe,DataKinds, MultiParamTypeClasses, GADTs, FlexibleInstances, FlexibleContexts, UndecidableInstances, TypeOperators, KindSignatures, TypeFamilies, ExistentialQuantification, ScopedTypeVariables, TypeOperators, AllowAmbiguousTypes #-}
+>{-# LANGUAGE OverloadedStrings #-}
 >module Math.Matrix.FiniteVector where
 >import qualified Text.PrettyPrint as Pretty
 >import Control.Applicative
@@ -121,11 +122,11 @@ Doesn't typecheck in GHC 7.10.3, "Could not deduce (n1 ~ n) from the context
 >   vlist _ = []
 
 >instance PpShowVerticalF (Vec n) where
->   ppf_vertical Empty = pp ""
+>   ppf_vertical Empty = ""
 >   ppf_vertical (Cons x xr) = Pretty.nest 4 (pp x) Pretty.$$ (ppf xr)
 
 >instance PpShowF (Vec n) where
->   ppf Empty = pp ""
+>   ppf Empty = ""
 >   ppf (Cons x xr) = pp x Pretty.<+> ppf xr
 
 >instance (Show a) => Show (Vec n a) where

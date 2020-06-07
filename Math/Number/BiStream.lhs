@@ -1,4 +1,4 @@
->{-# LANGUAGE TypeOperators #-}
+>{-# LANGUAGE TypeOperators, OverloadedStrings #-}
 >module Math.Number.BiStream where
 >import Text.PrettyPrint (punctuate,hsep, (<+>), vcat)
 >import qualified Text.PrettyPrint as Pretty
@@ -13,17 +13,17 @@
 >data BiStream a = BiStream { bifst :: Stream a, bisnd :: Stream a }
 
 >instance PpShowF BiStream where
->   ppf (BiStream a b) = (pp "..." <> hsep (punctuate (pp ',') (reverse $ Stream.take 5 $ fmap pp a)))
->                       <+> pp ";" <+> (hsep (punctuate (pp ',') (Stream.take 5 $ fmap pp b)) <> pp "...") 
+>   ppf (BiStream a b) = ("..." <> hsep (punctuate (pp ',') (reverse $ Stream.take 5 $ fmap pp a)))
+>                       <+> ";" <+> (hsep (punctuate (pp ',') (Stream.take 5 $ fmap pp b)) <> "...") 
 
 >instance PpShowVerticalF BiStream where
 >   ppf_vertical (BiStream a b) = vcat ((reverse $ Stream.take 5 (fmap pp a)) ++ Stream.take 5 (fmap pp b))
 
 >instance (PpShow a) => PpShow (BiStream a) where
->   pp (BiStream a b) = (pp "..." <> hsep (punctuate (pp ',') (reverse $ Stream.take 5 $ fmap pp a)))
->                          <+> pp ";" <+>
+>   pp (BiStream a b) = ("..." <> hsep (punctuate (pp ',') (reverse $ Stream.take 5 $ fmap pp a)))
+>                          <+> ";" <+>
 >                          (hsep (punctuate (pp ',') (Stream.take 5 $ fmap pp b))
->                          <> pp "...")
+>                          <> "...")
 
 >instance (Show a) => Show (BiStream a) where
 >   show (BiStream a b) = "..." ++ concat (intersperse "," $ reverse $ Stream.take 10 $ (fmap show a)) ++

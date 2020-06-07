@@ -82,10 +82,10 @@
 >      pd3 ff a b c = limit $ epsilon_stream >>= \ eps ->
 >            return $ (1/(2*eps)) %* (ff a b (c+eps) - ff a b (c-eps))
 
->cov3 :: (a ~ Scalar a) => Vector3 (Dual (Vector3 a))
+>cov3 :: Vector3 (Dual (Vector3 a))
 >cov3 = Vector3 (covector xcoord3) (covector ycoord3) (covector zcoord3)
 
->instance (a ~ Scalar a) => ProjectionDual Vector3 a where
+>instance ProjectionDual Vector3 a where
 >   projection_dual = cov3
 
 >instance (Binary s) => Binary (Vector3 s) where

@@ -1,5 +1,5 @@
 >-- -*- coding: utf-8 -*-
->{-# LANGUAGE Safe,MultiParamTypeClasses, ScopedTypeVariables, FlexibleContexts, FunctionalDependencies, FlexibleInstances, TypeOperators, TypeFamilies, DefaultSignatures, UnicodeSyntax, DeriveGeneric, DeriveDataTypeable, ConstraintKinds, UndecidableInstances #-}
+>{-# LANGUAGE Safe,MultiParamTypeClasses, ScopedTypeVariables, FlexibleContexts, FunctionalDependencies, FlexibleInstances, TypeOperators, TypeFamilies, DefaultSignatures, UnicodeSyntax, DeriveGeneric, DeriveDataTypeable, ConstraintKinds, UndecidableInstances, OverloadedStrings #-}
 >-- | These should match standard definitions of vector spaces.
 >-- Used for reference: K. Chandrasekhara Rao: Functional Analysis.
 >-- also see Warner: Modern algebra.
@@ -676,7 +676,7 @@ instance (Functor m) => Unital (:*:) m where
 >  show (Matrix (a :+ b)) = show a ++ " :+ " ++ show b
 
 >instance PpShowVerticalF Complex where
->  ppf_vertical (x :+ y) = pp x $$ pp ":+" <+> pp y
+>  ppf_vertical (x :+ y) = pp x $$ ":+" <+> pp y
 
 >instance (Num a) => VectorSpace (I a) where
 >  type Scalar (I a) = a

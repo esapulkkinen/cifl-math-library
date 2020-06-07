@@ -1,4 +1,5 @@
 >{-# LANGUAGE FlexibleInstances, MultiParamTypeClasses, Arrows, TypeFamilies #-}
+>{-# LANGUAGE OverloadedStrings #-}
 >module Math.Tools.Queue where
 >import qualified Prelude as P
 >import Prelude hiding (unzip,zip,zipWith,reverse,(.),id)
@@ -85,10 +86,10 @@
 >   show = pPrint
 
 >instance (PpShow a) => PpShow (Queue a) where
->   pp (MakeQueue x y) = pp "queue{" 
+>   pp (MakeQueue x y) = "queue{" 
 >        <> Pretty.cat (Pretty.punctuate (pp ',') $ map pp x)
 >        <> (if null x then Pretty.empty else pp ',')
->        <> pp "!"
+>        <> "!"
 >        <> (if null y then Pretty.empty else pp ',')
 >        <> Pretty.cat (Pretty.punctuate (pp ',') $ map pp (L.reverse y))
 >        <> pp '}'                 

@@ -1,9 +1,12 @@
 >{-# LANGUAGE Safe,FlexibleInstances, MultiParamTypeClasses, TypeOperators, DeriveGeneric, DeriveDataTypeable, LambdaCase #-}
+>{-# LANGUAGE OverloadedStrings #-}
 >module Math.Graph.GraphMonoid where
 >import Control.Arrow
 >import GHC.Generics
 >import Data.Typeable
 >import Data.Data
+>import Data.Text (Text)
+>import qualified Data.Text as Text
 >import Math.Tools.Isomorphism
 >import Math.Tools.Arrow
 >import Math.Tools.Universe
@@ -66,9 +69,9 @@
 
 >instance Universe Three where { all_elements = [TId,TDom,TCod] }
 >instance PpShow Three where
->   pp TId = pp "id"
->   pp TDom = pp "dom"
->   pp TCod = pp "cod"
+>   pp TId = "id"
+>   pp TDom = "dom"
+>   pp TCod = "cod"
 
 >instance Semigroup Three where
 >   (<>) = mappend_three
@@ -100,10 +103,10 @@
 
 >instance Universe Four where { all_elements = [FId,FDom, FCod,FNot] }
 >instance PpShow Four where
->   pp FId = pp "id"
->   pp FDom = pp "dom"
->   pp FCod = pp "cod"
->   pp FNot = pp "not"
+>   pp FId = "id"
+>   pp FDom = "dom"
+>   pp FCod = "cod"
+>   pp FNot = "not"
 
 >instance MonoidArrow (->) Four Bool where
 >   monoidA FId  = id

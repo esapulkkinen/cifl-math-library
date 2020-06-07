@@ -1,7 +1,9 @@
 >{-# LANGUAGE Safe, GADTs, UndecidableInstances, MultiParamTypeClasses, TypeOperators, TypeFamilies, LambdaCase, ScopedTypeVariables, FlexibleInstances, FlexibleContexts, Arrows, Rank2Types, StandaloneDeriving, DeriveGeneric, DeriveDataTypeable #-}
+>{-# LANGUAGE OverloadedStrings #-}
 >module Math.Number.NumericExpression where
 >import safe Prelude hiding (id,(.))
->import safe Text.PrettyPrint ((<+>))
+>import safe Text.PrettyPrint (Doc, (<+>))
+>import safe Data.Text
 >import safe GHC.Generics hiding ((:*:), (:+:))
 >import safe Data.Data
 >import safe Data.Typeable
@@ -116,10 +118,10 @@ instance (Num a, IdVisitor a) => Expression NumExpr VectorCtx a where
 >  deriving (Eq, Typeable, Data, Generic)
 
 >instance (PpShowF v) => PpShowF (VectorSpaceExpr v) where
->   ppf VZero = pp "0"
->   ppf (VNegate x) = pp "-" <> ppf x
->   ppf (VPlus x y) = ppf x <+> pp "+" <+> ppf y
->   ppf (VScalar x v) = ppf x <+> pp "*" <+> ppf v
+>   ppf VZero = "0"
+>   ppf (VNegate x) = "-" <> ppf x
+>   ppf (VPlus x y) = ppf x <+> "+" <+> ppf y
+>   ppf (VScalar x v) = ppf x <+> "*" <+> ppf v
 >   ppf (VVectorVar x) = ppf (fmap ppf x)
 >   ppf (VPrim w) = ppf w
 
@@ -198,7 +200,7 @@ instance (Num a, IdVisitor a) => Expression NumExpr VectorCtx a where
 >   pp VZero = pp '0'
 >   pp (VNegate a) = pp '-' <> pp a
 >   pp (VPlus x y) = pp x <+> pp '+' <+> pp y
->   pp (VScalar a x) = pp a <> pp "%*" <> pp x
+>   pp (VScalar a x) = pp a <> "%*" <> pp x
 >   pp (VVectorVar x) = pp x
 >   pp (VPrim a) = ppf a
 
@@ -254,15 +256,15 @@ deriving instance (Show a) => Show ((NumExpr v :*: Var) a)
 >  deriving (Eq, Typeable, Data, Generic)
 
 >instance (PpShowF v) => PpShowF (NumExpr v) where
->   ppf (Plus x y) = ppf x <+> pp "+" <+> ppf y
->   ppf (Product x y) = ppf x <> pp "*" <> ppf y
->   ppf (Subtract x y) = ppf x <+> pp "-" <+> ppf y
->   ppf (Negate x) = pp "-" <> ppf x
->   ppf (Abs x) = pp "abs(" <> ppf x <> pp ")"
->   ppf (Signum x) = pp "signum(" <> ppf x <> pp ")"
+>   ppf (Plus x y) = ppf x <+> "+" <+> ppf y
+>   ppf (Product x y) = ppf x <> "*" <> ppf y
+>   ppf (Subtract x y) = ppf x <+> "-" <+> ppf y
+>   ppf (Negate x) = "-" <> ppf x
+>   ppf (Abs x) = "abs(" <> ppf x <> ")"
+>   ppf (Signum x) = "signum(" <> ppf x <> ")"
 >   ppf (NumPrim x) = pp x
 >   ppf (FromInteger x) = pp x
->   ppf (InnerProduct x y) = pp "innerproduct(" <> ppf x <> pp "," <> ppf y <> pp ")"
+>   ppf (InnerProduct x y) = "innerproduct(" <> ppf x <> "," <> ppf y <> ")"
 
 >instance (VectorShow v) => VectorShow (NumExpr v) where
 >  show_vector (Plus x y) = show_vector x ++ " + " ++ show_vector y
@@ -402,14 +404,14 @@ deriving instance (Show a) => Show ((NumExpr v :*: Var) a)
 
 >instance (PpShowF v) => PpShowF (FracExpr v) where
 >   ppf (PrimFracExpr v) = ppf v
->   ppf (Divide x y) = ppf x <+> pp "/" <+> ppf y
->   ppf (Recip x) = pp "1/" <> ppf x
+>   ppf (Divide x y) = ppf x <+> "/" <+> ppf y
+>   ppf (Recip x) = "1/" <> ppf x
 >   ppf (FromRational x) = pp x
 
 >instance (PpShow a, PpShowF v) => PpShow (FracExpr v a) where
 >   pp (PrimFracExpr a) = ppf a
 >   pp (Divide a b) = pp a <> pp '/' <> pp b
->   pp (Recip a) = pp "1/" <> pp a
+>   pp (Recip a) = "1/" <> pp a
 >   pp (FromRational a) = pp a
 
 >-- | basically same as Floating class in Prelude, but as data.
@@ -437,10 +439,11 @@ deriving instance (Show a) => Show ((NumExpr v :*: Var) a)
 >deriving instance (Eq (v (FloatExpr v a))) => Eq (FloatExpr v a)
 >deriving instance (Typeable v, Typeable a, Data (v (FloatExpr v a))) => Data (FloatExpr v a)
 
+>pp_unary :: (PpShow a) => Text -> a -> Doc
 >pp_unary op a = pp op <> pp '(' <> pp a <> pp ')'
 
 >instance (PpShowF v) => PpShow (FloatExpr v a) where
->   pp PrimPi = pp "pi"
+>   pp PrimPi = "pi"
 >   pp (Exp a) = pp_unary "exp" a
 >   pp (Log a) = pp_unary "log" a
 >   pp (Sqrt a) = pp_unary "sqrt" a

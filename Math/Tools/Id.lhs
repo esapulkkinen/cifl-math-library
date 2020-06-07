@@ -1,4 +1,5 @@
 >{-# LANGUAGE Safe #-}
+>{-# LANGUAGE OverloadedStrings #-}
 >{-# LANGUAGE DeriveDataTypeable #-}
 >module Math.Tools.Id where
 >import Text.PrettyPrint (fcat, (<+>))
@@ -42,7 +43,7 @@
 >	  (MkId x _) <= (MkId y _) = x <= y
 
 >lineDesc :: Id -> Pretty.Doc
->lineDesc i = pp "Line" <+> (pp (location_of i) <> pp ':')
+>lineDesc i = "Line" <+> (pp (location_of i) <> ":")
 
 >lineOf :: Id -> Int
 >lineOf = li_row . idInfo

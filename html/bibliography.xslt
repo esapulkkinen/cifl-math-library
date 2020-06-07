@@ -63,12 +63,17 @@
         <xsl:attribute name="itemtype">http://schema.org/<xsl:value-of select="."/></xsl:attribute>
         <xsl:attribute name="itemscope">true</xsl:attribute>
       </xsl:for-each>
+      <xsl:choose>
+        <xsl:when test="summary">
+          <xsl:attribute name="itemprop"><xsl:value-of select="@name"/></xsl:attribute>
+        </xsl:when>
+      </xsl:choose>
       <th><xsl:value-of select="@name"/>:</th>
       <xsl:choose>
         <xsl:when test="summary">
           <td width="100%">
             <details>
-              <summary class="noselect"><xsl:attribute name="itemprop"><xsl:value-of select="@name"/></xsl:attribute><xsl:value-of select="summary"/></summary>
+              <summary class="noselect"><xsl:attribute name="itemprop"><xsl:value-of select="summary/@name"/></xsl:attribute><xsl:value-of select="summary"/></summary>
               <table frame="vsides" padding="5px" border-collapse="collapse">
                 <xsl:for-each select="field">
                   <xsl:call-template name="field"/>

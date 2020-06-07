@@ -1,4 +1,5 @@
 >{-# LANGUAGE Trustworthy, GADTs,TypeFamilies, FlexibleInstances, MultiParamTypeClasses #-}
+>{-# LANGUAGE OverloadedStrings #-}
 >module Math.Tools.ParseMonad where
 >import Prelude hiding (span, null, length, head, take)
 >import Data.Text
@@ -66,7 +67,7 @@
 >                         (SyntaxError li2 d2) -> SyntaxError li2 d2
 
 >debug :: Text -> ParseM a -> ParseM a
->debug str ~(ParseM expr) = ParseM ( \lst li -> trace (unpack $ Text.concat [str, pack ", at:", Text.take 10 lst])
+>debug str ~(ParseM expr) = ParseM ( \lst li -> trace (unpack $ Text.concat [str, ", at:", Text.take 10 lst])
 >                                                     (expr lst li))
 
 >instance ParserCombinators ParseM where
@@ -84,7 +85,7 @@
 >readChar' :: ParseM Char
 >readChar' = ParseM (\ lst li -> case uncons lst of
 >                       Just (c,cr) -> OkParse cr (next_column li) c
->                       Nothing -> FailParse li (pp "Unexpected end of file"))
+>                       Nothing -> FailParse li "Unexpected end of file")
 
 >optional' :: ParseM a -> ParseM (Maybe a)
 >optional' f = (f >>= (return . Just)) 
@@ -94,8 +95,8 @@
 >readWhile' f = ParseM (\lst li -> let (s,r) = span f lst
 >                  in if null s then FailParse li (err r)
 >                               else OkParse r (add_to_column (length s) li) s)
->     where err r = pp "unexpected character in input:" 
->                   <> if null r then pp "<eof>" else pp_list [head r]
+>     where err r = "unexpected character in input:" 
+>                   <> if null r then "<eof>" else pp_list [head r]
 
 
 readWhile :: (Char -> Bool) -> (Text -> ParseM a) -> ParseM a
@@ -108,36 +109,36 @@ readWhile f cont = ParseM (\ lst li -> let (s,r) = span f lst
 >eof' :: ParseM ()
 >eof' = ParseM (\ lst li -> case uncons lst of
 >                          Nothing -> OkParse lst li ()
->                          _ -> FailParse li (pp "expected eof, found:'"
+>                          _ -> FailParse li ("expected eof, found:'"
 >                                            <> (pp $ unpack $ take 10 lst)))
 
 >one_of' :: (Char -> Bool) -> ParseM Char
 >one_of' p = ParseM (\ lst li -> case uncons lst of
 >                               Just (c,cr) | p c -> OkParse cr (next_column li) c
->                                      | otherwise -> FailParse li (pp "one_of: character '" <> pp c <> pp "' is not one of the expected characters")
->                               Nothing -> FailParse li (pp "one_of: Unexpected end of file"))
+>                                      | otherwise -> FailParse li ("one_of: character '" <> pp c <> "' is not one of the expected characters")
+>                               Nothing -> FailParse li ("one_of: Unexpected end of file"))
 
 one_of :: (Char -> Bool) -> (Char -> ParseM a) -> ParseM a
 one_of p f = ParseM (\ lst li -> case lst of
                         (c:cr) | p c -> let ~(ParseM x) = f c 
                                          in x cr (next_column li)
                                | otherwise -> 
-                        [] -> FailParse li (pp "one_of: Unexpected end of file"))
+                        [] -> FailParse li ("one_of: Unexpected end of file"))
 
 >require' :: Char -> ParseM Char
 >require' c = ParseM (\ lst li -> case uncons lst of
 >                      Just (c',cr) | c == c' -> OkParse cr (next_column li) c
 >                                   | otherwise -> FailParse li (expected c c')
->                      Nothing -> FailParse li (pp "require: Unexpected end of file"))
->   where expected cx c' = (pp "expected '" <> pp cx <> pp "'")
->                      <+> (pp "found: '" <> pp c' <> pp "'")
+>                      Nothing -> FailParse li "require: Unexpected end of file")
+>   where expected cx c' = ("expected '" <> pp cx <> "'")
+>                      <+> ("found: '" <> pp c' <> "'")
 
 
 >newline' :: ParseM ()
 >newline' = ParseM (\ lst li -> case uncons lst of
 >                     Just ('\n',cr) -> OkParse cr (next_line li) ()
->                     Just (c,_) -> FailParse li (pp "not a newline:" <> pp "'" <> pp c <> pp "'")
->                     Nothing -> FailParse li (pp "Unexpected end of file"))
+>                     Just (c,_) -> FailParse li ("not a newline:" <> "'" <> pp c <> "'")
+>                     Nothing -> FailParse li "Unexpected end of file")
 
 >runParseM :: ParseM a -> Text -> LineInfo -> ParseResult a
 >runParseM ~(ParseM x) = x
@@ -156,12 +157,12 @@ one_of p f = ParseM (\ lst li -> case lst of
 >instance (PpShow x) => PpShow (ParseResult x) where
 >   pp (OkParse _ _ x) = pp x
 >   pp (FailParse li d) = fcat[pp li,pp ':',d]
->   pp (SyntaxError li d) = fcat[pp "Syntax error:",pp li,pp ':',d]
+>   pp (SyntaxError li d) = fcat["Syntax error:",pp li,":",d]
 
 >instance PpShowF ParseResult where
 >	  ppf (OkParse _ _ x) = pp x
 >	  ppf (FailParse li d) = fcat[pp li,pp ':',d]
->         ppf (SyntaxError li d) = fcat[pp "Syntax error:",pp li,pp ':',d]
+>         ppf (SyntaxError li d) = fcat["Syntax error:",pp li,pp ':',d]
 
 instance Monad ParseResult where
 	  return = OkParse "" emptyLineInfo
@@ -204,7 +205,7 @@ instance MonadError (LineInfo,Doc) ParseResult where
 >   (<|>) = mplus
 
 >instance MonadPlus ParseM where
->   mzero = ParseM (\r li -> FailParse li (pp "Unsupported alternative:" 
+>   mzero = ParseM (\r li -> FailParse li ("Unsupported alternative:" 
 >                                            <> pp (Text.take 15 r)))
 >   ~(ParseM x) `mplus` ~(ParseM y) = ParseM (\s li -> case x s li of
 >                                      (OkParse s' lio r) -> OkParse s' lio r

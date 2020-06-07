@@ -19,6 +19,132 @@
     </field>
     <field name="headline">Wikipedia, the free encyclopedia that anyone can edit</field>
     <field name="url">https://en.wikipedia.org/wiki/Main_Page</field>
+    <field name="hasPart" type="WebPage"><summary name="name">Adjugate</summary><field name="url">http://en.wikipedia.org/wiki/Adjugate</field></field>
+    <field name="hasPart" type="WebPage"><summary name="name">Arithmetic geometric mean</summary><field name="url">http://en.wikipedia.org/wiki/Arithmetic%E2%80%93geometric_mean</field></field>
+    <field name="hasPart" type="WebPage"><summary name="name">Atan2</summary><field name="url">http://en.wikipedia.org/wiki/Atan2</field></field>
+    <field name="hasPart" type="WebPage"><summary name="name">Binomial coefficient</summary><field name="url">http://en.wikipedia.org/wiki/Binomial_coefficient</field></field>
+    <field name="hasPart" type="WebPage"><summary name="name">Bracket notation</summary><field name="url">http://en.wikipedia.org/wiki/Bra%E2%80%93ket_notation</field></field>
+    <field name="hasPart" type="WebPage"><summary name="name">Catalan number</summary><field name="url">http://en.wikipedia.org/wiki/Catalan_number</field></field>
+    <field name="hasPart" type="WebPage"><summary name="name">Conjugate transpose</summary><field name="url">http://en.wikipedia.org/wiki/Conjugate_transpose</field></field>
+    <field name="hasPart" type="WebPage"><summary name="name">Cycle detection</summary><field name="url">http://en.wikipedia.org/wiki/Cycle_detection</field></field>
+    <field name="hasPart" type="WebPage"><summary name="name">Determinant</summary><field name="url">http://en.wikipedia.org/wiki/Determinant</field></field>
+    <field name="hasPart" type="WebPage"><summary name="name">Elementary matrix operations</summary><field name="url">http://en.wikipedia.org/wiki/Elementary_matrix#Operations</field></field>
+    <field name="hasPart" type="WebPage"><summary name="name">Exponential function</summary><field name="url">http://en.wikipedia.org/wiki/Exponential_function</field></field>
+    <field name="hasPart" type="WebPage"><summary name="name">Formal power series</summary><field name="url">http://en.wikipedia.org/wiki/Formal_power_series</field></field>
+    <field name="hasPart" type="WebPage"><summary name="name">Formula for primes</summary><field name="url">http://en.wikipedia.org/wiki/Formula_for_primes</field></field>
+    <field name="hasPart" type="WebPage"><summary name="name">Hyperbolic function</summary><field name="url">http://en.wikipedia.org/wiki/Hyperbolic_function</field></field>
+    <field name="hasPart" type="WebPage"><summary name="name">Integral</summary><field name="url">http://en.wikipedia.org/wiki/Integral</field></field>
+    <field name="hasPart" type="WebPage"><summary name="name">Iverson bracket</summary><field name="url">http://en.wikipedia.org/wiki/Iverson_bracket</field></field>
+    <field name="hasPart" type="WebPage"><summary name="name">Klein-gordon equation</summary><field name="url">http://en.wikipedia.org/wiki/Klein%E2%80%93Gordon_equation</field></field>
+    <field name="hasPart" type="WebPage"><summary name="name">Lanthanide</summary><field name="url">http://en.wikipedia.org/wiki/Lanthanide</field></field>
+    <field name="hasPart" type="WebPage"><summary name="name">Least upper-bound property</summary><field name="url">http://en.wikipedia.org/wiki/Least-upper-bound_property</field></field>
+    <field name="hasPart" type="WebPage"><summary name="name">Logarithm</summary><field name="url">http://en.wikipedia.org/wiki/Logarithm</field></field>
+    <field name="hasPart" type="WebPage"><summary name="name">Matrix multiplication</summary><field name="url">http://en.wikipedia.org/wiki/Matrix_multiplication</field></field>
+    <field name="hasPart" type="WebPage"><summary name="name">Matrix representation of maxwell's equations</summary><field name="url">http://en.wikipedia.org/wiki/Matrix_representation_of_Maxwell's_equations</field></field>
+    <field name="hasPart" type="WebPage"><summary name="name">Periodic Table</summary><field name="url">http://en.wikipedia.org/wiki/Periodic_Table</field></field>
+    <field name="hasPart" type="WebPage"><summary name="name">Planck Constant</summary><field name="url">http://en.wikipedia.org/wiki/Planck_Constant</field></field>
+    <field name="hasPart" type="WebPage"><summary name="name">Squeeze theorem</summary><field name="url">http://en.wikipedia.org/wiki/Squeeze_theorem</field></field>
+    <field name="hasPart" type="WebPage"><summary name="name">Trigonometric functions</summary><field name="url">http://en.wikipedia.org/wiki/Trigonometric_functions</field></field>
+    <field name="hasPart" type="WebPage"><summary name="name">Twin prime</summary><field name="url">http://en.wikipedia.org/wiki/Twin_prime</field></field>
+    <field name="hasPart" type="WebPage"><summary name="name">Stone von Neumann theorem</summary><field name="url">https://en.m.wikipedia.org/wiki/Stone%E2%80%93von_Neumann_theorem</field></field>
+    <field name="hasPart" type="WebPage"><summary name="name">Galois connection</summary><field name="url">https://en.wikipedia.org/Galois_Connection</field></field>
+    <field name="hasPart" type="WebPage"><summary name="name">2019 redefinition of SI base units</summary><field name="url">https://en.wikipedia.org/wiki/2019_redefinition_of_SI_base_units</field></field>
+    <field name="hasPart" type="WebPage"><summary name="name">9 (Probability)</summary><field name="url">https://en.wikipedia.org/wiki/9#Probability</field></field>
+    <field name="hasPart" type="WebPage"><summary name="name">Adjucate matrix</summary><field name="url">https://en.wikipedia.org/wiki/Adjugate_matrix</field></field>
+    <field name="hasPart" type="WebPage"><summary name="name">Angle</summary><field name="url">https://en.wikipedia.org/wiki/Angle</field></field>
+    <field name="hasPart" type="WebPage"><summary name="name">Astronomical unit</summary><field name="url">https://en.wikipedia.org/wiki/Astronomical_unit</field></field>
+    <field name="hasPart" type="WebPage"><summary name="name">Avogadro constant</summary><field name="url">https://en.wikipedia.org/wiki/Avogadro_constant</field></field>
+    <field name="hasPart" type="WebPage"><summary name="name">Bell number</summary><field name="url">https://en.wikipedia.org/wiki/Bell_number</field></field>
+    <field name="hasPart" type="WebPage"><summary name="name">Binary prefix (kibi)</summary><field name="url">https://en.wikipedia.org/wiki/Binary_prefix#kibi</field></field>
+    <field name="hasPart" type="WebPage"><summary name="name">Braided monoidal category</summary><field name="url">https://en.wikipedia.org/wiki/Braided_monoidal_category</field></field>
+    <field name="hasPart" type="WebPage"><summary name="name">Breadth-first search</summary><field name="url">https://en.wikipedia.org/wiki/Breadth-first_search</field></field>
+    <field name="hasPart" type="WebPage"><summary name="name">Characteristic polynomial</summary><field name="url">https://en.wikipedia.org/wiki/Characteristic_polynomial</field></field>
+    <field name="hasPart" type="WebPage"><summary name="name">Comma category</summary><field name="url">https://en.wikipedia.org/wiki/Comma_category</field></field>
+    <field name="hasPart" type="WebPage"><summary name="name">Commutator</summary><field name="url">https://en.wikipedia.org/wiki/Commutator</field></field>
+    <field name="hasPart" type="WebPage"><summary name="name">Complex number</summary><field name="url">https://en.wikipedia.org/wiki/Complex_number</field></field>
+    <field name="hasPart" type="WebPage"><summary name="name">Computation in the limit</summary><field name="url">https://en.wikipedia.org/wiki/Computation_in_the_limit</field></field>
+    <field name="hasPart" type="WebPage"><summary name="name">Conjugate transpose</summary><field name="url">https://en.wikipedia.org/wiki/Conjugate_transpose</field></field>
+    <field name="hasPart" type="WebPage"><summary name="name">Convex combination</summary><field name="url">https://en.wikipedia.org/wiki/Convex_combination</field></field>
+    <field name="hasPart" type="WebPage"><summary name="name">Cross product</summary><field name="url">https://en.wikipedia.org/wiki/Cross_product</field></field>
+    <field name="hasPart" type="WebPage"><summary name="name">Curl (mathematics)</summary><field name="url">https://en.wikipedia.org/wiki/Curl_(mathematics)</field></field>
+    <field name="hasPart" type="WebPage"><summary name="name">Decibel</summary><field name="url">https://en.wikipedia.org/wiki/Decibel</field></field>
+    <field name="hasPart" type="WebPage"><summary name="name">Dense order</summary><field name="url">https://en.wikipedia.org/wiki/Dense_order</field></field>
+    <field name="hasPart" type="WebPage"><summary name="name">Differential calculus</summary><field name="url">https://en.wikipedia.org/wiki/Differential_calculus</field></field>
+    <field name="hasPart" type="WebPage"><summary name="name">Differential form</summary><field name="url">https://en.wikipedia.org/wiki/Differential_form</field></field>
+    <field name="hasPart" type="WebPage"><summary name="name">Dimensional analysis</summary><field name="url">https://en.wikipedia.org/wiki/Dimensional_analysis</field></field>
+    <field name="hasPart" type="WebPage"><summary name="name">Divergence</summary><field name="url">https://en.wikipedia.org/wiki/Divergence</field></field>
+    <field name="hasPart" type="WebPage"><summary name="name">Dot product</summary><field name="url">https://en.wikipedia.org/wiki/Dot_product</field></field>
+    <field name="hasPart" type="WebPage"><summary name="name">Dual number</summary><field name="url">https://en.wikipedia.org/wiki/Dual_number</field></field>
+    <field name="hasPart" type="WebPage"><summary name="name">Dual space (injection into the double dual)</summary><field name="url">https://en.wikipedia.org/wiki/Dual_space#Injection_into_the_double-dual</field></field>
+    <field name="hasPart" type="WebPage"><summary name="name">Eigenvalue algorithm</summary><field name="url">https://en.wikipedia.org/wiki/Eigenvalue_algorithm</field></field>
+    <field name="hasPart" type="WebPage"><summary name="name">Eigenvalues and eigenvectors</summary><field name="url">https://en.wikipedia.org/wiki/Eigenvalues_and_eigenvectors</field></field>
+    <field name="hasPart" type="WebPage"><summary name="name">Electronvolt</summary><field name="url">https://en.wikipedia.org/wiki/Electronvolt</field></field>
+    <field name="hasPart" type="WebPage"><summary name="name">Entropy</summary><field name="url">https://en.wikipedia.org/wiki/Entropy</field></field>
+    <field name="hasPart" type="WebPage"><summary name="name">Equivalence class</summary><field name="url">https://en.wikipedia.org/wiki/Equivalence_class</field></field>
+    <field name="hasPart" type="WebPage"><summary name="name">Euler's formula</summary><field name="url">https://en.wikipedia.org/wiki/Euler%27s_formula</field></field>
+    <field name="hasPart" type="WebPage"><summary name="name">Fahrenheit</summary><field name="url">https://en.wikipedia.org/wiki/Fahrenheit</field></field>
+    <field name="hasPart" type="WebPage"><summary name="name">Falling and rising factorials</summary><field name="url">https://en.wikipedia.org/wiki/Falling_and_rising_factorials</field></field>
+    <field name="hasPart" type="WebPage"><summary name="name">Formal power series</summary><field name="url">https://en.wikipedia.org/wiki/Formal_power_series</field></field>
+    <field name="hasPart" type="WebPage"><summary name="name">Frobenius inner product</summary><field name="url">https://en.wikipedia.org/wiki/Frobenius_inner_product</field></field>
+    <field name="hasPart" type="WebPage"><summary name="name">Generating function</summary><field name="url">https://en.wikipedia.org/wiki/Generating_function</field></field>
+    <field name="hasPart" type="WebPage"><summary name="name">Golden ratio</summary><field name="url">https://en.wikipedia.org/wiki/Golden_ratio</field></field>
+    <field name="hasPart" type="WebPage"><summary name="name">Gradient</summary><field name="url">https://en.wikipedia.org/wiki/Gradient</field></field>
+    <field name="hasPart" type="WebPage"><summary name="name">Gravitational constant</summary><field name="url">https://en.wikipedia.org/wiki/Gravitational_constant</field></field>
+    <field name="hasPart" type="WebPage"><summary name="name">Group (mathematics)</summary><field name="url">https://en.wikipedia.org/wiki/Group_(mathematics)</field></field>
+    <field name="hasPart" type="WebPage"><summary name="name">Group ring</summary><field name="url">https://en.wikipedia.org/wiki/Group_ring</field></field>
+    <field name="hasPart" type="WebPage"><summary name="name">Hyperbolic function</summary><field name="url">https://en.wikipedia.org/wiki/Hyperbolic_function</field></field>
+    <field name="hasPart" type="WebPage"><summary name="name">Injective function</summary><field name="url">https://en.wikipedia.org/wiki/Injective_function</field></field>
+    <field name="hasPart" type="WebPage"><summary name="name">Inner product space</summary><field name="url">https://en.wikipedia.org/wiki/Inner_product_space</field></field>
+    <field name="hasPart" type="WebPage"><summary name="name">International system of units</summary><field name="url">https://en.wikipedia.org/wiki/International_System_of_Units</field></field>
+    <field name="hasPart" type="WebPage"><summary name="name">Inverse trigonometric functions</summary><field name="url">https://en.wikipedia.org/wiki/Inverse_trigonometric_functions</field></field>
+    <field name="hasPart" type="WebPage"><summary name="name">Invertible matrix</summary><field name="url">https://en.wikipedia.org/wiki/Invertible_matrix</field></field>
+    <field name="hasPart" type="WebPage"><summary name="name">Kronecker delta</summary><field name="url">https://en.wikipedia.org/wiki/Kronecker_delta</field></field>
+    <field name="hasPart" type="WebPage"><summary name="name">Laplace operator</summary><field name="url">https://en.wikipedia.org/wiki/Laplace_operator</field></field>
+    <field name="hasPart" type="WebPage"><summary name="name">Leve (logarithmic quantity)</summary><field name="url">https://en.wikipedia.org/wiki/Level_(logarithmic_quantity)</field></field>
+    <field name="hasPart" type="WebPage"><summary name="name">Levi-Civita symbol</summary><field name="url">https://en.wikipedia.org/wiki/Levi-Civita_symbol</field></field>
+    <field name="hasPart" type="WebPage"><summary name="name">Lie algebra</summary><field name="url">https://en.wikipedia.org/wiki/Lie_algebra</field></field>
+    <field name="hasPart" type="WebPage"><summary name="name">Light year</summary><field name="url">https://en.wikipedia.org/wiki/Light-year</field></field>
+    <field name="hasPart" type="WebPage"><summary name="name">Line integral</summary><field name="url">https://en.wikipedia.org/wiki/Line_integral</field></field>
+    <field name="hasPart" type="WebPage"><summary name="name">List of common coordinate transformations</summary><field name="url">https://en.wikipedia.org/wiki/List_of_common_coordinate_transformations</field></field>
+    <field name="hasPart" type="WebPage"><summary name="name">Litre</summary><field name="url">https://en.wikipedia.org/wiki/Litre</field></field>
+    <field name="hasPart" type="WebPage"><summary name="name">Logistic function</summary><field name="url">https://en.wikipedia.org/wiki/Logistic_function</field></field>
+    <field name="hasPart" type="WebPage"><summary name="name">Log polar coordinates</summary><field name="url">https://en.wikipedia.org/wiki/Log-polar_coordinates</field></field>
+    <field name="hasPart" type="WebPage"><summary name="name">Matrix (mathematics)</summary><field name="url">https://en.wikipedia.org/wiki/Matrix_%28mathematics%29</field></field>
+    <field name="hasPart" type="WebPage"><summary name="name">Matrix exponential</summary><field name="url">https://en.wikipedia.org/wiki/Matrix_exponential</field></field>
+    <field name="hasPart" type="WebPage"><summary name="name">Matrix machanics</summary><field name="url">https://en.wikipedia.org/wiki/Matrix_mechanics</field></field>
+    <field name="hasPart" type="WebPage"><summary name="name">Methods of contour integration</summary><field name="url">https://en.wikipedia.org/wiki/Methods_of_contour_integration</field></field>
+    <field name="hasPart" type="WebPage"><summary name="name">Metric prefix</summary><field name="url">https://en.wikipedia.org/wiki/Metric_prefix</field></field>
+    <field name="hasPart" type="WebPage"><summary name="name">Modal logic</summary><field name="url">https://en.wikipedia.org/wiki/Modal_logic</field></field>
+    <field name="hasPart" type="WebPage"><summary name="name">Modular exponentiation</summary><field name="url">https://en.wikipedia.org/wiki/Modular_exponentiation</field></field>
+    <field name="hasPart" type="WebPage"><summary name="name">Module (mathematics)</summary><field name="url">https://en.wikipedia.org/wiki/Module_(mathematics)</field></field>
+    <field name="hasPart" type="WebPage"><summary name="name">Moment magniture scale</summary><field name="url">https://en.wikipedia.org/wiki/Moment_magnitude_scale</field></field>
+    <field name="hasPart" type="WebPage"><summary name="name">Monoidal category</summary><field name="url">https://en.wikipedia.org/wiki/Monoidal_category</field></field>
+    <field name="hasPart" type="WebPage"><summary name="name">Monotonic function</summary><field name="url">https://en.wikipedia.org/wiki/Monotonic_function</field></field>
+    <field name="hasPart" type="WebPage"><summary name="name">Natural logarithm</summary><field name="url">https://en.wikipedia.org/wiki/Natural_logarithm</field></field>
+    <field name="hasPart" type="WebPage"><summary name="name">Natural transformation</summary><field name="url">https://en.wikipedia.org/wiki/Natural_transformation</field></field>
+    <field name="hasPart" type="WebPage"><summary name="name">Norm (mathematics)</summary><field name="url">https://en.wikipedia.org/wiki/Norm_(mathematics)</field></field>
+    <field name="hasPart" type="WebPage"><summary name="name">Octave</summary><field name="url">https://en.wikipedia.org/wiki/Octave</field></field>
+    <field name="hasPart" type="WebPage"><summary name="name">Parsec</summary><field name="url">https://en.wikipedia.org/wiki/Parsec</field></field>
+    <field name="hasPart" type="WebPage"><summary name="name">Pascal's triangle</summary><field name="url">https://en.wikipedia.org/wiki/Pascal%27s_triangle</field></field>
+    <field name="hasPart" type="WebPage"><summary name="name">Physical constant</summary><field name="url">https://en.wikipedia.org/wiki/Physical_constant</field></field>
+    <field name="hasPart" type="WebPage"><summary name="name">Pi</summary><field name="url">https://en.wikipedia.org/wiki/Pi</field></field>
+    <field name="hasPart" type="WebPage"><summary name="name">Planck constant</summary><field name="url">https://en.wikipedia.org/wiki/Planck_constant</field></field>
+    <field name="hasPart" type="WebPage"><summary name="name">Power iteration</summary><field name="url">https://en.wikipedia.org/wiki/Power_iteration</field></field>
+    <field name="hasPart" type="WebPage"><summary name="name">Pseudovector</summary><field name="url">https://en.wikipedia.org/wiki/Pseudovector</field></field>
+    <field name="hasPart" type="WebPage"><summary name="name">Quantum number</summary><field name="url">https://en.wikipedia.org/wiki/Quantum_number</field></field>
+    <field name="hasPart" type="WebPage"><summary name="name">Quaternion</summary><field name="url">https://en.wikipedia.org/wiki/Quaternion</field></field>
+    <field name="hasPart" type="WebPage"><summary name="name">Riemann zeta function</summary><field name="url">https://en.wikipedia.org/wiki/Riemann_zeta_function</field></field>
+    <field name="hasPart" type="WebPage"><summary name="name">Schrödinger equation</summary><field name="url">https://en.wikipedia.org/wiki/Schr%C3%B6dinger_equation</field></field>
+    <field name="hasPart" type="WebPage"><summary name="name">Speed of light</summary><field name="url">https://en.wikipedia.org/wiki/Speed_of_light</field></field>
+    <field name="hasPart" type="WebPage"><summary name="name">Square matrix</summary><field name="url">https://en.wikipedia.org/wiki/Square_matrix</field></field>
+    <field name="hasPart" type="WebPage"><summary name="name">Steradian</summary><field name="url">https://en.wikipedia.org/wiki/Steradian</field></field>
+    <field name="hasPart" type="WebPage"><summary name="name">Taylor series</summary><field name="url">https://en.wikipedia.org/wiki/Taylor_series</field></field>
+    <field name="hasPart" type="WebPage"><summary name="name">Tetration</summary><field name="url">https://en.wikipedia.org/wiki/Tetration</field></field>
+    <field name="hasPart" type="WebPage"><summary name="name">Trigonometric functions</summary><field name="url">https://en.wikipedia.org/wiki/Trigonometric_functions</field></field>
+    <field name="hasPart" type="WebPage"><summary name="name">United states customary units</summary><field name="url">https://en.wikipedia.org/wiki/United_States_customary_units</field></field>
+    <field name="hasPart" type="WebPage"><summary name="name">Vector laplacian</summary><field name="url">https://en.wikipedia.org/wiki/Vector_Laplacian</field></field>
+    <field name="hasPart" type="WebPage"><summary name="name">Vector space</summary><field name="url">https://en.wikipedia.org/wiki/Vector_space</field></field>
+    <field name="hasPart" type="WebPage"><summary name="name">Wirtinger derivatives</summary><field name="url">https://en.wikipedia.org/wiki/Wirtinger_derivatives</field></field>
   </WebSite>
 
   <SoftwareApplication>
@@ -638,10 +764,11 @@ authors.
     </field>
   </BlogPosting>
   <BlogPosting>
-    <summary>Fixed Length Vector Types in Haskell</summary>
+    <summary>Justin Le: Fixed Length Vector Types in Haskell</summary>
     <field name="author" type="Person">
       <summary name="name">Justin Le</summary>
     </field>
+    <field name="headline">Fixed Length Vector Types in Haskell</field>
     <field name="url">http://blog.jle.im/entry/fixed-length-vector-types-in-haskell-2015.html</field>
     <field name="copyrigthYear">2015</field>
   </BlogPosting>
@@ -651,11 +778,13 @@ authors.
     <field name="isPartOf">http://netpbm.sourceforge.net</field>
     <field name="genre">Manual page</field>
     <field name="maintainer">Bryan Henderson</field>
+    <field name="headline">Netpbm color image format specification</field>
   </DigitalDocument>
   <Article>
     <summary>Paterson R.: A new notation for arrows</summary>
     <field name="author" type="Person"><summary name="name">Ross Paterson</summary></field>
     <field name="copyrigthYear">2001</field>
+    <field name="headline">A new notation for arrows</field>
     <field name="url">http://www.staff.city.ac.uk/~ross/papers/notation.html</field>
   </Article>
   <WebSite>

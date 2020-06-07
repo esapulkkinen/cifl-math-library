@@ -1,4 +1,5 @@
 >{-# LANGUAGE Safe,FlexibleContexts, FlexibleInstances, MultiParamTypeClasses, FunctionalDependencies, TypeOperators, TypeFamilies, DeriveGeneric, DeriveDataTypeable #-}
+>{-# LANGUAGE OverloadedStrings #-}
 >-- | Graph representation as a set with action of a monoid.
 >-- See Lawvere,Rosebrugh: Sets for Mathematics for details.
 >--
@@ -15,6 +16,7 @@
 >module Math.Graph.Reversible where
 >import qualified Data.Set as Set
 >import Data.Set (Set)
+>import Data.Text (Text)
 >import Data.Tree
 >import Prelude hiding (id,(.))
 >import Control.Category
@@ -230,7 +232,7 @@
 >        sources = map (fst . snd) lst
 >        targets = map (snd . snd) lst         
 
->subobjectClassifierGraphG :: Graph Four String
+>subobjectClassifierGraphG :: Graph Four Text
 >subobjectClassifierGraphG = reversibleEdgesG [
 >                                    (("leave","enter"),("in","out")),
 >                                    (("foray","foray"),("in","in"))]

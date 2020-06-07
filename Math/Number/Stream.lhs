@@ -65,6 +65,10 @@ import qualified Model.Nondeterminism as Nondet
 >data Stream a = Pre { shead :: a, stail_lazy :: Stream a }
 >  deriving (Typeable, Data, Generic)
 
+>instance ProjectionDual Stream a where
+>  projection_dual = Pre (covector shead) $
+>     fmap (\e -> covector (bracketMap e . stail_lazy)) projection_dual
+
 >(!) :: Stream a -> Integer -> a
 >(!) s i = shead (drop i s)
 

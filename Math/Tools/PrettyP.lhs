@@ -1,4 +1,5 @@
 >{-# LANGUAGE Trustworthy, TypeSynonymInstances, FlexibleInstances #-}
+>{-# LANGUAGE OverloadedStrings #-}
 >module Math.Tools.PrettyP (
 >   PpShow(..), LeveledPpShow(..), enclose,
 >   parenthesize, render, bracketize, verticalize, pPrint, pp_list, render132,
@@ -14,6 +15,7 @@
 > import Data.Map (Map)
 > import Data.Word
 > import Data.Ratio
+> import Data.String
 > import Data.Complex
 > import qualified Data.Text as Text
 > import qualified Data.Set as Set
@@ -57,11 +59,12 @@ hang :: Doc -> Int -> Doc -> Doc
 > produceOutput (Pretty.PStr n) s = n ++ s
  
 > enclose :: PpShow a => a -> Doc
-> enclose x = pp "'" <> pp x <> pp "'"
+> enclose x = "'" <> pp x <> "'"
  
 > parenthesize :: PpShow a => [a] -> Doc
 > parenthesize lst = Pretty.parens $ Pretty.nest 4 $ Pretty.fcat $ Pretty.punctuate (pp ',') (map pp lst)
- 
+
+
 > bracketize :: PpShow a => [a] -> Doc
 > bracketize lst = Pretty.brackets $ Pretty.nest 4 $ Pretty.fsep $ Pretty.punctuate (pp ';') (map pp lst)
  
@@ -103,14 +106,14 @@ instance PpShow a => PpShow [a] where
 >	  pp x = pp (show x)
 
 > instance PpShow Bool where
->	  pp True = pp "true"
->	  pp False = pp "false"
+>	  pp True = "true"
+>	  pp False = "false"
 
 > instance PpShow Word8 where
 >    pp c = pp (show c)
 
 > instance PpShow () where
->	  pp _ = pp "()"
+>	  pp _ = "()"
 
 > instance PpShow Doc where
 >	  pp x = x
@@ -142,7 +145,7 @@ instance PpShow (f (Rec f)) => PpShow (Rec f) where
 >  pp (x :+ y) = pp x <> (if y >= 0 then pp '+' else pp '-') <> pp (abs y) <> pp 'i'
 
 > instance PpShowF Complex where
->  ppf (x :+ y) = pp x Pretty.<+> pp ":+" Pretty.<+> pp y
+>  ppf (x :+ y) = pp x Pretty.<+> ":+" Pretty.<+> pp y
 
 
 > instance (Integral a,PpShow a) => PpShow (Ratio a) where
@@ -163,12 +166,12 @@ instance PpShow (f (Rec f)) => PpShow (Rec f) where
 >					  Pretty.nest 4 $ pp z <> pp ',', Pretty.nest 4 $ pp z']
 
 > instance PpShow a => PpShow (Maybe a) where
->	  pp Nothing = pp "Nothing"
+>	  pp Nothing = "Nothing"
 >	  pp (Just x) = pp x
 
 > instance (PpShow a, PpShow b) => PpShow (Either a b) where
->	  pp (Left x) = pp "Left" <> Pretty.parens (pp x)
->	  pp (Right x) = pp "Right" <> Pretty.parens (pp x)
+>	  pp (Left x) = "Left" <> Pretty.parens (pp x)
+>	  pp (Right x) = "Right" <> Pretty.parens (pp x)
 
 > instance (PpShow a) => PpShow (Set a) where
 >   pp = bracketize . Set.toList

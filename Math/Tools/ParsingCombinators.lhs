@@ -1,4 +1,4 @@
->{-# LANGUAGE TypeOperators #-}
+>{-# LANGUAGE TypeOperators, OverloadedStrings #-}
 >module Math.Tools.ParsingCombinators where
 >import Prelude hiding ((.),id)
 >import Control.Category
@@ -73,7 +73,7 @@ instance ScopedFailureArrow ParsingA
 >readChar :: ParsingA () Char
 >readChar = ParsingA (Iso readChar' showChar') >>> nextColumn
 >   where readChar' (Parsed (c:cr) li (Left ())) = okparse cr li c
->         readChar' (Parsed [] li (Left ())) = syntaxerror [] li (pp "Unexpected end of file")
+>         readChar' (Parsed [] li (Left ())) = syntaxerror [] li "Unexpected end of file"
 >         readChar' (Parsed lst li (Right d)) = syntaxerror lst li d
 >         showChar' (Parsed cr li (Left c)) = okparse (c:cr) li ()
 >         showChar' (Parsed [] li (Right _)) = okparse [] li ()
@@ -85,7 +85,7 @@ newline = (readChar <**> returnIso '\n') >>> equalIso
 >eof :: ParsingA () ()
 >eof = ParsingA (Iso readEof showEof)
 >   where readEof (Parsed [] li (Left _)) = okparse [] li ()
->         readEof (Parsed z li (Left _))  = syntaxerror z li (pp "Expected eof")
+>         readEof (Parsed z li (Left _))  = syntaxerror z li "Expected eof"
 >         readEof z@(Parsed _ _ (Right _)) = z
 >         showEof (Parsed [] li (Right d)) = syntaxerror [] li d
 >         showEof (Parsed z li (Right d)) = okparse z li ()
@@ -97,8 +97,8 @@ newline = (readChar <**> returnIso '\n') >>> equalIso
 >        readWhile' (Parsed lst li (Left inp)) = if null s then syntaxerror r li err
 >                                                    else okparse r newcol s
 >                 where (s,r) = span pred lst
->                       err = pp "Unexpected character in input:" <> ch
->                       ch = if null r then pp "<eof>" else pp_list [head r]
+>                       err = "Unexpected character in input:" <> ch
+>                       ch = if null r then "<eof>" else pp_list [head r]
 >                       newcol = add_to_column (length s) li
 >        showWhile' (Parsed [] li (Right err)) = syntaxerror [] li err
 >        showWhile' (Parsed z@(c:_) li (Right err)) 

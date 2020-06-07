@@ -1,4 +1,4 @@
->{-# LANGUAGE Rank2Types, FlexibleInstances #-}
+>{-# LANGUAGE Rank2Types, FlexibleInstances, OverloadedStrings #-}
 >module Math.Tools.Parser where
 >import Prelude hiding (null, take, span, length, take)
 >import Text.PrettyPrint (Doc, (<+>), empty)
@@ -36,7 +36,7 @@
 >   fail msg = ParserM (\_ err _ li -> err (pp msg) li)
 
 >instance MonadPlus (ParserM i) where
->   mzero = ParserM (\_ err _ li -> err (pp "Unsupported alternative") li)
+>   mzero = ParserM (\_ err _ li -> err "Unsupported alternative" li)
 >   (ParserM f) `mplus` (ParserM g) = 
 >      ParserM (\s err i li -> f s (\_ _ -> g s err i li) i li)
 
@@ -61,38 +61,38 @@
 >readChar' :: ParserM Text Char
 >readChar' = ParserM $ \f err i li -> case uncons i of
 >                        Just (c,cr) -> f c cr (next_column li)
->                        Nothing -> err (pp "Expected any character, found EOF") li
+>                        Nothing -> err "Expected any character, found EOF" li
 
 >one_of' :: (Char -> Bool) -> ParserM Text Char
 >one_of' check = ParserM $ \f err lst li -> case uncons lst of
 >   (Just (c,cr)) -> if check c then f c cr (next_column li)
->                               else err (pp "Bad character:" <> enclose c) li
->   Nothing -> err (pp "Expected a character, found EOF") li
+>                               else err ("Bad character:" <> enclose c) li
+>   Nothing -> err "Expected a character, found EOF" li
 
 >eof' :: ParserM Text ()
 >eof' = ParserM $ \f err i li -> case null i of
 >                   True -> f () Text.empty li
->                   False -> err (pp "Expected EOF, found:" <+> bracketize (unpack $ take 10 i)) li
+>                   False -> err ("Expected EOF, found:" <+> bracketize (unpack $ take 10 i)) li
 
 >newline' :: ParserM Text ()
 >newline' = ParserM $ \f err i li -> case uncons i of
 >                       Just ('\n',cr) -> f () cr (next_line li)
->                       Just (_,_) -> err (pp "Expected a newline") li
->                       Nothing -> err (pp "Unexpected end of file") li
+>                       Just (_,_) -> err "Expected a newline" li
+>                       Nothing -> err "Unexpected end of file" li
 
 >readWhile' :: (Char -> Bool) -> ParserM Text Text
 >readWhile' ch = ParserM $ \f err i li -> let (s,r) = span ch i
->                            in if null s then err (pp "unexpected character in input:" <+> bracketize (unpack $ take 10 r)) li
+>                            in if null s then err ("unexpected character in input:" <+> bracketize (unpack $ take 10 r)) li
 >                                         else f s r (add_to_column (length s) li)
 
 >require' :: Char -> ParserM Text Char
 >require' c = ParserM $ \f err i li -> case uncons i of
 >                          Just (c',cr) -> if c' == c then f c' cr (next_column li)
 >                                                    else err (unexpected c c') li
->                          Nothing -> err (pp "Unexpected EOF, expected" <+> enclose c) li
->    where unexpected c c' = pp "Unexpected character: expected"
+>                          Nothing -> err ("Unexpected EOF, expected" <+> enclose c) li
+>    where unexpected c c' = "Unexpected character: expected"
 >                                    <+> (enclose c <> pp ',')
->                                    <+> (pp "found:" <> enclose c')
+>                                    <+> ("found:" <> enclose c')
 >getRemainingInput' :: ParserM a a
 >getRemainingInput' = ParserM $ \f _ i li -> f i i li
 

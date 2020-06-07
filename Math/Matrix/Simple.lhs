@@ -142,7 +142,7 @@
 >productS :: (Num b, Universe a) => (a -> b) -> b
 >productS f = product [f i | i <- all_elements]
 
->cov_index :: (b ~ Scalar b) => a -> Dual (a -> b)
+>cov_index :: a -> Dual (a -> b)
 >cov_index x = Covector $ \f -> f x
 >
 >instance (b ~ Scalar b) => ProjectionDual ((->) a) b where

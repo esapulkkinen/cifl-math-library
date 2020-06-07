@@ -14,6 +14,7 @@
 >import Math.Tools.CoFunctor
 >import Math.Tools.Visitor
 >import Math.Tools.Adjunction
+>import qualified Data.Text as Text
 >import Data.Ratio
 >import qualified Data.Binary as Bin
 >import Data.ByteString.Lazy (ByteString)
@@ -51,6 +52,9 @@
 >adjoint_iso :: (Adjunction f g) => (f a -> b) :==: (a -> g b)
 >adjoint_iso = leftAdjunct <-> rightAdjunct
 >
+
+>packTextIso :: String :==: Text.Text
+>packTextIso = Text.pack <-> Text.unpack
 
 >class (BiArrow arr, Groupoid arr) => Isomorphic arr where
 >   iso :: arr a b -> a :==: b

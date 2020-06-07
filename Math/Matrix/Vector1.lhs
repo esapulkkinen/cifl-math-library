@@ -26,10 +26,10 @@
 >data Vector1 a = Vector1 { vector_element :: a }
 >  deriving (Eq, Ord, Typeable, Data, Generic)
 
->cov1 :: (a ~ Scalar a) => Vector1 (Dual (Vector1 a))
+>cov1 :: Vector1 (Dual (Vector1 a))
 >cov1 = Vector1 (covector $ vector_element)
 
->instance (a ~ Scalar a) => ProjectionDual Vector1 a where
+>instance ProjectionDual Vector1 a where
 >   projection_dual = cov1
 
 >instance (Bin.Binary s) => Bin.Binary (Vector1 s) where

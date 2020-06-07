@@ -24,9 +24,15 @@
 >import safe Math.Matrix.Matrix
 >import safe Math.Tools.I
 
+>data LinearMap v w where
+>   LinearMap :: (Scalar w ~ Scalar v) => (v -> w) -> LinearMap v w
+
 >-- | Data type for dual vectors.
 >data Dual v = Covector { bracketMap :: v -> (Scalar v) }
 >  deriving (Typeable, Generic)
+
+>matrix_arrow :: (LinearTransform f g a) => (f :*: g) a -> LinearMap (f a) (g a)
+>matrix_arrow m = LinearMap $ \v -> m <<*> v
 
 >contract :: (Dual :*: v) a -> (I :*: v) a ->  Scalar (v a)
 >contract (Matrix (Covector f)) (Matrix (I w)) = f w
@@ -35,7 +41,7 @@
 >bracket (Covector f) = f
 
 >covector :: (v -> Scalar v) -> Dual v
->covector = Covector 
+>covector = Covector
 
 >(*><) :: Dual v -> v -> Scalar v
 >(*><) = bracket
@@ -66,16 +72,6 @@
 >class (Functor f) => ProjectionDual f a where
 >   projection_dual :: f (Dual (f a))
 
-projection_dual_matrix :: (Scalar ((f :*: g) a) ~ Scalar (f (Scalar (g a))),
- Scalar a ~ Scalar (Scalar a),
- ProjectionDual f (Scalar (g a)), ProjectionDual g a)
-  => (f :*: g) (Dual ((f :*: g) a))
-projection_dual_matrix = matrix (\ (Covector x) (Covector y) -> Covector (LinearMap $ \m -> m <!> ((-!<) x,(-!<) y))) projection_dual projection_dual
-
-instance (Scalar ((f :*: g) a) ~ Scalar (f (Scalar (g a))),
-   ProjectionDual f (Scalar (g a)), ProjectionDual g a)
- => ProjectionDual (f :*: g) a where
-   projection_dual = projection_dual_matrix
 
 >-- | unicode support for gradient. Use with parenthesis.
 >(∇) :: (VectorDerivative v) => Dual v -> LinearMap v v
@@ -207,8 +203,6 @@ instance (Scalar ((f :*: g) a) ~ Scalar (f (Scalar (g a))),
 >adjoint_map :: (Scalar b ~ Scalar a) => (Scalar b -> Scalar a) -> LinearMap a b -> Dual b -> Dual a
 >adjoint_map sca f (Covector x) = Covector (sca . x . (-!<) f)
 
->matrix_arrow :: (LinearTransform f g a) => (f :*: g) a -> LinearMap (f a) (g a)
->matrix_arrow m = LinearMap $ \v -> m <<*> v
 
 >instance CoFunctorArrow Dual LinearMap where
 >   inverseImage = adjoint
@@ -238,8 +232,6 @@ instance (Scalar ((f :*: g) a) ~ Scalar (f (Scalar (g a))),
 >(-!<) :: (Scalar w ~ Scalar v) => LinearMap v w -> v -> w
 >(-!<) (LinearMap f) = f
 
->data LinearMap v w where
->   LinearMap :: (Scalar w ~ Scalar v) => (v -> w) -> LinearMap v w
 
 >instance (Semigroup v) => Semigroup (LinearMap v v) where
 >  (LinearMap f) <> (LinearMap g) = LinearMap (f <> g)
@@ -274,12 +266,12 @@ instance (Scalar ((f :*: g) a) ~ Scalar (f (Scalar (g a))),
 
 >instance (FractionalSpace v) => Fractional (Dual v) where
 >  (Covector f) / (Covector g) =
->     Covector $ \a -> f a / g a
+>     covector $ \a -> f a / g a
 >  recip = scalar_map (LinearMap recip)
->  fromRational r = Covector $ \_ -> fromRational r
+>  fromRational r = covector $ \_ -> fromRational r
 > 
 >instance (FractionalSpace v, Floating (Scalar v)) => Floating (Dual v) where
->   pi = Covector $ const pi
+>   pi = covector $ const pi
 >   exp = scalar_map (LinearMap exp)
 >   log = scalar_map (LinearMap log)
 >   sqrt = scalar_map (LinearMap sqrt)
@@ -319,4 +311,4 @@ instance (Scalar ((f :*: g) a) ~ Scalar (f (Scalar (g a))),
 >dual_differential_dot_product = dual_derivative (%.)
 
 >norm_covector :: (NormedSpace v) => Dual v
->norm_covector = Covector $ norm
+>norm_covector = covector norm
