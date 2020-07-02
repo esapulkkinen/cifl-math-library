@@ -24,16 +24,16 @@
       <nav>
         <table>
           <tr itemscope="true" itemtype="http://schema.org/BreadcrumbList">
-            <td itemprop="itemListElement" itemtype="http://schema.org/ListItem">
+            <td itemscope="true" itemprop="itemListElement" itemtype="http://schema.org/ListItem">
               <a itemprop="item" href="https://esapulkkinen.github.io/cifl-math-library/">Contents</a>
               <meta itemprop="position" content="1"/>
             </td>
-            <td itemprop="itemListElement" itemtype="http://schema.org/ListItem">
+            <td itemscope="true" itemprop="itemListElement" itemtype="http://schema.org/ListItem">
               <a itemprop="item" href="https://github.com/esapulkkinen/cifl-math-library/">Repository</a>
               <meta itemprop="position" content="2"/>
 
             </td>
-            <td itemprop="itemListElement" itemtype="http://schema.org/ListItem">
+            <td itemscope="true" itemprop="itemListElement" itemtype="http://schema.org/ListItem">
               <a itemprop="item" href="https://esapulkkinen.github.io/cifl-math-library/doc-index.html">Index</a>
               <meta itemprop="position" content="3"/>
             </td>
