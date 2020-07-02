@@ -25,7 +25,7 @@
         <table>
           <tr itemscope="true" itemtype="http://schema.org/BreadcrumbList">
             <td itemscope="true" itemprop="itemListElement" itemtype="http://schema.org/ListItem">
-              <a itemprop="name" href="https://esapulkkinen.github.io/cifl-math-library/">
+              <a itemprop="item" href="https://esapulkkinen.github.io/cifl-math-library/">
                 <b itemprop="name">Contents</b>
               </a>
               <meta itemprop="position" content="1"/>
