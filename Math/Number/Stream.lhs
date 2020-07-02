@@ -78,14 +78,16 @@ import qualified Model.Nondeterminism as Nondet
 >shead_strict :: Stream a -> a
 >shead_strict (Pre !x _) = x
 
->matrix_powers :: (SquareMatrix g a, InnerProductSpace (g a),
+>matrix_powers :: (Diagonalizable g a, Transposable g g,InnerProductSpace (g a),
 >                 Scalar (g a) ~ a) => (g :*: g) a -> Stream ((g :*: g) a)
->matrix_powers x = Pre identity $ fmap (x %*%) $ matrix_powers x
+>matrix_powers x = Pre (identity $ vector_dimension $ diagonal x)
+>                $ fmap (x %*%) $ matrix_powers x
 
 
 
 >matrix_exponential_stream :: (Fractional (Scalar ((g :*: g) a)), Num ((g :*: g) a),
->                      SquareMatrix g a, InnerProductSpace (g a),
+>                      Diagonalizable g a, InnerProductSpace (g a),
+>                      Transposable g g,
 >                      VectorSpace ((g :*: g) a), Scalar (g a) ~ a)
 >   => (g :*: g) a -> Stream ((g :*: g) a)
 >matrix_exponential_stream x = sum_stream str
@@ -93,8 +95,9 @@ import qualified Model.Nondeterminism as Nondet
 
 >-- | <https://en.wikipedia.org/wiki/Matrix_exponential>
 >matrix_exponential :: (Fractional (Scalar ((g :*: g) a)),
->                      Num ((g :*: g) a), 
->                      SquareMatrix g a, InnerProductSpace (g a),
+>                      Num ((g :*: g) a),
+>                      Transposable g g,
+>                      Diagonalizable g a, InnerProductSpace (g a),
 >                      VectorSpace ((g :*: g) a), Scalar (g a) ~ a)
 >                     => (g :*: g) a -> (g :*: g) a
 >matrix_exponential x = shead $ drop 10 (matrix_exponential_stream x)
@@ -389,7 +392,7 @@ import qualified Model.Nondeterminism as Nondet
 >   (<>) = (%**%)
 
 >instance (Num a, Closed a, ConjugateSymmetric a) => Monoid ((Stream :*: Stream) a) where
->   mempty = identity
+>   mempty = identity naturals
 >   mappend = (%**%)
 
 >instance (Semigroup a) => Semigroup (Stream a) where
@@ -403,8 +406,9 @@ instance (Num a) => Matrix.VectorSpace ((Stream :*: Stream) a) where
   (Matrix x) %+ (Matrix y) = Matrix $ liftA2 (liftA2 (+)) x y 
 
 >-- | square matrix implementation for streams.
->instance (Num a) => Matrix.SquareMatrix Stream a where
->  identity = stream_matrix (constant 1) $ codiag
+>instance (Num a) => Matrix.Diagonalizable Stream a where
+>  vector_dimension s = liftA2 seq s $ naturals
+>  identity dim = stream_matrix (constant 1) $ codiag
 >     where codiag = (zero,zero) `Pre` codiag
 >  diagonal = stream_diagonal
 >  diagonal_matrix = stream_diagonal_matrix
@@ -586,9 +590,15 @@ instance (Num a) => Matrix.VectorSpace ((Stream :*: Stream) a) where
 >stream_powers :: (Num a) => Stream a -> (Stream :*: Stream) a
 >stream_powers f = Matrix $ Pre 1 $ fmap (f *) $ cells $ stream_powers f
 
->-- | <https://en.wikipedia.org/wiki/Formal_power_series>
+>-- | 
+>-- For streams \(b = (b_i)_{i\in{\mathbf{N}}}\) and \(a = (a_i)_{i\in{\mathbf{N}}}\)
+>-- representing generating functions \(g(z) = \sum_{i=0}^{\infty}{b_iz^i}\) and \(f(z) = \sum_{i=1}^{\infty}{a_iz^i}\)
+>-- where \(a_0 = 0\), this computes:
+>-- \[(g \circ f)(z) = g(f(z)) = \sum_{i=0}^{\infty}{b_i(f(z))^i} = \sum_{i=0}^{\infty}(b_i(\sum_{j=1}^{\infty}{a_jz^j})^i)\]
 >-- 
->-- Note that identity of composition is 'z'.
+>-- Note that identity of composition on the right is 's_z'.
+>-- That is, \(s \circ s_z = s\).
+>-- <https://en.wikipedia.org/wiki/Formal_power_series>
 >compose :: (Num a, Eq a) => Stream a -> Stream a -> Stream a
 >compose g f@(Pre 0 _) = fmap sum $ liftA2 take nonzero_naturals
 >                                 $ cells $ Matrix.transpose $ Matrix

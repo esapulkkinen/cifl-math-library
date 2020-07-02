@@ -580,7 +580,7 @@ infimum = negate_limit . supremum_gen . map negate_limit
 >   where iteration z' = z' - f z' / accumulation_point (derivate_closed f z')
 
 >eigenvalue :: (Infinitesimal a, Closed a,
->               Applicative m, FiniteSquareMatrix m a,
+>               Applicative m, Traceable m a,
 >               VectorSpace ((m :*: m) a),
 >               Scalar ((m :*: m) a) ~ a
 >               )

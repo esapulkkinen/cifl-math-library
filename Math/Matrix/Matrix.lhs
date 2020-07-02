@@ -101,11 +101,11 @@ instance Comonad ((,) a :*: (->) a) where
 
 >-- | <https://en.wikipedia.org/wiki/Modular_exponentiation>
 >-- @modular_exponentiation m b c == m^b  (mod c)@
->modular_exponentiation :: (Integral a, SquareMatrix f a, Functor f,
+>modular_exponentiation :: (Integral a, Diagonalizable f a, Transposable f f,
 >                           InnerProductSpace (f a), a ~ Scalar (f a)) 
 >                      => (f :*: f) a -> Integer -> a -> (f :*: f) a
 >modular_exponentiation m b c 
->   | b == 0         = identity
+>   | b == 0         = identity (vector_dimension $ diagonal m)
 >   | b `mod` 2 == 1 = fmap (`mod` c) $ 
 >                         m %*% modular_exponentiation m (pred b) c
 >   | otherwise = fmap (`mod` c) $ d %*% d
@@ -114,7 +114,7 @@ instance Comonad ((,) a :*: (->) a) where
 >isSymmetric :: (Transposable m m, Applicative m, Foldable m, Eq a) => (m :*: m) a -> Bool
 >isSymmetric m = transpose m == m
 
->apply_vector :: (SquareMatrix m b) => m (a -> b) -> m a -> m b
+>apply_vector :: (Diagonalizable m b) => m (a -> b) -> m a -> m b
 >apply_vector f x = diagonal (f !$! x)
 
 >apply_columns :: (Functor n, Functor m, Applicative f)
@@ -189,23 +189,6 @@ matrix_commutator :: (Applicative h, Transposable h h, InnerProductSpace (h a), 
 >cofunctor_map :: (CoFunctor f, CoFunctor g) => (a -> b) -> (g :*: f) a -> (g :*: f) b
 >cofunctor_map f (Matrix x) = Matrix (inverse_image (inverse_image f) x)
 
->instance (Functor f, Functor g) => Functor (g :*: f) where
->   fmap f (Matrix x) = Matrix $ fmap (fmap f) x
-
->instance (Foldable f, Foldable g) => Foldable (f :*: g) where
->   foldMap f (Matrix m) = foldMap (foldMap f) m
-
->instance (Traversable f, Traversable g) => Traversable (f :*: g) where
->   traverse f (Matrix m) = Matrix <$> traverse (traverse f) m
-
->instance (Applicative f, Applicative g) => Applicative (f :*: g) where
->   pure = Matrix . pure . pure
->   (Matrix fs) <*> (Matrix xs) = Matrix $ pure (<*>) <*> fs <*> xs
-
-
->instance (Alternative f, Alternative g) => Alternative (g :*: f) where
->   empty = Matrix Applicative.empty
->   (Matrix a) <|> (Matrix b) = Matrix $ pure (<|>) <*> a <*> b
 
 >instance (Monad f, Monad g, Indexable f) => Monad ((:*:) f g) where
 >   return x = Matrix $ return (return x)

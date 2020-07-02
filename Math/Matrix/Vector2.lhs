@@ -73,10 +73,10 @@
 >   conj = fmap conj . transpose
 
 >i2 :: (Num a) => Vector2 a
->i2 = identity <!> (xcoord2,id)
+>i2 = identity (Vector2 0 1) <!> (xcoord2,id)
 
 >j2 :: (Num a) => Vector2 a
->j2 = identity <!> (ycoord2,id)
+>j2 = identity (Vector2 0 1) <!> (ycoord2,id)
 
 >vector2Iso :: Vector2 a :==: Complex a
 >vector2Iso = (\ (Vector2 a b) -> a :+ b) <-> (\(a :+ b) -> Vector2 a b)
@@ -94,7 +94,7 @@
 >   pure x = S21Vector $ pure x
 >   (S21Vector f) <*> (S21Vector x) = S21Vector $ f <*> x
 
->matrix_root :: (SquareMatrix m a,ProjectionSpace m Vector1) => (m :*: m) a -> a
+>matrix_root :: (Diagonalizable m a,ProjectionSpace m Vector1) => (m :*: m) a -> a
 >matrix_root = vector_element . project_first . diagonal
 
 >instance Comonad Vector2 where
@@ -295,7 +295,7 @@ deriving instance (Show a) => Show (Codiagonal Vector2 a)
 
 >-- | see "Lawvere,Rosebrugh: Sets for mathematics", pg. 167.
 >instance (Num a, ConjugateSymmetric a) => Monoid ((Vector2 :*: Vector2) a) where
->   mempty = identity
+>   mempty = identity (Vector2 0 1)
 >   mappend = (%**%)
 
 >instance Applicative Vector2 where
@@ -332,7 +332,7 @@ deriving instance (Show a) => Show (Codiagonal Vector2 a)
 >  coordinates _ = [0,1,2]
 
 
->instance (Fractional a) => InvertibleMatrix Vector2 a where
+>instance (Fractional a) => Invertible Vector2 a where
 >   cofactor = cofactor2
 >   adjucate = adjucate2
 >   inverse = inverse2
@@ -487,12 +487,13 @@ deriving instance (Show a) => Show (Codiagonal Vector2 a)
 >instance {-# OVERLAPPABLE #-} (Num a, ConjugateSymmetric a) => InnerProductSpace (Vector2 a) where
 >  (Vector2 x y) %. (Vector2 x' y') = x*conj x' + y*conj y'
 
->instance (Num a) => SquareMatrix Vector2 a where
+>instance (Num a) => Diagonalizable Vector2 a where
+>  vector_dimension _ = Vector2 0 1
 >  diagonal = diagonal2 
->  identity    = identity2
+>  identity _ = identity2
 >  diagonal_matrix = diagonal_matrix2
 
->instance (Num a) => FiniteSquareMatrix Vector2 a where
+>instance (Num a) => Traceable Vector2 a where
 >  determinant = determinant2 
 >  trace = trace2 
 

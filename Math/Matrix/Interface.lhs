@@ -15,6 +15,7 @@
 >import safe Data.List (intersperse)
 >import safe qualified Data.Set
 >import safe Control.Applicative
+>import safe qualified Control.Applicative as Applicative
 >import safe Control.Monad.Fix (fix)
 >import safe Math.Tools.PrettyP
 >import safe Math.Tools.Visitor
@@ -125,8 +126,10 @@
 >  sum_coordinates :: (Num a) => m a -> a
 
 >-- | <https://en.wikipedia.org/wiki/Square_matrix>
->class (Transposable m m) => SquareMatrix m a where
->  identity :: (m :*: m) a
+>class (Functor m) => Diagonalizable m a where
+>  vector_dimension :: m a -> m Integer
+>  identity :: m Integer -> (m :*: m) a
+>  -- ^ argument to identity is dimension of the matrix
 >  diagonal :: (m :*: m) a -> m a
 >  diagonal_matrix :: m a -> (m :*: m) a
 
@@ -149,18 +152,18 @@
 >   down_project  :: Codiagonal m a -> m \\ a
 >   right_project :: Codiagonal m a -> m \\ a
 
->class (SquareMatrix m a) => FiniteSquareMatrix m a where
+>class (Diagonalizable m a) => Traceable m a where
 >  determinant :: (m :*: m) a -> a
 >  trace       :: (m :*: m) a -> a
 
 >-- | <http://en.wikipedia.org/wiki/Adjugate>
 >-- \(cofactor(A) = |A|(A^{-1})^T\) <https://en.wikipedia.org/wiki/Cross_product>
->class (FiniteSquareMatrix m a) => InvertibleMatrix m a where
+>class (Traceable m a) => Invertible m a where
 >   cofactor :: (m :*: m) a -> (m :*: m) a
 >   adjucate :: (m :*: m) a -> (m :*: m) a
 >   inverse  :: (m :*: m) a -> (m :*: m) a
 
->is_unitary :: (InvertibleMatrix m a, Eq ((m :*: m) a),
+>is_unitary :: (Invertible m a, Eq ((m :*: m) a),
 >              ConjugateSymmetric ((m :*: m) a))
 >  => (m :*: m) a -> Bool
 >is_unitary m = conj m == inverse m
@@ -206,11 +209,11 @@
 >             -> ((m :*: n) :*: (m' :*: n')) c
 >matrixMatrix f (Matrix x) (Matrix y) = Matrix $ (matrix . matrix) f x y
 
->invert_matrix :: (Eq a, Num a,InvertibleMatrix m a) => (m :*: m) a -> Maybe ((m :*: m) a)
+>invert_matrix :: (Eq a, Num a,Invertible m a) => (m :*: m) a -> Maybe ((m :*: m) a)
 >invert_matrix m | is_invertible_matrix m = Just (inverse m)
 >                | otherwise = Nothing
 
->is_invertible_matrix :: (Eq a, Num a,FiniteSquareMatrix m a) => (m :*: m) a -> Bool
+>is_invertible_matrix :: (Eq a, Num a,Traceable m a) => (m :*: m) a -> Bool
 >is_invertible_matrix m = determinant m /= 0
 
 eigenvectors_generic :: (a ~ Scalar (n a),
@@ -229,19 +232,27 @@ eigenvectors_generic m a = Matrix $ fmap (fix . (a %/)) (eigenvalues m)
 >(%/) :: (Fractional (Scalar v),VectorSpace v) => v -> Scalar v -> v
 >x %/ y = (1 / y) %* x
 
->-- | <https://en.wikipedia.org/wiki/Angle>
 
+>-- | <https://en.wikipedia.org/wiki/Angle>
+>innerproductspace_cos_angle :: (InnerProductSpace m, Floating (Scalar m)) => m -> m -> Scalar m
+>innerproductspace_cos_angle x y = (x %. y)
+>              / (innerproductspace_norm x * innerproductspace_norm y)
+
+>normed_lie_algebra_sin_angle :: (LieAlgebra m, NormedSpace m, Floating (Scalar m)) => m -> m -> Scalar m
+>normed_lie_algebra_sin_angle x y = norm (x %<>% y)
+>              / (norm x * norm y)
+
+>-- | <https://en.wikipedia.org/wiki/Angle>
 >angle :: (InnerProductSpace m, Floating (Scalar m))
 >      => m -> m -> Scalar m
->angle x y = acos $
-> (x %. y) / (innerproductspace_norm x * innerproductspace_norm y)
+>angle x y = acos (innerproductspace_cos_angle x y)
 
 >-- | <https://en.wikipedia.org/wiki/Cross_product>
 >-- This is a skew-symmetric matrix whose application to a vector
 >-- is same as cross product of a with the vector.
 >-- @cross_product_matrix v <<*> w == v %<>% w@.
->cross_product_matrix :: (SquareMatrix m a, LieAlgebra (m a)) => m a -> (m :*: m) a
->cross_product_matrix a = Matrix $ fmap (%<>% a) $ cells identity
+>cross_product_matrix :: (Traceable m a, LieAlgebra (m a)) => m a -> (m :*: m) a
+>cross_product_matrix a = Matrix $ fmap (%<>% a) $ cells (identity $ vector_dimension a)
 
 >i_vec,j_vec,k_vec,l_vec :: (StandardBasis v) => v
 >i_vec = unit_vectors !! 0
@@ -343,10 +354,25 @@ index2 (row,col) (C e) = index col (index row e)
 >      => (g :*: h) a -> (h :*: f) a -> (g :*: f) a
 >m1 %**% m2 = matrix (%.) (cells m1) (cells $ transpose m2)
 
+>type MatrixNorm h m a = (Traceable m (Scalar (h a)), 
+>      InnerProductSpace (h a), 
+>      ConjugateSymmetric a, 
+>      Transposable h m)
 
->(%^%) :: (Functor h, SquareMatrix h b, InnerProductSpace (h b), VectorSpaceOver (h b) b)
+>-- | <https://en.wikipedia.org/wiki/Frobenius_inner_product>
+>frobenius_inner_product :: (MatrixNorm h m a)
+> => (h :*: m) a -> (h :*: m) a -> Scalar (h a)
+>frobenius_inner_product a b = trace (fmap conj (transpose a) %*% b)
+
+>-- | <https://en.wikipedia.org/wiki/Matrix_norm#Frobenius_norm>
+>frobenius_norm :: (MatrixNorm h m a, Floating (Scalar (h a)))
+>  => (h :*: m) a -> Scalar (h a)
+>frobenius_norm a = sqrt (frobenius_inner_product a a)
+
+>(%^%) :: (Functor h, Diagonalizable h b, Transposable h h
+> ,InnerProductSpace (h b), VectorSpaceOver (h b) b)
 >      => (h :*: h) b -> Integer -> (h :*: h) b
->x %^% 0 = identity
+>x %^% 0 = identity (vector_dimension $ diagonal x)
 >x %^% i = x %*% (x %^% (i-1)) 
 
 >(|><|) :: (Functor m, Functor n, ConjugateSymmetric a, Num a)
@@ -372,9 +398,9 @@ index2 (row,col) (C e) = index col (index row e)
 
 >-- | This is the linearity condition:
 
->functionMatrix :: (Functor f, SquareMatrix f a)
-> => (f a -> g b) -> (f :*: g) b
->functionMatrix f = Matrix $ fmap f $ cells identity
+>functionMatrix :: (Functor f, Diagonalizable f a)
+> => (f a -> g b) -> f Integer -> (f :*: g) b
+>functionMatrix f dim = Matrix $ fmap f $ cells (identity dim)
 
 >instance (Show v) => Show (Basis v) where
 >  show (Basis lst) = show lst
@@ -422,6 +448,14 @@ index2 (row,col) (C e) = index col (index row e)
 >   [] %+ lst = lst
 >   lst %+ [] = lst
 
+>instance (Num a) => Diagonalizable [] a where
+>   vector_dimension [] = []
+>   vector_dimension (_:cr) = 0 : map succ (vector_dimension cr)
+>   identity lst = matrix (\x y -> if x == y then 1 else 0) lst lst
+>   diagonal (Matrix m) = map (\i -> (m !! fromInteger i) !! fromInteger i) indexable_indices
+>   diagonal_matrix v   = matrix (\x y -> if x == y then v !! fromInteger x else 0) dim dim
+>      where dim = vector_dimension v
+> 
 >instance VectorSpace Integer where
 >   type Scalar Integer = Integer
 >   vzero = 0
@@ -685,3 +719,20 @@ instance (Functor m) => Unital (:*:) m where
 >  (I x) %+ (I y) = I (x + y)
 >  k %* (I x) = I (k * x)
 
+>instance (Functor f, Functor g) => Functor (g :*: f) where
+>   fmap f (Matrix x) = Matrix $ fmap (fmap f) x
+
+>instance (Foldable f, Foldable g) => Foldable (f :*: g) where
+>   foldMap f (Matrix m) = foldMap (foldMap f) m
+
+>instance (Traversable f, Traversable g) => Traversable (f :*: g) where
+>   traverse f (Matrix m) = Matrix <$> traverse (traverse f) m
+
+>instance (Applicative f, Applicative g) => Applicative (f :*: g) where
+>   pure = Matrix . pure . pure
+>   (Matrix fs) <*> (Matrix xs) = Matrix $ pure (<*>) <*> fs <*> xs
+
+
+>instance (Alternative f, Alternative g) => Alternative (g :*: f) where
+>   empty = Matrix Applicative.empty
+>   (Matrix a) <|> (Matrix b) = Matrix $ pure (<|>) <*> a <*> b

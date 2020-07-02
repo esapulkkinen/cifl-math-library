@@ -29,7 +29,7 @@
 >  => (v -> Scalar v -> v -> Scalar v) -> Transform2D v (Scalar v)
 >vector2D = Transform2D innerproductspace_norm (%.)
 
->diagonalMatrix2D :: (SquareMatrix m a)
+>diagonalMatrix2D :: (Diagonalizable m a)
 >         => (a -> a -> a)
 >         -> (m a -> (m :*: m) a -> m a -> (m :*: m) a)
 >         -> Transform2D (m a) ((m :*: m) a)

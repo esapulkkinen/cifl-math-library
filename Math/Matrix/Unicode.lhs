@@ -46,7 +46,7 @@
 >(∏) = product 
 
 >-- | ddots
->(⋱) ∷ (SquareMatrix m a) ⇒ (m :*: m) a -> m a
+>(⋱) ∷ (Diagonalizable m a) ⇒ (m :*: m) a -> m a
 >(⋱) = diagonal
 >
 >-- | oplus

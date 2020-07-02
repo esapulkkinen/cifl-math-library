@@ -11,10 +11,10 @@
 >commutator x y = (x %*% y) %- (y %*% x)
 
 >-- | <https://en.wikipedia.org/wiki/Characteristic_polynomial>
->characteristicPolynomial :: (FiniteSquareMatrix m a, Num a, Applicative m,
+>characteristicPolynomial :: (Traceable m a, Num a, Applicative m,
 >                    VectorSpaceOver ((m :*: m) a) a)
 >    => (m :*: m) a -> a -> a
->characteristicPolynomial m v = determinant (v %* identity %- m)
+>characteristicPolynomial m v = determinant (v %* (identity $ vector_dimension $ diagonal m) %- m)
 
 
 instance (Num a, Applicative f, Scalar (f a) ~ a, Transposable f f, InnerProductSpace (f a))

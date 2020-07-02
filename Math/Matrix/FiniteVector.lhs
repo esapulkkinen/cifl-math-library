@@ -78,7 +78,7 @@ Doesn't typecheck in GHC 7.10.3, "Could not deduce (n1 ~ n) from the context
 >sum_vsquares :: (Num a) => Vec n a -> a
 >sum_vsquares = foldv 0 (\x y -> x*x + y)
 
->vtrace :: (Num a, Diagonalizable n) => (Vec n :*: Vec n) a -> a
+>vtrace :: (Num a, DiagonalizableVector n) => (Vec n :*: Vec n) a -> a
 >vtrace = sum_vcoordinates . vdiagonal . cells
 
 >toList :: Vec n a -> [a]
@@ -102,22 +102,25 @@ Doesn't typecheck in GHC 7.10.3, "Could not deduce (n1 ~ n) from the context
 >fromList [] = EncVec Empty
 >fromList (x:xr) = case fromList xr of { (EncVec v) -> EncVec $ Cons x v }
 
->instance (Diagonalizable n , VectorSpace (Vec n a), Transposable (Vec n) (Vec n), Num a) => SquareMatrix (Vec n) a where
->   identity = Matrix videntity
+>instance (DiagonalizableVector n , VectorSpace (Vec n a), Transposable (Vec n) (Vec n), Num a) => Diagonalizable (Vec n) a where
+>   vector_dimension m = vdimension m
+> --  identity = Matrix . videntity
 >   diagonal_matrix x = Matrix (vdiagonal_matrix x)
 >   diagonal (Matrix x) = vdiagonal x
 
->class Diagonalizable n where
+>class DiagonalizableVector n where
 >   vnull :: (Num a) => Vec n a
+>   vdimension :: Vec n a -> Vec n Integer
 >   vdiagonal :: Vec n (Vec n a) -> Vec n a
->   videntity :: (Num a) => Vec n (Vec n a)
+>   videntity :: (Num a) => Vec n () -> Vec n (Vec n a)
 >   vdiagonal_matrix :: (Num a) => Vec n a -> Vec n (Vec n a)
 >   vlist :: Vec n a -> [a]
 
->instance Diagonalizable 0 where
+>instance DiagonalizableVector 0 where
 >   vnull = Empty
+>   vdimension Empty = Empty
 >   vdiagonal Empty = Empty
->   videntity = Empty
+>   videntity _ = Empty
 >   vdiagonal_matrix Empty = Empty
 >   vlist _ = []
 
@@ -137,5 +140,5 @@ Doesn't typecheck in GHC 7.10.3, "Could not deduce (n1 ~ n) from the context
 >  show (Matrix Empty) = ""
 
 
->bindv :: (Diagonalizable n, Functor (Vec n)) => Vec n a -> (a -> Vec n b) -> Vec n b
+>bindv :: (DiagonalizableVector n, Functor (Vec n)) => Vec n a -> (a -> Vec n b) -> Vec n b
 >bindv z f = vdiagonal $ fmap f z

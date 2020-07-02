@@ -97,14 +97,17 @@
 >instance Unfoldable Vector3 where
 >   unfoldF f = f >>= \a -> f >>= \b -> f >>= \c -> return $! Vector3 a b c
 
+>dim3 :: Vector3 Integer
+>dim3 = Vector3 0 1 2
+
 >i3 :: (Num a) => Vector3 a
->i3 = identity <!> (xcoord3,id)
+>i3 = identity dim3 <!> (xcoord3,id)
 
 >j3 :: (Num a) => Vector3 a
->j3 = identity <!> (ycoord3,id)
+>j3 = identity dim3 <!> (ycoord3,id)
 > 
 >k3 :: (Num a) => Vector3 a
->k3 = identity <!> (zcoord3,id)
+>k3 = identity dim3 <!> (zcoord3,id)
 
 >instance CircularComonad Vector3 where
 >   rotate (Vector3 x y z) = Vector3 y z x
@@ -258,7 +261,7 @@
 >swapyz3 (Vector3 x y z) = Vector3 x z y
 
 >mul3Matrix :: (Num a,VectorSpace a) => Scalar a -> Vector3 ((Vector3 :*: Vector3) a)
->mul3Matrix = fmap functionMatrix . mul3
+>mul3Matrix = fmap (`functionMatrix` dim3) . mul3
 
 >signs3 :: (Integral a) => Matrix3 a
 >signs3 = fmap (\ (i,j) -> ((i+j+1) `mod` 2) * 2 - 1) matrix_indices3
@@ -366,7 +369,7 @@ instance (PpShow (f a)) => PpShow ((Vector3 :*: f) a) where
 
 >-- | see "Lawvere,Rosebrugh: Sets for mathematics", pg. 167.
 >instance (Num a, ConjugateSymmetric a) => Mon.Monoid ((Vector3 :*: Vector3) a) where
->   mempty  = identity
+>   mempty  = identity dim3
 >   mappend = (%**%)
 
 >instance (Num s) => Group (Vector3 s) where
@@ -561,12 +564,13 @@ approximations_vector3 (Vector3 x y z) = do
 >instance Summable Vector3 where
 >  sum_coordinates = sum_coordinates3
 
->instance (Num a) => SquareMatrix Vector3 a where
->  identity = identity3
+>instance (Num a) => Diagonalizable Vector3 a where
+>  vector_dimension _ = dim3
+>  identity _ = identity3
 >  diagonal = diagonal3
 >  diagonal_matrix = diagonal_matrix3
 
->instance (Num a) => FiniteSquareMatrix Vector3 a where
+>instance (Num a) => Traceable Vector3 a where
 >  trace = trace3 
 >  determinant = determinant3 
 
@@ -969,7 +973,7 @@ instance FractionalSpace (Vector3 (Complex R)) where
 >         mdq = diagonal m - return q
 >         p2 = mdq %. mdq + 2 * p1
 >         p = sqrt (p2 / 6)
->         b = (1 / p) %* (m %- q %* identity)
+>         b = (1 / p) %* (m %- q %* identity dim3)
 >         r = determinant b / 2
 >         phi | r <= -1   = pi / 3
 >             | r >= 1    = 0
@@ -979,7 +983,7 @@ instance FractionalSpace (Vector3 (Complex R)) where
 >instance (Floating a, Ord a, ConjugateSymmetric a) => EigenDecomposable Vector3 a where
 >   eigenvalues = eigenvalue3
 
->instance (Fractional a) => InvertibleMatrix Vector3 a where
+>instance (Fractional a) => Invertible Vector3 a where
 >   cofactor = cofactor3
 >   adjucate = adjucate3
 >   inverse = inverse3

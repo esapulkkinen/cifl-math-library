@@ -213,7 +213,7 @@ http://en.wikipedia.org/wiki/Bra%E2%80%93ket_notation
 
 >-- | see "Lawvere,Rosebrugh: Sets for mathematics", pg. 167.
 >instance (Num a, ConjugateSymmetric a) => Monoid ((Vector1 :*: Vector1) a) where
->   mempty = identity
+>   mempty = identity mempty
 >   mappend = (%**%)
 
 >instance Monad Vector1 where
@@ -264,12 +264,13 @@ http://en.wikipedia.org/wiki/Bra%E2%80%93ket_notation
 >instance (Num a, ConjugateSymmetric a) => InnerProductSpace (Vector1 a) where
 >  (Vector1 x) %. (Vector1 y) = x*conj y
 
->instance (Num a) => SquareMatrix Vector1 a where
+>instance (Num a) => Diagonalizable Vector1 a where
+>  vector_dimension _ = Vector1 0
 >  diagonal (Matrix (Vector1 (Vector1 x))) = Vector1 x
->  identity = Matrix $ Vector1 (Vector1 1)
+>  identity _ = Matrix $ Vector1 (Vector1 1)
 >  diagonal_matrix (Vector1 x) = Matrix $ Vector1 $ Vector1 x
 
->instance (Num a) => FiniteSquareMatrix Vector1 a where
+>instance (Num a) => Traceable Vector1 a where
 >  determinant (Matrix (Vector1 (Vector1 x))) = x
 >  trace (Matrix (Vector1 (Vector1 x))) = x
 

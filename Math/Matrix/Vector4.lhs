@@ -278,9 +278,12 @@ instance FractionalSpace (Vector4 (Complex R))
 >instance (Num a, ConjugateSymmetric a) => Semigroup ((Vector4 :*: Vector4) a) where
 >   (<>) = (%**%)
 
+>dim4 :: Vector4 Integer
+>dim4 = Vector4 0 1 2 3
+
 >-- | see "Lawvere,Rosebrugh: Sets for mathematics", pg. 167.
 >instance (Num a, ConjugateSymmetric a) => Monoid ((Vector4 :*: Vector4) a) where
->   mempty = identity
+>   mempty = identity dim4
 >   mappend = (%**%)
 
 >instance (Limiting a) => Limiting (Vector4 a) where
@@ -632,12 +635,13 @@ instance FractionalSpace (Vector4 (Complex R))
 >instance (Floating a, ConjugateSymmetric a) => InnerProductSpace ((Vector4 :*: Vector4) a) where
 >  x %. y = trace (transpose x %*% y)
 
->instance (Num a) => SquareMatrix Vector4 a where
->  identity = identity4
+>instance (Num a) => Diagonalizable Vector4 a where
+>  vector_dimension _ = dim4
+>  identity _ = identity4
 >  diagonal = diagonal4
 >  diagonal_matrix = diagonal_matrix4
 
->instance (Num a) => FiniteSquareMatrix Vector4 a where
+>instance (Num a) => Traceable Vector4 a where
 >  determinant = determinant4
 >  trace    = trace4
 
@@ -728,7 +732,7 @@ instance FractionalSpace (Vector4 (Complex R))
 >   where amv = fmap (determinant . Matrix . removet4 . (`fmap` m)) removes4
 >         combine (Vector4 a b c d) = a - b + c - d
 
->instance (Fractional a) => InvertibleMatrix Vector4 a where
+>instance (Fractional a) => Invertible Vector4 a where
 >   inverse = inverse4
 >   adjucate = adjucate4
 >   cofactor = cofactor4

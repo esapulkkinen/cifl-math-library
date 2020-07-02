@@ -156,8 +156,9 @@
 >kronecker_delta :: (Eq a, Num b) => a -> a -> b
 >kronecker_delta i j = if i == j then 1 else 0
 
->instance (Num a, Eq dim) => SquareMatrix ((->) dim) a where
->   identity = Matrix kronecker_delta
+>instance (Num a, Eq dim, Integral dim) => Diagonalizable ((->) dim) a where
+>   vector_dimension f = indexable_indices
+>   identity _ = Matrix kronecker_delta
 >   diagonal (Matrix f) = \i -> f i i
 >   diagonal_matrix f = Matrix $ \i j -> if i == j then f i else 0
 >
@@ -174,8 +175,8 @@
 >   (<>) = (%***%)
 
 >-- | "Lawvere, Rosebrugh: Sets for Mathematics", pg. 167.
->instance (Universe x, Eq x, ConjugateSymmetric a, Num a) => Monoid ((x :&: x) a) where
->   mempty = identity
+>instance (Universe x, Eq x, Integral x, ConjugateSymmetric a, Num a) => Monoid ((x :&: x) a) where
+>   mempty = identity (vector_dimension vzero)
 >   mappend = (%***%)
 
 >class CoFactorDimension dim where
@@ -230,7 +231,8 @@
 >                    | i <- [0..fromIntegral (length u-1)]]
   
 
->instance (Eq dim,Num dim, Universe dim, CoFactorDimension dim, Num a) => FiniteSquareMatrix ((->) dim) a where
+>instance (Eq dim,Num dim, Integral dim, Universe dim, CoFactorDimension dim, Num a)
+> => Traceable ((->) dim) a where
 >   trace (Matrix f) = sum [f i i | i <- all_elements]
 >   determinant = sdeterminant
 >
