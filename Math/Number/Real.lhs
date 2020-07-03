@@ -531,7 +531,7 @@ infimum = negate_limit . supremum_gen . map negate_limit
 >    return $! (f (x + eps) - f (x - eps)) / (2 * eps)
 
 
->-- | \[\lim_{\epsilon\rightarrow 0}{{f(a+\epsilon,b)-f(a-\epsilon,b)}\over{2\epsilon}}\]
+>-- | \[\lim_{\epsilon\rightarrow 0}{{f(a+\epsilon,b)-f(a,b)}\over{\epsilon}}\]
 >partial_derivate1_2 :: (Infinitesimal a)
 >                    => (a -> b -> a) -> a -> b -> Closure a
 >partial_derivate1_2 f a b = limit $ do
@@ -539,7 +539,7 @@ infimum = negate_limit . supremum_gen . map negate_limit
 >    eps <- epsilon_stream
 >    return $! (f (a + eps) b - fab) / eps
 
->-- | \[\lim_{\epsilon\rightarrow 0}{{f(a,b+\epsilon)-f(a,b-\epsilon)}\over{2\epsilon}}\]
+>-- | \[\lim_{\epsilon\rightarrow 0}{{f(a,b+\epsilon)-f(a,b)}\over{\epsilon}}\]
 >partial_derivate2_2 :: (Infinitesimal a) => (b -> a -> a) -> b -> a -> Closure a
 >partial_derivate2_2 f a b = limit $ do
 >    let fab = f a b
@@ -547,7 +547,7 @@ infimum = negate_limit . supremum_gen . map negate_limit
 >    return $! (f a (b + eps) - fab) / eps
 
 
->-- | \[\lim_{\epsilon\rightarrow 0}{{f(a+\epsilon,b,c)-f(a-\epsilon,b,c)}\over{2\epsilon}}\]
+>-- | \[\lim_{\epsilon\rightarrow 0}{{f(a+\epsilon,b,c)-f(a,b,c)}\over{\epsilon}}\]
 >partial_derivate1_3 :: (Infinitesimal a)
 >                    => (a -> b -> c -> a) -> a -> b -> c -> Closure a
 >partial_derivate1_3 f a b c = limit $ do
@@ -555,7 +555,7 @@ infimum = negate_limit . supremum_gen . map negate_limit
 >    eps <- epsilon_stream
 >    return $! (f (a + eps) b c - fabc) / eps
 
->-- | \[\lim_{\epsilon\rightarrow 0}{{f(a,b+\epsilon,c)-f(a,b-\epsilon,c)}\over{2\epsilon}}\]
+>-- | \[\lim_{\epsilon\rightarrow 0}{{f(a,b+\epsilon,c)-f(a,b,c)}\over{\epsilon}}\]
 >partial_derivate2_3 :: (Infinitesimal a)
 >                    => (b -> a -> c -> a) -> b -> a -> c -> Closure a
 >partial_derivate2_3 f a b c = limit $ do
@@ -563,7 +563,7 @@ infimum = negate_limit . supremum_gen . map negate_limit
 >    eps <- epsilon_stream
 >    return $! (f a (b + eps) c - fabc) / eps
 
->-- | \[\lim_{\epsilon\rightarrow 0}{{f(a,b,c+\epsilon)-f(a,b,c-\epsilon)}\over{2\epsilon}}\]
+>-- | \[\lim_{\epsilon\rightarrow 0}{{f(a,b,c+\epsilon)-f(a,b,c)}\over{\epsilon}}\]
 >partial_derivate3_3 :: (Infinitesimal a)
 >                    => (b -> c -> a -> a) -> b -> c -> a -> Closure a
 >partial_derivate3_3 f a b c = limit $ do
