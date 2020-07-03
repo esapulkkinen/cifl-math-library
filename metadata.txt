@@ -33,3 +33,4 @@
 <meta itemprop="abstract" content="Haskell library for linear algebra"/>
 <meta itemprop="author" content="Esa Pulkkinen"/>
 <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<meta name="theme-color" content="tan"/>

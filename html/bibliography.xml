@@ -608,13 +608,15 @@ authors.
     <field name="author" type="Person">
       <summary name="name">Martin Escardo</summary>
     </field>
-    <field name="contributor" type="Person"><summary name="name">Andrej Bauer</summary></field>
     <field name="isPartOf">Mathematics and Computation</field>
     <field name="copyrightYear">2008</field>
     <field name="datePublished">2008-11-21</field>
     <field name="headline">A haskell monad for infinite search in finite time</field>
-    <field name="publisher" type="Person">
-      <summary name="name">Andrej Bauer</summary>
+    <field name="publisher" type="Project">
+      <summary name="name">Mathematics and Computation</summary>
+      <field name="founder" type="Person">
+        <summary name="name">Andrej Bauer</summary>
+      </field>
     </field>
   </Article>
   <Article>

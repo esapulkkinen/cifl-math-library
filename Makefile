@@ -105,8 +105,9 @@ publish_document : dependencegraph externaldepgraph document-standalone hscolor
 	cp dist-newstyle/doc/html/cifl-math-library/*.pdf docs/
 	cd html ; $(MAKE) all ; cd ..
 	cp html/bibliography.html docs/bibliography.html
+	sed -i 's%<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">%<!DOCTYPE html>%g' docs/*.html docs/cifl-math-library/*.html
 	sed -i 's+COPYRIGHT">COPYRIGHT+COPYRIGHT" rel="license">COPYRIGHT+g' docs/index.html docs/cifl-math-library/index.html
-	sed -i 's+<html+<html itemscope itemtype="http://schema.org/APIReference" lang="en"+' docs/*.html docs/cifl-math-library/*.html
+	sed -i 's+<html xmlns+<html itemscope itemtype="http://schema.org/APIReference" lang="en" xmlns+' docs/*.html docs/cifl-math-library/*.html
 	sed -i "s+<head>+<head profile=\"http://dublincore.org/specifications/dublin-core/dc-html/2008-08-04/\" prefix=\"og: http://ogp.me/ns#\">$$(cat metadata.txt | tr '\n' ' ')+g" docs/*.html docs/cifl-math-library/*.html
 
 hscolor :
