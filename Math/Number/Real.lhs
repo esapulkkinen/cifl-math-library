@@ -225,27 +225,31 @@ max_convergence_ratio = fmap (foldl1 max) . cauchy
 >partial_derive :: (Fractional a, Closed a, Infinitesimal eps)
 >  => (eps -> a -> a) -> (a -> a) -> a -> a
 >partial_derive delta f v = accumulation_point $ limit $ do
+>   let fv = f v
 >   eps <- epsilon_stream
 >   let v_plus_dv = delta eps v
->   return $! (f v_plus_dv - f v) / (v_plus_dv - v)
+>   return $! (f v_plus_dv - fv) / (v_plus_dv - v)
 
 >partial_derivate_closure :: (Limiting a, Fractional a)
 >   => (a -> b -> b) -> (b -> a) -> b -> Endo (Closure a)
 >partial_derivate_closure delta f v = Endo $ \dx -> limit $ do
+>   let fv = f v
 >   eps <- approximations dx
->   return $! (f (delta eps v) - f v) / eps
+>   return $! (f (delta eps v) - fv) / eps
 
 >partial_derivate :: (Closed eps, Infinitesimal eps)
 > => (eps -> a -> a) -> (a -> eps) -> a -> eps
 >partial_derivate delta f v = accumulation_point $ limit $ do
+>   let fv = f v
 >   eps <- epsilon_stream
->   return $! (f (delta eps v) - f v) / eps
+>   return $! (f (delta eps v) - fv) / eps
 
 >partial_derivate_endo :: (Limiting a, Fractional a)
 >  => (a -> Endo b) -> (b -> a) -> b -> Endo (Closure a)
 >partial_derivate_endo delta f v = Endo $ \dx -> limit $ do
+>   let fv = f v
 >   eps <- approximations dx
->   return $! (f (delta eps `appEndo` v) - f v) / eps
+>   return $! (f (delta eps `appEndo` v) - fv) / eps
 
 
 >-- | <https://en.wikipedia.org/wiki/Wirtinger_derivatives>
@@ -492,20 +496,23 @@ infimum = negate_limit . supremum_gen . map negate_limit
 
 >derivate_closed :: (Infinitesimal a) => (a -> a) -> a -> Closure a
 >derivate_closed f x = limit $ do
+>    let fx = f x -- optimization
 >    eps <- epsilon_stream
->    return $! (f (x + eps) - f x) / eps
+>    return $! (f (x + eps) - fx) / eps
 
 >vector_derivate :: (Infinitesimal (Scalar a), VectorSpace a, Limiting a)
 > => (Scalar a -> a) -> Scalar a -> Closure a
 >vector_derivate f x = limit $ do
+>   let fx = f x -- optimization
 >   eps <- epsilon_stream
->   return $! (1 / (2*eps)) %* (f (x + eps) %- f (x - eps))
+>   return $! (1 / eps) %* (f (x + eps) %- fx)
 
 >pseudo_derivate :: (Fractional r, Limiting r, Infinitesimal a)
 >                => (a -> r) -> a -> Closure r
 >pseudo_derivate f x = limit $ do
+>    let fx = f x
 >    eps <- epsilon_stream
->    return $! (f (x + eps) - f x) / f eps
+>    return $! (f (x + eps) - fx) / f eps
 
 >-- | i'th element of derivates_at(f,s) is \(D^i[f](s_i)\)
 >derivates_at :: (DifferentiallyClosed a) => (a -> a) -> Stream a -> Stream a
@@ -528,36 +535,41 @@ infimum = negate_limit . supremum_gen . map negate_limit
 >partial_derivate1_2 :: (Infinitesimal a)
 >                    => (a -> b -> a) -> a -> b -> Closure a
 >partial_derivate1_2 f a b = limit $ do
+>    let fab = f a b
 >    eps <- epsilon_stream
->    return $! (f (a + eps) b - f (a - eps) b) / (2*eps)
+>    return $! (f (a + eps) b - fab) / eps
 
 >-- | \[\lim_{\epsilon\rightarrow 0}{{f(a,b+\epsilon)-f(a,b-\epsilon)}\over{2\epsilon}}\]
 >partial_derivate2_2 :: (Infinitesimal a) => (b -> a -> a) -> b -> a -> Closure a
 >partial_derivate2_2 f a b = limit $ do
+>    let fab = f a b
 >    eps <- epsilon_stream
->    return $! (f a (b + eps) - f a (b - eps)) / (2*eps)
+>    return $! (f a (b + eps) - fab) / eps
 
 
 >-- | \[\lim_{\epsilon\rightarrow 0}{{f(a+\epsilon,b,c)-f(a-\epsilon,b,c)}\over{2\epsilon}}\]
 >partial_derivate1_3 :: (Infinitesimal a)
 >                    => (a -> b -> c -> a) -> a -> b -> c -> Closure a
 >partial_derivate1_3 f a b c = limit $ do
+>    let fabc = f a b c
 >    eps <- epsilon_stream
->    return $! (f (a + eps) b c - f (a - eps) b c) / (2*eps)
+>    return $! (f (a + eps) b c - fabc) / eps
 
 >-- | \[\lim_{\epsilon\rightarrow 0}{{f(a,b+\epsilon,c)-f(a,b-\epsilon,c)}\over{2\epsilon}}\]
 >partial_derivate2_3 :: (Infinitesimal a)
 >                    => (b -> a -> c -> a) -> b -> a -> c -> Closure a
 >partial_derivate2_3 f a b c = limit $ do
+>    let fabc = f a b c
 >    eps <- epsilon_stream
->    return $! (f a (b + eps) c - f a (b - eps) c) / (2*eps)
+>    return $! (f a (b + eps) c - fabc) / eps
 
 >-- | \[\lim_{\epsilon\rightarrow 0}{{f(a,b,c+\epsilon)-f(a,b,c-\epsilon)}\over{2\epsilon}}\]
 >partial_derivate3_3 :: (Infinitesimal a)
 >                    => (b -> c -> a -> a) -> b -> c -> a -> Closure a
 >partial_derivate3_3 f a b c = limit $ do
+>    let fabc = f a b c
 >    eps <- epsilon_stream
->    return $! (f a b (c + eps) - f a b (c - eps)) / (2*eps)
+>    return $! (f a b (c + eps) - fabc) / eps
 
 >-- | <http://en.wikipedia.org/wiki/Arithmetic%E2%80%93geometric_mean Arithmetic-geometric mean>
 

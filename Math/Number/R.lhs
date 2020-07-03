@@ -232,14 +232,17 @@
 
 >-- | derivate for rational functions. The first argument is epsilon.
 >derivate_rational :: Rational -> (Rational -> Rational) -> Rational -> Rational
->derivate_rational eps f i = (f (i + eps) - f (i - eps)) / (2*eps)
+>derivate_rational eps f i = (f (i + eps) - fi) / eps
+>   where fi = f i
 
->-- | computes derivate. \[{{df}\over{dt}} = \lim_{\epsilon\rightarrow 0}{{f(t+\epsilon)-f(t-\epsilon)}\over{2\epsilon}}\]
+>-- | computes derivate. \[{{df}\over{dt}} = \lim_{\epsilon\rightarrow 0}{{f(t+\epsilon)-f(t)}\over{\epsilon}}\]
 >derivate_r :: (R -> R) -> R -> R
 >derivate_r f (Limit x) = real $ \eps ->
->    ((f (real $ \eps' -> x `appEndo` eps' + eps)
->      - f (real $ \eps'' -> x `appEndo` eps'' - eps))
->     `approximate` eps)/(2*eps)
+>    ((f (real $ \eps' -> x `appEndo` eps' + eps) - fx)
+>     `approximate` eps)/eps
+>  where fx = f (real $ \eps'' -> x `appEndo` eps'')
+>        -- computing fx separately is an optimization that should allow
+>        -- sharing the value of 'fx' to many invocations at different precision.
 
 
 >instance DifferentiallyClosed R where
