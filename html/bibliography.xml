@@ -6,6 +6,28 @@
     <field name="headline">Sets for Mathematics</field>
     <field name="isbn">0-521-01060-8</field>
   </Book>
+  <Book>
+    <summary>Mac Lane: Categories for the working mathematician</summary>
+    <field name="author" type="Person"><summary name="name">Saunders Mac Lane</summary></field>
+    <field name="headline">Categories for the Working Mathematician</field>
+    <field name="isbn">0-387-90036-5</field>
+    <field name="numberOfPages">262</field>
+    <field name="publisher" type="Organization">
+      <summary name="name">Springer</summary>
+    </field>
+  </Book>
+  <Book>
+    <summary>Gamma et al: Design Patterns</summary>
+    <field name="headline">Design Patterns, Elements of Reusable Object-Oriented Software</field>
+    <field name="isbn">0-201-63361-2</field>
+    <field name="author" type="Person"><summary name="name">Erich Gamma</summary></field>
+    <field name="author" type="Person"><summary name="name">Richard Helm</summary></field>
+    <field name="author" type="Person"><summary name="name">Ralph Johnson</summary></field>
+    <field name="author" type="Person"><summary name="name">John Vlissides</summary></field>
+    <field name="publisher" type="Organization">
+      <summary name="name">Addison-Wesley Publishing Company</summary>
+    </field>
+  </Book>
   <WebSite>
     <summary>Haskell Wiki</summary>
     <field name="license">Permissive</field>
