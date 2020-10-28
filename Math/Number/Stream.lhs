@@ -743,10 +743,14 @@ matrix_convolution_product :: (Num a) => (Stream :*: Stream) a -> (Stream :*: St
 >rotate_prefix :: Integer -> Stream a -> Stream a
 >rotate_prefix k ~(Pre c cr) = (take k cr ++ [c]) `prefix` drop k cr
 
+>-- | the function studied in the Collatz conjecture.
 >threeNplusOne :: Integer -> Integer
 >threeNplusOne n | n == 1 = 1
 >                | odd n  = 3 * n + 1
 >                | otherwise = n `div` 2
+
+>collatz :: Integer -> [Integer]
+>collatz s = takeWhile (/= 1) $ iterate_stream threeNplusOne s
 
 >toNatSeq :: Stream a -> Rec Maybe -> a
 >toNatSeq ~(Pre x _) (In Nothing) = x
@@ -1906,5 +1910,4 @@ matrix_convolution_product :: (Num a) => (Stream :*: Stream) a -> (Stream :*: St
 
 >instance (Closed a) => Closed (Complex a) where
 >   accumulation_point (ComplexClosure (ca :+ ci)) = accumulation_point ca :+ accumulation_point ci
-
 

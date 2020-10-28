@@ -39,6 +39,8 @@
 
 >-- | tricky stuff. We use the denominator from the rational to determine
 >-- what accuracy to use for comparison, then use rational comparison.
+>-- Notice that this doesn't really allow good control of precision
+>-- of computation, since rational numbers are normalized by default.
 >instance DedekindCut Rational R where
 >  r %< (Limit e) = r < (e `appEndo` (eps_rational r))
 >  (Limit e) <% r = (e `appEndo` (eps_rational r)) < r

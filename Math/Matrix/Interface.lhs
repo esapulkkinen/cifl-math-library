@@ -1,5 +1,10 @@
 >-- -*- coding: utf-8 -*-
->{-# LANGUAGE Safe,MultiParamTypeClasses, ScopedTypeVariables, FlexibleContexts, FunctionalDependencies, FlexibleInstances, TypeOperators, TypeFamilies, DefaultSignatures, UnicodeSyntax, DeriveGeneric, DeriveDataTypeable, ConstraintKinds, UndecidableInstances, OverloadedStrings #-}
+>{-# LANGUAGE Safe,MultiParamTypeClasses, ScopedTypeVariables #-}
+>{-# LANGUAGE FlexibleContexts, FunctionalDependencies, FlexibleInstances #-}
+>{-# LANGUAGE TypeOperators, TypeFamilies, DefaultSignatures #-}
+>{-# LANGUAGE UnicodeSyntax, DeriveGeneric, DeriveDataTypeable #-}
+>{-# LANGUAGE ConstraintKinds, UndecidableInstances, OverloadedStrings #-}
+>{-# LANGUAGE QuantifiedConstraints #-}
 >-- | These should match standard definitions of vector spaces.
 >-- Used for reference: K. Chandrasekhara Rao: Functional Analysis.
 >-- also see Warner: Modern algebra.
@@ -107,7 +112,10 @@
 >class ConjugateSymmetric m where
 >  conj :: m -> m
 
->class (Scalar (m a) ~ Scalar (n a)) => LinearTransform m n a where
+>class (Scalar (m a) ~ Scalar (n a)
+>      , forall b. (Num b) => VectorSpace (m b)
+>      , forall c. (Num c) => VectorSpace (n c))
+> => LinearTransform m n a where
 >  (<*>>) :: n a -> (m :*: n) a -> m a -- ^ vector times matrix
 >  (<<*>) :: (m :*: n) a -> m a -> n a -- ^ matrix times vector
 

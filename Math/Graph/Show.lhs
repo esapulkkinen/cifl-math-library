@@ -1,7 +1,9 @@
 >{-# LANGUAGE Safe,FlexibleInstances, ScopedTypeVariables #-}
+>{-# LANGUAGE OverloadedStrings #-}
 >-- | The module contains only Show and PpShow instances for graphs.
 >module Math.Graph.Show where
 >import Text.PrettyPrint (empty, (<+>), punctuate)
+>import qualified Data.Text as T
 >import Data.Monoid hiding ((<>))
 >import qualified Data.Set as Set
 >import qualified Math.Tools.PrettyP as PrettyP
@@ -30,14 +32,20 @@
 >    return $ edgesG $ map (\ (a,b,c) -> (a,(b,c))) $ Set.toList edges
 
 >instance (Ord a, PpShow a) => PpShow (Graph Three a) where
->  pp g = maybe (pp "[]") (\ (v,e) -> pp "(" <> (PrettyP.pp_list v <+> pp ";" <+> PrettyP.pp_list e) <> pp ')') $ inGraphM g $ do
+>  pp g = maybe (pp ("[]" :: T.Text)) (\ (v,e) ->
+>     pp ("(" :: T.Text) <> (PrettyP.pp_list v <+> pp ';' <+> PrettyP.pp_list e)
+>       <> pp ')') $ inGraphM g $ do
 >                edges <- linksM
 >                vertices <- verticesM
->                return $ (Set.toList vertices,(map (\ (e,x,y) -> pp e <+> pp '=' <+> pp x <+> pp "->" <+> pp y) $ Set.toList edges))
+>                return $ (Set.toList vertices,(map (\ (e,x,y) -> pp e <+> pp '=' <+> pp x <+> pp ("->" :: T.Text) <+> pp y) $ Set.toList edges))
 
 >instance (Ord a, PpShow a) => PpShow (Graph Four a) where
->  pp g = maybe (pp "[]") (\ (v,e) -> pp "(" <> (PrettyP.pp_list v <+> pp ";" <+> PrettyP.pp_list e) <> pp ')') $ inGraphM g $ do
+>  pp g = maybe (pp ("[]" :: T.Text)) (\ (v,e) -> pp ("(" :: T.Text) <> (PrettyP.pp_list v <+> pp (";" :: T.Text) <+> PrettyP.pp_list e) <> pp ')') $ inGraphM g $ do
 >                edges <- reversibleLinksM
 >                vertices <- verticesM
->                return $ (Set.toList vertices,(map (\ ((e,re),(x,y)) -> pp e <+> (if (e /= re) then (pp "/" <+> pp re) else empty) <+> pp '=' <+> pp x <+> pp "<->" <+> pp y) $ Set.toList edges))
+>                return $ (Set.toList vertices,(map (\ ((e,re),(x,y)) ->
+>                       pp e
+>                        <+> (if (e /= re) then (pp ("/" :: T.Text) <+> pp re) else empty)
+>                        <+> pp '=' <+> pp x <+> pp ("<->" :: T.Text) <+> pp y)
+>                        $ Set.toList edges))
 

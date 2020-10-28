@@ -111,7 +111,6 @@
 >          g <- ask
 >          return $ Set.filter (\a -> action g a gdom /= a) $ elements g
 
-
 >nodesLinkedFromM :: (Monad m, Ord e, GraphMonoid mon)
 >                  => e -> InGraphM mon e m (Set e)
 >nodesLinkedFromM node = do edges <- edgesStartingFromM node
@@ -172,7 +171,8 @@
 >-- digraphs are used.
 >--
 >-- The left action of the monoid causes the following constraints:
->--
+>-- In particular, these are valid when the monoid is on the two-element set:
+>-- 
 >-- prop> source . target == source
 >--
 >-- prop> target . source == target

@@ -41,6 +41,7 @@
 
 >import Math.Number.Group
 
+>import Math.Graph.Action ((:<-:))
 >import qualified Math.Graph.Action as Action
 >import Math.Matrix.Interface
 >import Text.PrettyPrint ((<+>))
@@ -60,10 +61,22 @@
 > action_endomorphism :: m -> Endo a }
 >  deriving (Typeable, Generic)
 
+>semigroup_graph :: (Semigroup a) => Set a -> Graph a a
+>semigroup_graph s = Graph s (\x -> Endo $ \y -> x <> y)
+>
+>semigroup_opposite_graph :: (Semigroup a) => Set a -> Graph a a
+>semigroup_opposite_graph s = Graph s (\x -> Endo $ \y -> y <> x)
+
+>monoid_graph :: (Monoid a) => Set a -> Graph a a
+>monoid_graph s = Graph s (\x -> Endo $ \y -> mappend x y)
+
+>monoid_opposite_graph :: (Monoid a) => Set a -> Graph a a
+>monoid_opposite_graph s = Graph s (\x -> Endo $ \y -> mappend y x)
+
 >action :: Graph m a -> a -> m -> a
 >action g x m = action_endomorphism g m `appEndo` x
 
->action_rep :: Graph m a -> Action.Action (Endo a) m
+>action_rep :: Graph m a -> Endo a :<-: m
 >action_rep = Action.Action . action_endomorphism 
 
 >inverseImageG :: (m -> n) -> Graph n a -> Graph m a
@@ -98,7 +111,7 @@
 >verticesFromSetG s = Graph s vertexEndo
 
 >verticesG :: (Ord a) => [a] -> Graph m a
->verticesG lst = Graph (Set.fromList lst) vertexEndo
+>verticesG = verticesFromSetG . Set.fromList
 
 >edgeG :: (Ord a) => a -> a -> a -> Graph Three a
 >edgeG e x y = Graph (Set.fromList [e,x,y]) (edgesEndo [(e,(x,y))])
@@ -198,6 +211,9 @@
 >edgesG lst = Graph (Set.fromList (map fst lst ++ map (fst . snd) lst ++ map (snd . snd) lst))
 >                   (edgesEndo lst)
 
+>-- | given a list of (v,e), the loopG contains looped edges of the form e : v -> v.
+>loopG :: (Ord a) => [(a,a)] -> Graph Three a
+>loopG lst = Graph (Set.fromList (map fst lst ++ map snd lst)) (loopEndo lst)
 
 >-- | converts from undirected graph to directed graph
 >reversibleToDirectedG :: Graph Four a -> Graph Three a

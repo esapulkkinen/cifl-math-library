@@ -446,8 +446,17 @@ to map indices.
 >svec5 :: a -> a -> a -> a -> a -> FiveD -> a
 >svec5 x y z t u = \case { FiveD0 -> x ; FiveD1 -> y ; FiveD2 -> z ;
 >                          FiveD3 -> t ; FiveD4 -> u }
+>svec6 :: a -> a -> a -> a -> a -> a -> SixD -> a
+>svec6 x y z t u w = \case { SixD0 -> x ; SixD1 -> y ; SixD2 -> z ;
+>                          SixD3 -> t ; SixD4 -> u ; SixD5 -> w }
+>svec7 :: a -> a -> a -> a -> a -> a -> a -> SevenD -> a
+>svec7 x y z t u w ww = \case { SevenD0 -> x ; SevenD1 -> y ; SevenD2 -> z ;
+>                          SevenD3 -> t ; SevenD4 -> u ; SevenD5 -> w ;
+>                          SevenD6 -> ww }
 
-
+>svec_inf :: Stream a -> Integer -> a
+>svec_inf ~(Pre x xr) = \case { 0 -> x ; i -> svec_inf xr (pred i) }
+> 
 >data OneD = OneD0
 >  deriving (Eq,Ord,Enum)
 >data TwoD = TwoD0 | TwoD1
@@ -457,6 +466,10 @@ to map indices.
 >data FourD = FourD0 | FourD1 | FourD2 | FourD3
 >  deriving (Eq,Ord,Enum)
 >data FiveD = FiveD0 | FiveD1 | FiveD2 | FiveD3 | FiveD4
+>  deriving (Eq,Ord,Enum)
+>data SixD = SixD0 | SixD1 | SixD2 | SixD3 | SixD4 | SixD5
+>  deriving (Eq,Ord, Enum)
+>data SevenD = SevenD0 | SevenD1 | SevenD2 | SevenD3 | SevenD4 | SevenD5 | SevenD6
 >  deriving (Eq,Ord,Enum)
 
 >instance Comonad ((->) TwoD) where
@@ -471,6 +484,14 @@ to map indices.
 >   extract f = f FourD0
 >   duplicate f = \a b -> f (a + b)
 
+>instance Comonad ((->) FiveD) where
+>   extract f = f FiveD0
+>   duplicate f = \a b -> f (a + b)
+>
+>instance Comonad ((->) SixD) where
+>   extract f = f SixD0
+>   duplicate f = \a b -> f (a + b)
+
 
 >instance Universe OneD where
 >   all_elements=[OneD0]
@@ -482,7 +503,10 @@ to map indices.
 >   all_elements=[FourD0,FourD1,FourD2,FourD3]
 >instance Universe FiveD where
 >   all_elements=[FiveD0, FiveD1, FiveD2, FiveD3, FiveD4]
->
+>instance Universe SixD where
+>   all_elements=[SixD0, SixD1, SixD2, SixD3, SixD4, SixD5]
+>instance Universe SevenD where
+>   all_elements=[SevenD0, SevenD1, SevenD2, SevenD3, SevenD4, SevenD5, SevenD6]
 >
 >instance Real OneD where
 >   toRational = toRational . toInt1
@@ -494,7 +518,28 @@ to map indices.
 >   toRational = toRational . toInt4
 >instance Real FiveD where
 >   toRational = toRational . toInt5
+>instance Real SixD where
+>   toRational = toRational . toInt6
+>instance Real SevenD where
+>   toRational = toRational . toInt7
 >
+>toInt7 :: SevenD -> Int
+>toInt7 SevenD0 = 0
+>toInt7 SevenD1 = 1
+>toInt7 SevenD2 = 2
+>toInt7 SevenD3 = 3
+>toInt7 SevenD4 = 4
+>toInt7 SevenD5 = 5
+>toInt7 SevenD6 = 6
+
+>toInt6 :: SixD -> Int
+>toInt6 SixD0 = 0
+>toInt6 SixD1 = 1
+>toInt6 SixD2 = 2
+>toInt6 SixD3 = 3
+>toInt6 SixD4 = 4
+>toInt6 SixD5 = 5
+
 >toInt5 :: FiveD -> Int
 >toInt5 FiveD0 = 0
 >toInt5 FiveD1 = 1
@@ -517,6 +562,26 @@ to map indices.
 >toInt1 :: OneD -> Int
 >toInt1 _ = 0
  
+
+>fromInt7 :: Int -> SevenD
+>fromInt7 0 = SevenD0
+>fromInt7 1 = SevenD1
+>fromInt7 2 = SevenD2
+>fromInt7 3 = SevenD3
+>fromInt7 4 = SevenD4
+>fromInt7 5 = SevenD5
+>fromInt7 6 = SevenD6
+>fromInt7 i = fromInt7 (i `mod` 7)
+
+>fromInt6 :: Int -> SixD
+>fromInt6 0 = SixD0
+>fromInt6 1 = SixD1
+>fromInt6 2 = SixD2
+>fromInt6 3 = SixD3
+>fromInt6 4 = SixD4
+>fromInt6 5 = SixD5
+>fromInt6 i = fromInt6 (i `mod` 6)
+
 >fromInt5 :: Int -> FiveD
 >fromInt5 0 = FiveD0
 >fromInt5 1 = FiveD1
@@ -551,29 +616,61 @@ to map indices.
 >                                (svec3 0 (cos alfa) (-sin alfa))
 >                                (svec3 0 (sin alfa) (cos alfa))
 
+>instance PpShow SevenD where { pp x = pp (toInt7 x) }
+>instance PpShow SixD  where { pp x = pp (toInt6 x) }
 >instance PpShow FiveD where { pp x = pp (toInt5 x) }
 >instance PpShow FourD where { pp x = pp (toInt4 x) }
 >instance PpShow ThreeD where { pp x = pp (toInt3 x) }
 >instance PpShow TwoD where { pp x = pp (toInt2 x) }
 >instance PpShow OneD where { pp x = pp (toInt1 x) }
 
-
->instance (Show b, Universe a) => Show (a -> b) where
+>-- Being careful here not to have Show (a -> b) instance, which would
+>-- violate Rice's theorem when 'a' is infinite. It's not nice to use
+>-- the Universe constraint on Show instances, as it made things like
+>-- ((+) :: Integer -> Integer -> Integer) showable, which is scary.
+>instance (Show b) => Show (OneD -> b) where
+>   show f = show [f i | i <- all_elements]
+>instance (Show b) => Show (TwoD -> b) where
+>   show f = show [f i | i <- all_elements]
+>instance (Show b) => Show (ThreeD -> b) where
+>   show f = show [f i | i <- all_elements]
+>instance (Show b) => Show (FourD -> b) where
+>   show f = show [f i | i <- all_elements]
+>instance (Show b) => Show (FiveD -> b) where
+>   show f = show [f i | i <- all_elements]
+>instance (Show b) => Show (SixD -> b) where
+>   show f = show [f i | i <- all_elements]
+>instance (Show b) => Show (SevenD -> b) where
 >   show f = show [f i | i <- all_elements]
 
->instance Show FiveD where
->   show x = show (toInt5 x)
+>instance Show SevenD where { show x = show (toInt7 x) }
+>instance Show SixD where { show x = show (toInt6 x) }
+>instance Show FiveD where { show x = show (toInt5 x) }
+>instance Show FourD where { show x = show (toInt4 x) }
+>instance Show ThreeD where { show x = show (toInt3 x) }
+>instance Show TwoD where { show x = show (toInt2 x) }
+>instance Show OneD where { show x = show (toInt1 x) }
 
->instance Show FourD where
->   show x = show (toInt4 x)
-
->instance Show ThreeD where
->   show x = show (toInt3 x)
->instance Show TwoD where
->   show x = show (toInt2 x)
->instance Show OneD where
->   show x = show (toInt1 x)
-
+>instance Num SevenD where
+>   x + y = fromInt7 (toInt7 x + toInt7 y)
+>   x - y = fromInt7 (toInt7 x - toInt7 y)
+>   x * y = fromInt7 (toInt7 x * toInt7 y)
+>   negate = fromInt7 . negate . toInt7
+>   abs = id
+>   signum SevenD0 = 0
+>   signum _ = 1
+>   fromInteger = fromInt7 . fromIntegral
+>
+>instance Num SixD where
+>   x + y = fromInt6 (toInt6 x + toInt6 y)
+>   x - y = fromInt6 (toInt6 x - toInt6 y)
+>   x * y = fromInt6 (toInt6 x * toInt6 y)
+>   negate = fromInt6 . negate . toInt6
+>   abs = id
+>   signum SixD0 = 0
+>   signum _ = 1
+>   fromInteger = fromInt6 . fromIntegral
+> 
 >instance Num FiveD where
 >   x + y = fromInt5 (toInt5 x + toInt5 y)
 >   x - y = fromInt5 (toInt5 x - toInt5 y)
@@ -615,6 +712,20 @@ to map indices.
 >   quotRem x y = let (a,b) = quotRem (toInt5 x) (toInt5 y) in (fromInt5 a,fromInt5 b)
 >   divMod x y = let (a,b) = divMod (toInt5 x) (toInt5 y) in (fromInt5 a, fromInt5 b)
 >   toInteger = toInteger . toInt5
+>instance Integral SixD where
+>   quot x y = fromInt6 (toInt6 x `quot` toInt6 y)
+>   rem x y = fromInt6 (toInt6 x `rem` toInt6 y)
+>   div x y = fromInt6 (toInt6 x `div` toInt6 y)
+>   quotRem x y = let (a,b) = quotRem (toInt6 x) (toInt6 y) in (fromInt6 a,fromInt6 b)
+>   divMod x y = let (a,b) = divMod (toInt6 x) (toInt6 y) in (fromInt6 a, fromInt6 b)
+>   toInteger = toInteger . toInt6
+>instance Integral SevenD where
+>   quot x y = fromInt7 (toInt7 x `quot` toInt7 y)
+>   rem x y = fromInt7 (toInt7 x `rem` toInt7 y)
+>   div x y = fromInt7 (toInt7 x `div` toInt7 y)
+>   quotRem x y = let (a,b) = quotRem (toInt7 x) (toInt7 y) in (fromInt7 a,fromInt7 b)
+>   divMod x y = let (a,b) = divMod (toInt7 x) (toInt7 y) in (fromInt7 a, fromInt7 b)
+>   toInteger = toInteger . toInt7
 
 >instance Integral OneD where
 >   quot x y = fromInt1 (toInt1 x `quot` toInt1 y)

@@ -25,8 +25,11 @@
 >  (<%) :: r -> q -> Bool
 >  (%>) :: q -> r -> Bool
 >  (>%) :: r -> q -> Bool
+>  is_apart :: r -> q -> r -> Bool
 >  x %> y = y <% x
 >  x >% y = y %< x
+>  is_apart x q y = (x <% q && q %< y) || (y <% q && q %< x)
+
 
 >class Approximations a where
 >   floating_approximations :: a -> Stream Double

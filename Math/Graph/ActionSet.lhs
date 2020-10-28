@@ -11,7 +11,7 @@
 >import Math.Tools.NaturalTransformation hiding (unyoneda)
 >import qualified Math.Tools.NaturalTransformation as NT
 
->newtype ASet a b = ASet { runASet :: (Action a) :~> (Action b) }
+>newtype ASet a b = ASet { runASet :: ((:<-:) a) :~> ((:<-:) b) }
 
 >instance Category ASet where
 >   id = ASet id_trans
@@ -20,8 +20,8 @@
 >arr_aset :: (a -> b) -> ASet a b
 >arr_aset = ASet . yoneda . Action
 
->liftASet :: Action b a -> ASet a b
+>liftASet :: b :<-: a -> ASet a b
 >liftASet = ASet . yoneda
 
->actionOf :: ASet  a b -> Action b a
+>actionOf :: ASet  a b -> b :<-: a
 >actionOf = unyoneda . runASet

@@ -2,7 +2,7 @@
 SHELL=/bin/sh
 #CABAL_CONFIG ?= ${HOME}/.cabal-8.4.2/config
 GHC_VERSION ?= 8.4.2
-CABALOPTS ?=
+CABALOPTS ?= 
 #CABALOPTS ?= --with-compiler ghc-$(GHC_VERSION)
 #CABALOPTS ?= --config-file=$(CABAL_CONFIG) --with-compiler ghc-$(GHC_VERSION)
 
@@ -44,6 +44,12 @@ build-cabal :
 
 build-stack :
 	$(STACK) build --fast cifl-math-library:lib
+
+build-prof :
+	$(STACK) build --fast cifl-math-library:lib --library-profiling --ghc-options "-rtsopts"
+
+build-gui-prof :
+	$(STACK) build --fast cifl-math-library:mathgui --executable-profiling 
 
 build-stack-llvm :
 	$(STACK) build --ghc-options="-fllvm -O3"

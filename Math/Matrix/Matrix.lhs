@@ -248,4 +248,3 @@ instance (Functor g, Functor f, Builder a) => Builder (Matrix g f a) where
 
 >matrix_iso :: f (g a) :==: (f :*: g) a
 >matrix_iso = Matrix <-> cells
-

@@ -31,7 +31,7 @@
 >data Dual v = Covector { bracketMap :: v -> (Scalar v) }
 >  deriving (Typeable, Generic)
 
->matrix_arrow :: (LinearTransform f g a) => (f :*: g) a -> LinearMap (f a) (g a)
+>matrix_arrow :: (Num a, LinearTransform f g a) => (f :*: g) a -> LinearMap (f a) (g a)
 >matrix_arrow m = LinearMap $ \v -> m <<*> v
 
 >contract :: (Dual :*: v) a -> (I :*: v) a ->  Scalar (v a)
@@ -236,7 +236,7 @@
 >instance (Semigroup v) => Semigroup (LinearMap v v) where
 >  (LinearMap f) <> (LinearMap g) = LinearMap (f <> g)
 
->instance (Semigroup v) => Monoid (LinearMap v v) where
+>instance (Semigroup v, VectorSpace v) => Monoid (LinearMap v v) where
 >  mempty = LinearMap id
 >  mappend (LinearMap f) (LinearMap g) = LinearMap (f . g)
 

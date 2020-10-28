@@ -46,6 +46,9 @@ dfunction f x y = x `fbind` \a -> y `fbind` (f a)
 
 ----
 
+>reduce2 :: (Applicative f) => (f a -> a) -> f (f a) -> a
+>reduce2 f = (pure f <*>) (pure f <*>)
+
 >outer' :: (Functor f) => (a -> f b -> b) -> f a -> f (f b)
 >outer' f x = x `mapf` \a -> outer' f x `mapf` \b -> f a b
 

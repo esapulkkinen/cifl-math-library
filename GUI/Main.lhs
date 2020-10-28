@@ -2,14 +2,18 @@
 >module Main where
 >import GUI.XClient
 >import GUI.XProto
+>import qualified Data.Text.IO as TIO
 >import Control.Concurrent
+>import Control.Monad
 >import qualified Control.Concurrent.Chan as Chan
 >import "network" Network.Socket
 >import Math.Tools.Cmdline
 >import Math.Tools.Maybe
 >import Data.Map
 >import Control.Exception
->import Data.Text
+>import Data.Text (Text, pack, unpack)
+>import qualified Data.Text as T
+>import System.Exit
 
 >errorHandler :: Either SomeException a -> IO a
 >errorHandler (Left e) = fail $ "Error: " ++ show e
@@ -35,8 +39,16 @@
 >   handleEvent resp reqmv
 >   mainloop reqmv respmv
 
+>usage :: Text
+>usage = pack $
+>      "  --display <host>:<displaynumber>.<screennumber>\n"
+>   ++ "  --debug [true|false]\n"
+
 >main = withSocketsDo $ do
 >  args <- parseCmdline
+>  when (Data.Map.null args) $ do
+>    TIO.putStrLn usage
+>    exitFailure
 >  putStrLn $ show args
 >  dpy <- runMaybe (Data.Map.lookup "display" args)
 >  reqmv <- newChan

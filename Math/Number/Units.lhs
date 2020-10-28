@@ -490,7 +490,7 @@
 > deriving newtype (Binary)
 >instance Show Intensity where { show = show_unit }
 
->newtype Frequency = Hertz { hertzs :: Double }
+>newtype Frequency = Hertzes { hertzes :: Double }
 > deriving (Eq,Ord, Typeable, Data, Generic)
 > deriving newtype (Binary)
 >instance Show Frequency where { show = show_unit }
@@ -706,10 +706,10 @@
 >   unitOf _ = "N m" -- notice not displayed similarly than joule.
 
 >instance Unit Frequency where
->   amount = hertzs
->   fromAmount = Hertz
+>   amount = hertzes
+>   fromAmount = Hertzes
 >   dimension _ = hertz_dimension
->   fromQuantity = fromQuantityDef hertz_dimension Hertz
+>   fromQuantity = fromQuantityDef hertz_dimension Hertzes
 >   unitOf _ = "Hz"
 >instance Unit Length where
 >   amount = meters
@@ -957,10 +957,10 @@
 >instance NormedSpace SolidAngle where { norm = amount }
 >instance VectorSpace Frequency where
 >   type Scalar Frequency = Double
->   vzero = Hertz 0
->   vnegate (Hertz x) = Hertz $ negate x
->   (Hertz x) %+ (Hertz y) = Hertz $ x + y
->   k %* (Hertz x) = Hertz $ k * x
+>   vzero = Hertzes 0
+>   vnegate (Hertzes x) = Hertzes $ negate x
+>   (Hertzes x) %+ (Hertzes y) = Hertzes $ x + y
+>   k %* (Hertzes x) = Hertzes $ k * x
 >instance NormedSpace Frequency where { norm = amount }
 >instance VectorSpace Temperature where
 >   type Scalar Temperature = Double

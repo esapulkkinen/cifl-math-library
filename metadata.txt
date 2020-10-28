@@ -20,6 +20,7 @@
 <meta name="dc.subject" content="CIFL math library"/>
 <meta name="dc.publisher" content="Esa Pulkkinen"/>
 <meta name="dc.type" content="Software"/>
+<meta name="dc.issued" content="2020"/>
 <meta name="dc.rights" content="Copyright 2000-2019, Esa Pulkkinen. All rights reserved."/>
 <meta name="dc.keywords" content="math, linear algebra, haskell"/>
 <meta name="dc.description" content="Software documentation for Haskell library for linear algebra"/>

@@ -48,3 +48,4 @@ interleave swaps arguments after every element.
 >permutations [] = [[]]
 >permutations xs = [ y : zs | (y,ys) <- selections xs,
 >                             zs <- permutations ys ]
+

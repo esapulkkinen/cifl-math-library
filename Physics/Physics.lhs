@@ -41,8 +41,8 @@ dAlembertian :: Dual (Vector4 (Complex R)) -> Dual (Vector4 (Complex R))
 
 >planewave omega k (Vector4 x y z t) = exp (negate (0 :+ 1) * omega * t + (0 :+ 1)*k*x)
 
-
-
+>ℏ :: (Floating a) => Quantity a
+>ℏ = reduced_planck_constant
 
 einstein_field_equation r g lam t = r - (r %*% g) / 2 + lam %* g == 8*pi*
 
@@ -57,19 +57,17 @@ kleingordon :: Complex R
 >kleingordon :: (Closed a, Infinitesimal a, RealFloat a, Show a)
 >   => Complex (Quantity a) -> Dual (FourVector a) -> Dual (FourVector a)
 >kleingordon m f = dAlembertian f %+ dconst (mu * mu)
->   where mu = m * (c / h)
+>   where mu = m * (c / (ℏ :+ 0))
 >         c = speed_of_light :+ 0          
->         h = reduced_planck_constant :+ 0
 
 >klein_gordon :: (Floating a, Show a, Closed a, Infinitesimal a) =>
 >   Quantity a -> Dual (Vector4 (Quantity a)) -> Dual (Vector4 (Quantity a))
 >klein_gordon mass f = Covector allterms
 >   where allterms v = firstterm v - secondterm v + thirdterm v
->         h2 = planck * planck
+>         h2 = ℏ * ℏ
 >         der2 = derivate4t . derivate4t          
->         mch = (mass * c) / planck
+>         mch = (mass * c) / ℏ
 >         c = speed_of_light
->         planck = reduced_planck_constant 
 >         firstterm v = (der2 f `bracket` v) / (c*c)
 >         secondterm v = laplace4 f `bracket` v
 >         thirdterm v = mch * mch * (f `bracket` v)
@@ -162,17 +160,26 @@ kleingordon :: Complex R
 >  spin_quantum_number_times_two  :: Integer }
 >  deriving (Read)
 
+>spin_quantum_number :: Electron -> Rational
+>spin_quantum_number e = spin_quantum_number_times_two e % 2
+
+>none :: Electron
+>none = Electron 0 0 0 0
+
 >orbital_name :: Integer -> String
 >orbital_name 0 = "s"
 >orbital_name 1 = "p"
 >orbital_name 2 = "d"
 >orbital_name 3 = "f"
->orbital_name i = chr (ord 'g' + (fromIntegral i-4)) : []
+>orbital_name i | i < 7 = chr (ord 'g' + (fromIntegral i-4)) : []
+>               | otherwise = chr (ord 'k' + (fromIntegral i-7)) : []
 
 >instance Show Electron where
->  show (Electron p a m s) = "Electron(" ++ show p ++ "," ++ show (orbital_name a) ++ "," ++ show m ++ "," ++ show ((fromIntegral s :: Rational)/2) ++ ")"
+>  show (Electron 0 0 0 0) = "None"
+>  show (Electron p a m s) = "Electron(" ++ show p ++ "," ++ orbital_name a ++ "," ++ show m ++ "," ++ show ((fromIntegral s :: Rational)/2) ++ ")"
 
 >instance PpShow Electron where
+>  pp (Electron 0 0 0 0) = pp "None"
 >  pp (Electron p a m s) = (pp "Electron(" <> pp p <> pp ",") <+> (pp (orbital_name a) <> pp ",") <+> (pp m <> pp ",") <+> (pp ((fromIntegral s :: Rational)/2) <> pp " )")
 
 >instance PpShow [[[Electron]]] where
@@ -200,8 +207,16 @@ electrons = (\ (p,a,m) ->
 >pamElectrons :: Stream [Electron]
 >pamElectrons = do (p,alst,mlstlst) <- pamQN
 >                  return $ do
->                     a <- alst
->                     mlst <- mlstlst
+>                     (a,mlst) <- zip alst mlstlst
 >                     m <- mlst
 >                     s <- [1,negate 1]
 >                     return $ Electron p a m s
+
+>electron_matrix :: (Stream :*: Stream) Electron
+>electron_matrix = Matrix $ fmap (\lst -> prefix lst $ constant none) pamElectrons
+
+>all_electrons :: Stream Electron
+>all_electrons = concatenate pamElectrons
+
+>electrons_of_element :: Integer -> [Electron]
+>electrons_of_element i = Stream.take i all_electrons

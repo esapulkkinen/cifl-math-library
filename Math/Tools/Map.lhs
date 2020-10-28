@@ -1,15 +1,17 @@
->{-# LANGUAGE FlexibleInstances, MultiParamTypeClasses, FlexibleContexts, Arrows #-}
+>{-# LANGUAGE Safe, FlexibleInstances, MultiParamTypeClasses, FlexibleContexts, Arrows #-}
+>{-# LANGUAGE LambdaCase #-}
 >{-# OPTIONS_GHC -fno-warn-orphans #-}
 >module Math.Tools.Map where
->import Prelude hiding (sequence,mapM)
->import Control.Monad (zipWithM)
->import Data.Maybe (fromJust,isJust)
->import Control.Arrow
->import Data.Map (Map)
->import qualified Data.Map as Map
->import Math.Tools.Arrow
->import Math.Tools.Universe
->import Math.Tools.FunctorM
+>import safe Prelude hiding (sequence,mapM)
+>import safe Control.Monad (zipWithM)
+>import safe Data.Maybe (fromJust,isJust)
+>import safe Control.Arrow
+>import safe Data.Char
+>import safe Data.Map (Map)
+>import safe qualified Data.Map as Map
+>import safe Math.Tools.Arrow
+>import safe Math.Tools.Universe
+>import safe Math.Tools.FunctorM
 
 import Maybe (fromJust, isJust)
 
@@ -186,3 +188,16 @@ that do not match in the maps are returned separately.
 >                          Map.filter isJust $
 >                            Map.map (\k -> Map.lookup k m2) m1
 >                                                            
+
+>count_frequency :: (Ord b) => (a -> b) -> [a] -> Map.Map b Integer
+>count_frequency f = let self = \case
+>                           [] -> Map.empty
+>                           (c:cr) -> Map.alter (maybe (Just 1) (Just . succ)) (f c) (self cr)
+>                     in self
+
+>-- | Benford's law: <https://en.wikipedia.org/wiki/Benford%27s_law>
+>benford :: (Show a) => a -> Char
+>benford = head . show
+
+>count_benford :: (Show a) => [a] -> Map.Map Char Integer
+>count_benford = count_frequency benford

@@ -67,6 +67,11 @@
 >  TDom -> Endo b
 >  TCod -> Endo c
 
+>instance MonoidArrow (->) Three Bool where
+>   monoidA TId = arr id
+>   monoidA TDom = arr (const False)
+>   monoidA TCod = arr (const True)
+
 >instance Universe Three where { all_elements = [TId,TDom,TCod] }
 >instance PpShow Three where
 >   pp TId = "id"
@@ -113,6 +118,7 @@
 >   monoidA FDom = arr (const False)
 >   monoidA FCod = arr (const True)
 >   monoidA FNot = arr not
+
 
 >instance Semigroup Four where
 >   (<>) = mappend_four
@@ -174,6 +180,10 @@
 >   Nothing      -> let edges = Map.elems edgemap
 >                       vertices = map fst edges ++ map snd edges
 >                    in if a `elem` vertices then a else error "edgesFromMapEndo: Cannot find vertex"
+
+>-- | from list of (v_i,e_i), the loopEndo contains edges e_i : v_i -> v_i
+>loopEndo :: (Eq a) => [(a,a)] -> Three -> Endo a
+>loopEndo lst = edgesEndo $ map (\(v,e) -> (v,(e,e))) lst
 
 >edgesEndo :: (Eq a) => [(a,(a,a))] -> Three -> Endo a
 >edgesEndo lst m = Endo $ \a -> case lookup a lst of
