@@ -1,4 +1,4 @@
->{-# LANGUAGE GADTs #-}
+>{-# LANGUAGE GADTs, TypeOperators #-}
 >{-# OPTIONS_HADDOCK hide, prune #-}
 >module Math.Tools.Lambda where
 >import Math.Tools.PrettyP
@@ -31,3 +31,5 @@
 >   pp (Var i) = pp '@' <> pp i
 >   pp (Lambda n e) = pp '\\' <> pp_list n <> pp "->" <> pp_level e 1
 >   pp (App f x) = pp_level f 1 <> pp ' ' <> pp_level x 2
+
+

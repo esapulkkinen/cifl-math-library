@@ -5,6 +5,7 @@
 >{-# LANGUAGE UnicodeSyntax, DeriveGeneric, DeriveDataTypeable #-}
 >{-# LANGUAGE ConstraintKinds, UndecidableInstances, OverloadedStrings #-}
 >{-# LANGUAGE QuantifiedConstraints #-}
+>{-# LANGUAGE GADTs #-}
 >-- | These should match standard definitions of vector spaces.
 >-- Used for reference: K. Chandrasekhara Rao: Functional Analysis.
 >-- also see Warner: Modern algebra.
@@ -27,6 +28,7 @@
 >import safe Math.Tools.FixedPoint
 >import safe Math.Tools.Universe
 >import safe Math.Tools.I
+>import safe Math.Tools.CoFunctor
 
 
 >infixl 7 %.%
@@ -34,20 +36,27 @@
 >infix 7 %.
 >infixl 6 %+
 >infixl 6 %-
->infixl 5 :*:
+>infixr 5 :*:
 >
 >-- | The primary data type for matrices.
 >-- Note that indices are represented in the functors,
->-- If you want to use numeric indices, use 'Math.Matrix.Simple'. 
+>-- If you want to use numeric indices, use 'Math.Matrix.Simple'.
+>-- This can be viewed as a bicategory with one object ('a').
+>-- <https://ncatlab.org/nlab/show/bicategory>
+>-- or as a monoidal category <https://ncatlab.org/nlab/show/monoidal+category>
+>-- or as a matrix over a base field 'a' <https://ncatlab.org/nlab/show/matrix>
+>-- or as a tensor product of functors 'f' and 'g' <https://ncatlab.org/nlab/show/tensor+product>
+>-- or as a composition of functors 'f' and 'g'
 >newtype (f :*: g) a = Matrix { cells :: f (g a) }
 >  deriving (Typeable, Data, Generic)
 
 
-
 >-- | This method of matrix construction is especially nice.
+>-- This is the functoriality of the tensor product.
 >matrix :: (Functor m, Functor n) => (a -> b -> c) -> m a -> n b -> (m :*: n) c
 >matrix f x y = Matrix $ flip fmap x $ \a -> 
 >                        flip fmap y $ \b -> f a b
+
 
 
 >applicativeMatrix :: (Applicative f, Functor m, Functor n)
@@ -119,11 +128,20 @@
 >  (<*>>) :: n a -> (m :*: n) a -> m a -- ^ vector times matrix
 >  (<<*>) :: (m :*: n) a -> m a -> n a -- ^ matrix times vector
 
+>data Lin b c where
+>  Lin :: (f :*: g) a -> Lin (f a) (g a)
 
 >class (Functor m, Functor n) => Transposable m n where
 >  transpose :: (m :*: n) a -> (n :*: m) a
 
 >type Index m a = m a -> a
+
+>update_column :: (Applicative h) => (a -> f b -> g c) -> h a -> (h :*: f) b -> (h :*: g) c
+>update_column f col (Matrix m) = Matrix $ fmap f col <*> m
+
+>update_row :: (a -> f (g b) -> f' (g' b')) -> a -> (f :*: g) b -> (f' :*: g') b'
+>update_row f row (Matrix m) = Matrix $ f row m
+
 
 
 >class (Applicative m) => Indexable m where
@@ -277,8 +295,6 @@ eigenvectors_generic m a = Matrix $ fmap (fix . (a %/)) (eigenvalues m)
 
 >fold_rows :: (Functor m) => (n a -> b) -> (m :*: n) a -> m b
 >fold_rows f (Matrix x) = fmap f x
-
-
 
 >fold_columns :: (Functor n, Transposable m n) 
 >              => (m a -> b) -> (m :*: n) a -> n b
@@ -744,3 +760,19 @@ instance (Functor m) => Unital (:*:) m where
 >instance (Alternative f, Alternative g) => Alternative (g :*: f) where
 >   empty = Matrix Applicative.empty
 >   (Matrix a) <|> (Matrix b) = Matrix $ pure (<|>) <*> a <*> b
+
+>left_unitor :: (I :*: f) a -> f a
+>left_unitor (Matrix (I x)) = x
+
+>right_unitor :: (Functor f) => (f :*: I) a -> f a
+>right_unitor (Matrix f) = fmap unI f
+
+>associator :: (Functor f) => ((f :*: g) :*: h) a -> (f :*: (g :*: h)) a
+>associator (Matrix f) = Matrix $ fmap Matrix $ cells f
+>
+>unassociator :: (Functor f) => (f :*: (g :*: h)) a -> ((f :*: g) :*: h) a
+>unassociator (Matrix f) = Matrix $ Matrix $ fmap cells f
+
+>instance (Functor f, Functor g, Num a, StandardBasis (g a), StandardBasis (f a))
+>   => StandardBasis ((f :*: g) a) where
+>   unit_vectors = concat $ cells $ matrix (matrix (*)) unit_vectors unit_vectors

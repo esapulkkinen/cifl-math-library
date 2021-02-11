@@ -1,4 +1,5 @@
 >{-# LANGUAGE Trustworthy, CPP #-}
+>{-# LANGUAGE FlexibleContexts #-}
 >--  JSON uses Text.JSON package from <https://hackage.haskell.org/package/json>
 >module Math.Graph.JSON where
 >import qualified Text.JSON as JSON
@@ -10,7 +11,7 @@
 >import Data.Set (Set)
 >import qualified Data.Set as Set
 
->digraphToJSON :: (Monad m, GraphMonoid mon) => InGraphM mon String m JSON.JSValue
+>digraphToJSON :: (Monad m, GraphMonoid mon String) => InGraphM mon String m JSON.JSValue
 >digraphToJSON = do edges <- linksM
 >                   let edges' = JSON.makeObj $ concatMap 
 >                        (\(e,f,t) ->  [(e,JSON.makeObj [("from",JSON.showJSON f),
@@ -20,5 +21,5 @@
 >                   return $ JSON.makeObj [("vertices",JSON.showJSON vertices),
 >                                          ("edges",JSON.showJSON edges')]
 
->digraphToJSONString :: (Monad m, GraphMonoid mon) => InGraphM mon String m String
+>digraphToJSONString :: (Monad m, GraphMonoid mon String) => InGraphM mon String m String
 >digraphToJSONString = digraphToJSON >>= (return . JSON.encode)

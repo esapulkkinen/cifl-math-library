@@ -1,5 +1,6 @@
 >{-# LANGUAGE Safe,FlexibleContexts, FlexibleInstances, MultiParamTypeClasses, FunctionalDependencies, TypeOperators, TypeFamilies, DeriveGeneric, DeriveDataTypeable #-}
->{-# LANGUAGE OverloadedStrings #-}
+>{-# LANGUAGE OverloadedStrings, UndecidableInstances #-}
+>{-# LANGUAGE GADTs #-}
 >-- | Graph representation as a set with action of a monoid.
 >-- See Lawvere,Rosebrugh: Sets for Mathematics for details.
 >--
@@ -58,41 +59,35 @@
 >-- the action_endomorphism is then used to convert it to actual operation.
 >data Graph m a = Graph {
 > elements :: !(Set a),
-> action_endomorphism :: m -> Endo a }
+> action_endomorphism :: m a a -> Endo a }
 >  deriving (Typeable, Generic)
 
->semigroup_graph :: (Semigroup a) => Set a -> Graph a a
->semigroup_graph s = Graph s (\x -> Endo $ \y -> x <> y)
->
->semigroup_opposite_graph :: (Semigroup a) => Set a -> Graph a a
->semigroup_opposite_graph s = Graph s (\x -> Endo $ \y -> y <> x)
+>idG :: (Monoid m) => Graph GEndo m
+>idG = monoidG (Set.singleton mempty)
 
->monoid_graph :: (Monoid a) => Set a -> Graph a a
->monoid_graph s = Graph s (\x -> Endo $ \y -> mappend x y)
+>monoidG :: Set a -> Graph GEndo a
+>monoidG s = Graph s (\ (GEndo x) -> x)
 
->monoid_opposite_graph :: (Monoid a) => Set a -> Graph a a
->monoid_opposite_graph s = Graph s (\x -> Endo $ \y -> mappend y x)
-
->action :: Graph m a -> a -> m -> a
+>action :: Graph m a -> a -> m a a -> a
 >action g x m = action_endomorphism g m `appEndo` x
 
->action_rep :: Graph m a -> Endo a :<-: m
+>action_rep :: Graph m a -> Endo a :<-: m a a
 >action_rep = Action.Action . action_endomorphism 
 
->inverseImageG :: (m -> n) -> Graph n a -> Graph m a
+>inverseImageG :: (m a a -> n a a) -> Graph n a -> Graph m a
 >inverseImageG f (Graph s act) = Graph s (act . f)
 
->instance (Eq a, Universe m) => Eq (Graph m a) where
+>instance (Eq a, Universe (m a a)) => Eq (Graph m a) where
 >  g@(Graph s _) == g'@(Graph s' _) = s == s' &&
 >    and [ action g sx i == action g' sx i | i <- all_elements, sx <- Set.toList s]
 
->instance (Ord a, Universe m) => Ord (Graph m a) where
+>instance (Ord a, Universe (m a a)) => Ord (Graph m a) where
 >  g@(Graph s _) <= g'@(Graph s' _) = s <= s' &&
 >    and [ action g sx i <= action g' sy i | i <- all_elements, 
 >          sx <- Set.toList s,
 >          sy <- Set.toList s']
 
->instance (MedianAlgebra a, Universe m) => MedianAlgebra (Graph m a) where
+>instance (MedianAlgebra a, Universe (m a a)) => MedianAlgebra (Graph m a) where
 >   med g@(Graph e _) g'@(Graph e' _) g''@(Graph e'' _) =
 >     Graph (map3 med e e' e'') (\m -> Endo $
 >                                 \a -> med (action g a m)
@@ -116,40 +111,29 @@
 >edgeG :: (Ord a) => a -> a -> a -> Graph Three a
 >edgeG e x y = Graph (Set.fromList [e,x,y]) (edgesEndo [(e,(x,y))])
 
->-- | <https://en.wikipedia.org/wiki/Module_(mathematics)>
->scalarVectorG :: (VectorSpace v) => Set v -> Graph (Scalar v) v
->scalarVectorG g = binopG g (%*)
 
->-- graph whose actions insert elements to the list
->listG :: [a] -> Graph a [a]
->listG lst = binopG (Set.singleton lst) (:)
+vectorG :: Set a -> Graph Lin a
+vectorG v = Graph v $ \ (Lin m) -> Endo $ \w -> m <<*> w
 
->plusVectorG :: (VectorSpace v) => Graph v v
->plusVectorG = binopG (Set.singleton vzero) (%+)
-
->integerG :: (Num a) => Graph a a
->integerG = binopG (Set.singleton 0) (+)
-
->vectorG :: (LinearTransform v v a) => Set (v a) -> Graph ((v :*: v) a) (v a)
->vectorG v = Graph v $ \m -> Endo $ \w -> m <<*> w
-
->appG :: Set a -> Graph (a -> a) a
+>appG :: Set a -> Graph (->) a
 >appG p = Graph p Endo
 
->binopG :: Set b -> (a -> b -> b) -> Graph a b
+>binopG :: Set b -> (arr b b -> b -> b) -> Graph arr b
 >binopG x op = Graph x $ \i -> Endo $ \j -> op i j
 
->outerG :: (Ord a, Ord b) => Graph m a -> Graph n b -> Graph (m,n) (a,b)
 >outerG (Graph e act) (Graph e' act') = Graph ee ract
 >   where ee = joinSet $ outerSet (,) e e'
 >         ract (m,n) = Endo $ \(a,b) -> (act m `appEndo` a, act' n `appEndo` b)
 
+>data EitherMonoid m a b where
+>   EitherMonoid :: m a a -> m b b -> EitherMonoid m (Either a b) (Either a b)
+
 >discriminatedUnionG :: (Ord a, Ord b)
->                    => Graph m a -> Graph m b -> Graph m (Either a b)
+>                    => Graph m a -> Graph m b -> Graph (EitherMonoid m) (Either a b)
 >discriminatedUnionG (Graph e act) (Graph e' act') = Graph ee ract
 >   where ee = Set.map Left e `Set.union` Set.map Right e'
->         ract m = Endo $ either (\a -> Left $ act m `appEndo` a)
->                                (\b -> Right $ act' m `appEndo` b)
+>         ract (EitherMonoid m n) = Endo $ either (\a -> Left $ act m `appEndo` a)
+>                                                 (\b -> Right $ act' n `appEndo` b)
 
 >intersectionG :: (Ord a) => Graph m a -> Graph m a -> Graph m a
 >intersectionG g1 g2 = Graph ee ract
@@ -158,7 +142,7 @@
 >                                  e2 = action_endomorphism g2 m `appEndo` z
 >                               in if e1 == e2 then e1 else error "intersectionG: ambiguous"
 
->complementG :: (ReversibleGraphMonoid m) => Graph m a -> Graph m a
+>complementG :: (ReversibleGraphMonoid m a) => Graph m a -> Graph m a
 >complementG (Graph e act) = Graph e ract
 >   where ract m = act (m `mappend` gnot)
 
@@ -169,7 +153,7 @@
 >   mempty = emptyG
 >   mappend = unionG
 
->instance (Ord a, Show a, ReversibleGraphMonoid m) => SetLike (Graph m a) where
+>instance (Ord a, Show a, ReversibleGraphMonoid m a) => SetLike (Graph m a) where
 >   sintersection = intersectionG
 >   sunion = unionG
 >   scomplement = complementG
@@ -220,15 +204,15 @@
 >reversibleToDirectedG = inverseImageG three_to_four
 
 >-- | inverts all edges
->inverseGraphG :: (Group m) => Graph m a -> Graph m a
+>inverseGraphG :: (Group (m a a)) => Graph m a -> Graph m a
 >inverseGraphG = inverseImageG ginvert
 
 >-- | mapG uses an isomorphism of graph elements to permute a graph.
->mapG :: (Ord a,Ord b) => a :==: b -> (Graph m a) :==: (Graph m b)
+>mapG :: (Arrow m, Ord a,Ord b) => a :==: b -> (Graph m a) :==: (Graph m b)
 >mapG f =  (\ (Graph s act) -> Graph (Set.map (f =<) s) $
->                              \m -> amap f =< (act m))
+>                              \m -> amap f =< (act (arr (isomorphism_section f) . m . arr (isomorphism_epimorphism f))))
 >      <-> (\ (Graph s act) -> Graph (Set.map ((invertA f) =<) s) $
->                              \m -> amap (invertA f) =< (act m))
+>                              \m -> amap (invertA f) =< (act (arr (isomorphism_epimorphism f) . m . arr (isomorphism_section f))))
 
 >reversibleEdgeG :: (Ord a) => a -> a -> a -> a -> Graph Four a
 >reversibleEdgeG e re x y = reversibleEdgesG [((e,re),(x,y))]

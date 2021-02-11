@@ -121,10 +121,10 @@ instance Comonad ((,) a :*: (->) a) where
 >              => (m :*: f) (a -> b) -> (n :*: f) a -> (m :*: n) (f b)
 >apply_columns (Matrix a) (Matrix b) = matrix (<*>) a b
 
->matrixAssoc :: (Functor f) => (f :*: g :*: h) a -> (f :*: (g :*: h)) a
+>matrixAssoc :: (Functor f) => ((f :*: g) :*: h) a -> (f :*: (g :*: h)) a
 >matrixAssoc (Matrix (Matrix x)) = Matrix (fmap Matrix x)
 
->matrixUnassoc :: (Functor f) => (f :*: (g :*: h)) a -> (f :*: g :*: h) a
+>matrixUnassoc :: (Functor f) => (f :*: (g :*: h)) a -> ((f :*: g) :*: h) a
 >matrixUnassoc (Matrix x) = Matrix $ Matrix $ fmap cells x
 
 >matrixLeftId :: (I :*: f) a -> f a

@@ -6,6 +6,10 @@
 >import Control.Arrow
 >import Math.Tools.Arrow
 
+>monoid_power :: (Monoid m, Eq z, Num z) => m -> z -> m
+>monoid_power _ 0 = mempty
+>monoid_power x i = x `mappend` monoid_power x (i-1)
+
 >newtype Elementwise a = Elementwise a
 
 >instance (Semigroup a, Applicative f) => Semigroup (Elementwise (f a)) where

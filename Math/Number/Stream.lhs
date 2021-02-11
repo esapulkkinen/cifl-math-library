@@ -83,6 +83,14 @@ import qualified Model.Nondeterminism as Nondet
 >matrix_powers x = Pre (identity $ vector_dimension $ diagonal x)
 >                $ fmap (x %*%) $ matrix_powers x
 
+>power_series_powers :: (Num a) => Stream a -> (Stream :*: Stream) a
+>power_series_powers s = Matrix $ Pre 1 $ fmap (s *) $ cells $ power_series_powers s
+
+>compose_power_series :: (Limiting a, Num a) => Stream a -> Stream a -> Stream a
+>compose_power_series a b = ssum $ fmap (liftA2 (*) a) $ cells $ power_series_powers b
+
+>power_series_exp :: (Fractional a, Limiting a) => Stream a -> Stream a
+>power_series_exp = compose_power_series exponential_stream
 
 
 >matrix_exponential_stream :: (Fractional (Scalar ((g :*: g) a)), Num ((g :*: g) a),
@@ -564,7 +572,7 @@ instance (Num a) => Matrix.VectorSpace ((Stream :*: Stream) a) where
 >-- Good exposition exists in http://en.wikipedia.org/wiki/Formal_power_series
 >--
 >-- the (*) operation is specific to ordinary generating function interpretation, i.e.
->-- convolution/Cauchy product
+>-- discrete convolution/Cauchy product
 >--
 >-- \[(xy)_k = \sum_{i+j=k}x_iy_j\]
 >-- \[OGF_{xy}(z) = \sum_{k=0}^{\infty}\sum_{i+j=k}x_iy_jz^k\]
@@ -578,11 +586,20 @@ instance (Num a) => Matrix.VectorSpace ((Stream :*: Stream) a) where
 >   x * y = fmap sum_seq $ codiagonals_seq $ matrix (*) x y
 >   fromInteger i = Pre (fromInteger i) zero
 
+>fromComplex :: (RealFloat a) => Complex a -> Stream (Complex a)
+>fromComplex c = Pre c zero
+
 >adjusted_sequence_product :: (Fractional a) => Stream a -> Stream a -> Stream a
 >adjusted_sequence_product x y = fmap average_seq $ codiagonals_seq $ matrix (*) x y
 
 >average_seq :: (Fractional a) => Seq.Seq a -> a
 >average_seq s = sum_seq s / fromIntegral (Seq.length s)
+
+>-- <https://en.wikipedia.org/wiki/Cauchy_product>
+>convolution_product_matrix :: (Functor m, Functor n, Num a)
+>  => (m :*: Stream) a -> (n :*: Stream) a -> (m :*: n) (Stream a)
+>convolution_product_matrix (Matrix a) (Matrix b)
+> = matrix ((*) :: (Num a) => Stream a -> Stream a -> Stream a) a b
 
 >sum_seq :: (Num a) => Seq.Seq a -> a
 >sum_seq = foldr (+) 0
@@ -1254,7 +1271,7 @@ matrix_convolution_product :: (Num a) => (Stream :*: Stream) a -> (Stream :*: St
 >s_z3 :: (Num a) => Stream (Stream (Stream a))
 >s_z3 = Pre s_z2 0
 
->z3_matrix :: (Num a) => (Stream :*: Stream :*: Stream) a
+>z3_matrix :: (Num a) => ((Stream :*: Stream) :*: Stream) a
 >z3_matrix = Matrix (Matrix s_z3)
 
 >log_stream :: (Num a) => (Stream :*: Stream) a

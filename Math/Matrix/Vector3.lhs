@@ -187,6 +187,16 @@
 >set_vector_action :: Vector3 s -> Vector3 (Vector3 s -> Vector3 s)
 >set_vector_action (Vector3 x y z) = Vector3 (setx3 x) (sety3 y) (setz3 z)
 
+>-- | update_column3 v is a vector of all update operations that replace one row with 'v'
+>update_row3 :: g a -> Vector3 ((Vector3 :*: g) a -> (Vector3 :*: g) a)
+>update_row3 x = Vector3 (update_row setx3 x) (update_row sety3 x) (update_row setz3 x)
+
+>-- | update_column3 v is a vector of all update operations that replace one column with 'v'
+>-- example use:
+>-- update_column3 (Vector3 3 4 5) `ycoord3` identity3 == [[1,3,0],[0,4,0],[0,5,1]].
+>update_column3 :: (Applicative f) => f a -> Vector3 ((f :*: Vector3) a -> (f :*: Vector3) a)
+>update_column3 x = Vector3 (update_column setx3 x) (update_column sety3 x) (update_column setz3 x)
+
 >removex3 :: Vector3 a -> Vector2 a
 >removex3 (Vector3 _ y z) = Vector2 y z
 
@@ -232,8 +242,8 @@
 >                 (\ (Vector3 x y z) -> Vector3 x y (p %* z))
 
 >add3Matrix :: (VectorSpace a) => Scalar a 
->         -> (Vector3 :*: Vector3 :*: Vector3) a
->         -> (Vector3 :*: Vector3 :*: Vector3) a
+>         -> ((Vector3 :*: Vector3) :*: Vector3) a
+>         -> ((Vector3 :*: Vector3) :*: Vector3) a
 >add3Matrix p m = Matrix (add3 p <*> (cells m))
 
 >add3 :: (VectorSpace s)
@@ -989,7 +999,7 @@ instance FractionalSpace (Vector3 (Complex R)) where
 >   inverse = inverse3
 >
 >-- | <https://en.wikipedia.org/wiki/Levi-Civita_symbol>
->levi_civita3 :: (Vector3 :*: Vector3 :*: Vector3) Int
+>levi_civita3 :: ((Vector3 :*: Vector3) :*: Vector3) Int
 >levi_civita3 = matrix m (matrix (,) indexable_indices indexable_indices) indexable_indices
 >  where m (x,y) z | x == 0 && y == 1 && z == 2 = 1
 >                  | x == 1 && y == 2 && z == 0 = 1

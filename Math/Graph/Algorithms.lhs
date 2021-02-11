@@ -16,10 +16,10 @@
 >import Math.Graph.InGraphMonad
 
 >-- | Compute depth first search on a graph, starting from a given root vertex.
->dfsM :: (Monad m, Ord a, GraphMonoid mon) => a -> InGraphM mon a m [a]
+>dfsM :: (Monad m, Ord a, GraphMonoid mon a) => a -> InGraphM mon a m [a]
 >dfsM root = evalStateT (dfsIntM root) Set.empty
 
->dfsIntM :: (Monad m, Ord a, GraphMonoid mon) => a -> StateT (Set a) (InGraphM mon a m) [a]
+>dfsIntM :: (Monad m, Ord a, GraphMonoid mon a) => a -> StateT (Set a) (InGraphM mon a m) [a]
 >dfsIntM root = do
 >   excludeSet <- get
 >   if root `Set.member` excludeSet then return [] else do
@@ -32,10 +32,10 @@
 >-- | <https://en.wikipedia.org/wiki/Breadth-first_search Breadth first search>:
 >-- bfsM produces a map from child to parent nodes in a bfs tree.
 
->bfsM :: (Monad m, Ord n, GraphMonoid mon) => n -> InGraphM mon n m (Map n n)
+>bfsM :: (Monad m, Ord n, GraphMonoid mon n) => n -> InGraphM mon n m (Map n n)
 >bfsM root = evalStateT bfsIntM (Q.singleton root, Map.singleton root 0)
 
->bfsIntM :: (Monad m, GraphMonoid mon, Ord n) => StateT (Queue n, Map n Integer) (InGraphM mon n m) (Map n n)
+>bfsIntM :: (Monad m, GraphMonoid mon n, Ord n) => StateT (Queue n, Map n Integer) (InGraphM mon n m) (Map n n)
 >bfsIntM = do
 >   (q,distmap) <- get
 >   case Q.dequeue q of
@@ -53,14 +53,14 @@
 
 
 >-- | Spanning tree rooted at a given graph vertex.
->spanningTreeM :: (Monad m, GraphMonoid mon, Ord n) => n -> InGraphM mon n m (Tree n)
+>spanningTreeM :: (Monad m, GraphMonoid mon n, Ord n) => n -> InGraphM mon n m (Tree n)
 >spanningTreeM n = evalStateT (spanningTreeIntM n) (Set.empty)
 >
 >-- | Spanning forest rooted at the given list of vertices.
->spanningForestM :: (Monad m, GraphMonoid mon, Ord n) => [n] -> InGraphM mon n m (Forest n)
+>spanningForestM :: (Monad m, GraphMonoid mon n, Ord n) => [n] -> InGraphM mon n m (Forest n)
 >spanningForestM lst = evalStateT (spanningForestIntM lst) (Set.empty)
 
->spanningTreeIntM :: (Monad m, GraphMonoid mon, Ord n) => n -> StateT (Set n) (InGraphM mon n m) (Tree n)
+>spanningTreeIntM :: (Monad m, GraphMonoid mon n, Ord n) => n -> StateT (Set n) (InGraphM mon n m) (Tree n)
 >spanningTreeIntM n = do
 >   modify (Set.insert n)
 >   excludeSet' <- get
@@ -69,6 +69,6 @@
 >   forest  <- spanningForestIntM (Set.toList (nodeset Set.\\ excludeSet'))
 >   return $ Node n forest
 
->spanningForestIntM :: (Monad m, GraphMonoid mon, Ord n)
+>spanningForestIntM :: (Monad m, GraphMonoid mon n, Ord n)
 >                => [n] -> StateT (Set n) (InGraphM mon n m) (Forest n)
 >spanningForestIntM lst = mapM spanningTreeIntM lst

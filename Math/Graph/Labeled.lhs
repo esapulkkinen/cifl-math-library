@@ -31,7 +31,7 @@
 >liftReaderLGraph :: (Monad m) => InLGraphM mon lbl e m a -> ReaderT (LGraph lbl mon e) m a
 >liftReaderLGraph m = ask >>= \g -> lift (inLabeledGraphM g m)
 >
->instance (Monad m, Ord e, GraphMonoid mon) => GraphMonad (ReaderT (LGraph lbl mon e) m) e where
+>instance (Monad m, Ord e, GraphMonoid mon e) => GraphMonad (ReaderT (LGraph lbl mon e) m) e where
 >   gisVertex = liftReaderLGraph . gisVertex
 >   gsource = liftReaderLGraph . gsource
 >   gtarget = liftReaderLGraph . gtarget
@@ -42,16 +42,16 @@
 >   gedgesEndingTo = liftReaderLGraph . gedgesEndingTo
 >   glinks = liftReaderLGraph glinks
 >
->instance (Monad m, Ord e, ReversibleGraphMonoid mon) => ReversibleGraphMonad (ReaderT (LGraph lbl mon e) m) e where
+>instance (Monad m, Ord e, ReversibleGraphMonoid mon e) => ReversibleGraphMonad (ReaderT (LGraph lbl mon e) m) e where
 >   ginverse = liftReaderLGraph . ginverse
 >   greversibleLinks = liftReaderLGraph greversibleLinks
 
->instance (Monad m, Ord e, GraphMonoid mon) => LabeledGraphMonad (ReaderT (LGraph lbl mon e) m) lbl e where
+>instance (Monad m, Ord e, GraphMonoid mon e) => LabeledGraphMonad (ReaderT (LGraph lbl mon e) m) lbl e where
 >   glabelOf e = ask >>= (return . (`labelOf` e))
 >   gfind lbl = ask >>= (return . (`elementByLabel` lbl))
 
 
->instance (Monad m, Ord e, GraphMonoid mon) => LabeledGraphMonad (InLGraphM mon lbl e m) lbl e where
+>instance (Monad m, Ord e, GraphMonoid mon e) => LabeledGraphMonad (InLGraphM mon lbl e m) lbl e where
 >   glabelOf e = InLGraphM $ glabelOf e
 >   gfind lbl = InLGraphM $ gfind lbl
 
@@ -78,7 +78,7 @@
 >   lift = InLGraphM . lift
 >
 >
->instance (Ord e, Monad m, GraphMonoid mon) => GraphMonad (InLGraphM mon lbl e m) e where
+>instance (Ord e, Monad m, GraphMonoid mon e) => GraphMonad (InLGraphM mon lbl e m) e where
 >   gisVertex  = liftLabelM . gisVertex 
 >   gsource = liftLabelM . gsource 
 >   gtarget = liftLabelM . gtarget 
@@ -89,6 +89,6 @@
 >   gedgesEndingTo = liftLabelM . gedgesEndingTo
 >   glinks = liftLabelM glinks
 >
->instance (Ord e, Monad m, ReversibleGraphMonoid mon) => ReversibleGraphMonad (InLGraphM mon lbl e m) e where
+>instance (Ord e, Monad m, ReversibleGraphMonoid mon e) => ReversibleGraphMonad (InLGraphM mon lbl e m) e where
 >   ginverse = liftLabelM . ginverse 
 >   greversibleLinks = liftLabelM greversibleLinks

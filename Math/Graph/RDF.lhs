@@ -1,4 +1,5 @@
 >{-# LANGUAGE OverloadedStrings, Trustworthy #-}
+>{-# LANGUAGE FlexibleContexts #-}
 >module Math.Graph.RDF where
 >import Data.RDF
 >import safe qualified Data.Map as Map
@@ -68,7 +69,7 @@
 >rdfVertex v = [triple (bnode v) vertexNameURI (lnode $ plainL v)]
 
 
->graphsToRDF :: (Monad m, ReversibleGraphMonoid mon)
+>graphsToRDF :: (Monad m, ReversibleGraphMonoid mon Text)
 >  => Text -> Map Text (Graph mon Text) -> m (Map Text (RDF TList))
 >graphsToRDF graphURL m = do
 >  graphTriples <- MapTools.mapByKeyM (\k g -> inGraphM g $ namedGraphToTriples k) m
@@ -76,7 +77,7 @@
 >             (PrefixMappings $ Map.singleton "graph" baseURL)
 >  return $ Map.mapWithKey rdf graphTriples
 
->namedGraphToTriples :: (Monad m, ReversibleGraphMonoid mon)
+>namedGraphToTriples :: (Monad m, ReversibleGraphMonoid mon Text)
 >  => Text -> InGraphM mon Text m Triples
 >namedGraphToTriples graphname = do
 >   let gnode = bnode graphname
@@ -87,7 +88,7 @@
 >   let linkTriples = Set.map (\((l,_),(_,_)) -> triple gnode linksURI (unode l)) links
 >   return $ triples ++ (Set.toList $ vertTriples `Set.union` linkTriples)
 
->graphToTriples :: (Monad m, ReversibleGraphMonoid mon)
+>graphToTriples :: (Monad m, ReversibleGraphMonoid mon Text)
 >  => InGraphM mon Text m Triples
 >graphToTriples = do
 >   v <- gvertices
@@ -97,7 +98,7 @@
 >   let verts = concat $ Set.toList (Set.map rdfVertex v)
 >   return $ links ++ verts
 
->graphToRDF :: (Monad m, ReversibleGraphMonoid mon)
+>graphToRDF :: (Monad m, ReversibleGraphMonoid mon Text)
 >  => Text -> InGraphM mon Text m (RDF TList)
 >graphToRDF graphURL = do
 >   triples <- graphToTriples

@@ -815,5 +815,29 @@ authors.
     <summary>nCatLab</summary>
     <field name="url">https://ncatlab.org</field>
     <field name="genre">wiki</field>
+    <field name="hasPart" type="WebPage">
+      <summary name="name">Bicategory</summary>
+      <field name="url">http://ncatlab.org/nlab/show/bicategory</field>
+    </field>
+    <field name="hasPart" type="WebPage">
+      <summary name="name">Monoidal category</summary>
+      <field name="url">http://ncatlab.org/nlab/show/monoidal+category</field>
+    </field>
+    <field name="hasPart" type="WebPage">
+      <summary name="name">Matrix</summary>
+      <field name="url">http://ncatlab.org/nlab/show/matrix</field>
+    </field>
+    <field name="hasPart" type="WebPage">
+      <summary name="name">Tensor product</summary>
+      <field name="url">http://ncatlab.org/nlab/show/tensor+product</field>
+    </field>
+    <field name="hasPart" type="WebPage">
+      <summary name="name">Natural transformation</summary>
+      <field name="url">http://ncatlab.org/nlab/show/natural+transformation</field>
+    </field>
+    <field name="hasPart" type="WebPage">
+      <summary name="name">Idempotent monad</summary>
+      <field name="url">http://ncatlab.org/nlab/show/idempotent+monad</field>
+    </field>
   </WebSite>
 </bibliography>

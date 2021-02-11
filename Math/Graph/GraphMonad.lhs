@@ -26,16 +26,16 @@
 >runGraphActionM :: (a -> g -> a) -> GraphM g a -> a
 >runGraphActionM f (GraphM (action,res)) = f res action
 
->actionM :: (Monad m, Ord a) => Graph mon a -> mon -> a -> m a
+>actionM :: (Monad m, Ord a) => Graph mon a -> mon a a -> a -> m a
 >actionM g m x = inGraphM g (x `actM` m)
   
->source :: (Monad m, GraphMonoid mon, Ord a) => Graph mon a -> a -> m a
+>source :: (Monad m, GraphMonoid mon a, Ord a) => Graph mon a -> a -> m a
 >source g = actionM g gdom
 
->target :: (Monad m, GraphMonoid mon, Ord a) => Graph mon a -> a -> m a
+>target :: (Monad m, GraphMonoid mon a, Ord a) => Graph mon a -> a -> m a
 >target g = actionM g gcod
 
->inverseGM :: (Monad m, ReversibleGraphMonoid mon, Ord a) => Graph mon a -> a -> m a
+>inverseGM :: (Monad m, ReversibleGraphMonoid mon a, Ord a) => Graph mon a -> a -> m a
 >inverseGM g = actionM g gnot
 
 

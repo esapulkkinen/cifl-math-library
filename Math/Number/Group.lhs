@@ -17,6 +17,11 @@
 >class (Monoid g) => Group g where
 >   ginvert :: g -> g
 
+>group_power :: (Group g, Ord z, Num z) => g -> z -> g
+>group_power _ 0 = mempty
+>group_power x i | i > 0 = x `mappend` group_power x (i-1)
+>                | otherwise = ginvert x `mappend` group_power x (i+1)
+
 
 >class SetLike s where
 >   sintersection :: s -> s -> s

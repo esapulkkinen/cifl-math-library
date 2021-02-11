@@ -1,11 +1,12 @@
->{-# LANGUAGE Safe,DataKinds, MultiParamTypeClasses, GADTs, FlexibleInstances, FlexibleContexts, UndecidableInstances, TypeOperators, KindSignatures, TypeFamilies, ExistentialQuantification, ScopedTypeVariables, TypeOperators, AllowAmbiguousTypes #-}
->{-# LANGUAGE OverloadedStrings #-}
+>{-# LANGUAGE Trustworthy, DataKinds, MultiParamTypeClasses, GADTs, FlexibleInstances, FlexibleContexts, UndecidableInstances, TypeOperators, KindSignatures, TypeFamilies, ExistentialQuantification, ScopedTypeVariables, TypeOperators, AllowAmbiguousTypes #-}
+>{-# LANGUAGE OverloadedStrings, UndecidableSuperClasses, ConstraintKinds #-}
 >module Math.Matrix.FiniteVector where
 >import qualified Text.PrettyPrint as Pretty
 >import Control.Applicative
 >import Math.Matrix.Interface
 >import Math.Tools.PrettyP
 >import GHC.TypeLits
+>import GHC.Exts (Constraint)
 
 >-- | See <https://blog.jle.im/entry/fixed-length-vector-types-in-haskell.html>
 >-- for another approach on finite vectors.
@@ -62,11 +63,6 @@
 >vhead :: Vec (1+n) a -> a
 >vhead (Cons x _) = x
 
-vtail :: (KnownNat n) => Vec (1+n) a -> Vec n a
-vtail (Cons _ r) = r
-
-Doesn't typecheck in GHC 7.10.3, "Could not deduce (n1 ~ n) from the context
-((1+n1) ~ (1+n)).
 
 >foldv :: b -> (a -> b -> b) -> Vec n a -> b
 >foldv e _ Empty = e

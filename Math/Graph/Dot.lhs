@@ -10,7 +10,7 @@
 >import Math.Graph.GraphMonoid
 >import Math.Graph.InGraphMonad
 
->convertToDotGraph :: (Monad m, Ord n,Show n, GraphMonoid mon) => InGraphM mon n m (DotGraph n)
+>convertToDotGraph :: (Monad m, Ord n,Show n, GraphMonoid mon n) => InGraphM mon n m (DotGraph n)
 >convertToDotGraph = do
 >   vertices <- verticesM
 >   links    <- linksM

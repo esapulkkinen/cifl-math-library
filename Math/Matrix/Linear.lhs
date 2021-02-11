@@ -7,6 +7,7 @@
 >import Math.Matrix.Interface
 >import Math.Matrix.Matrix
 
+>{-
 >data Lin a b where
 >   Linear :: (Scalar a ~ Scalar b) => (a -> b) -> Lin a b
 >   BiLin  :: (Scalar a ~ Scalar b, Scalar b ~ Scalar c) 
@@ -27,3 +28,5 @@
 >  (LinProd k x) . z@(Linear _) = LinProd k (x . z)
 >  f . (LinPlus x y) = LinPlus (f . x) (f . y)
 >  f . (LinProd k x) = LinProd k (f . x)
+
+>-}
