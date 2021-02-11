@@ -824,6 +824,10 @@ authors.
       <field name="url">http://ncatlab.org/nlab/show/monoidal+category</field>
     </field>
     <field name="hasPart" type="WebPage">
+      <summary name="name">Delooping</summary>
+      <field name="url">http://ncatlab.org/nlab/show/delooping</field>
+    </field>
+    <field name="hasPart" type="WebPage">
       <summary name="name">Matrix</summary>
       <field name="url">http://ncatlab.org/nlab/show/matrix</field>
     </field>

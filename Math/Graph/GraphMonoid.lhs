@@ -38,7 +38,11 @@
 >  x == y = appEndo x True  == appEndo y True
 >        && appEndo x False == appEndo y False
 
->data Three a b where
+>-- <https://ncatlab.org/nlab/show/delooping>
+>-- This is a delooping of a three element monoid.
+>-- That is, we think of the three elements as
+>-- the hom-set of a endomorphism of a distinguished object
+>data Three b c where
 >   TId :: Three a a
 >   TDom :: Three a a
 >   TCod :: Three a a
