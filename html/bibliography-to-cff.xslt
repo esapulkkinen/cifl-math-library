@@ -63,8 +63,10 @@ references:
     </xsl:choose>
 
     </xsl:for-each>
+    <xsl:choose><xsl:when test="field[@name='hasPart']">
+      references:
     <xsl:for-each select="field[@name='hasPart']">
-      - type: <xsl:choose>
+        - type: <xsl:choose>
     <xsl:when test="@type='CreativeWork'">generic</xsl:when>
     <xsl:when test="@type='Article'">article</xsl:when>
     <xsl:when test="@type='Report'">report</xsl:when>
@@ -83,11 +85,12 @@ references:
     <xsl:when test="@type='BlogPosting'">blog</xsl:when>
     <xsl:when test="@type='DigitalDocument'">generic</xsl:when>
   </xsl:choose>
-        title: <xsl:for-each select="summary">"<xsl:value-of select="node()"/>"</xsl:for-each>
+          title: <xsl:for-each select="summary">"<xsl:value-of select="node()"/>"</xsl:for-each>
             <xsl:for-each select="field[@name='url']">
-        url: "<xsl:value-of select="node()"/>"
+          url: "<xsl:value-of select="node()"/>"
             </xsl:for-each>
-     </xsl:for-each>
+    </xsl:for-each>
+  </xsl:when></xsl:choose>
 
   </xsl:for-each>
   </xsl:template>
