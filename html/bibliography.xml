@@ -182,13 +182,7 @@
     <summary>GHC compiler</summary>
     <field name="url">http://www.haskell.org/ghc/</field>
     <field name="applicationCategory">Compiler</field>
-    <field name="license"><a href="https://www.haskell.org/license">GHC License</a></field>
-    <field name="copyrightYear">2004</field>
-    <field name="operatingSystem">Linux</field>
-    <field name="operatingSystem">Windows</field>
-    <field name="copyrightHolder">The University Court of the University of Glasgow</field>
-    <field name="license">
-      All rights reserved.
+    <field name="license"><a href="https://www.haskell.org/license">GHC License</a>. All rights reserved.
 
 Redistribution and use in source and binary forms, with or without modification,
  are permitted provided that the following conditions are met:
@@ -212,8 +206,11 @@ D TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS
 ; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETH
 ER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) AR
 ISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBI
-LITY OF SUCH DAMAGE.
-    </field>
+LITY OF SUCH DAMAGE.</field>
+    <field name="copyrightYear">2004</field>
+    <field name="operatingSystem">Linux</field>
+    <field name="operatingSystem">Windows</field>
+    <field name="copyrightHolder">The University Court of the University of Glasgow</field>
   </SoftwareApplication>
   <WebSite>
     <summary>Schema.org</summary>
@@ -263,8 +260,7 @@ authors.
     <field name="url">https://www.haskell.org/haddock/</field>
     <field name="applicationCategory">Text</field>
     <field name="operatingSystem">Linux</field>
-    <field name="license">BSD-style</field>
-    <field name="license">https://www.haskell.org/haddock/doc/html/license.html</field>
+    <field name="license">BSD-style. https://www.haskell.org/haddock/doc/html/license.html</field>
     <field name="author" type="Person">
       <summary name="name">Simon Marlow</summary>
     </field>
@@ -693,7 +689,9 @@ authors.
       <summary name="name">Pearson Education Inc.</summary>
     </field>
     <field name="copyrightYear">2009</field>
-    <field name="hasPart">Volume 4 Fascicle 1</field>
+    <field name="hasPart" type="Book">
+      <summary name="name">Volume 4 Fascicle 1</summary>
+    </field>
   </Book>
   <BlogPosting>
     <summary>Laarhoven: Isomorphism lenses</summary>
@@ -796,7 +794,6 @@ authors.
     <field name="copyrightYear">2017</field>
     <field name="license">CC-BY-NC-ND 3.0</field>
     <field name="datePublished">2017-08-25</field>
-    <field name="headline">Fixed-Length Vector Types in Haskell</field>
     <field name="publisher" type="Person">
       <summary name="name">Justin Le</summary>
     </field>
