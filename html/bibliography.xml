@@ -1,3 +1,4 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
 <bibliography>
   <Book>
     <summary>Lawvere, Rosebrugh: Sets for Mathematics</summary>
@@ -28,6 +29,14 @@
       <summary name="name">Addison-Wesley Publishing Company</summary>
     </field>
   </Book>
+  <WebSite>
+    <summary>W3 schools tutorials</summary>
+    <field name="url">https://w3schools.com/xml</field>
+    <field name="headline">W3 Schools Online XML tutorial</field>
+    <field name="publisher" type="Organization">
+      <summary name="name">Refsnes Data</summary>
+    </field>
+  </WebSite>
   <WebSite>
     <summary>Haskell Wiki</summary>
     <field name="license">Permissive</field>
@@ -156,7 +165,7 @@
     <field name="hasPart" type="WebPage"><summary name="name">Quantum number</summary><field name="url">https://en.wikipedia.org/wiki/Quantum_number</field></field>
     <field name="hasPart" type="WebPage"><summary name="name">Quaternion</summary><field name="url">https://en.wikipedia.org/wiki/Quaternion</field></field>
     <field name="hasPart" type="WebPage"><summary name="name">Riemann zeta function</summary><field name="url">https://en.wikipedia.org/wiki/Riemann_zeta_function</field></field>
-    <field name="hasPart" type="WebPage"><summary name="name">Schrödinger equation</summary><field name="url">https://en.wikipedia.org/wiki/Schr%C3%B6dinger_equation</field></field>
+    <field name="hasPart" type="WebPage"><summary name="name">Schrödinger equation</summary><field name="url">https://en.wikipedia.org/wiki/Schrödinger_equation</field></field>
     <field name="hasPart" type="WebPage"><summary name="name">Speed of light</summary><field name="url">https://en.wikipedia.org/wiki/Speed_of_light</field></field>
     <field name="hasPart" type="WebPage"><summary name="name">Square matrix</summary><field name="url">https://en.wikipedia.org/wiki/Square_matrix</field></field>
     <field name="hasPart" type="WebPage"><summary name="name">Steradian</summary><field name="url">https://en.wikipedia.org/wiki/Steradian</field></field>
@@ -209,6 +218,11 @@ LITY OF SUCH DAMAGE.
   <WebSite>
     <summary>Schema.org</summary>
     <field name="url">https://schema.org/</field>
+  </WebSite>
+  <WebSite>
+    <summary>Github citation file format</summary>
+    <field name="url">https://github.com/citation-file-format/citation-file-format/</field>
+    <field name="version">1.1.0</field>
   </WebSite>
   <DigitalDocument>
     <summary>GLX-1.0.dtd</summary>

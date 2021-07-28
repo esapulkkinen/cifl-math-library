@@ -18,6 +18,7 @@
         tr { display: flex; color: black; }
         th { display: flex; font-weight: bold; color: black; width: 200; text-align: right; }
         td { display: flex; text-align: left; }
+        summary { font-weight: bold; font-family: arial,helvetica,courier; }
       </style>
     </head>
     <body>
