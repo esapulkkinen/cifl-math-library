@@ -4,7 +4,7 @@
 <xsl:template name="citation-header">
 %YAML 1.0
 ---
-cff-version: 1.1.0
+cff-version: 1.2.0
 message: "If you use this software, please cite as follows"
 type: software
 authors:
