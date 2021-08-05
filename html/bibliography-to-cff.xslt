@@ -4,6 +4,7 @@
   <xsl:output method="text" omit-xml-declaration="yes" encoding="UTF-8"/>
   <xsl:template match="/">
     <xsl:call-template name="citation-header"/>
+    <!--
 references:<xsl:for-each select="bibliography/CreativeWork|bibliography/Article|bibliography/Report|bibliography/Book|bibliography/ScholarlyArticle|bibliography/BlogPosting|bibliography/TechArticle|bibliography/DigitalDocument|bibliography/PublicationIssue|bibliography/SoftwareApplication|bibliography/WebPage|bibliography/WebSite|bibliography/SoftwareSourceCode|bibliography/Comment|bibliography/QAPage|bibliography/BlogPosting|bibliography/DigitalDocument">
     - type: <xsl:choose>
     <xsl:when test="local-name()='CreativeWork'">generic</xsl:when>
@@ -38,7 +39,7 @@ references:<xsl:for-each select="bibliography/CreativeWork|bibliography/Article|
       keywords:
           - "<xsl:value-of select="node()"/>"</xsl:when><xsl:when test="@name='datePublished'">
       date-released: "<xsl:value-of select="node()"/>"</xsl:when>
-    </xsl:choose></xsl:for-each>
+    </xsl:choose></xsl:for-each> -->
 <!--
     <xsl:choose><xsl:when test="field[@name='hasPart']">
       references:<xsl:for-each select="field[@name='hasPart']">
@@ -63,7 +64,7 @@ references:<xsl:for-each select="bibliography/CreativeWork|bibliography/Article|
   </xsl:choose>
             authors: <xsl:value-of select="../field[@name='author']/summary[@name='name']"/>
             title: <xsl:for-each select="summary">"<xsl:value-of select="node()"/>"</xsl:for-each><xsl:for-each select="field[@name='url']">
-            url: "<xsl:value-of select="node()"/>"</xsl:for-each></xsl:for-each></xsl:when></xsl:choose>--></xsl:for-each>
+            url: "<xsl:value-of select="node()"/>"</xsl:for-each></xsl:for-each></xsl:when></xsl:choose>--> <!-- </xsl:for-each> -->
 
   </xsl:template>
 </xsl:stylesheet>
