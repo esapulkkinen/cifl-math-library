@@ -10,7 +10,7 @@ abstract: "Haskell library for linear algebra"
 authors:
     - name: "Esa Pulkkinen"
       email: "esa.pulkkinen@iki.fi"
-date-released:
+date-released: 2021-08-05
 keywords:
     - "linear algebra"
     - "math"
