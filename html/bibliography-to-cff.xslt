@@ -27,15 +27,17 @@ references:<xsl:for-each select="bibliography/CreativeWork|bibliography/Article|
   <xsl:choose><xsl:when test="field[@name='author']">
       authors:<xsl:for-each select="field[@name='author']/summary[@name='name']">
           - name: "<xsl:value-of select="node()"/>"</xsl:for-each></xsl:when></xsl:choose><xsl:for-each select="summary">
-      summary: "<xsl:value-of select="node()"/>"</xsl:for-each><xsl:for-each select="field"><xsl:sort select="attribute::name"/><xsl:choose><xsl:when test="@name='headline'">
+      abstract: "<xsl:value-of select="node()"/>"</xsl:for-each><xsl:for-each select="field"><xsl:sort select="attribute::name"/><xsl:choose><xsl:when test="@name='headline'">
       title: "<xsl:value-of select="node()"/>"</xsl:when><xsl:when test="@name='publisher'"><xsl:for-each select="summary[@name='name']">
       publisher: "<xsl:value-of select="node()"/>"</xsl:for-each></xsl:when><xsl:when test="@name='isbn'">
       isbn: "<xsl:value-of select="node()"/>"</xsl:when><xsl:when test="@name='numberOfPages'">
       pages: <xsl:value-of select="node()"/></xsl:when><xsl:when test="@name='license'">
       license: "<xsl:value-of select="node()"/>"</xsl:when><xsl:when test="@name='url'">
       url: "<xsl:value-of select="node()"/>"</xsl:when><xsl:when test="@name='genre'">
-      genre: "<xsl:value-of select="node()"/>"</xsl:when>
+      genre: "<xsl:value-of select="node()"/>"</xsl:when><xsl:when test="@name='datePublished'">
+      date-released: "<xsl:value-of select="node()"/>"</xsl:when>
     </xsl:choose></xsl:for-each>
+<!--
     <xsl:choose><xsl:when test="field[@name='hasPart']">
       references:<xsl:for-each select="field[@name='hasPart']">
           - type: <xsl:choose>
@@ -57,8 +59,9 @@ references:<xsl:for-each select="bibliography/CreativeWork|bibliography/Article|
     <xsl:when test="@type='BlogPosting'">blog</xsl:when>
     <xsl:when test="@type='DigitalDocument'">generic</xsl:when>
   </xsl:choose>
+            authors: <xsl:value-of select="../field[@name='author']/summary[@name='name']"/>
             title: <xsl:for-each select="summary">"<xsl:value-of select="node()"/>"</xsl:for-each><xsl:for-each select="field[@name='url']">
-            url: "<xsl:value-of select="node()"/>"</xsl:for-each></xsl:for-each></xsl:when></xsl:choose></xsl:for-each>
+            url: "<xsl:value-of select="node()"/>"</xsl:for-each></xsl:for-each></xsl:when></xsl:choose>--></xsl:for-each>
 
   </xsl:template>
 </xsl:stylesheet>

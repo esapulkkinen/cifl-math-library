@@ -20,13 +20,13 @@ references:
       authors:
           - name: "F. William Lawvere"
           - name: "Robert Rosebrugh"
-      summary: "Lawvere, Rosebrugh: Sets for Mathematics"
+      abstract: "Lawvere, Rosebrugh: Sets for Mathematics"
       title: "Sets for Mathematics"
       isbn: "0-521-01060-8"
     - type: book
       authors:
           - name: "Saunders Mac Lane"
-      summary: "Mac Lane: Categories for the working mathematician"
+      abstract: "Mac Lane: Categories for the working mathematician"
       title: "Categories for the Working Mathematician"
       isbn: "0-387-90036-5"
       pages: 262
@@ -37,416 +37,37 @@ references:
           - name: "Richard Helm"
           - name: "Ralph Johnson"
           - name: "John Vlissides"
-      summary: "Gamma et al: Design Patterns"
+      abstract: "Gamma et al: Design Patterns"
       title: "Design Patterns, Elements of Reusable Object-Oriented Software"
       isbn: "0-201-63361-2"
       publisher: "Addison-Wesley Publishing Company"
     - type: website
-      summary: "W3 schools tutorials"
+      abstract: "W3 schools tutorials"
       title: "W3 Schools Online XML tutorial"
       publisher: "Refsnes Data"
       url: "https://w3schools.com/xml"
     - type: website
-      summary: "Haskell Wiki"
+      abstract: "Haskell Wiki"
       license: "Permissive"
       url: "http://wiki.haskell.org/"
     - type: website
-      summary: "Wikipedia, the free encyclopedia that anyone can edit"
+      abstract: "Wikipedia, the free encyclopedia that anyone can edit"
       title: "Wikipedia, the free encyclopedia that anyone can edit"
       license: "CC BY-SA 3.0"
       publisher: "Wikimedia Foundation, Inc."
       url: "https://en.wikipedia.org/wiki/Main_Page"
-      references:
-          - type: article
-            title: "Adjugate"
-            url: "http://en.wikipedia.org/wiki/Adjugate"
-          - type: article
-            title: "Arithmetic geometric mean"
-            url: "http://en.wikipedia.org/wiki/Arithmetic%E2%80%93geometric_mean"
-          - type: article
-            title: "Atan2"
-            url: "http://en.wikipedia.org/wiki/Atan2"
-          - type: article
-            title: "Binomial coefficient"
-            url: "http://en.wikipedia.org/wiki/Binomial_coefficient"
-          - type: article
-            title: "Bracket notation"
-            url: "http://en.wikipedia.org/wiki/Bra%E2%80%93ket_notation"
-          - type: article
-            title: "Catalan number"
-            url: "http://en.wikipedia.org/wiki/Catalan_number"
-          - type: article
-            title: "Conjugate transpose"
-            url: "http://en.wikipedia.org/wiki/Conjugate_transpose"
-          - type: article
-            title: "Cycle detection"
-            url: "http://en.wikipedia.org/wiki/Cycle_detection"
-          - type: article
-            title: "Determinant"
-            url: "http://en.wikipedia.org/wiki/Determinant"
-          - type: article
-            title: "Elementary matrix operations"
-            url: "http://en.wikipedia.org/wiki/Elementary_matrix#Operations"
-          - type: article
-            title: "Exponential function"
-            url: "http://en.wikipedia.org/wiki/Exponential_function"
-          - type: article
-            title: "Formal power series"
-            url: "http://en.wikipedia.org/wiki/Formal_power_series"
-          - type: article
-            title: "Formula for primes"
-            url: "http://en.wikipedia.org/wiki/Formula_for_primes"
-          - type: article
-            title: "Hyperbolic function"
-            url: "http://en.wikipedia.org/wiki/Hyperbolic_function"
-          - type: article
-            title: "Integral"
-            url: "http://en.wikipedia.org/wiki/Integral"
-          - type: article
-            title: "Iverson bracket"
-            url: "http://en.wikipedia.org/wiki/Iverson_bracket"
-          - type: article
-            title: "Klein-gordon equation"
-            url: "http://en.wikipedia.org/wiki/Klein%E2%80%93Gordon_equation"
-          - type: article
-            title: "Lanthanide"
-            url: "http://en.wikipedia.org/wiki/Lanthanide"
-          - type: article
-            title: "Least upper-bound property"
-            url: "http://en.wikipedia.org/wiki/Least-upper-bound_property"
-          - type: article
-            title: "Logarithm"
-            url: "http://en.wikipedia.org/wiki/Logarithm"
-          - type: article
-            title: "Matrix multiplication"
-            url: "http://en.wikipedia.org/wiki/Matrix_multiplication"
-          - type: article
-            title: "Matrix representation of maxwell's equations"
-            url: "http://en.wikipedia.org/wiki/Matrix_representation_of_Maxwell's_equations"
-          - type: article
-            title: "Periodic Table"
-            url: "http://en.wikipedia.org/wiki/Periodic_Table"
-          - type: article
-            title: "Planck Constant"
-            url: "http://en.wikipedia.org/wiki/Planck_Constant"
-          - type: article
-            title: "Squeeze theorem"
-            url: "http://en.wikipedia.org/wiki/Squeeze_theorem"
-          - type: article
-            title: "Trigonometric functions"
-            url: "http://en.wikipedia.org/wiki/Trigonometric_functions"
-          - type: article
-            title: "Twin prime"
-            url: "http://en.wikipedia.org/wiki/Twin_prime"
-          - type: article
-            title: "Stone von Neumann theorem"
-            url: "https://en.m.wikipedia.org/wiki/Stone%E2%80%93von_Neumann_theorem"
-          - type: article
-            title: "Galois connection"
-            url: "https://en.wikipedia.org/Galois_Connection"
-          - type: article
-            title: "2019 redefinition of SI base units"
-            url: "https://en.wikipedia.org/wiki/2019_redefinition_of_SI_base_units"
-          - type: article
-            title: "9 (Probability)"
-            url: "https://en.wikipedia.org/wiki/9#Probability"
-          - type: article
-            title: "Adjucate matrix"
-            url: "https://en.wikipedia.org/wiki/Adjugate_matrix"
-          - type: article
-            title: "Angle"
-            url: "https://en.wikipedia.org/wiki/Angle"
-          - type: article
-            title: "Astronomical unit"
-            url: "https://en.wikipedia.org/wiki/Astronomical_unit"
-          - type: article
-            title: "Avogadro constant"
-            url: "https://en.wikipedia.org/wiki/Avogadro_constant"
-          - type: article
-            title: "Bell number"
-            url: "https://en.wikipedia.org/wiki/Bell_number"
-          - type: article
-            title: "Binary prefix (kibi)"
-            url: "https://en.wikipedia.org/wiki/Binary_prefix#kibi"
-          - type: article
-            title: "Braided monoidal category"
-            url: "https://en.wikipedia.org/wiki/Braided_monoidal_category"
-          - type: article
-            title: "Breadth-first search"
-            url: "https://en.wikipedia.org/wiki/Breadth-first_search"
-          - type: article
-            title: "Characteristic polynomial"
-            url: "https://en.wikipedia.org/wiki/Characteristic_polynomial"
-          - type: article
-            title: "Comma category"
-            url: "https://en.wikipedia.org/wiki/Comma_category"
-          - type: article
-            title: "Commutator"
-            url: "https://en.wikipedia.org/wiki/Commutator"
-          - type: article
-            title: "Complex number"
-            url: "https://en.wikipedia.org/wiki/Complex_number"
-          - type: article
-            title: "Computation in the limit"
-            url: "https://en.wikipedia.org/wiki/Computation_in_the_limit"
-          - type: article
-            title: "Conjugate transpose"
-            url: "https://en.wikipedia.org/wiki/Conjugate_transpose"
-          - type: article
-            title: "Convex combination"
-            url: "https://en.wikipedia.org/wiki/Convex_combination"
-          - type: article
-            title: "Cross product"
-            url: "https://en.wikipedia.org/wiki/Cross_product"
-          - type: article
-            title: "Curl (mathematics)"
-            url: "https://en.wikipedia.org/wiki/Curl_(mathematics)"
-          - type: article
-            title: "Decibel"
-            url: "https://en.wikipedia.org/wiki/Decibel"
-          - type: article
-            title: "Dense order"
-            url: "https://en.wikipedia.org/wiki/Dense_order"
-          - type: article
-            title: "Differential calculus"
-            url: "https://en.wikipedia.org/wiki/Differential_calculus"
-          - type: article
-            title: "Differential form"
-            url: "https://en.wikipedia.org/wiki/Differential_form"
-          - type: article
-            title: "Dimensional analysis"
-            url: "https://en.wikipedia.org/wiki/Dimensional_analysis"
-          - type: article
-            title: "Divergence"
-            url: "https://en.wikipedia.org/wiki/Divergence"
-          - type: article
-            title: "Dot product"
-            url: "https://en.wikipedia.org/wiki/Dot_product"
-          - type: article
-            title: "Dual number"
-            url: "https://en.wikipedia.org/wiki/Dual_number"
-          - type: article
-            title: "Dual space (injection into the double dual)"
-            url: "https://en.wikipedia.org/wiki/Dual_space#Injection_into_the_double-dual"
-          - type: article
-            title: "Eigenvalue algorithm"
-            url: "https://en.wikipedia.org/wiki/Eigenvalue_algorithm"
-          - type: article
-            title: "Eigenvalues and eigenvectors"
-            url: "https://en.wikipedia.org/wiki/Eigenvalues_and_eigenvectors"
-          - type: article
-            title: "Electronvolt"
-            url: "https://en.wikipedia.org/wiki/Electronvolt"
-          - type: article
-            title: "Entropy"
-            url: "https://en.wikipedia.org/wiki/Entropy"
-          - type: article
-            title: "Equivalence class"
-            url: "https://en.wikipedia.org/wiki/Equivalence_class"
-          - type: article
-            title: "Euler's formula"
-            url: "https://en.wikipedia.org/wiki/Euler%27s_formula"
-          - type: article
-            title: "Fahrenheit"
-            url: "https://en.wikipedia.org/wiki/Fahrenheit"
-          - type: article
-            title: "Falling and rising factorials"
-            url: "https://en.wikipedia.org/wiki/Falling_and_rising_factorials"
-          - type: article
-            title: "Formal power series"
-            url: "https://en.wikipedia.org/wiki/Formal_power_series"
-          - type: article
-            title: "Frobenius inner product"
-            url: "https://en.wikipedia.org/wiki/Frobenius_inner_product"
-          - type: article
-            title: "Generating function"
-            url: "https://en.wikipedia.org/wiki/Generating_function"
-          - type: article
-            title: "Golden ratio"
-            url: "https://en.wikipedia.org/wiki/Golden_ratio"
-          - type: article
-            title: "Gradient"
-            url: "https://en.wikipedia.org/wiki/Gradient"
-          - type: article
-            title: "Gravitational constant"
-            url: "https://en.wikipedia.org/wiki/Gravitational_constant"
-          - type: article
-            title: "Group (mathematics)"
-            url: "https://en.wikipedia.org/wiki/Group_(mathematics)"
-          - type: article
-            title: "Group ring"
-            url: "https://en.wikipedia.org/wiki/Group_ring"
-          - type: article
-            title: "Hyperbolic function"
-            url: "https://en.wikipedia.org/wiki/Hyperbolic_function"
-          - type: article
-            title: "Injective function"
-            url: "https://en.wikipedia.org/wiki/Injective_function"
-          - type: article
-            title: "Inner product space"
-            url: "https://en.wikipedia.org/wiki/Inner_product_space"
-          - type: article
-            title: "International system of units"
-            url: "https://en.wikipedia.org/wiki/International_System_of_Units"
-          - type: article
-            title: "Inverse trigonometric functions"
-            url: "https://en.wikipedia.org/wiki/Inverse_trigonometric_functions"
-          - type: article
-            title: "Invertible matrix"
-            url: "https://en.wikipedia.org/wiki/Invertible_matrix"
-          - type: article
-            title: "Kronecker delta"
-            url: "https://en.wikipedia.org/wiki/Kronecker_delta"
-          - type: article
-            title: "Laplace operator"
-            url: "https://en.wikipedia.org/wiki/Laplace_operator"
-          - type: article
-            title: "Leve (logarithmic quantity)"
-            url: "https://en.wikipedia.org/wiki/Level_(logarithmic_quantity)"
-          - type: article
-            title: "Levi-Civita symbol"
-            url: "https://en.wikipedia.org/wiki/Levi-Civita_symbol"
-          - type: article
-            title: "Lie algebra"
-            url: "https://en.wikipedia.org/wiki/Lie_algebra"
-          - type: article
-            title: "Light year"
-            url: "https://en.wikipedia.org/wiki/Light-year"
-          - type: article
-            title: "Line integral"
-            url: "https://en.wikipedia.org/wiki/Line_integral"
-          - type: article
-            title: "List of common coordinate transformations"
-            url: "https://en.wikipedia.org/wiki/List_of_common_coordinate_transformations"
-          - type: article
-            title: "Litre"
-            url: "https://en.wikipedia.org/wiki/Litre"
-          - type: article
-            title: "Logistic function"
-            url: "https://en.wikipedia.org/wiki/Logistic_function"
-          - type: article
-            title: "Log polar coordinates"
-            url: "https://en.wikipedia.org/wiki/Log-polar_coordinates"
-          - type: article
-            title: "Matrix (mathematics)"
-            url: "https://en.wikipedia.org/wiki/Matrix_%28mathematics%29"
-          - type: article
-            title: "Matrix exponential"
-            url: "https://en.wikipedia.org/wiki/Matrix_exponential"
-          - type: article
-            title: "Matrix machanics"
-            url: "https://en.wikipedia.org/wiki/Matrix_mechanics"
-          - type: article
-            title: "Methods of contour integration"
-            url: "https://en.wikipedia.org/wiki/Methods_of_contour_integration"
-          - type: article
-            title: "Metric prefix"
-            url: "https://en.wikipedia.org/wiki/Metric_prefix"
-          - type: article
-            title: "Modal logic"
-            url: "https://en.wikipedia.org/wiki/Modal_logic"
-          - type: article
-            title: "Modular exponentiation"
-            url: "https://en.wikipedia.org/wiki/Modular_exponentiation"
-          - type: article
-            title: "Module (mathematics)"
-            url: "https://en.wikipedia.org/wiki/Module_(mathematics)"
-          - type: article
-            title: "Moment magniture scale"
-            url: "https://en.wikipedia.org/wiki/Moment_magnitude_scale"
-          - type: article
-            title: "Monoidal category"
-            url: "https://en.wikipedia.org/wiki/Monoidal_category"
-          - type: article
-            title: "Monotonic function"
-            url: "https://en.wikipedia.org/wiki/Monotonic_function"
-          - type: article
-            title: "Natural logarithm"
-            url: "https://en.wikipedia.org/wiki/Natural_logarithm"
-          - type: article
-            title: "Natural transformation"
-            url: "https://en.wikipedia.org/wiki/Natural_transformation"
-          - type: article
-            title: "Norm (mathematics)"
-            url: "https://en.wikipedia.org/wiki/Norm_(mathematics)"
-          - type: article
-            title: "Octave"
-            url: "https://en.wikipedia.org/wiki/Octave"
-          - type: article
-            title: "Parsec"
-            url: "https://en.wikipedia.org/wiki/Parsec"
-          - type: article
-            title: "Pascal's triangle"
-            url: "https://en.wikipedia.org/wiki/Pascal%27s_triangle"
-          - type: article
-            title: "Physical constant"
-            url: "https://en.wikipedia.org/wiki/Physical_constant"
-          - type: article
-            title: "Pi"
-            url: "https://en.wikipedia.org/wiki/Pi"
-          - type: article
-            title: "Planck constant"
-            url: "https://en.wikipedia.org/wiki/Planck_constant"
-          - type: article
-            title: "Power iteration"
-            url: "https://en.wikipedia.org/wiki/Power_iteration"
-          - type: article
-            title: "Pseudovector"
-            url: "https://en.wikipedia.org/wiki/Pseudovector"
-          - type: article
-            title: "Quantum number"
-            url: "https://en.wikipedia.org/wiki/Quantum_number"
-          - type: article
-            title: "Quaternion"
-            url: "https://en.wikipedia.org/wiki/Quaternion"
-          - type: article
-            title: "Riemann zeta function"
-            url: "https://en.wikipedia.org/wiki/Riemann_zeta_function"
-          - type: article
-            title: "Schrödinger equation"
-            url: "https://en.wikipedia.org/wiki/Schrödinger_equation"
-          - type: article
-            title: "Speed of light"
-            url: "https://en.wikipedia.org/wiki/Speed_of_light"
-          - type: article
-            title: "Square matrix"
-            url: "https://en.wikipedia.org/wiki/Square_matrix"
-          - type: article
-            title: "Steradian"
-            url: "https://en.wikipedia.org/wiki/Steradian"
-          - type: article
-            title: "Taylor series"
-            url: "https://en.wikipedia.org/wiki/Taylor_series"
-          - type: article
-            title: "Tetration"
-            url: "https://en.wikipedia.org/wiki/Tetration"
-          - type: article
-            title: "Trigonometric functions"
-            url: "https://en.wikipedia.org/wiki/Trigonometric_functions"
-          - type: article
-            title: "United states customary units"
-            url: "https://en.wikipedia.org/wiki/United_States_customary_units"
-          - type: article
-            title: "Vector laplacian"
-            url: "https://en.wikipedia.org/wiki/Vector_Laplacian"
-          - type: article
-            title: "Vector space"
-            url: "https://en.wikipedia.org/wiki/Vector_space"
-          - type: article
-            title: "Wirtinger derivatives"
-            url: "https://en.wikipedia.org/wiki/Wirtinger_derivatives"
     - type: software-executable
-      summary: "GHC compiler"
+      abstract: "GHC compiler"
       license: "GHC License"
       url: "http://www.haskell.org/ghc/"
     - type: website
-      summary: "Schema.org"
+      abstract: "Schema.org"
       url: "https://schema.org/"
     - type: website
-      summary: "Github citation file format"
+      abstract: "Github citation file format"
       url: "https://github.com/citation-file-format/citation-file-format/"
     - type: data
-      summary: "GLX-1.0.dtd"
+      abstract: "GLX-1.0.dtd"
       license: "
       GXL has been developed to be an open standard.  No licensing or other
 legal arrangements are required for its use, whether commercial and
@@ -459,120 +80,120 @@ authors.
     - type: software-code
       authors:
           - name: "Malcolm Wallace"
-      summary: "HaXML"
+      abstract: "HaXML"
       license: "LGPL"
       url: "https://hackage.haskell.org/package/HaXml"
     - type: software-code
       authors:
           - name: "Galois Inc"
-      summary: "JSON"
+      abstract: "JSON"
       license: "BSD3"
       url: "http://hackage.haskell.org/package/json"
     - type: article
       authors:
           - name: "Oliver K. Smith"
-      summary: "Smith, Oliver K.: Eigenvalues of symmetric 3x3 matrix, 1961, Communications of the ACM"
+      abstract: "Smith, Oliver K.: Eigenvalues of symmetric 3x3 matrix, 1961, Communications of the ACM"
       title: "Eigenvalues of symmetric 3x3 matrix"
       publisher: "Communications of the ACM"
     - type: software-executable
       authors:
           - name: "Simon Marlow"
-      summary: "Haddock"
+      abstract: "Haddock"
       license: "BSD-style. https://www.haskell.org/haddock/doc/html/license.html"
       url: "https://www.haskell.org/haddock/"
     - type: software-executable
-      summary: "Stack"
+      abstract: "Stack"
       url: "https://docs.haskellstack.org/en/stable/README/"
     - type: software-executable
-      summary: "Graphviz"
+      abstract: "Graphviz"
       url: "https://www.graphviz.org"
     - type: software-executable
-      summary: "ps2pdf"
+      abstract: "ps2pdf"
       license: "GPL"
     - type: software-code
       authors:
           - name: "Dean Herington"
-      summary: "HUnit"
+      abstract: "HUnit"
       url: "http://hackage.haskell.org/package/HUnit"
     - type: software-code
       authors:
           - name: "Koen Claessen"
-      summary: "QuickCheck"
+      abstract: "QuickCheck"
       url: "http://hackage.haskell.org/package/QuickCheck"
     - type: software-executable
       authors:
-      summary: "Cabal"
+      abstract: "Cabal"
       url: "http://hackage.haskell.org/package/Cabal"
     - type: software-code
       authors:
           - name: "Simon Hengel"
-      summary: "doctest"
+      abstract: "doctest"
       license: "MIT"
       url: "http://hackage.haskell.org/package/doctest"
     - type: software-code
       authors:
           - name: "Andrew Martin"
-      summary: "byte-order"
+      abstract: "byte-order"
       license: "BSD-3"
       url: "http://hackage.haskell.org/package/byte-order"
     - type: software-code
-      summary: "base"
+      abstract: "base"
       license: "BSD-3"
       url: "http://hackage.haskell.org/package/base"
     - type: software-code
-      summary: "ghc-prim"
+      abstract: "ghc-prim"
       license: "BSD-3"
       url: "http://hackage.haskell.org/package/ghc-prim"
     - type: software-code
-      summary: "random"
+      abstract: "random"
       license: "BSD-3"
       url: "http://hackage.haskell.org/package/random"
     - type: software-code
       authors:
           - name: "Andy Gill"
-      summary: "mtl"
+      abstract: "mtl"
       license: "BSD-3"
       url: "http://hackage.haskell.org/package/mtl"
     - type: software-code
-      summary: "adjunctions"
+      abstract: "adjunctions"
       url: "http://hackage.haskell.org/packages/archive/adjunctions"
     - type: software-code
-      summary: "OpenGL (haskell package)"
+      abstract: "OpenGL (haskell package)"
       url: "http://lambda.haskell.org/platform/doc/current/packages/OpenGL-2.8.0.0/doc/html/index.html"
     - type: website
-      summary: "nLab"
+      abstract: "nLab"
       url: "http://nlab.mathforge.org/nlab"
     - type: unpublished
       authors:
           - name: "Koen Claessen"
-      summary: "Haskell-Cafe mailing list post by Koen Classen"
+      abstract: "Haskell-Cafe mailing list post by Koen Classen"
       title: "Generating the n! permutations in Haskell"
       url: "https://mail.haskell.org/pipermail/haskell-cafe/2002-June/003122.html"
     - type: software-code
-      summary: "array"
+      abstract: "array"
       license: "BSD-3"
       url: "http://hackage.haskell.org/package/array"
     - type: article
-      summary: "The Zipper Pattern"
+      abstract: "The Zipper Pattern"
       genre: "wiki"
       title: "Zipper"
       url: "http://www.haskell.org/haskellwiki/Zipper"
     - type: software-code
-      summary: "template-haskell"
+      abstract: "template-haskell"
       url: "http://hackage.haskell.org/package/template-haskell"
     - type: article
-      summary: "The stream monad"
+      abstract: "The stream monad"
       genre: "blog"
       title: "The stream monad"
       url: "http://patternsinfp.wordpress.com/2010/12/31/stream-monad/"
     - type: software-code
       authors:
           - name: "Ashley Yakeley"
-      summary: "time"
+      abstract: "time"
       license: "BSD-3"
       url: "http://hackage.haskell.org/package/time"
     - type: software-code
-      summary: "pretty"
+      abstract: "pretty"
       license: "BSD-3"
       url: "http://hackage.haskell.org/package/pretty"
     - type: software-code
@@ -580,108 +201,106 @@ authors.
           - name: "Ralf Lammel"
           - name: "Simon Peyton Jones"
           - name: "Jose Pedro Magalhaes"
-      summary: "syb"
+      abstract: "syb"
       license: "BSD-3"
       url: "http://hackage.haskell.org/package/syb"
     - type: software-code
-      summary: "stm"
+      abstract: "stm"
       license: "BSD-3"
       url: "http://hackage.haskell.org/package/stm"
     - type: software-code
-      summary: "parallel"
+      abstract: "parallel"
       license: "BSD-3"
       url: "http://hackage.haskell.org/package/parallel"
     - type: software-code
-      summary: "unix"
+      abstract: "unix"
       license: "BSD-3"
       url: "http://hackage.haskell.org/package/unix"
     - type: software-code
       authors:
           - name: "Don Stewart"
           - name: "Duncan Coutts"
-      summary: "bytestring"
+      abstract: "bytestring"
       license: "BSD-3"
       url: "http://hackage.haskell.org/package/bytestring"
     - type: software-code
       authors:
           - name: "Martin Erwig"
           - name: "Ivan Lazar Miljenovic"
-      summary: "fgl"
+      abstract: "fgl"
       license: "BSD-3"
       url: "http://hackage.haskell.org/package/fgl"
     - type: software-code
-      summary: "temporary"
+      abstract: "temporary"
       license: "BSD-3"
       url: "http://hackage.haskell.org/package/temporary"
     - type: software-code
       authors:
           - name: "Matthew Sackman"
           - name: "Ivan Lazar Miljenovic"
-      summary: "graphviz"
+      abstract: "graphviz"
       url: "http://hackage.haskell.org/package/graphviz"
     - type: software-code
       authors:
           - name: "Bryan O'Sullivan"
-      summary: "text"
+      abstract: "text"
       license: "BSD-3"
       url: "http://hackage.haskell.org/package/text"
     - type: software-code
       authors:
-      summary: "json"
+      abstract: "json"
       license: "BSD-3"
       url: "http://hackage.haskell.org/package/json"
     - type: software-code
       authors:
           - name: "Lennert Kolmodin"
-      summary: "binary"
+      abstract: "binary"
       license: "BSD-3"
       url: "http://hackage.haskell.org/package/binary"
     - type: software-code
       authors:
           - name: "Lennart Augustsson"
-      summary: "erf"
+      abstract: "erf"
       license: "BSD-3"
       url: "http://hackage.haskell.org/package/erf"
     - type: article
       authors:
           - name: "Martin Escardo"
-      summary: "A haskell monad for infinite search in finite time"
+      abstract: "A haskell monad for infinite search in finite time"
+      date-released: "2008-11-21"
       title: "A haskell monad for infinite search in finite time"
       publisher: "Mathematics and Computation"
       url: "http://math.andrej.com/2008/11/21/a-haskell-monad-for-infinite-search-in-finite-time/"
     - type: article
       authors:
           - name: "Philip Wadler"
-      summary: "Wadler: Comprehending Monads"
+      abstract: "Wadler: Comprehending Monads"
       url: "https://homepages.inf.ed.ac.uk/wadler/papers/monads/monads.ps"
     - type: article
       authors:
           - name: "Barry Mazur"
-      summary: "Mazur: When is one thing equal to some other thing?"
+      abstract: "Mazur: When is one thing equal to some other thing?"
       title: "When is one thing equal to some other thing?"
       url: "http://www.math.harvard.edu/~mazur/preprints/when_is_one.pdf"
     - type: article
       authors:
           - name: "Philip Wadler"
-      summary: "Wadler: Recursive types for free!"
+      abstract: "Wadler: Recursive types for free!"
       genre: "paper"
       title: "Recursive types for free!"
       url: "http://homepages.inf.ed.ac.uk/wadler/papers/free-rectypes/free-rectypes.txt"
     - type: book
       authors:
           - name: "Donald Knuth"
-      summary: "Knuth: The Art of Computer Programming"
+      abstract: "Knuth: The Art of Computer Programming"
       title: "The Art of Computer Programming"
       isbn: "1-321-58050-8"
       publisher: "Addison-Wesley"
       url: "http://www-cs-faculty.stanford.edu/~knuth/taocp.html"
-      references:
-          - type: book
-            title: "Volume 4 Fascicle 1"
     - type: blog
       authors:
           - name: "Twan van Laarhoven"
-      summary: "Laarhoven: Isomorphism lenses"
+      abstract: "Laarhoven: Isomorphism lenses"
       title: "Isomorphism lenses"
       license: "CC-BY"
       url: "http://twanvl.nl/blog/haskell/isomorphism-lenses"
@@ -690,36 +309,36 @@ authors.
           - name: "Simon Hengel"
           - name: "João Cristôvão"
           - name: "Ryan Scott"
-      summary: "base-compat"
+      abstract: "base-compat"
       license: "MIT"
       url: "http://hackage.haskell.org/package/base-compat"
     - type: software-code
       authors:
           - name: "Edward A. Kmett"
-      summary: "exceptions"
+      abstract: "exceptions"
       license: "BSD-3"
       url: "http://hackage.haskell.org/package/exceptions"
     - type: software-code
       authors:
           - name: "Ross Paterson"
-      summary: "arrows"
+      abstract: "arrows"
       license: "BSD-3"
       url: "http://hackage.haskell.org/package/arrows"
     - type: software-code
       authors:
           - name: "Wouter Swierstra"
-      summary: "Stream"
+      abstract: "Stream"
       license: "BSD-3"
       url: "http://hackage.haskell.org/package/Stream"
     - type: software-code
       authors:
           - name: "Matthew Naytor"
           - name: "Fredrik Lindblad"
-      summary: "lazysmallcheck"
+      abstract: "lazysmallcheck"
       license: "BSD-3"
       url: "http://hackage.haskell.org/package/lazysmallcheck"
     - type: software-code
-      summary: "directory"
+      abstract: "directory"
       license: "BSD-3"
       url: "http://hackage.haskell.org/package/directory"
     - type: software-code
@@ -728,24 +347,25 @@ authors.
           - name: "Pierre Le Marre"
           - name: "Slava Kravchenko"
           - name: "Calvin Smith"
-      summary: "rdf4h"
+      abstract: "rdf4h"
       license: "BSD-3"
       url: "http://hackage.haskell.org/package/rdf4h"
     - type: article
       authors:
           - name: "David G. Simpson"
-      summary: "Simpson: Power Series"
+      abstract: "Simpson: Power Series"
       title: "Power Series"
       url: "http://caps.gsfc.nasa.gov/simpson/ref/series.pdf"
     - type: website
-      summary: "General formula for dot and cross products in spherical coordinates"
+      abstract: "General formula for dot and cross products in spherical coordinates"
       genre: "Questions and answers"
       title: "What is the general formula for calculating dot and cross products in spherical coordinates"
       url: "https://math.stackexchange.com/questions/243142/what-is-the-general-formula-for-calculating-dot-and-cross-products-in-spherical"
     - type: blog
       authors:
           - name: "Justin Le"
-      summary: "Fixed-Length Vector Types in Haskell"
+      abstract: "Fixed-Length Vector Types in Haskell"
+      date-released: "2017-08-25"
       title: "Fixed Length Vector Types in Haskell (an Update for 2017)"
       license: "CC-BY-NC-ND 3.0"
       publisher: "Justin Le"
@@ -753,43 +373,21 @@ authors.
     - type: blog
       authors:
           - name: "Justin Le"
-      summary: "Justin Le: Fixed Length Vector Types in Haskell"
+      abstract: "Justin Le: Fixed Length Vector Types in Haskell"
       title: "Fixed Length Vector Types in Haskell"
       url: "http://blog.jle.im/entry/fixed-length-vector-types-in-haskell-2015.html"
     - type: data
-      summary: "PPM - Netpbm color image format specification"
+      abstract: "PPM - Netpbm color image format specification"
       genre: "Manual page"
       title: "Netpbm color image format specification"
       url: "http://netpbm.sourceforge.net/doc/ppm.html"
     - type: article
       authors:
           - name: "Ross Paterson"
-      summary: "Paterson R.: A new notation for arrows"
+      abstract: "Paterson R.: A new notation for arrows"
       title: "A new notation for arrows"
       url: "http://www.staff.city.ac.uk/~ross/papers/notation.html"
     - type: website
-      summary: "nCatLab"
+      abstract: "nCatLab"
       genre: "wiki"
       url: "https://ncatlab.org"
-      references:
-          - type: article
-            title: "Bicategory"
-            url: "http://ncatlab.org/nlab/show/bicategory"
-          - type: article
-            title: "Monoidal category"
-            url: "http://ncatlab.org/nlab/show/monoidal+category"
-          - type: article
-            title: "Delooping"
-            url: "http://ncatlab.org/nlab/show/delooping"
-          - type: article
-            title: "Matrix"
-            url: "http://ncatlab.org/nlab/show/matrix"
-          - type: article
-            title: "Tensor product"
-            url: "http://ncatlab.org/nlab/show/tensor+product"
-          - type: article
-            title: "Natural transformation"
-            url: "http://ncatlab.org/nlab/show/natural+transformation"
-          - type: article
-            title: "Idempotent monad"
-            url: "http://ncatlab.org/nlab/show/idempotent+monad"
