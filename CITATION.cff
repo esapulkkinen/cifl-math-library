@@ -30,7 +30,8 @@ references:
       title: "Categories for the Working Mathematician"
       isbn: "0-387-90036-5"
       pages: 262
-      publisher: "Springer"
+      publisher:
+          - name: "Springer"
     - type: book
       authors:
           - name: "Erich Gamma"
@@ -40,11 +41,13 @@ references:
       abstract: "Gamma et al: Design Patterns"
       title: "Design Patterns, Elements of Reusable Object-Oriented Software"
       isbn: "0-201-63361-2"
-      publisher: "Addison-Wesley Publishing Company"
+      publisher:
+          - name: "Addison-Wesley Publishing Company"
     - type: website
       abstract: "W3 schools tutorials"
       title: "W3 Schools Online XML tutorial"
-      publisher: "Refsnes Data"
+      publisher:
+          - name: "Refsnes Data"
       url: "https://w3schools.com/xml"
     - type: website
       abstract: "Haskell Wiki"
@@ -54,7 +57,8 @@ references:
       abstract: "Wikipedia, the free encyclopedia that anyone can edit"
       title: "Wikipedia, the free encyclopedia that anyone can edit"
       license: "CC BY-SA 3.0"
-      publisher: "Wikimedia Foundation, Inc."
+      publisher:
+          - name: "Wikimedia Foundation, Inc."
       url: "https://en.wikipedia.org/wiki/Main_Page"
     - type: software-executable
       abstract: "GHC compiler"
@@ -94,7 +98,8 @@ authors.
           - name: "Oliver K. Smith"
       abstract: "Smith, Oliver K.: Eigenvalues of symmetric 3x3 matrix, 1961, Communications of the ACM"
       title: "Eigenvalues of symmetric 3x3 matrix"
-      publisher: "Communications of the ACM"
+      publisher:
+          - name: "Communications of the ACM"
     - type: software-executable
       authors:
           - name: "Simon Marlow"
@@ -175,7 +180,8 @@ authors.
       url: "http://hackage.haskell.org/package/array"
     - type: article
       abstract: "The Zipper Pattern"
-      genre: "wiki"
+      keywords:
+          - "wiki"
       title: "Zipper"
       url: "http://www.haskell.org/haskellwiki/Zipper"
     - type: software-code
@@ -183,7 +189,8 @@ authors.
       url: "http://hackage.haskell.org/package/template-haskell"
     - type: article
       abstract: "The stream monad"
-      genre: "blog"
+      keywords:
+          - "blog"
       title: "The stream monad"
       url: "http://patternsinfp.wordpress.com/2010/12/31/stream-monad/"
     - type: software-code
@@ -269,7 +276,8 @@ authors.
       abstract: "A haskell monad for infinite search in finite time"
       date-released: "2008-11-21"
       title: "A haskell monad for infinite search in finite time"
-      publisher: "Mathematics and Computation"
+      publisher:
+          - name: "Mathematics and Computation"
       url: "http://math.andrej.com/2008/11/21/a-haskell-monad-for-infinite-search-in-finite-time/"
     - type: article
       authors:
@@ -286,7 +294,8 @@ authors.
       authors:
           - name: "Philip Wadler"
       abstract: "Wadler: Recursive types for free!"
-      genre: "paper"
+      keywords:
+          - "paper"
       title: "Recursive types for free!"
       url: "http://homepages.inf.ed.ac.uk/wadler/papers/free-rectypes/free-rectypes.txt"
     - type: book
@@ -295,7 +304,8 @@ authors.
       abstract: "Knuth: The Art of Computer Programming"
       title: "The Art of Computer Programming"
       isbn: "1-321-58050-8"
-      publisher: "Addison-Wesley"
+      publisher:
+          - name: "Addison-Wesley"
       url: "http://www-cs-faculty.stanford.edu/~knuth/taocp.html"
     - type: blog
       authors:
@@ -358,7 +368,8 @@ authors.
       url: "http://caps.gsfc.nasa.gov/simpson/ref/series.pdf"
     - type: website
       abstract: "General formula for dot and cross products in spherical coordinates"
-      genre: "Questions and answers"
+      keywords:
+          - "Questions and answers"
       title: "What is the general formula for calculating dot and cross products in spherical coordinates"
       url: "https://math.stackexchange.com/questions/243142/what-is-the-general-formula-for-calculating-dot-and-cross-products-in-spherical"
     - type: blog
@@ -368,7 +379,8 @@ authors.
       date-released: "2017-08-25"
       title: "Fixed Length Vector Types in Haskell (an Update for 2017)"
       license: "CC-BY-NC-ND 3.0"
-      publisher: "Justin Le"
+      publisher:
+          - name: "Justin Le"
       url: "https://blog.jle.im/entry/fixed-length-vector-types-in-haskell.html"
     - type: blog
       authors:
@@ -378,7 +390,8 @@ authors.
       url: "http://blog.jle.im/entry/fixed-length-vector-types-in-haskell-2015.html"
     - type: data
       abstract: "PPM - Netpbm color image format specification"
-      genre: "Manual page"
+      keywords:
+          - "Manual page"
       title: "Netpbm color image format specification"
       url: "http://netpbm.sourceforge.net/doc/ppm.html"
     - type: article
@@ -389,5 +402,6 @@ authors.
       url: "http://www.staff.city.ac.uk/~ross/papers/notation.html"
     - type: website
       abstract: "nCatLab"
-      genre: "wiki"
+      keywords:
+          - "wiki"
       url: "https://ncatlab.org"

@@ -29,12 +29,14 @@ references:<xsl:for-each select="bibliography/CreativeWork|bibliography/Article|
           - name: "<xsl:value-of select="node()"/>"</xsl:for-each></xsl:when></xsl:choose><xsl:for-each select="summary">
       abstract: "<xsl:value-of select="node()"/>"</xsl:for-each><xsl:for-each select="field"><xsl:sort select="attribute::name"/><xsl:choose><xsl:when test="@name='headline'">
       title: "<xsl:value-of select="node()"/>"</xsl:when><xsl:when test="@name='publisher'"><xsl:for-each select="summary[@name='name']">
-      publisher: "<xsl:value-of select="node()"/>"</xsl:for-each></xsl:when><xsl:when test="@name='isbn'">
+      publisher:
+          - name: "<xsl:value-of select="node()"/>"</xsl:for-each></xsl:when><xsl:when test="@name='isbn'">
       isbn: "<xsl:value-of select="node()"/>"</xsl:when><xsl:when test="@name='numberOfPages'">
       pages: <xsl:value-of select="node()"/></xsl:when><xsl:when test="@name='license'">
       license: "<xsl:value-of select="node()"/>"</xsl:when><xsl:when test="@name='url'">
       url: "<xsl:value-of select="node()"/>"</xsl:when><xsl:when test="@name='genre'">
-      genre: "<xsl:value-of select="node()"/>"</xsl:when><xsl:when test="@name='datePublished'">
+      keywords:
+          - "<xsl:value-of select="node()"/>"</xsl:when><xsl:when test="@name='datePublished'">
       date-released: "<xsl:value-of select="node()"/>"</xsl:when>
     </xsl:choose></xsl:for-each>
 <!--
