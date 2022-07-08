@@ -234,6 +234,7 @@ http://en.wikipedia.org/wiki/Bra%E2%80%93ket_notation
 >  vector_dimension _ = Vector1 0
 >  diagonal_impl (Matrix (Vector1 (Vector1 x))) = Vector1 x
 >  identity_impl _ = Matrix $ Vector1 (Vector1 1)
+>  identity = Matrix $ Vector1 (Vector1 1)
 >  diagonal_matrix_impl (Vector1 x) = Matrix $ Vector1 $ Vector1 x
 
 
@@ -254,6 +255,7 @@ http://en.wikipedia.org/wiki/Bra%E2%80%93ket_notation
 
 >instance (Num a) => VectorSpace ((Vector1 :*: Vector1) a) where
 >  type Scalar ((Vector1 :*: Vector1) a) = a
+>  vnegate = fmap negate
 >  vzero = Matrix $ Vector1 $ Vector1 0
 >  m %+ n = liftA2 (+) m n
 >  a %* m = fmap (a*) m
