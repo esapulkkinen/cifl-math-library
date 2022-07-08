@@ -1,10 +1,12 @@
 >{-# LANGUAGE Safe,ExistentialQuantification, TypeOperators, Rank2Types #-}
 >{-# LANGUAGE Arrows, TypeFamilies, StandaloneDeriving, FlexibleContexts #-}
 >{-# LANGUAGE FlexibleInstances, PatternSynonyms #-}
+>{-# LANGUAGE QuantifiedConstraints, UndecidableInstances #-}
 >module Math.Matrix.Matrix where
 >import Data.Complex
 >import Data.Array (Array)
 >import qualified Data.Array as Array
+>import Control.Category
 >import Control.Arrow
 >import Control.Monad
 >import Control.Monad.Zip
@@ -24,7 +26,10 @@
 >import Control.Applicative
 >import Math.Tools.I
 >import Math.Matrix.Interface
+>import Math.Matrix.Linear
 >import Math.Tools.CoMonad
+>import Data.Type.Equality
+>import Prelude hiding (id, (.))
 
 The :*: should be used when the number of dimensions of matrix is
 exactly 2.
@@ -32,10 +37,10 @@ exactly 2.
 >type family Transpose a
 >type instance Transpose ((f :*: g) a) = (g :*: f) a
 
->conjIso :: (ConjugateSymmetric a) => a :==: a
->conjIso = conj <-> conj
+conjIso :: (ConjugateSymmetric a) => (a :-> a) :==: (a :-> a)
+conjIso = conj <-> conj
 
->transposeIso :: (Transposable m n, Transposable n m) => (m :*: n) a :==: (n :*: m) a
+>transposeIso :: (Linearizable LinearMap (:*:) m n a, Linearizable LinearMap (:*:) n m a, Transposable n m a, Transposable m n a) => (m a :-> n a) :==: (n a :-> m a)
 >transposeIso = transpose <-> transpose
 
 >vnegateIso :: (VectorSpace v) => v :==: v
@@ -43,26 +48,33 @@ exactly 2.
 
 >-- | See video by Bartosz Milewski ("Category theory II 7.2: Comonads
 >-- categorically and examples")
->instance (Comonad f, Comonad g, Transposable g f, Transposable f g)
+>instance (Comonad f, Comonad g, forall a. Transposable g f a, forall b. Transposable f g b,
+> forall a. Diagonalizable f (f (g a)),
+> forall a. LinearTransform g f (f (g a)),
+> forall a. Diagonalizable g (g a),
+> forall a. LinearTransform f g (g a)
+> )
 >  => Comonad (f :*: g) where
 >   extract (Matrix m) = extract (extract m)
->   duplicate (Matrix m) = fmap Matrix
->                        $ transpose $ Matrix $ fmap duplicate $ cells
->                        $ transpose $ Matrix $ fmap duplicate m
+>   duplicate (Matrix m) = fmap Matrix 
+>                        $ transpose_impl $ Matrix $ fmap duplicate $ cells
+>                        $ transpose_impl $ Matrix $ fmap duplicate m
 
 >deriving instance (Eq a, Applicative f, Applicative g, Foldable f, Foldable g, Ord (f (g a))) => Ord ((f :*: g) a)
 
->instance (Eq a, Applicative f, Applicative g, Foldable f, Foldable g)
->    => Eq ((f :*: g) a) where
->  x == y = liftA2 (==) x y <!> (and,and)
+instance (Eq a, Applicative f, Applicative g, Foldable f, Foldable g)
+    => Eq ((f :*: g) a) where
+  x == y = liftA2 (==) x y <!> (and,and)
+
 
 instance Comonad ((,) a :*: (->) a) where
    extract (Matrix (x,f)) = f x
    duplicate (Matrix (a,f)) = Matrix (a,\x -> Matrix (x,f))
 
 
->(!$!) :: (Functor f, Functor g) => f (a -> b) -> g a -> (f :*: g) b
->(!$!) = matrix ($)
+>(!$!) :: (Linearizable LinearMap (:*:) f g b, Num b, Functor f, Functor g)
+> => f (a -> b) -> g a -> f b :-> g b
+>(!$!) f x = linear $ matrix ($) f x
 
 >matrixBind :: (Functor f) => f a -> (a -> g b) -> (f :*: g) b
 >matrixBind x = Matrix . flip fmap x
@@ -101,20 +113,31 @@ instance Comonad ((,) a :*: (->) a) where
 
 >-- | <https://en.wikipedia.org/wiki/Modular_exponentiation>
 >-- @modular_exponentiation m b c == m^b  (mod c)@
->modular_exponentiation :: (Integral a, Diagonalizable f a, Transposable f f,
->                           InnerProductSpace (f a), a ~ Scalar (f a)) 
->                      => (f :*: f) a -> Integer -> a -> (f :*: f) a
->modular_exponentiation m b c 
->   | b == 0         = identity (vector_dimension $ diagonal m)
->   | b `mod` 2 == 1 = fmap (`mod` c) $ 
->                         m %*% modular_exponentiation m (pred b) c
->   | otherwise = fmap (`mod` c) $ d %*% d
->          where d = modular_exponentiation m (b `div` 2) c
 
->isSymmetric :: (Transposable m m, Applicative m, Foldable m, Eq a) => (m :*: m) a -> Bool
+>mod_linear_map :: (Linearizable LinearMap (:*:) f f a, Diagonalizable f a, Integral (f a)) => f a -> f a :-> f a
+>mod_linear_map c = linear $ functionMatrix (`mod` c)
+
+
+>modular_exponentiation :: (SupportsMatrixMultiplication f f f a, a ~ f b,
+>                          Linearizable LinearMap (:*:) f f a,
+>                          Linearizable LinearMap (:*:) f f b,
+>                          Diagonalizable f b, LinearTransform f f b,
+>                          FunctorArrow f LinearMap,
+>                          Integral b) => f a :-> f a -> Integer -> b -> f a :-> f a
+>modular_exponentiation m b c 
+>   | b == 0         = MatIdentity
+>   | b `mod` 2 == 1 = amap (linear (modmatrix c)) . 
+>                         (linear_matrix_multiply m $ modular_exponentiation m (pred b) c)
+>   | otherwise = amap (linear (modmatrix c)) . (linear_matrix_multiply d d)
+>          where d = modular_exponentiation m (b `div` 2) c
+>                modmatrix c = functionMatrix (fmap (`mod` c))
+
+>isSymmetric :: (Eq (m (m a)), LinearTransform m m a, Linearizable LinearMap (:*:) m m a, Diagonalizable m a, Transposable m m a, Applicative m, Foldable m, Eq a)
+> => m a :-> m a -> Bool
 >isSymmetric m = transpose m == m
 
->apply_vector :: (Diagonalizable m b) => m (a -> b) -> m a -> m b
+>apply_vector :: (LinearTransform m m b, Linearizable LinearMap (:*:) m m b, Transposable m m b, Diagonalizable m b)
+> => m (a -> b) -> m a -> m b
 >apply_vector f x = diagonal (f !$! x)
 
 >apply_columns :: (Functor n, Functor m, Applicative f)
@@ -133,10 +156,6 @@ instance Comonad ((,) a :*: (->) a) where
 >matrixRightId :: (Functor f) => (f :*: I) a -> f a
 >matrixRightId (Matrix f) = fmap unI f
 
-example use: m <!> (xcoord3,ycoord3)
-
->(<!>) :: (Functor f, Functor g) => (g :*: f) a -> (g c -> b,f a -> c) -> b
->m <!> (x,y) = MatrixFold (x,y) `visit` m
 
 >(!*!) :: (Functor f, Functor g, Num a) => g a -> f a -> (g :*: f) a
 >x !*! y = matrix (*) x y
@@ -144,29 +163,63 @@ example use: m <!> (xcoord3,ycoord3)
 >(<!!>) :: (Array.Ix i, Array.Ix j) => (Array i :*: Array j) a -> (i,j) -> a
 >(<!!>) m (x,y) = m <!> ((Array.! x),(Array.! y))
 
+>project_down :: (Functor (m \\\ m'),
+>                ProjectionSpace m m',
+>                ProjectionSpace n Vector1)
+>               => (m :*: n) a -> (m \\\ m') a
+>project_down m = fmap vector_element $ m <!> (project_second, project_first)
+ 
+>project_right :: (ProjectionSpace m Vector1, ProjectionSpace n n')
+>              => (m :*: n) a -> (n \\\ n') a
+>project_right m = vector_element $ m <!> (project_first, project_second)
+
+>project_diagonal :: (ProjectionSpace m m', ProjectionSpace n n')
+>                 => (m :*: n) a -> ((m \\\ m') :*: (n \\\ n')) a
+>project_diagonal m = Matrix $ m <!> (project_second, project_second)
+
 
 
 matrix_commutator :: (Applicative h, Transposable h h, InnerProductSpace (h a), Scalar (h a) ~ a) => (h :*: h) a -> (h :*: h) a -> (h :*: h) a
 
->matrix_commutator :: (Num a, Applicative h, Transposable h h,
->                      InnerProductSpace (h a), VectorSpaceOver (h a) a)
->                     => (h :*: h) a -> (h :*: h) a -> (h :*: h) a 
->matrix_commutator m n = liftA2 (-) (m %**% n) (n %**% m)
+>matrix_commutator m n = m %*% n %- n %*% m
 
->matrix_anticommutator :: (Num a, Applicative h, Transposable h h,
->                      InnerProductSpace (h a), VectorSpaceOver (h a) a)
->                     => (h :*: h) a -> (h :*: h) a -> (h :*: h) a 
->matrix_anticommutator m n = liftA2 (+) (m %**% n) (n %**% m)
+>instance (Num a, ConjugateSymmetric a) => LieAlgebra ((Vector4 :*: Vector4) a) where
+>   (%<>%) = matrix_commutator
 
->normalized_anticommutator :: (Fractional a, Applicative h, Transposable h h,
->                      InnerProductSpace (h a), VectorSpaceOver (h a) a)
->                     => (h :*: h) a -> (h :*: h) a -> (h :*: h) a 
->normalized_anticommutator m n = liftA (/2) (matrix_anticommutator m n)
 
->commute :: (Fractional a, Applicative f, Transposable f f,
->            InnerProductSpace (f a), VectorSpaceOver (f a) a) =>
->   Complex ((f :*: f) a) -> Complex ((f :*: f) a) -> (f :*: f) (Complex a)
->commute (x :+ y) (x' :+ y') = liftA2 (:+) (normalized_anticommutator x x')
+>instance (Num a, ConjugateSymmetric a) => LieAlgebra ((Vector3 :*: Vector3) a) where
+>   (%<>%) = matrix_commutator
+
+
+matrix_commutator :: (Num a, Applicative h, Transposable h h a, Scalar a ~ a,
+                      Scalar (h (h a)) ~ a,
+                      InnerProductSpace (h a), VectorSpaceOver (h a) a)
+                     => h a :-> h a -> h a :-> h a -> h a :-> h a
+matrix_commutator m n = alift2 (pure $ proc a -> returnA -< proc b -> returnA -< a - b) -!< (m %**% n,n %**% m)
+
+>matrix_anticommutator m n = m %*% n %+ n %*% m
+
+matrix_anticommutator :: (Num a, Applicative h, Transposable h h a,
+                      InnerProductSpace (h a), VectorSpaceOver (h a) a)
+                     => h a :-> h a -> h a :-> h a-> h a :-> h a
+matrix_anticommutator m n = liftA2 (+) (m %**% n) (n %**% m)
+
+normalized_anticommutator :: (Fractional a, Applicative h, Transposable h h a,
+                      InnerProductSpace (h a), VectorSpaceOver (h a) a)
+                     => 
+normalized_anticommutator m n = liftA (/2) (matrix_anticommutator m n)
+
+normalized_anticommutator :: (LinearTransform h h a, Transposable h h a, InnerProductSpace (h a), Diagonalizable h a, Fractional a, VectorSpace (h a), a ~ Scalar a, a ~ Scalar (h a), a ~ Scalar (h (h a))) => h a :-> h a -> h a :-> h a -> h a :-> h a
+
+>normalized_anticommutator m n = (1/2) %* matrix_anticommutator m n
+
+commute :: (Fractional a, Applicative f, Transposable f f a,
+            InnerProductSpace (f a), VectorSpaceOver (f a) a) =>
+   Complex (f a :-> f a) -> Complex (f a :-> f a) -> f (Complex a) :-> f (Complex a)
+
+commute :: Complex (g a :-> g a) -> Complex (g a :-> g a) -> ((g :*: g) (Complex a)) :-> ((g :*: g) (Complex a))
+
+>commute (x :+ y) (x' :+ y') = matrix (:+) (normalized_anticommutator x x')
 >                                          (matrix_commutator y y')
 
 
@@ -190,17 +243,18 @@ matrix_commutator :: (Applicative h, Transposable h h, InnerProductSpace (h a), 
 >cofunctor_map f (Matrix x) = Matrix (inverse_image (inverse_image f) x)
 
 
->instance (Monad f, Monad g, Indexable f) => Monad ((:*:) f g) where
+>instance (Monad f, Monad g, forall a. Indexable f a) => Monad ((:*:) f g) where
 >   return x = Matrix $ return (return x)
->   (Matrix v) >>= f = Matrix $ liftA2 (\d x -> x >>= (d . cells . f)) diagonal_projections v
+>   (Matrix v) >>= f = Matrix $ liftA2 (\d x -> x >>= (index_project d . cells . f)) diagonal_projections v
 
->in_transpose :: (Monad g, Indexable f) => (f :*: g) a -> (a -> (g :*: f) b) -> (f :*: g) b
->in_transpose (Matrix v) f = Matrix $ liftA2 (\d x -> x >>= (fmap d . cells . f)) diagonal_projections v
+>in_transpose :: (Monad g, Indexable f b, Integral b) => (f :*: g) a -> (a -> (g :*: f) b) -> (f :*: g) b
+>in_transpose (Matrix v) f = Matrix $ liftA2 (\d x -> x >>= (fmap (index_project d) . cells . f))
+>                                            diagonal_projections v
 
->instance (MonadZip g, MonadZip f, Indexable g) => MonadZip (g :*: f) where
+>instance (MonadZip g, MonadZip f, forall a. Indexable g a) => MonadZip (g :*: f) where
 >   mzipWith f (Matrix a) (Matrix b) = Matrix $ mzipWith (mzipWith f) a b
 
->instance (MonadPlus g, Indexable g, MonadPlus f) => MonadPlus (g :*: f) where
+>instance (MonadPlus g, forall a. Indexable g a, MonadPlus f) => MonadPlus (g :*: f) where
 >   mzero = Matrix mzero
 >   mplus (Matrix f) (Matrix g) = Matrix $ liftA2 mplus f g
 
@@ -215,11 +269,6 @@ matrix_commutator :: (Applicative h, Transposable h h, InnerProductSpace (h a), 
 >                                                          (b -> g c)
 >                                                          (b -> f d)
 >   build (MatrixUnfold m g f) x = matrix m (g x) (f x)
-
->instance (Functor g) => Visitor ((g :*: f) a) where
->   data Fold ((g :*: f) a) b = forall c. MatrixFold (g c -> b,f a -> c)
->   visit (MatrixFold (gt,ft)) (Matrix x) = gt (fmap ft x)
-
 
 instance (Functor f, Functor g) => Builder (Matrix g f a) b where
    type Unfold (Matrix g f a) b = (c -> d -> a,Unfold (g c) b,Unfold (f d) b)

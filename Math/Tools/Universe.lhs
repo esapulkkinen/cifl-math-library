@@ -108,7 +108,7 @@
 >         mr = all_functions_from dr ls 
 
 >instance (Universe a, Universe b) => Universe (a,b) where
->   all_elements = concat $ outer (,) all_elements all_elements
+>   all_elements = concat $ functor_outer (,) all_elements all_elements
 
 >instance (Universe a, Universe b, Universe c) => Universe (a,b,c) where
 >   all_elements = concat (map concat (outer3_functor (,,) all_elements all_elements all_elements))

@@ -8,46 +8,31 @@
 >import safe GHC.Generics hiding ((:+:), (:*:), R)
 >import safe Data.Data
 >import safe Data.Typeable
+>import safe Math.Matrix.Points
 
 import Math.Matrix.Dimension
 
 >import safe Math.Tools.PrettyP
 >import safe Math.Tools.Universe
->import safe Math.Matrix.Matrix
 >import safe Data.Complex
 >import safe Math.Tools.Isomorphism
 >import safe Math.Tools.Orthogonal
 >import safe Math.Matrix.Interface
 >import safe qualified Data.Binary as Bin
->import safe qualified Math.Matrix.Covector as Covector
->import safe Math.Matrix.Covector
 >import safe Math.Tools.Median
 >import safe Math.Tools.Visitor
 >import safe Math.Tools.CoMonad
->import safe Math.Matrix.Covector
 >import safe Math.Matrix.Vector1
 >import safe Math.Matrix.Vector2
 >import safe Math.Matrix.Vector3
->import safe Math.Matrix.Simple
 >import safe Math.Number.Interface
->import safe Math.Number.Real
 >import safe Math.Number.Group
->import safe qualified Math.Number.Stream as Stream
->import safe Math.Number.Stream (Stream(..),Limiting(..), Closed(..), Infinitesimal(..))
+>import safe Math.Number.StreamInterface
 
->data Vector4 s = Vector4 {
->  tcoord4 :: !s,
->  xcoord4 :: !s,
->  ycoord4 :: !s,
->  zcoord4 :: !s
-> }
->    deriving (Eq, Typeable, Data, Generic)
-
->cov4 :: Vector4 (Dual (Vector4 a))
->cov4 = Vector4 (covector tcoord4) (covector xcoord4) (covector ycoord4) (covector zcoord4)
-
->instance ProjectionDual Vector4 a where
->   projection_dual = cov4
+>deriving instance (Eq a) => Eq (Vector4 a)
+>deriving instance (Typeable a) => Typeable (Vector4 a)
+>deriving instance (Generic a) => Generic (Vector4 a)
+>deriving instance (Data a) => Data (Vector4 a)
 
 >instance (ShowPrecision s) => ShowPrecision (Vector4 s) where
 >  show_at_precision (Vector4 t x y z) p =
@@ -91,13 +76,6 @@ import Math.Matrix.Dimension
 >                                         (Vector4 y z t x)
 >                                         (Vector4 z t x y)
 
->instance (Num a) => FiniteDimensional (Vector4 a) where
->   finite (Matrix (Covector f)) = Vector4
->                                    (f (covector tcoord4))
->                                    (f (covector xcoord4))
->                                    (f (covector ycoord4))
->                                    (f (covector zcoord4))
-
 >x4 :: (Num a) => Vector4 a
 >x4 = xcoord4 (cells identity4)
 >y4 :: (Num a) => Vector4 a
@@ -132,7 +110,7 @@ import Math.Matrix.Dimension
 >      diagonal_codiagonal4 :: Codiagonal Vector3 a
 >   }
 >   type (Vector4 \\ a) = Vector3 a
->   codiagonal = codiag4
+>   codiagonal_impl = codiag4
 >   (|\|) = matrix4
 >   down_project = down_codiagonal4
 >   right_project = right_codiagonal4
@@ -154,9 +132,15 @@ import Math.Matrix.Dimension
 >                  Vector4 0 0 1 0,
 >                  Vector4 0 0 0 1]                   
 
->instance Indexable Vector4 where
->  diagonal_projections = Vector4 tcoord4 xcoord4 ycoord4 zcoord4
+>instance (Num a) => Indexable Vector4 a where
+>  diagonal_projections = diagonal_projections4
 >  indexable_indices = Vector4 0 1 2 3
+
+>diagonal_projections4 :: (Num a) => Vector4 (Index Vector4 a)
+>diagonal_projections4 = Vector4 (tcoord4 <!-!> \a -> Vector4 a 0 0 0)
+>                                (xcoord4 <!-!> \a -> Vector4 0 a 0 0)
+>                                (ycoord4 <!-!> \a -> Vector4 0 0 a 0)
+>                                (zcoord4 <!-!> \a -> Vector4 0 0 0 a)
 
 >cycle4 :: Vector4 a -> Stream a
 >cycle4 z@(Vector4 a b c d) = a `Pre` b `Pre` c `Pre` d `Pre` cycle4 z
@@ -193,9 +177,9 @@ import Math.Matrix.Dimension
 >  type (Vector2 :+: Vector2) = Vector4
 >  (Vector2 x y) |> (Vector2 z t) = Vector4 x y z t
 
->instance AppendableVector Vector4 Stream where
->  type (Vector4 :+: Stream) = Stream
->  (Vector4 x y z a) |> s = x `Pre` y `Pre` z `Pre` a `Pre` s
+>instance (StreamBuilder str) => AppendableVector Vector4 str where
+>  type (Vector4 :+: str) = str
+>  (Vector4 x y z a) |> s = x `pre` y `pre` z `pre` a `pre` s
 
 >instance SplittableVector Vector2 Vector2 where
 >  vsplit (Vector4 x y z t) = (Vector2 x y, Vector2 z t)
@@ -276,18 +260,18 @@ instance FractionalSpace (Vector4 (Complex R))
 >  mappend = (%+)
 
 >instance (Num a, ConjugateSymmetric a) => Semigroup ((Vector4 :*: Vector4) a) where
->   (<>) = (%**%)
+>   (<>) = (%*%)
 
 >dim4 :: Vector4 Integer
 >dim4 = Vector4 0 1 2 3
 
 >-- | see "Lawvere,Rosebrugh: Sets for mathematics", pg. 167.
 >instance (Num a, ConjugateSymmetric a) => Monoid ((Vector4 :*: Vector4) a) where
->   mempty = identity dim4
->   mappend = (%**%)
+>   mempty = identity
+>   mappend = (%*%)
 
->instance (Limiting a) => Limiting (Vector4 a) where
->  data Closure (Vector4 a) = Vector4Closure { runVector4Closure :: Vector4 (Closure a) }
+>instance (Monad str, Limiting str a) => Limiting str (Vector4 a) where
+>  data Closure str (Vector4 a) = Vector4Closure { runVector4Closure :: Vector4 (Closure str a) }
 >  limit str = Vector4Closure $ Vector4
 >                      (limit $ str >>= (return . tcoord4))
 >                      (limit $ str >>= (return . xcoord4))
@@ -311,29 +295,47 @@ instance FractionalSpace (Vector4 (Complex R))
 >  v %* w = (v *) <$> w
 >  x %+ y = pure (+) <*> x <*> y
 
->left_multiply4 :: (Num a) => Vector4 a -> Matrix4 a -> Vector4 a
->left_multiply4 v (Matrix w) = (sum_coordinates4 . (pure (*) <*> v <*>)) <$> w
+>left_multiply4_gen :: (Functor f, Num a, ConjugateSymmetric a) => Vector4 a -> (f :*: Vector4) a -> f a
+>left_multiply4_gen v (Matrix w) = (sum_coordinates4 . (pure (*) <*> v <*>)) <$> fmap conj w
 
->right_multiply4 :: (Num a) => Matrix4 a -> Vector4 a -> Vector4 a
->right_multiply4 (Matrix (Vector4 (Vector4 x1 y1 z1 t1)
->                         (Vector4 x2 y2 z2 t2)
->                         (Vector4 x3 y3 z3 t3)
->                         (Vector4 x4 y4 z4 t4))) (Vector4 x y z t)
->   = Vector4 (x1*x+x2*y+x3*z+x4*t)
->             (y1*x+y2*y+y3*z+y4*t)
->             (z1*x+z2*y+z3*z+z4*t)
->             (t1*x+t2*y+t3*z+t4*t)
+>right_multiply4_gen :: (VectorSpace (f a), ConjugateSymmetric a, Scalar (f a) ~ a) => (Vector4 :*: f) a -> Vector4 a -> f a
+>right_multiply4_gen (Matrix w) v = vsum $ liftA2 (\a fa -> a %* fa) (conj v) w
+
+>matrix_multiply4 :: (Num a, ConjugateSymmetric a) => Matrix4 a -> Matrix4 a -> Matrix4 a
+>matrix_multiply4 (Matrix v) w | Matrix wt <- transpose4 w = Matrix $ functor_outer dot4 v wt
+
+>dot4 :: (Num a, ConjugateSymmetric a) => Vector4 a -> Vector4 a -> a
+>dot4 x y = sum_coordinates4 $ pure (*) <*> x <*> conj y
+
+>instance {-# OVERLAPPABLE #-} (Num a, ConjugateSymmetric a) => LinearTransform Vector4 Vector4 a where
+>   (<*>>) = left_multiply4_gen
+>   (<<*>) = right_multiply4_gen
+
+>instance (Num a, ConjugateSymmetric a) => LinearTransform Vector3 Vector4 a where
+>   (<*>>) = left_multiply4_gen
+>   (<<*>) = right_multiply3_gen
+>
+>instance (Num a, ConjugateSymmetric a) => LinearTransform Vector4 Vector3 a where
+>   (<*>>) = left_multiply3_gen
+>   (<<*>) = right_multiply4_gen
+>
+>instance (Num a, ConjugateSymmetric a) => LinearTransform Vector2 Vector4 a where
+>   (<*>>) = left_multiply4_gen
+>   (<<*>) = right_multiply2_gen
+
+>instance (Num a, ConjugateSymmetric a) => LinearTransform Vector4 Vector2 a where
+>   (<*>>) = left_multiply2_gen
+>   (<<*>) = right_multiply4_gen
 
 
->matrix_multiply4 :: (Num a) => Matrix4 a -> Matrix4 a -> Matrix4 a
->matrix_multiply4 (Matrix v) w | Matrix wt <- transpose4 w = Matrix $ outer dot4 v wt
+>instance (Num a, ConjugateSymmetric a) => LinearTransform Vector1 Vector4 a where
+>   x <*>> (Matrix (Vector1 m)) = Vector1 $ x %. m
+>   (Matrix (Vector1 m)) <<*> (Vector1 x) = conj x %* m
 
->dot4 :: (Num a) => Vector4 a -> Vector4 a -> a
->dot4 x y = sum_coordinates4 $ pure (*) <*> x <*> y
-
->instance {-# OVERLAPPABLE #-} (Num a) => LinearTransform Vector4 Vector4 a where
->   (<*>>) = left_multiply4
->   (<<*>) = right_multiply4
+>instance (Num a, ConjugateSymmetric a) => LinearTransform Vector4 Vector1 a where
+>   (Vector1 x) <*>> (Matrix m) = x %* fmap (conj . vector_element) m
+>   (Matrix (Vector4 (Vector1 t) (Vector1 x) (Vector1 y) (Vector1 z))) <<*> (Vector4 t' x' y' z')
+>      = Vector1 (t*conj t'+x*conj x'+y*conj y'+z*conj z')
 
 
 >instance (Floating a, ConjugateSymmetric a) => NormedSpace (Vector4 a) where
@@ -341,8 +343,6 @@ instance FractionalSpace (Vector4 (Complex R))
 
 >instance {-# OVERLAPPABLE #-} (Num a, ConjugateSymmetric a) => InnerProductSpace (Vector4 a) where
 >  v %. w = sum_coordinates4 $ pure (*) <*> v <*> (conj <$> w)
-
-
 
 >versor :: (Floating a, ConjugateSymmetric a) => Vector4 a -> Vector4 a
 >versor q = (1 / norm q) %* q
@@ -354,14 +354,7 @@ instance FractionalSpace (Vector4 (Complex R))
 >   negate (Matrix v) = Matrix $ liftA (liftA negate) v
 >   abs (Matrix v) = Matrix $ liftA (liftA abs) v
 >   signum (Matrix v) = Matrix $ liftA (liftA signum) v
->   fromInteger i = diagonal_matrix (constant4 (fromInteger i))
-
-
->instance (Num a, ConjugateSymmetric a) => LieAlgebra ((Vector4 :*: Vector4) a) where
->   (%<>%) = matrix_commutator
-
->instance MetricSpace (Vector4 R) where
->   distance x y = norm (x %- y)
+>   fromInteger i = diagonal_matrix_impl (constant4 (fromInteger i))
 
 >index4 :: Int -> Vector4 a -> a
 >index4 0 = tcoord4
@@ -369,151 +362,15 @@ instance FractionalSpace (Vector4 (Complex R))
 >index4 2 = ycoord4
 >index4 3 = zcoord4
 
->index4_dual :: Int -> Covector.Dual (Vector4 a)
->index4_dual = Covector.covector . index4
-
->vector4_to_vec4 :: Vector4 a -> FourD -> a
->vector4_to_vec4 (Vector4 x y z t) = svec4 x y z t
-
 >diagonal4 :: (Vector4 :*: Vector4) a -> Vector4 a
->diagonal4 (Matrix x) = diagonal_projections <*> x
-
->diagonal_projections4 :: Vector4 (Covector.Dual (Vector4 a))
->diagonal_projections4 = Vector4 (covector tcoord4)
->                                (covector xcoord4)
->                                (covector ycoord4)
->                                (covector zcoord4)
-
+>diagonal4 (Matrix (Vector4 t x y z))
+>   = Vector4 (tcoord4 t) (xcoord4 x) (ycoord4 y) (zcoord4 z)
 
 >dt_4 eps = \case { (Vector4 t x y z) -> Vector4 (t+eps) x y z }
 >dx_4 eps = \case { (Vector4 t x y z) -> Vector4 t (x+eps) y z }
 >dy_4 eps = \case { (Vector4 t x y z) -> Vector4 t x (y+eps) z }
 >dz_4 eps = \case { (Vector4 t x y z) -> Vector4 t x y (z+eps) }
 
->partial_derivate4x :: (Infinitesimal a, Closed a)
->   => (Vector4 a -> a) -> Vector4 a -> a
->partial_derivate4x = partial_derivate dx_4
-
->partial_derivate4y :: (Infinitesimal a, Closed a) => (Vector4 a -> a) -> Vector4 a -> a
->partial_derivate4y = partial_derivate dy_4
-
->partial_derivate4z :: (Infinitesimal a, Closed a) => (Vector4 a -> a) -> Vector4 a -> a
->partial_derivate4z = partial_derivate dz_4
-
->partial_derivate4t :: (Infinitesimal a, Closed a) => (Vector4 a -> a) -> Vector4 a -> a
->partial_derivate4t = partial_derivate dt_4
-
->derivate4t_squared :: (Closed a, Infinitesimal a)
->     => Covector.Dual (Vector4 a) -> Covector.Dual (Vector4 a)
->derivate4t_squared = operator_map (partial_derivate4t . partial_derivate4t)
-
->derivate4t :: (Closed a, Infinitesimal a) =>
->  Covector.Dual (Vector4 a) -> Covector.Dual (Vector4 a)
->derivate4t = operator_map partial_derivate4t
-
->derivate4x :: (Closed a, Infinitesimal a) =>
->  Covector.Dual (Vector4 a) -> Covector.Dual (Vector4 a)
->derivate4x = operator_map (partial_derivate4x)
-
->derivate4y :: (Closed a, Infinitesimal a) =>
->  Covector.Dual (Vector4 a) -> Covector.Dual (Vector4 a)
->derivate4y = operator_map (partial_derivate4y)
-> 
->derivate4z :: (Closed a, Infinitesimal a) =>
->  Covector.Dual (Vector4 a) -> Covector.Dual (Vector4 a)
->derivate4z = operator_map (partial_derivate4z)
-
->del_partial4 :: (DifferentiallyClosed a) => (Vector4 a -> a) -> Vector4 a -> Vector4 a
->del_partial4 f (Vector4 x y z t) = Vector4 (partial1_4 ff x y z t)
->                                           (partial2_4 ff x y z t)
->                                           (partial3_4 ff x y z t)
->                                           (partial4_4 ff x y z t)
->   where ff a b c d = f (Vector4 a b c d)
-
->instance DifferentialOperator Vector4 where
->   partial = del_partial4
-
->del4 :: (Closed a, Infinitesimal a)
->      => Vector4 (Dual (Vector4 a) -> Dual (Vector4 a))
->del4 = Vector4 derivate4t derivate4x derivate4y derivate4z
-
->del4_ :: (Infinitesimal a, Closed a) => Vector4 ((Vector4 a -> a) -> Vector4 a -> a)
->del4_ = Vector4 partial_derivate4t partial_derivate4x partial_derivate4y
->               partial_derivate4z
-
->hessian4 :: (Infinitesimal v, Closed v)
->  => Dual (Vector4 v) -> (Vector4 :*: Vector4) (Dual (Vector4 v))
->hessian4 f = matrix (\a b -> a (b f)) del4 del4
-
->grad4 :: (Infinitesimal a, Closed a) => Covector.Dual (Vector4 a) -> LinearMap (Vector4 a) (Vector4 a)
->grad4 (Covector f) = LinearMap $ \x -> Vector4
->    (partial_derivate4t f x)
->    (partial_derivate4x f x)
->    (partial_derivate4y f x)
->    (partial_derivate4z f x)
-
->curl4 :: (Infinitesimal a, Closed a) => Vector4 (Covector.Dual (Vector4 a))
->                                    -> Vector4 a
->                                    -> (Vector4 :*: Vector4) a
->curl4 (Vector4 (Covector ft)
->               (Covector fx)
->               (Covector fy)
->               (Covector fz))
->    v@(Vector4 t x y z) = Matrix $ Vector4
->               (Vector4 0
->                        (partial_derivate4x ft v - partial_derivate4t fx v)
->                        (partial_derivate4y ft v - partial_derivate4t fy v)
->                        (partial_derivate4z ft v - partial_derivate4t fz v))
-> 
->               (Vector4 (partial_derivate4t fx v - partial_derivate4x ft v)
->                        0
->                        (partial_derivate4y fx v - partial_derivate4x fy v)
->                        (partial_derivate4z fx v - partial_derivate4x fz v))
->               (Vector4 (partial_derivate4t fy v - partial_derivate4y ft v)
->                        (partial_derivate4x fy v - partial_derivate4y fx v)
->                        0
->                        (partial_derivate4z fy v - partial_derivate4y fz v))
->               (Vector4 (partial_derivate4t fz v - partial_derivate4z ft v)
->                        (partial_derivate4x fz v - partial_derivate4z fx v)
->                        (partial_derivate4y fz v - partial_derivate4z fy v)
->                        0)
->         
-
->instance (Num a, Closed a, Infinitesimal a) => VectorDerivative (Vector4 a) where
->   divergence = divergence4
->   grad = grad4
-
->divergence4 :: (Infinitesimal a, Closed a) => LinearMap (Vector4 a) (Vector4 a) -> Covector.Dual (Vector4 a)
->divergence4 f = covector $ \z -> partial_derivate4t (tcoord4 . (-!<) f) z +
->                                partial_derivate4x (xcoord4 . (-!<) f) z +
->                                partial_derivate4y (ycoord4 . (-!<) f) z +
->                                partial_derivate4z (zcoord4 . (-!<) f) z
-
->laplace4 :: (Infinitesimal a, Closed a) => Covector.Dual (Vector4 a) -> Covector.Dual (Vector4 a)
->laplace4 f = divergence4 (grad4 f)
-
->instance (Infinitesimal a, Closed a) => VectorLaplacian (Vector4 a) where
->  vector_laplace = vector_laplace4
-
->vector_laplace4 :: (VectorDerivative v)
-> => LinearMap v (Vector4 (Scalar v)) -> LinearMap v (Vector4 (Scalar v))
->vector_laplace4 f = LinearMap $ \x -> Vector4
->   ((laplace $ linear_dual_4t f) `bracket` x)
->   ((laplace $ linear_dual_4x f) `bracket` x)
->   ((laplace $ linear_dual_4y f) `bracket` x)
->   ((laplace $ linear_dual_4z f) `bracket` x)
-
->linear_dual_4t :: LinearMap v (Vector4 (Scalar v)) -> Dual v
->linear_dual_4t f = covector (tcoord4 . (-!<) f)
-
->linear_dual_4x :: LinearMap v (Vector4 (Scalar v)) -> Dual v
->linear_dual_4x f = covector (xcoord4 . (-!<) f)
-
->linear_dual_4y :: LinearMap v (Vector4 (Scalar v)) -> Dual v
->linear_dual_4y f = covector (ycoord4 . (-!<) f)
-
->linear_dual_4z :: LinearMap v (Vector4 (Scalar v)) -> Dual v
->linear_dual_4z f = covector (zcoord4 . (-!<) f)
 
 >-- | 1 x 4 matrices:
 >instance (Num a) => VectorSpace ((Vector1 :*: Vector4) a) where
@@ -524,14 +381,21 @@ instance FractionalSpace (Vector4 (Complex R))
 >  (Matrix x) %+ (Matrix y) = Matrix $ liftA2 (liftA2 (+)) x y
 
 >-- | 1 x 4 matrices:
->instance Transposable Vector1 Vector4 where
->   transpose (Matrix (Vector1 (Vector4 t x y z)))
+>instance Transposable Vector1 Vector4 a where
+>   transpose_impl (Matrix (Vector1 (Vector4 t x y z)))
 >     = Matrix $ Vector4 (Vector1 t) (Vector1 x) (Vector1 y) (Vector1 z)
 
 >-- | 4 x 1 matrices:
->instance Transposable Vector4 Vector1 where
->   transpose (Matrix (Vector4 (Vector1 t) (Vector1 x) (Vector1 y) (Vector1 z)))
+>instance Transposable Vector4 Vector1 a where
+>   transpose_impl (Matrix (Vector4 (Vector1 t) (Vector1 x) (Vector1 y) (Vector1 z)))
 >     = Matrix $ Vector1 (Vector4 t x y z)
+
+>instance Transposable Stream Vector4 a where
+>   transpose_impl (Matrix (Pre v vr))
+>     = Matrix (Vector4 (Pre (tcoord4 v) (fmap tcoord4 vr))
+>                       (Pre (xcoord4 v) (fmap xcoord4 vr))
+>                       (Pre (ycoord4 v) (fmap ycoord4 vr))
+>                       (Pre (zcoord4 v) (fmap zcoord4 vr)))
 
 >-- | 4 x 1 matrices:
 >instance (Num a) => VectorSpace ((Vector4 :*: Vector1) a) where
@@ -542,8 +406,8 @@ instance FractionalSpace (Vector4 (Complex R))
 >  (Matrix x) %+ (Matrix y) = Matrix $ x %+ y
 
 >-- | 2 x 4 matrices:
->instance Transposable Vector2 Vector4 where
->    transpose (Matrix (Vector2 (Vector4 x1 x2 x3 x4) (Vector4 y1 y2 y3 y4)))
+>instance Transposable Vector2 Vector4 a where
+>    transpose_impl (Matrix (Vector2 (Vector4 x1 x2 x3 x4) (Vector4 y1 y2 y3 y4)))
 >      = Matrix $ Vector4 (Vector2 x1 y1) (Vector2 x2 y2) (Vector2 x3 y3) (Vector2 x4 y4)
 
 >-- | 2 x 4 matrices
@@ -555,8 +419,8 @@ instance FractionalSpace (Vector4 (Complex R))
 >  (Matrix x) %+ (Matrix y) = Matrix $ liftA2 (liftA2 (+)) x y
 
 >-- | 4 x 2 matrices
->instance Transposable Vector4 Vector2 where
->    transpose (Matrix (Vector4 (Vector2 x1 y1) (Vector2 x2 y2) (Vector2 x3 y3) (Vector2 x4 y4)))
+>instance Transposable Vector4 Vector2 a where
+>    transpose_impl (Matrix (Vector4 (Vector2 x1 y1) (Vector2 x2 y2) (Vector2 x3 y3) (Vector2 x4 y4)))
 >       = Matrix $ Vector2 (Vector4 x1 x2 x3 x4) (Vector4 y1 y2 y3 y4)
 
 >-- | 4 x 2 matrices
@@ -568,8 +432,8 @@ instance FractionalSpace (Vector4 (Complex R))
 >  (Matrix x) %+ (Matrix y) = Matrix $ x %+ y
 
 >-- | 4 x 3 matrices:
->instance Transposable Vector4 Vector3 where
->   transpose (Matrix (Vector4 (Vector3 x1 y1 z1) 
+>instance Transposable Vector4 Vector3 a where
+>   transpose_impl (Matrix (Vector4 (Vector3 x1 y1 z1) 
 >                              (Vector3 x2 y2 z2)
 >                              (Vector3 x3 y3 z3)
 >                              (Vector3 x4 y4 z4)))
@@ -586,8 +450,8 @@ instance FractionalSpace (Vector4 (Complex R))
 >  (Matrix x) %+ (Matrix y) = Matrix $ x %+ y
 
 >-- | 3 x 4 matrices
->instance Transposable Vector3 Vector4 where
->   transpose (Matrix (Vector3 (Vector4 x1 x2 x3 x4)
+>instance Transposable Vector3 Vector4 a where
+>   transpose_impl (Matrix (Vector3 (Vector4 x1 x2 x3 x4)
 >                              (Vector4 y1 y2 y3 y4)
 >                              (Vector4 z1 z2 z3 z4)))
 >     = Matrix $ Vector4 (Vector3 x1 y1 z1)
@@ -603,10 +467,19 @@ instance FractionalSpace (Vector4 (Complex R))
 >  v %* (Matrix x) = Matrix $ fmap (fmap (v *)) x
 >  (Matrix x) %+ (Matrix y) = Matrix $ liftA2 (liftA2 (+)) x y
 
-
 >-- | 4 x 4 matrices
->instance Transposable Vector4 Vector4 where
->   transpose = transpose4
+>instance (Num a) => Transposable Vector4 Vector4 a where
+>   transpose_impl = transpose4
+
+>instance Transposable Vector4 ((->) row) a where
+>   transpose_impl (Matrix (Vector4 t x y z))
+>     = Matrix $ \a -> Vector4 (t a) (x a) (y a) (z a)
+>instance Transposable ((->) row) Vector4 a where
+>   transpose_impl (Matrix f)
+>     = Matrix $ Vector4 (\a -> tcoord4 (f a))
+>                        (\a -> xcoord4 (f a))
+>                        (\a -> ycoord4 (f a))
+>                        (\a -> zcoord4 (f a))
 
 >-- | 4 x 4 matrices
 >instance (Num a) => VectorSpace ((Vector4 :*: Vector4) a) where
@@ -620,12 +493,12 @@ instance FractionalSpace (Vector4 (Complex R))
 >   conj = fmap conj
 
 >-- | <https://en.wikipedia.org/wiki/Conjugate_transpose>
->instance (ConjugateSymmetric a) => ConjugateSymmetric ((Vector4 :*: Vector4) a) where
->   conj = fmap conj . transpose
+>instance (Num a, ConjugateSymmetric a) => ConjugateSymmetric ((Vector4 :*: Vector4) a) where
+>   conj = fmap conj . transpose4
 
 
->transpose4 :: Matrix4 a -> Matrix4 a
->transpose4 (Matrix m) = matrix ($) diagonal_projections m
+>transpose4 :: (Num a) => Matrix4 a -> Matrix4 a
+>transpose4 = indexable_transpose
 
 >-- | 4 x 4 matrices
 >instance (Floating a, ConjugateSymmetric a) => NormedSpace ((Vector4 :*: Vector4) a) where
@@ -633,23 +506,25 @@ instance FractionalSpace (Vector4 (Complex R))
 
 >-- | 4 x 4 matrices
 >instance (Floating a, ConjugateSymmetric a) => InnerProductSpace ((Vector4 :*: Vector4) a) where
->  x %. y = trace (transpose x %*% y)
+>  x %. y = trace_impl (transpose_impl x %*% y)
 
 >instance (Num a) => Diagonalizable Vector4 a where
 >  vector_dimension _ = dim4
->  identity _ = identity4
->  diagonal = diagonal4
->  diagonal_matrix = diagonal_matrix4
+>  identity_impl _ = identity4
+>  identity = identity4
+>  diagonal_impl = diagonal4
+>  diagonal_matrix_impl = diagonal_matrix4
 
 >instance (Num a) => Traceable Vector4 a where
->  determinant = determinant4
->  trace    = trace4
+>  determinant_impl = determinant4
+>  trace_impl    = trace4
 
 >identity4 :: (Num a) => Matrix4 a
->identity4 = diagonal_matrix (constant4 1)
+>identity4 = diagonal_matrix_impl (constant4 1)
 
 >diagonal4x :: Matrix4 a -> Vector4 a
->diagonal4x (Matrix x) = diagonal_projections <*> x
+>diagonal4x (Matrix (Vector4 t x y z)) =
+>   Vector4 (tcoord4 t) (xcoord4 x) (ycoord4 y) (zcoord4 z)
 
 >zero_codiagonal4 :: (Num a) => Codiagonal Vector4 a
 >zero_codiagonal4 = Codiagonal4 (constant3 0) (constant3 0) (zero_codiagonal3)
@@ -689,10 +564,10 @@ instance FractionalSpace (Vector4 (Complex R))
 >   where app f g = Matrix $ f $ fmap g m
 >
 >cofactor4 :: (Num a) => Matrix4 a -> Matrix4 a
->cofactor4 m = pure (*) <*> fmap fromIntegral signs4 <*> fmap determinant (remove_index4 m)
+>cofactor4 m = pure (*) <*> fmap fromIntegral signs4 <*> fmap determinant_impl (remove_index4 m)
 >
 >adjucate4 :: (Num a) => Matrix4 a -> Matrix4 a
->adjucate4 = transpose . cofactor4
+>adjucate4 = transpose_impl . cofactor4
 
 >signs4 :: (Integral a) => Matrix4 a
 >signs4 = fmap (\ (i,j) -> ((i+j+1) `mod` 2) * 2 - 1) matrix_indices4
@@ -705,7 +580,7 @@ instance FractionalSpace (Vector4 (Complex R))
 
 >-- | <https://en.wikipedia.org/wiki/Invertible_matrix>
 >inverse4 :: (Fractional a) => Matrix4 a -> Matrix4 a
->inverse4 m = (1 / determinant m) %* adjucate4 m
+>inverse4 m = (1 / determinant_impl m) %* adjucate4 m
 
 >instance (Fractional a, ConjugateSymmetric a) => Group ((Vector4 :*: Vector4) a) where
 >   ginvert = inverse4
@@ -729,11 +604,11 @@ instance FractionalSpace (Vector4 (Complex R))
 
 >determinant4 :: (Num a) => Matrix4 a -> a
 >determinant4 (Matrix m) = combine $ pure (*) <*> tcoord4 m <*> amv  
->   where amv = fmap (determinant . Matrix . removet4 . (`fmap` m)) removes4
+>   where amv = fmap (determinant_impl . Matrix . removet4 . (`fmap` m)) removes4
 >         combine (Vector4 a b c d) = a - b + c - d
 
 >instance (Fractional a) => Invertible Vector4 a where
->   inverse = inverse4
->   adjucate = adjucate4
->   cofactor = cofactor4
+>   inverse_impl = inverse4
+>   adjucate_impl = adjucate4
+>   cofactor_impl = cofactor4
 

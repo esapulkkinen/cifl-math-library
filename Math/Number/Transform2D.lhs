@@ -7,6 +7,7 @@
 >import safe Control.Applicative
 >import safe Control.Arrow
 >import safe Math.Number.Stream
+>import safe Math.Number.StreamInterface
 >import safe Math.Matrix.Interface
 >import safe Math.Tools.Median
 >import safe Math.Tools.Arrow as TArrow
@@ -17,10 +18,10 @@
 >   transform_symmetry :: a -> b -> a -> b }
 
 >-- | This operation allows customizing the behaviour of the codiagonals transformation.
->codiagonalsWith :: Transform2D a b -> (Stream :*: Stream) a -> Stream b
+>codiagonalsWith :: (Num a, Closed a) => Transform2D a b -> (Stream :*: Stream) a -> Stream b
 >codiagonalsWith z@(Transform2D diag pair thr) q = Pre (diag d) $ Pre (pair x y) $
 >             liftA3 thr xr (codiagonalsWith z m) yr 
->    where ~(d,(Pre x xr, Pre y yr),m) = dematrix q
+>    where ~(d,(Pre x xr, Pre y yr),m) = dematrix_impl q
 
 >element2D :: a -> a -> Transform2D () a
 >element2D x y = Transform2D (\ () -> x) (\ () () -> y) (\ () m () -> m)
@@ -28,12 +29,6 @@
 >vector2D :: (Floating (Scalar v), InnerProductSpace v)
 >  => (v -> Scalar v -> v -> Scalar v) -> Transform2D v (Scalar v)
 >vector2D = Transform2D innerproductspace_norm (%.)
-
->diagonalMatrix2D :: (Diagonalizable m a)
->         => (a -> a -> a)
->         -> (m a -> (m :*: m) a -> m a -> (m :*: m) a)
->         -> Transform2D (m a) ((m :*: m) a)
->diagonalMatrix2D f = Transform2D diagonal_matrix (matrix f)
 
 >functor2D :: (TArrow.FunctorArrow f arr, C.Category arr) =>
 >   (arr a a -> arr a a -> arr (f a) (f a))
@@ -83,15 +78,18 @@
 >flattenList2D :: Transform2D [a] [a]
 >flattenList2D = Transform2D id (++) (\a b c -> a ++ b ++ c)
 
->matrix2D :: (Transposable m m, InnerProductSpace (m a), Scalar (m a) ~ a)
->        => ((m :*: m) a -> (m :*: m) a -> (m :*: m) a -> (m :*: m) a)
->        -> Transform2D ((m :*: m) a) ((m :*: m) a)
->matrix2D = Transform2D transpose (%*%)
+>matrix2D :: (VectorSpace ((f :*: f) a), a ~ Scalar (f a), Functor f, InnerProductSpace (f a), Transposable f f a)
+>  => ((f :*: f) a -> (f :*: f) a -> (f :*: f) a -> (f :*: f) a) -> Transform2D ((f :*: f) a) ((f :*: f) a)
+>matrix2D = Transform2D transpose_impl (%*%)
 
->matrixProduct2D :: (VectorSpace ((f :*: f) a), Transposable f f,
-> InnerProductSpace (f a), VectorSpaceOver (f a) a)
+matrixProduct2D :: (VectorSpace ((f :*: f) a), Transposable f f a,
+ InnerProductSpace (f a), VectorSpaceOver (f a) a)
+ => Transform2D ((f :*: f) a) ((f :*: f) a)
+
+>matrixProduct2D :: (a ~ Scalar (f a), Functor f, InnerProductSpace (f a), Transposable f f a,
+> VectorSpace ((f :*: f) a) )
 > => Transform2D ((f :*: f) a) ((f :*: f) a)
->matrixProduct2D = Transform2D transpose (\a b -> a %**% b %- b %**% a) (\a m b -> a %**% m %**% transpose b)
+>matrixProduct2D = Transform2D transpose_impl (\a b -> a %*% b %- b %*% a) (\a m b -> a %*% m %*% transpose_impl b)
 
 >list2D :: Transform2D a [a]
 >list2D = Transform2D (\a -> [a]) (\a b -> [a,b]) (\a m b -> a : m ++ [b])

@@ -7,7 +7,7 @@
 >import Data.Set (Set)
 >import Math.Tools.CoFunctor
 >import Math.Tools.Universe
->import Math.Tools.Prop (Prop)
+>import Math.Tools.Prop (Prop (Characteristic))
 >import qualified Math.Tools.Prop
 >import qualified Data.Set as Set
 >import Math.Matrix.Interface
@@ -91,6 +91,13 @@
 
 >automorphism :: (Group g) => g -> Endo g
 >automorphism x = Endo $ \y -> x <> y <> ginvert x
+
+>-- | <https://en.wikipedia.org/wiki/Coset>
+>left_coset :: (Monoid m) => m -> Prop m -> Prop m
+>left_coset x (Characteristic p) = Characteristic $ \y -> p (x <> y)
+
+>right_coset :: (Monoid m) => m -> Prop m -> Prop m
+>right_coset x (Characteristic p) = Characteristic $ \y -> p (y <> x)
 
 >-- | https://en.wikipedia.org/wiki/Commutator
 

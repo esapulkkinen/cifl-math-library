@@ -1,11 +1,12 @@
 >{-# LANGUAGE TypeOperators, TypeFamilies, MultiParamTypeClasses #-}
+>{-# LANGUAGE FlexibleInstances #-}
 >module Math.Matrix.Bitmap where
 >import qualified Data.Array as A
 >import Data.Array (Array, Ix, array, range, bounds, ixmap, (!), indices)
 >import Math.Matrix.Interface
 >import qualified Math.Number.Stream as Stream
 >import qualified Data.ByteString as ByteString
->import qualified Data.ByteString.Char8 as ByteStringChar8
+>import qualified Data.ByteString.Char8 as ByteStringChar8 hiding (transpose)
 >import qualified Data.Word as Word
 >import qualified System.IO as SIO
 >
@@ -43,11 +44,21 @@
 >            | i <- [0..254]]
 >           ++ [(255,ByteString.pack $! [0,0,0])]
 >
->instance (Ix i, Ix j) => Transposable (Array i) (Array j) where
->   transpose (Matrix m) = Matrix $ array yr $
+>instance (Ix i, Ix j) => Transposable (Array i) (Array j) a where
+>   transpose_impl (Matrix m) = Matrix $ array yr $
 >        [(j,array xr [(i, (m ! i) ! j) | i <- range xr]) | j <- range yr]
 >     where xr@(x,_) = bounds m
 >           yr = bounds (m ! x)
+
+>instance (Num a, Num i, Ix i, Enum i) => VectorSpace (Array i a) where
+>   type Scalar (Array i a) = a
+>   vzero = array (0,0) [(0,0)]
+>   vnegate = fmap negate
+>   a %+ b = array rbounds [(i, a!i + b!i) | i <- [rbeg..rend]]
+>     where (abeg,aend) = bounds a
+>           (bbeg,bend) = bounds b
+>           rbounds@(rbeg,rend) = (max abeg bbeg, min aend bend)
+>   k %* a = fmap (k*) a
 
 >transpose_ :: (Ix i, Ix j) => Bitmap i j a -> Bitmap j i a
 >transpose_ m = (fromArray . ixmap bnds (\ (a,b) -> (b,a)) . toArray) m

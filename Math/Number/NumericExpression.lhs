@@ -117,6 +117,18 @@ instance (Num a, IdVisitor a) => Expression NumExpr VectorCtx a where
 >                       | VPrim (v a)
 >  deriving (Eq, Typeable, Data, Generic)
 
+>reduceVectorSpaceExpr :: VectorSpaceExpr v a -> VectorSpaceExpr v a
+>reduceVectorSpaceExpr (VPlus VZero a) = reduceVectorSpaceExpr a
+>reduceVectorSpaceExpr (VPlus a VZero) = reduceVectorSpaceExpr a
+>reduceVectorSpaceExpr (VPlus (VPlus a b) c) = VPlus (reduceVectorSpaceExpr a)
+>                                            $ reduceVectorSpaceExpr (VPlus b c)
+>reduceVectorSpaceExpr (VScalar x (VPlus a b)) = VPlus (reduceVectorSpaceExpr (VScalar x a))
+>                                                      (reduceVectorSpaceExpr (VScalar x b))
+>reduceVectorSpaceExpr (VScalar x (VScalar y a)) = reduceVectorSpaceExpr $ VScalar (Product x y) a
+>reduceVectorSpaceExpr e = e
+
+
+
 >instance (PpShowF v) => PpShowF (VectorSpaceExpr v) where
 >   ppf VZero = "0"
 >   ppf (VNegate x) = "-" <> ppf x
@@ -384,7 +396,7 @@ deriving instance (Show a) => Show ((NumExpr v :*: Var) a)
 >     x %. y = InnerProduct x y
 
 >instance (Eq a, Show a) => ConjugateSymmetric (NumExpr v a) where
->   conj x = x
+>   conj = id
 
 >instance (Num a, IdVisitor a) => Expression (NumExpr v) [] a where
 >   eval = runNumExpr

@@ -55,8 +55,9 @@
 >import Math.Tools.List ()
 >import Math.Tools.Show
 >import Math.Matrix.Interface
->import Math.Number.Stream (Stream(..), Limiting(..), Closed(..), Infinitesimal(..))
->import qualified Math.Number.Stream as Stream
+>import Math.Number.StreamInterface (Stream(..), Limiting(..), Closed(..), Infinitesimal(..))
+>import qualified Math.Number.StreamInterface as Stream
+>import qualified Math.Number.Stream
 >import Math.Number.Interface ( ShowPrecision(..))
 >import Math.Number.Group
 >import Math.Number.Interface
@@ -167,7 +168,7 @@
 
 >instance Exception DimensionException
 
->instance (Show r, Infinitesimal r) => Infinitesimal (Quantity r) where
+>instance (Show r, Infinitesimal Stream r) => Infinitesimal Stream (Quantity r) where
 >   epsilon_closure = limit $ fmap (`As` dimensionless) epsilon_stream
 
 >instance (Show r, InnerProductSpace r, Scalar (Quantity r) ~ Scalar r) => InnerProductSpace (Quantity r) where
@@ -419,8 +420,7 @@
 >   fromInteger i = Dimension (fromInteger i) (fromInteger i) (fromInteger i) (fromInteger i) (fromInteger i) (fromInteger i) (fromInteger i) 
 
 >instance Fractional Dimension where
->   (Dimension l w t c te lu su) / (Dimension l' w' t' c' te' lu' su') =
->     Dimension (l/l') (w/w') (t/t') (c/c') (te/te') (lu/lu') (su / su') 
+>   a / b = zipWithDimension (/) a b
 >   recip a = fromInteger 1 / a
 >   fromRational i = Dimension i i i i i i i 
 
@@ -538,14 +538,14 @@
 >instance Traversable Quantity where
 >   traverse f (fa `As` d) = (`As` d) <$> f fa
 
->instance (Show r) => Stream.Limiting (Quantity r) where
->   data Closure (Quantity r) = QuantityClosure (Stream r) Dimension
->   limit z@(Stream.Pre (x `As` d) r@(Stream.Pre (y `As` d') _))
->     | d == d' = let QuantityClosure yr _ = limit r in QuantityClosure (Stream.Pre x yr) d
+>instance (Show r) => Limiting Stream (Quantity r) where
+>   data Closure Stream (Quantity r) = QuantityClosure (Stream r) Dimension
+>   limit z@(Pre (x `As` d) r@(Pre (y `As` d') _))
+>     | d == d' = let QuantityClosure yr _ = limit r in QuantityClosure (Pre x yr) d
 >     | otherwise = invalidDimensions "limit" d d' x y
 >   approximations (QuantityClosure a d) = fmap (`As` d) a
 
->instance (ShowPrecision r, Floating r, Ord r) => Show (Stream.Closure (Quantity r)) where
+>instance (ShowPrecision r, Show (Stream r), Floating r, Ord r) => Show (Stream.Closure Stream (Quantity r)) where
 >   show (QuantityClosure s d) = show d ++ ":" ++ show s
 
 >instance (Show r,Fractional r) => Fractional (Quantity r) where
@@ -577,7 +577,7 @@
 >     | otherwise = invalidDimensions "atan2" d d' x y
 
 >instance (Show r, ConjugateSymmetric r) => ConjugateSymmetric (Quantity r) where
->   conj (x `As` d) = conj x `As` d
+>   conj (x `As` d) = (conj x) `As` d
 
 >instance (Show r,Floating r, Real r) => Floating (Quantity r) where
 >   pi = pi `As` radian_dimension

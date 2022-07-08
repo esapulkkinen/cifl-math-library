@@ -10,7 +10,7 @@
 > derivate_r, newtons_method, sqrt_r, log_by_newton,
 > exp_r, pi_r, log_r, integral_r, foldable_integral, foldable_simple_integral,
 > integral_accuracy, asin_r, acos_r, atan_r, sin_by_series,
-> cos_by_series
+> cos_by_series, gamma_r
 > ) where
 >import safe Control.Applicative
 >import safe Control.Monad
@@ -18,9 +18,11 @@
 >import safe Data.Ratio
 >import safe Data.Monoid
 >import safe Data.Complex
+>import safe Data.Type.Equality
 >import safe Math.Tools.PrettyP
 >import safe Math.Matrix.Covector
 >import safe Math.Matrix.Interface
+>import safe Math.Number.StreamInterface
 >import safe Math.Tools.Median
 >import safe Math.Number.Interface
 >import safe Math.Number.Stream
@@ -74,8 +76,8 @@
 >  r %< x = (fromIntegral r :: Rational) %< x
 >  x <% r = x <% (fromIntegral r :: Rational)
 
->instance Limiting R where
->   data Closure R = RClosure { runRClosure :: !R }
+>instance Limiting Stream R where
+>   data Closure Stream R = RClosure { runRClosure :: !R }
 >   limit ~(Pre x ~z@(Pre y _)) = RClosure $ real $ \eps ->
 >       if abs (y `approximate` eps - x `approximate` eps) < eps
 >         then y `approximate` eps
@@ -83,18 +85,21 @@
 >   approximations (RClosure r) = fmap f $ fmap (1 /) $ power 10
 >      where f p = real $ \eps -> r `approximate` min p eps
 
->instance Fractional (Closure R) where
+>instance Infinitesimal Stream R where
+>  epsilon_stream = Pre 1.0 $ fmap (/10.0) epsilon_stream
+
+>instance Fractional (Closure Stream R) where
 >  (RClosure x) / (RClosure y) = RClosure (x/y)
 >  recip (RClosure x) = RClosure (recip x)
 >  fromRational r = RClosure (fromRational r)
 >
->liftRClosure :: (R -> R) -> Closure R -> Closure R
+>liftRClosure :: (R -> R) -> Closure Stream R -> Closure Stream R
 >liftRClosure f (RClosure x) = RClosure (f x)
 > 
->liftRClosure2 :: (R -> R -> R) -> Closure R -> Closure R -> Closure R
+>liftRClosure2 :: (R -> R -> R) -> Closure Stream R -> Closure Stream R -> Closure Stream R
 >liftRClosure2 f (RClosure x) (RClosure y) = RClosure (f x y)
 >
->instance Floating (Closure R) where
+>instance Floating (Closure Stream R) where
 >  pi = RClosure pi
 >  exp = liftRClosure exp
 >  log = liftRClosure log
@@ -114,7 +119,7 @@
 >  acosh = liftRClosure acosh
 >  atanh = liftRClosure atanh
 
->instance Num (Closure R) where
+>instance Num (Closure Stream R) where
 >  (RClosure x) + (RClosure y) = RClosure (x + y)
 >  (RClosure x) - (RClosure y) = RClosure (x - y)
 >  (RClosure x) * (RClosure y) = RClosure (x * y)
@@ -123,9 +128,8 @@
 >  negate (RClosure x) = RClosure (negate x)
 >  fromInteger i = RClosure (fromInteger i)
 
->instance Infinitary (Closure R) where
+>instance Infinitary (Closure Stream R) where
 >   infinite = RClosure infinite
-
 
 >instance Closed R where
 >   accumulation_point = runRClosure
@@ -142,7 +146,7 @@
 >rational_approximations_r :: R -> Stream Rational
 >rational_approximations_r r = fmap (approximate r) $ fmap (1/) $ power 10
 
->instance Approximations R where
+>instance Approximations Stream R where
 >   floating_approximations = floating_approximations_r
 >   rational_approximations = rational_approximations_r
 
@@ -156,6 +160,10 @@
 >   pp x = pp $! (fromRational (x `approximate` (1 % 1000000000000000)) :: Double)
 
 >instance CompleteSpace R
+
+>gamma_r :: R -> R
+>gamma_r z = integral (epsilon,1) $ \t -> (log (1/t))**(z-1)
+
 
 >epsilon :: R
 >epsilon = real id
@@ -196,6 +204,7 @@
 
 >inverseImageEndo :: Endo Rational -> Endo R
 >inverseImageEndo g = Endo $ \ (Limit f) -> real $ appEndo g . appEndo f
+> 
 
 
 >instance Num R where
@@ -209,19 +218,31 @@
 >   fromInteger i = real $ const (fromInteger i)
 
 
+>-- | For division, if a rational approximation of the divisor
+>-- is zero, we increase accuracy. Notice this makes
+>-- a real number constructed from "real (const 0)" behave
+>-- much worse (nontermination) than "epsilon"
+>-- (which just increases accuracy)
 >instance Fractional R where
->   (Limit f) / (Limit g) = real $ \eps -> f `appEndo` (eps / 2)
->                                        / g `appEndo` (eps / 2)
->   recip (Limit f) = real $ \eps -> recip (f `appEndo` (recip eps))
+>   (Limit f) / (Limit g) = real checker
+>     where divisor eps = g `appEndo` (eps/2)
+>           dividend eps = f `appEndo` (eps/2)
+>           checker eps
+>              | 0 /= divisor eps = dividend eps * recip (divisor eps)
+>              | otherwise = checker (eps/2)
+>   recip (Limit f) = real checker
+>     where divisor eps = (f `appEndo` (recip eps))
+>           checker eps = if 0 /= divisor eps then recip (divisor eps)
+>                               else checker (eps/2)
 >   fromRational x  = real $ const x
 
 >instance ConjugateSymmetric R where
->   conj = id
+>   conj (Limit f) = real (conj . appEndo f)
 
 >-- | R as an infinite dimensional vector space over the rationals.
 >instance VectorSpace R where
 >   type Scalar R = Rational
->   vzero = real $ const 0
+>   vzero = epsilon
 >   vnegate = liftR negate
 >   (Limit f) %+ (Limit g) = real $ \eps -> f `appEndo` eps + g `appEndo` eps
 >   x %* (Limit f) = real $ \df -> x %* f `appEndo` df

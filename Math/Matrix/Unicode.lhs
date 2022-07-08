@@ -1,16 +1,20 @@
 >-- -*- coding: utf-8 -*-
->{-# LANGUAGE UnicodeSyntax, FlexibleContexts, TypeOperators #-}
+>{-# LANGUAGE UnicodeSyntax, FlexibleContexts, TypeOperators, GADTs #-}
 >-- |
 >-- To use these, use emacs "Options/Select input method" and choose 'TeX'.
 >-- Then enter the symbol by using backslash and the indicated name.
 >-- for prefix operators, it's necessary to use parenthesis in applications.
 >-- ctrl-\\ changes whether expansions occur.
+>--
+>-- Alternatively it's possible to use M-x insert-char to insert unicode characters
 >module Math.Matrix.Unicode where
 >
 >import Math.Matrix.Interface
 >import Math.Matrix.Vector3
+>import Math.Matrix.Linear
 >import Math.Number.Real
 >import Math.Tools.CoFunctor
+>import Math.Matrix.Covector
 >
 >-- | in
 >(∈) ∷ (BinaryLogic p) ⇒ a → p a → Bool
@@ -23,6 +27,7 @@
 >-- | sum
 >(∑) ∷ (VectorSpace a) ⇒ [a] → a
 >(∑) = vsum
+
 
 
 >-- | ast
@@ -47,7 +52,7 @@
 
 >-- | ddots
 >(⋱) ∷ (Diagonalizable m a) ⇒ (m :*: m) a -> m a
->(⋱) = diagonal
+>(⋱) = diagonal_impl
 >
 >-- | oplus
 >(⊕) ∷ (VectorSpace v) ⇒ v → v → v
@@ -58,10 +63,19 @@
 >(⊖) = (%-)
 >
 
+>-- | Unicode for tensor product. ("CIRCLED TIMES" character)
+>(⊗) :: (Num a, Functor m, Functor n) => m a -> n a -> (m :*: n) a
+>(⊗) = tensor_product
+
+(⊗) :: (LinearTransform f g a, InnerProductSpace (v a),
+   Linearizable LinearMap (:*:) f g a, Scalar (v a) ~ a)
+ => f (v a) -> g (v a) -> f a :-> g a
+(⊗) = linear_outer_product
+
 >-- | otimes
->(⊗) ∷ (Functor g, Transposable h f, InnerProductSpace (h a))
->     ⇒ (g :*: h) a → (h :*: f) a → (g :*: f)(Scalar (h a))
->(⊗) = (%*%)
+>(⊗⊗) ∷ (a ~ Scalar (f a), Functor g, Transposable h f a, InnerProductSpace (h a))
+>     ⇒ (g :*: h) a → (h :*: f) a → (g :*: f) a
+>(⊗⊗) = (%*%)
 
 >-- | boxtimes
 >(⊠) ∷ (LieAlgebra m) ⇒ m → m → m

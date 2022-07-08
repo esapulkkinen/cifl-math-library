@@ -1,7 +1,7 @@
 >{-# LANGUAGE TypeOperators, FlexibleInstances #-}
 >module Math.Number.Complex where
 >import Data.Complex
->import qualified Math.Number.Stream as S
+>import qualified Math.Number.StreamInterface as S
 >import Math.Matrix.Interface
 >import qualified Math.Number.R as R
 >
@@ -57,7 +57,7 @@
 >   recip (Matrix x) = Matrix $ recip x
 >   fromRational x = Matrix $ fromRational x
 
->instance (RealFloat a) => Floating ((S.Stream :*: Complex) a) where
+>instance (S.Closed a, RealFloat a) => Floating ((S.Stream :*: Complex) a) where
 >   pi = Matrix $ pi
 >   exp = Matrix . exp . cells
 >   log = Matrix . log . cells

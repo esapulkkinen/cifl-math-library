@@ -14,6 +14,7 @@
 >import Math.Tools.CoFunctor
 >import Math.Tools.Visitor
 >import Math.Tools.Adjunction
+>import Math.Tools.I
 >import qualified Data.Text as Text
 >import Data.Ratio
 >import qualified Data.Binary as Bin
@@ -28,6 +29,10 @@
 >data a :==: b = Iso { isomorphism_epimorphism :: a -> b,
 >                     isomorphism_section     :: b -> a }
 
+>appIso :: (Applicative f) => f (a :==: b) -> f a :==: f b
+>appIso f = (\fa -> fmap isomorphism_epimorphism f <*> fa) <->
+>           (\fb -> fmap isomorphism_section f <*> fb)
+
 >type Iso a b = a :==: b
 >type Aut a = a :==: a
 
@@ -36,6 +41,10 @@
 >-- this function need not produce identity.
 >leftIdempotent :: a :==: b -> Endo a
 >leftIdempotent i = Endo $ isomorphism_section i . isomorphism_epimorphism i
+
+>instance FunctorArrow I (:==:) where
+>   amap f = (I <-> unI) . f . (unI <-> I)
+
 
 >-- | <https://en.wikipedia.org/Galois_Connection>
 >-- Note that since we don't check the equations for isomorphisms,

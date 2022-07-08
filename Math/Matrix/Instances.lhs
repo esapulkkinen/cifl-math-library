@@ -1,20 +1,21 @@
 >{-# LANGUAGE Safe,TypeOperators, MultiParamTypeClasses, FlexibleInstances, FlexibleContexts, TypeFamilies #-}
+>{-# LANGUAGE ScopedTypeVariables, QuantifiedConstraints #-}
 >module Math.Matrix.Instances where
 >import Control.Applicative
 >import Math.Matrix.Interface
+>import Math.Matrix.Linear
 
 >-- | <https://en.wikipedia.org/wiki/Matrix_mechanics>
 
->commutator :: (Transposable f f, Num (Scalar (f a)), InnerProductSpace (f a),
->               VectorSpaceOver (f a) a, VectorSpace ((f :*: f) a),
->           Applicative f) => (f :*: f) a -> (f :*: f) a -> (f :*: f) a
+commutator :: (SupportsMatrixMultiplication f f f a) => f a :-> f a -> f a :-> f a -> f a :-> f a
+
 >commutator x y = (x %*% y) %- (y %*% x)
 
 >-- | <https://en.wikipedia.org/wiki/Characteristic_polynomial>
->characteristicPolynomial :: (Traceable m a, Num a, Applicative m,
->                    VectorSpaceOver ((m :*: m) a) a)
->    => (m :*: m) a -> a -> a
->characteristicPolynomial m v = determinant (v %* (identity $ vector_dimension $ diagonal m) %- m)
+>characteristicPolynomial :: (LinearTraceable LinearMap m a, VectorSpace (m a),
+> Linearizable LinearMap (:*:) m m a, LinearTransform m m a, Scalar (m a) ~ a)
+>    => m a :-> m a -> a -> a
+>characteristicPolynomial (m' :: m a :-> m a) v = determinant ((v %* MatIdentity) %- m')
 
 
 instance (Num a, Applicative f, Scalar (f a) ~ a, Transposable f f, InnerProductSpace (f a))

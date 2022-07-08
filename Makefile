@@ -14,7 +14,7 @@ unit : test
 .PHONY: unit all build test all_with_install install_dependencies configure force-configure document hscolor dependencegraph build-llvm test-llvm interpreter latex-document publish_document install clean
 
 
-all : configure build test dependencegraph document hscolor
+all : configure build test publish_document
 
 all_with_install : all install
 
@@ -52,16 +52,16 @@ build-gui-prof :
 	$(STACK) build --fast cifl-math-library:mathgui --executable-profiling 
 
 build-stack-llvm :
-	$(STACK) build --ghc-options="-fllvm -O3"
+	$(STACK) build --ghc-options="-fllvm -O3 -Wno-error=unsupported-llvm-version"
 
 build-llvm:
-	$(CABAL) $(CABALOPTS) $(CABALFLAGS) new-build -j4 --ghc-options="-fllvm"
+	$(CABAL) $(CABALOPTS) $(CABALFLAGS) new-build -j4 --ghc-options="-fllvm -Wno-error=unsupported-llvm-version"
 
 test-stack-llvm:
 	$(STACK) test --ghc-options="-fllvm"
 
 test-llvm:
-	$(CABAL) $(CABALOPTS) $(CABALFLAGS) new-test -j4 --ghc-options="-fllvm"
+	$(CABAL) $(CABALOPTS) $(CABALFLAGS) new-test -j4 --ghc-options="-fllvm -Wno-error=unsupported-llvm-version"
 
 interpreter :
 	$(STACK) repl --no-build --ghc-options -fobject-code

@@ -21,17 +21,19 @@
 <meta name="dc.publisher" content="Esa Pulkkinen"/>
 <meta name="dc.type" content="Software"/>
 <meta name="dc.issued" content="2020"/>
-<meta name="dc.rights" content="Copyright 2000-2019, Esa Pulkkinen. All rights reserved."/>
+<meta name="dc.rights" content="Copyright 2000-2019, Esa Pulkkinen."/>
 <meta name="dc.keywords" content="math, linear algebra, haskell"/>
 <meta name="dc.description" content="Software documentation for Haskell library for linear algebra"/>
 <meta name="dc.source" content="https://github.com/esapulkkinen/cifl-math-library/"/>
 <link rel="license" href="https://github.com/esapulkkinen/cifl-math-library/blob/master/COPYRIGHT"/>
 <link rel="license" href="https://www.gnu.org/licenses/lgpl-3.0.txt"/>
 <link rel="author" href="https://github.com/esapulkkinen/cifl-math-library/blob/master/AUTHORS"/>
-<meta itemprop="about" content="https://github.com/esapulkkinen/cifl-math-library/"/>
-<meta itemprop="targetPlatform" content="Haskell"/>
-<meta itemprop="proficiencyLevel" content="expert"/>
-<meta itemprop="abstract" content="Haskell library for linear algebra"/>
-<meta itemprop="author" content="Esa Pulkkinen"/>
+<meta itemprop="about" itemscope itemtype="http://schema.org/SoftwareSourceCode" itemref="software-language software-repo software-language software-platform software-proficiency software-abstract software-author" content="https://github.com/esapulkkinen/cifl-math-library/"/>
+<meta id="software-repo" itemprop="codeRepository" content="https://github.com/esapulkkinen/cifl-math-library"/>
+<meta id="software-language" itemprop="programmingLanguage" content="haskell"/>
+<meta id="software-platform" itemprop="targetPlatform" content="Haskell"/>
+<meta id="software-proficiency" itemprop="proficiencyLevel" content="expert"/>
+<meta id="software-abstract" itemprop="abstract" content="Haskell library for linear algebra"/>
+<meta id="software-author" itemprop="author" content="Esa Pulkkinen"/>
 <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
 <meta name="theme-color" content="tan"/>

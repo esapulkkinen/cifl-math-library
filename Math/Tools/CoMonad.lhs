@@ -51,14 +51,14 @@
 >   nonzero :: w a -> Either a (w a)
 
 >class (CircularComonad w) => InfiniteComonad w where
->   pre :: a -> w a -> w a
+>   comonad_pre :: a -> w a -> w a
 
 >class UncertainComonad w where
 >   perhaps :: w a -> w (Maybe a)
 
 
 >preList :: (InfiniteComonad w, Foldable t) => t a -> w a -> w a
->preList = flip (foldr pre)
+>preList = flip (foldr comonad_pre)
 
 >indexComonad :: (InfiniteComonad w) => Integer -> w a -> a
 >indexComonad 0 = extract

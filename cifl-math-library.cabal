@@ -72,7 +72,7 @@ Flag Library-Only
 
 common options
   default-language: Haskell2010
-  ghc-options: -fllvm -dynamic -fobject-code -fno-omit-yields -fPIC -msse2 -dynamic +RTS -M768M -c -RTS 
+  ghc-options: -fllvm -dynamic -fobject-code -fno-omit-yields -fPIC -msse2 -dynamic +RTS -M768M -c -RTS -fdiagnostics-color=always
   other-extensions:    MultiParamTypeClasses, ScopedTypeVariables, FlexibleContexts, FunctionalDependencies, FlexibleInstances, TypeOperators, GADTs, StandaloneDeriving, TypeFamilies, ExistentialQuantification, Rank2Types, TypeSynonymInstances, RankNTypes, DeriveDataTypeable, TemplateHaskell, ImpredicativeTypes, DeriveFoldable, DeriveTraversable, KindSignatures, AllowAmbiguousTypes, GeneralizedNewtypeDeriving, UnicodeSyntax, LambdaCase       
   If flag(WithHaXML)
      build-depends: HaXml
@@ -108,7 +108,7 @@ common builddepends
                                  
 library
     import: options, builddepends, testdepends
-    exposed-modules: Math,Math.Number,Math.Tools,Math.Number.Real,Math.Number.R,Math.Matrix,Math.Tools.Cmdline, Math.Matrix.Interface, Math.Matrix.Simple, Math.Matrix.Instances,Math.Number.NumericExpression, Math.Tools.Nondeterministic, Math.Tools.Set, Math.Tools.Monoid, Math.Tools.PrettyP, Math.Tools.Show, Math.Number.DimensionalAnalysis, Math.Tools.BDD, Math.Tools.NaturalNumber, Math.Tools.Id,  Math.Tools.Queue, Math.Tools.List, Math.Tools.Integer, Math.Tools.LeafTree, Math.Tools.Maybe, Math.Tools.CoFunctor, Math.Matrix.Covector, Math.Matrix.Indexable, Math.Tools.Monad, Math.Tools.CoMonad, Math.Tools.Map, Math.Tools.Parser, Math.Tools.Expression, Math.Tools.Identity, Math.Tools.Functor, Math.Tools.LineInfo, Math.Tools.ParserInterface, Math.Tools.Universe, Math.Tools.NaturalTransformation, Math.Tools.Isomorphism, Math.Matrix.Linear, Math.Matrix.Matrix, Math.Tools.I, Math.Tools.Tree, Math.Tools.Orthogonal, Math.Tools.Endomorphism, Math.Tools.ParseMonad, Math.Matrix.Unicode, Math.Tools.StateArrow,  Math.Tools.ParsingCombinators, Math.Number.Group, Math.Tools.Adjunction, Math.Tools.Median, Math.Tools.Visitor, Math.Tools.Complex,  Math.Number.Stream, Math.Graph, Math.Matrix.Vector1, Math.Matrix.Vector2, Math.Matrix.Vector4, Math.Matrix.QuasiQuoter, Math.Number.BiStream, Math.Matrix.Transpose, Math.Matrix.Vector3, Math.Graph.GraphReader, Math.Graph.Reversible, Math.Graph.Monoid, Math.Graph.Labeled, Math.Graph.GraphMonoid, Math.Graph.Show, Math.Graph.Action, Math.Graph.InGraphMonad, Math.Graph.ActionSet, Math.Graph.GraphMap, Math.Graph.Interface, Math.Graph.GraphMonad, Math.Graph.TransformationMonoid, Math.Graph.Algorithms, Math.Graph.InGraphA, Math.Graph.Dot, Math.Graph.XML, Math.Graph.Inductive, Math.Matrix.SIMD, Math.Number.Units, Math.Number.Complex, Math.Number.TypeUnits, Math.Number.TypeRational, Math.Number.USCustomaryUnits, Math.Number.Interface, Math.Number.Transform2D, Math.Matrix.Concurrent, Math.Graph.RDF, Math.Graph.JSON
+    exposed-modules: Math,Math.Number,Math.Tools,Math.Number.Real,Math.Number.R,Math.Matrix,Math.Tools.Cmdline, Math.Matrix.Interface, Math.Matrix.Simple, Math.Matrix.Instances,Math.Number.NumericExpression, Math.Tools.Nondeterministic, Math.Tools.Set, Math.Tools.Monoid, Math.Tools.PrettyP, Math.Tools.Show, Math.Number.DimensionalAnalysis, Math.Tools.BDD, Math.Tools.NaturalNumber, Math.Tools.Id,  Math.Tools.Queue, Math.Tools.List, Math.Tools.Integer, Math.Tools.LeafTree, Math.Tools.Maybe, Math.Tools.CoFunctor, Math.Matrix.Covector, Math.Matrix.Indexable, Math.Tools.Monad, Math.Tools.CoMonad, Math.Tools.Map, Math.Tools.Parser, Math.Tools.Expression, Math.Tools.Identity, Math.Tools.Functor, Math.Tools.LineInfo, Math.Tools.ParserInterface, Math.Tools.Universe, Math.Tools.NaturalTransformation, Math.Tools.Isomorphism, Math.Matrix.Linear, Math.Matrix.Matrix, Math.Tools.I, Math.Tools.Tree, Math.Tools.Orthogonal, Math.Tools.Endomorphism, Math.Tools.ParseMonad, Math.Matrix.Unicode, Math.Tools.StateArrow,  Math.Tools.ParsingCombinators, Math.Number.Group, Math.Tools.Adjunction, Math.Tools.Median, Math.Tools.Visitor, Math.Tools.Complex,  Math.Number.Stream, Math.Graph, Math.Matrix.Vector1, Math.Matrix.Vector2, Math.Matrix.Vector4, Math.Matrix.QuasiQuoter, Math.Number.BiStream, Math.Matrix.Transpose, Math.Matrix.Vector3, Math.Graph.GraphReader, Math.Graph.Reversible, Math.Graph.Monoid, Math.Graph.Labeled, Math.Graph.GraphMonoid, Math.Graph.Show, Math.Graph.Action, Math.Graph.InGraphMonad, Math.Graph.ActionSet, Math.Graph.GraphMap, Math.Graph.Interface, Math.Graph.GraphMonad, Math.Graph.TransformationMonoid, Math.Graph.Algorithms, Math.Graph.InGraphA, Math.Graph.Dot, Math.Graph.XML, Math.Graph.Inductive, Math.Matrix.SIMD, Math.Number.Units, Math.Number.Complex, Math.Number.TypeUnits, Math.Number.TypeRational, Math.Number.USCustomaryUnits, Math.Number.Interface, Math.Number.Transform2D, Math.Matrix.Concurrent, Math.Graph.RDF, Math.Graph.JSON, Math.Number.StreamInterface, Math.Matrix.VectorConversions, Math.Matrix.LinearOperations, Math.Matrix.Points
 --  ghc-shared-options: -j -shared -fPIC -feager-blackholing
   -- +RTS -N -A128m -n2m -RTS  
   -- Other library packages from which modules are imported.
@@ -152,6 +152,7 @@ executable mathgui
            other-modules: Math.Tools.Orthogonal
            other-modules: Math.Tools.PrettyP
            other-modules: Math.Tools.Universe
+           other-modules: Math.Tools.I
            build-depends: network
            build-depends: byte-order >= 0.1.2.0
   
@@ -186,7 +187,7 @@ Test-Suite unit-tests
         other-modules: Math.Tools.Arrow, Math.Tools.Adjunction
         other-modules: Math.Test.Common, Math.Number.Stream
         other-modules: Math.Number.Real, Math.Number.Interface
-        other-modules: Math.Matrix.FiniteVector, Math.Matrix.QuasiQuoter
+        other-modules: Math.Matrix.FiniteVector, Math.Matrix.QuasiQuoter, Math.Matrix.Linear
         other-modules: Math.Matrix.Unicode, Math.Matrix.Unicode, Math.Matrix.SIMD
         other-modules: Math.Tools.Assert, Math.Tools.Category
         other-modules: Math.Tools.Exception, Math.Tools.FunctorM
@@ -195,3 +196,4 @@ Test-Suite unit-tests
         other-modules: Math.Matrix.Vector4, Math.Matrix.Vector4
         other-modules: Math.Tools.LineInfo
         other-modules: Math.Tools.ParseMonad, Math.Tools.ParserInterface
+        other-modules: Math.Number.StreamInterface, Math.Matrix.Points

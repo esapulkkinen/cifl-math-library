@@ -98,11 +98,13 @@
 >fromList [] = EncVec Empty
 >fromList (x:xr) = case fromList xr of { (EncVec v) -> EncVec $ Cons x v }
 
->instance (DiagonalizableVector n , VectorSpace (Vec n a), Transposable (Vec n) (Vec n), Num a) => Diagonalizable (Vec n) a where
+>instance (DiagonalizableVector n , Indexable (Vec n) a, VectorSpace (Vec n a),
+> LinearTransform (Vec n) (Vec n) a,
+> Transposable (Vec n) (Vec n) a, Num a) => Diagonalizable (Vec n) a where
 >   vector_dimension m = vdimension m
 > --  identity = Matrix . videntity
->   diagonal_matrix x = Matrix (vdiagonal_matrix x)
->   diagonal (Matrix x) = vdiagonal x
+>   diagonal_matrix_impl x = Matrix (vdiagonal_matrix x)
+>   diagonal_impl (Matrix x) = vdiagonal x
 
 >class DiagonalizableVector n where
 >   vnull :: (Num a) => Vec n a

@@ -1,7 +1,7 @@
 >{-# LANGUAGE Safe,Rank2Types, KindSignatures, MultiParamTypeClasses,
 >             FunctionalDependencies, FlexibleInstances, TypeSynonymInstances,
 >             TupleSections,  TypeOperators, AllowAmbiguousTypes, Arrows,TypeFamilies,
->             LambdaCase
+>             LambdaCase, IncoherentInstances
 > #-}
 >-- |
 >-- Module: Math.Tools.Arrow
@@ -20,6 +20,7 @@
 >import Data.Monoid
 >import Prelude hiding (id,(.))
 >import safe Math.Tools.PrettyP (render,pp)
+>import safe Math.Tools.I
 
 >class (Category ar, Category ar') => ArrowTransformation ar ar' where
 >      mapA :: ar a b -> ar' a b
@@ -67,6 +68,13 @@
 >class (Category arr) => BiArrow arr where
 >   (<->) :: (a -> b) -> (b -> a) -> arr a b
 
+>class (BiArrow arr, FunctorArrow f arr) => ApplicativeBiArrow arr f where
+>   bipure :: arr a (f a)
+>   bimap :: arr (f (arr a b), f a) (f b)
+>   biliftA2 :: arr a (arr b c) -> arr (f a, f b) (f c)
+>   bimap = biliftA2 Control.Category.id
+
+
 >class (Category arr) => CPSArrow arr where
 >   callcc :: (forall bot. arr c bot -> arr b c) -> arr b c
 
@@ -78,6 +86,12 @@
 >class (FunctorArrow f arr) => ApplicativeArrow (f :: * -> *) (arr :: * -> * -> *) where
 >   apure :: arr a (f a)
 >   aapply :: f (arr a b) -> arr (f a) (f b)
+
+>alift2 :: (ApplicativeArrow f arr, ArrowApply arr)
+>  => f (arr a (arr b c)) -> arr (f a, f b) (f c)
+>alift2 f = proc (x,y) -> do
+>   fx <- aapply f -< x
+>   aapply fx -<< y
 
 >class CoFunctorArrow (f :: * -> *) (arr :: * -> * -> *) where
 >      inverseImage :: arr c d -> arr (f d) (f c)
@@ -152,16 +166,16 @@
 >   catchA (Kleisli f) (Kleisli h) = Kleisli (\i -> f i `catch` \err -> if isUserError err then h (pp (ioeGetErrorString err)) else throwIO err)
 
 
->instance (ArrowChoice arr) => FunctorArrow (Either b) arr where
+>instance {-# INCOHERENT #-} (ArrowChoice arr) => FunctorArrow (Either b) arr where
 >    amap f = id +++ f
 
->instance (ArrowChoice a) => FunctorArrow Maybe a where
+>instance {-# INCOHERENT #-} (ArrowChoice a) => FunctorArrow Maybe a where
 >    amap f = proc ma -> case ma of
 >             Nothing -> returnA -< Nothing
 >             (Just x) -> do x' <- f -< x
 >                            returnA -< (Just x')
 
->instance (ArrowChoice arr) => FunctorArrow [] arr where
+>instance {-# INCOHERENT #-} (ArrowChoice arr) => FunctorArrow [] arr where
 >   amap f = proc lst -> case lst of
 >            [] -> returnA -< []
 >            (c:cr) -> do c' <- f -< c
@@ -183,3 +197,5 @@
 >instance BraidedCategory (->) where
 >   braiding (a,b) = (b,a)
 
+>instance FunctorArrow I (->) where
+>  amap f = I . f . unI

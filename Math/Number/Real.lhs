@@ -28,11 +28,13 @@
 > encodeInBase, fromFloat, golden_ratio, slow_golden_ratio, logistic,
 > floating_approximations, logarithm_by_power, tetrate, tetrate2,
 > log_newton, exp_by_series2, exp_by_series, sin_by_series, cos_by_series,
-> approximate_sums_modulus, withInverseModulus
+> approximate_sums_modulus, withInverseModulus, partial_derivate_linear
 > ) where
->import safe Prelude hiding (zipWith,take,zip,zip3)
+>import safe Prelude hiding (zipWith,take,zip,zip3, id, (.))
 >import safe Control.Monad.Fix (fix)
 >import safe Control.Applicative
+>import safe Control.Category
+>import safe Data.Type.Equality
 >import safe Data.Complex
 >import safe Data.Ratio
 >import safe Data.Monoid
@@ -45,8 +47,9 @@
 >import safe Math.Tools.Arrow (BiArrow (..))
 >import safe Math.Tools.Isomorphism ((:==:)(..))
 >import safe Math.Matrix.Interface
->import safe Math.Matrix.Covector
 >import safe Math.Matrix.Matrix
+>import safe Math.Matrix.Linear
+>import safe Math.Number.StreamInterface
 >import safe Math.Number.Interface
 >import safe Math.Number.Stream hiding (logarithm)
 >import safe qualified Math.Number.Stream as Stream
@@ -115,7 +118,7 @@
 
 >-- | d x = partial_derivate x 
 
->d :: (Infinitesimal a) => (a -> a) -> a -> Closure a
+>d :: (Infinitesimal Stream a) => (a -> a) -> a -> Closure Stream a
 >d f x = derivate_closed f x .>>=. \derx ->
 >             epsilon_closure .>>=. \dx ->
 >             close $! (derx * dx)
@@ -138,7 +141,7 @@ max_convergence_ratio = fmap (foldl1 max) . cauchy
 >cauchy :: (MetricSpace a) => Stream a -> Stream [Scalar a]
 >cauchy s = codiagonals $ matrix distance s s
 
->cseq_difference_matrix :: (Functor m, Functor n, Num a)
+>cseq_difference_matrix :: (Functor m, Functor n, Diagonalizable m a, LinearTransform m n a, Num a)
 > => m a -> n a -> (m :*: n) a
 >cseq_difference_matrix s t = matrix (\x y -> abs (x - y)) s t
 
@@ -147,8 +150,8 @@ max_convergence_ratio = fmap (foldl1 max) . cauchy
 >-- \[\forall \epsilon > 0. \exists n. \forall k > n. |s_k - t_k| < \epsilon \].
 >-- However, this is undecidable in particular with respect to what to choose for 'n'.
 >-- We can nonetheless compute the stream of distances.
->cauchy_sequence_equivalence :: (Num a) => Stream a -> Stream a -> Stream a
->cauchy_sequence_equivalence s t = diagonal $ cseq_difference_matrix s t
+>cauchy_sequence_equivalence :: (Closed a, Num a) => Stream a -> Stream a -> Stream a
+>cauchy_sequence_equivalence s t = diagonal_impl $ cseq_difference_matrix s t
 
 >-- | cseq_equivalence_matrix computes equivalence of cauchy sequences.
 >-- However, the 'modulus' argument is undecidable. But if you produce a modulus,
@@ -162,7 +165,7 @@ max_convergence_ratio = fmap (foldl1 max) . cauchy
 >-- of the modulus.
 >-- The other differences are included so computations and analysis of the situation
 >-- can be easier to perform.
->cseq_equivalence_matrix :: (Num a, Infinitesimal eps)
+>cseq_equivalence_matrix :: (Num a, Closed a, Infinitesimal Stream eps)
 > => (eps -> Integer) -> Stream a -> Stream a -> (Stream :*: Stream) a
 >cseq_equivalence_matrix modulus x y = Matrix $ do
 >   eps <- epsilon_stream
@@ -192,10 +195,10 @@ max_convergence_ratio = fmap (foldl1 max) . cauchy
 >-- best and worst approximation in the same depth of approximations.
 >-- for the equality of the cauchy sequences to hold, the best approximation should
 >-- stay close to zero and better so when further elements of the stream are obtained.
->cseq_convergence :: (Num a) => Stream a -> Stream a -> Stream [a]
+>cseq_convergence :: (Closed a, Num a) => Stream a -> Stream a -> Stream [a]
 >cseq_convergence s t = codiagonals $ cseq_difference_matrix s t
 
->cseq_equivalence_list :: (Num a, Infinitesimal eps) => (eps -> Integer) -> Stream a -> Stream a -> Stream [a]
+>cseq_equivalence_list :: (Closed a, Num a, Infinitesimal Stream eps) => (eps -> Integer) -> Stream a -> Stream a -> Stream [a]
 >cseq_equivalence_list modulus x y = codiagonals $ cseq_equivalence_matrix modulus x y
 
 >converges :: (MetricSpace a) => Stream a -> a -> Stream [Scalar a]
@@ -207,7 +210,7 @@ max_convergence_ratio = fmap (foldl1 max) . cauchy
 >instance InnerProductSpace R where
 >   x %. y = x * y
 
->instance Infinitesimal Rational where
+>instance Infinitesimal Stream Rational where
 >   epsilon_stream = fmap (1 /) $ Stream.power 10
 
 >instance MetricSpace R where
@@ -219,33 +222,28 @@ max_convergence_ratio = fmap (foldl1 max) . cauchy
 >                    let d = abs (xn-yn)
 >                    return $! (1 / (2^n)) * d / (1 + d)
 
->increase_accuracy_by :: (Limiting a) => Integer -> Closure a -> Closure a
+>increase_accuracy_by :: (Limiting Stream a) => Integer -> Closure Stream a -> Closure Stream a
 >increase_accuracy_by i = limit . Stream.drop i . approximations
 
->partial_derive :: (Fractional a, Closed a, Infinitesimal eps)
->  => (eps -> a -> a) -> (a -> a) -> a -> a
->partial_derive delta f v = accumulation_point $ limit $ do
->   let fv = f v
->   eps <- epsilon_stream
->   let v_plus_dv = delta eps v
->   return $! (f v_plus_dv - fv) / (v_plus_dv - v)
 
->partial_derivate_closure :: (Limiting a, Fractional a)
->   => (a -> b -> b) -> (b -> a) -> b -> Endo (Closure a)
+>partial_derivate_closure :: (Limiting str a, Fractional a)
+>   => (a -> b -> b) -> (b -> a) -> b -> Endo (Closure str a)
 >partial_derivate_closure delta f v = Endo $ \dx -> limit $ do
 >   let fv = f v
 >   eps <- approximations dx
 >   return $! (f (delta eps v) - fv) / eps
 
->partial_derivate :: (Closed eps, Infinitesimal eps)
-> => (eps -> a -> a) -> (a -> eps) -> a -> eps
->partial_derivate delta f v = accumulation_point $ limit $ do
->   let fv = f v
->   eps <- epsilon_stream
->   return $! (f (delta eps v) - fv) / eps
 
->partial_derivate_endo :: (Limiting a, Fractional a)
->  => (a -> Endo b) -> (b -> a) -> b -> Endo (Closure a)
+>partial_derivate_linear :: (LinearTransform f f a, VectorSpace (f a), Closed a, Closed (f a),
+> Fractional a, Scalar (f a) ~ a, Linearizable LinearMap (:*:) f f a, Diagonalizable f a)
+> => (a -> f a :-> f a) -> (f a :-> f a) -> (f a :-> f a)
+>partial_derivate_linear delta f = arr_linear $ \v -> accumulation_point $ limit $ do
+>   let fv = f -!< v
+>   eps <- epsilon_stream
+>   return $! (1/eps) %* (f -!< (delta eps -!< v) %- fv)
+
+>partial_derivate_endo :: (Limiting str a, Fractional a)
+>  => (a -> Endo b) -> (b -> a) -> b -> Endo (Closure str a)
 >partial_derivate_endo delta f v = Endo $ \dx -> limit $ do
 >   let fv = f v
 >   eps <- approximations dx
@@ -254,16 +252,19 @@ max_convergence_ratio = fmap (foldl1 max) . cauchy
 
 >-- | <https://en.wikipedia.org/wiki/Wirtinger_derivatives>
 
->complex_derivate :: (RealFloat r, Closed r, Infinitesimal r)
+>complex_derivate :: (RealFloat r, Closed r)
 >                 => (Complex r -> Complex r) -> Complex r -> Complex r
->complex_derivate f z = (partial_derivate (\eps z' -> z' + (eps :+ 0))
->                                         (realPart . f) z)/2
->                    :+ (negate $ (partial_derivate
+>complex_derivate f z =
+>                   (partial_derivate (\eps z' -> z' + (eps :+ 0))
+>                                     (realPart . f) z)/2
+>                :+ (negate $ (partial_derivate
 >                                     (\eps z' -> z' + (0 :+ eps))
 >                                     (imagPart . f) z) / 2)
 
->instance (RealFloat a, Infinitesimal a) => Infinitesimal (Complex a) where
->  epsilon_closure = limit $ liftA2 (:+) (epsilon_stream) (epsilon_stream)
+already defined in Math.Number.Stream:
+
+instance (RealFloat a, Infinitesimal str a) => Infinitesimal str (Complex a) where
+  epsilon_closure = limit $ liftA2 (:+) (epsilon_stream) (epsilon_stream)
 
 >average :: R -> R -> R
 >average (Limit x) (Limit y) = Limit $ liftA2 (\x y -> (x+y)/2) x y
@@ -282,28 +283,28 @@ instance MedianAlgebra R where
 >  a %+ b = a + b
 >  a %* b = a * b
 
->instance VectorDerivative R where
->  divergence f = covector $ real_derivate ((-!<) f)
->  grad (Covector f) = LinearMap $ \x -> real_derivate f x
+instance VectorDerivative R Math.Matrix.Linear.Dual LinearMap where
+  divergence f = covector $ real_derivate ((-!<) f)
+  grad (Covector f) = arr_linear $ \x -> real_derivate (f -!!<) x
 
->instance VectorCrossProduct R where
->  curl f = LinearMap $ \x -> real_derivate ((-!<) f) x
+instance VectorCrossProduct R LinearMap where
+  curl f = arr_linear $ \x -> real_derivate ((-!<) f) x
 
 >-- | The following instance declaration represents the completeness of the
 >-- real number system. 
->instance Limiting R where
->  data Closure R = RClosure { runRClosure :: R }
+>instance Limiting Stream R where
+>  data Closure Stream R = RClosure { runRClosure :: R }
 >  limit str = RClosure $ limit_real str
 >  approximations = fmap (Limit . return) . approximate . runRClosure
 
->instance Infinitary (Closure R) where
+>instance Infinitary (Closure Stream R) where
 >   infinite = RClosure infinite
 
 >-- | An isomorphism \(Cl(R) \cong R\).
->completenessOfReals :: Closure R :==: R
+>completenessOfReals :: Closure Stream R :==: R
 >completenessOfReals = runRClosure <-> RClosure
 
->instance Floating (Closure R) where
+>instance Floating (Closure Stream R) where
 >   pi = RClosure pi
 >   exp = liftRClosure exp
 >   log = liftRClosure log
@@ -321,10 +322,10 @@ instance MedianAlgebra R where
 >   acosh = liftRClosure acosh
 >   atanh = liftRClosure atanh
 
->liftRClosure :: (R -> R) -> Closure R -> Closure R
+>liftRClosure :: (R -> R) -> Closure Stream R -> Closure Stream R
 >liftRClosure f (RClosure x) = RClosure $! (f x)
 
->instance Num (Closure R) where
+>instance Num (Closure Stream R) where
 >   (RClosure x) + (RClosure y) = RClosure $ x + y
 >   (RClosure x) - (RClosure y) = RClosure $ x - y
 >   (RClosure x) * (RClosure y) = RClosure $ x * y
@@ -339,18 +340,18 @@ instance MedianAlgebra R where
 >lift_real :: (Rational -> Rational) -> R -> R
 >lift_real f = Limit . fmap f . approximate
 
->instance Show (Closure R) where
+>instance Show (Closure Stream R) where
 >   show (RClosure (Limit str)) = show (take 10 $ fmap fromRational str)
 
->instance VectorSpace (Closure R) where
->  type Scalar (Closure R) = R
+>instance VectorSpace (Closure Stream R) where
+>  type Scalar (Closure Stream R) = R
 >  vzero = RClosure vzero
 >  vnegate (RClosure x) = RClosure (vnegate x)
 >  (RClosure x) %+ (RClosure y) = RClosure $ x %+ y
 >  a %* (RClosure x) = RClosure (a %* x)
 
 
->instance MetricSpace (Closure R) where
+>instance MetricSpace (Closure Stream R) where
 >   distance (RClosure a) (RClosure b) = distance a b
 
 >instance Closed R where
@@ -374,21 +375,21 @@ supremum (Limit ~(Pre c cr):lst) = Limit $ Pre c $ rest
    where rest = liftA2 max cr $ approximate $ supremum lst
 supremum [] = negative_infinity
 
->supremum_gen :: (Fractional a, Ord a, Limiting a)
->             => [Closure a] -> Closure a
+>supremum_gen :: (Fractional a, Ord a, Limiting Stream a)
+>             => [Closure Stream a] -> Closure Stream a
 >supremum_gen [] = negative_infinity_gen
 >supremum_gen [x] = x
 >supremum_gen (a:lst) = limit $ Pre c $ rest
 >   where rest = liftA2 max cr $ approximations $ supremum_gen lst
 >         ~(Pre c cr) = approximations a
 
->negate_limit :: (Limiting a, Num a) => Closure a -> Closure a
+>negate_limit :: (Limiting str a, Num a) => Closure str a -> Closure str a
 >negate_limit = cmap negate
 
 infimum :: [Closure R] -> Closure R
 infimum = negate_limit . supremum_gen . map negate_limit
 
->infimum_gen :: (Fractional a, Ord a, Limiting a) => [Closure a] -> Closure a
+>infimum_gen :: (Fractional a, Ord a, Limiting Stream a) => [Closure Stream a] -> Closure Stream a
 >infimum_gen = negate_limit . supremum_gen . map negate_limit
 
 >instance Infinitary R where
@@ -397,28 +398,28 @@ infimum = negate_limit . supremum_gen . map negate_limit
 >infinity :: R
 >infinity = Limit $ Stream.power 10
 
->infinity_gen :: (Fractional a, Limiting a) => Closure a
+>infinity_gen :: (Fractional a, Limiting Stream a) => Closure Stream a
 >infinity_gen = limit $ Stream.power 10
 
->negative_infinity_gen :: (Fractional a, Limiting a) => Closure a
+>negative_infinity_gen :: (Fractional a, Limiting Stream a) => Closure Stream a
 >negative_infinity_gen = limit $ fmap negate $ Stream.power 10
 
 >-- | epsilon is a real that converges to zero.
->instance Infinitesimal R where
+>instance Infinitesimal Stream R where
 >  epsilon_closure = close $ 1 / infinity
 
 >-- | <http://en.wikipedia.org/wiki/Squeeze_theorem Squeeze theorem>
 
->limit_below :: R -> (R -> R) -> Closure R
+>limit_below :: R -> (R -> R) -> Closure Stream R
 >limit_below c f = limit $ approximations (close $ c - accumulation_point epsilon_closure) >>= (return . f)
 
 >-- | <http://en.wikipedia.org/wiki/Squeeze_theorem Squeeze_theorem>
 
->limit_above :: R -> (R -> R) -> Closure R
+>limit_above :: R -> (R -> R) -> Closure Stream R
 >limit_above c f = limit $ approximations (close $ c + accumulation_point epsilon_closure) >>= (return . f)
 
 >-- | <http://en.wikipedia.org/wiki/Squeeze_theorem Squeeze_theorem>
->limit_both :: R -> (R -> R) -> Closure R
+>limit_both :: R -> (R -> R) -> Closure Stream R
 >limit_both c f = limit $ approximations (limit_below c f)
 >            `interleave` approximations (limit_above c f)
 
@@ -439,7 +440,7 @@ infimum = negate_limit . supremum_gen . map negate_limit
 >           | x > y = False
 >           | otherwise = lessthan_precision (Limit xs) (Limit ys) (pred i)
 
->limiting_distance :: (Num a, Limiting a) => Closure a -> Closure a -> Closure a
+>limiting_distance :: (Num a, Limiting str a) => Closure str a -> Closure str a -> Closure str a
 >limiting_distance x y = limit $ do 
 >                      (x',y') <- approximations x <&> approximations y
 >                      return $! abs (x' - y')
@@ -485,95 +486,20 @@ infimum = negate_limit . supremum_gen . map negate_limit
 >  derivate = real_derivate
 >  integral = integral_real
 
->instance DifferentiallyClosed (Closure R) where
+>instance DifferentiallyClosed (Closure Stream R) where
 >  derivate f (RClosure x) = RClosure $ derivate (runRClosure . f . RClosure) x
 >  integral (a,b) f = RClosure $ integral (runRClosure a, runRClosure b) (runRClosure . f . RClosure)
 
 >real_exp :: R -> R
 >real_exp = fix real_derivate
 
->-- | <https://en.wikipedia.org/wiki/Differential_calculus>
-
->derivate_closed :: (Infinitesimal a) => (a -> a) -> a -> Closure a
->derivate_closed f x = limit $ do
->    let fx = f x -- optimization
->    eps <- epsilon_stream
->    return $! (f (x + eps) - fx) / eps
-
->vector_derivate :: (Infinitesimal (Scalar a), VectorSpace a, Limiting a)
-> => (Scalar a -> a) -> Scalar a -> Closure a
->vector_derivate f x = limit $ do
->   let fx = f x -- optimization
->   eps <- epsilon_stream
->   return $! (1 / eps) %* (f (x + eps) %- fx)
-
->pseudo_derivate :: (Fractional r, Limiting r, Infinitesimal a)
->                => (a -> r) -> a -> Closure r
->pseudo_derivate f x = limit $ do
->    let fx = f x
->    eps <- epsilon_stream
->    return $! (f (x + eps) - fx) / f eps
-
 >-- | i'th element of derivates_at(f,s) is \(D^i[f](s_i)\)
 >derivates_at :: (DifferentiallyClosed a) => (a -> a) -> Stream a -> Stream a
 >derivates_at f x = derivates f <*> x
 
-
-
->-- | derivate_around doesn't require 'f' to be defined at 'x', but requires
->-- limits from both sides of 'x' to exist [it never evaluates 'f' at
->-- 'x'].
->-- \[ \lim_{\epsilon \rightarrow 0} {{f(x+\epsilon)-f(x-\epsilon)}\over{2\epsilon}} \]
-
->derivate_around :: (Infinitesimal a) => (a -> a) -> a -> Closure a
->derivate_around f x = limit $ do
->    eps <- epsilon_stream
->    return $! (f (x + eps) - f (x - eps)) / (2 * eps)
-
-
->-- | \[\lim_{\epsilon\rightarrow 0}{{f(a+\epsilon,b)-f(a,b)}\over{\epsilon}}\]
->partial_derivate1_2 :: (Infinitesimal a)
->                    => (a -> b -> a) -> a -> b -> Closure a
->partial_derivate1_2 f a b = limit $ do
->    let fab = f a b
->    eps <- epsilon_stream
->    return $! (f (a + eps) b - fab) / eps
-
->-- | \[\lim_{\epsilon\rightarrow 0}{{f(a,b+\epsilon)-f(a,b)}\over{\epsilon}}\]
->partial_derivate2_2 :: (Infinitesimal a) => (b -> a -> a) -> b -> a -> Closure a
->partial_derivate2_2 f a b = limit $ do
->    let fab = f a b
->    eps <- epsilon_stream
->    return $! (f a (b + eps) - fab) / eps
-
-
->-- | \[\lim_{\epsilon\rightarrow 0}{{f(a+\epsilon,b,c)-f(a,b,c)}\over{\epsilon}}\]
->partial_derivate1_3 :: (Infinitesimal a)
->                    => (a -> b -> c -> a) -> a -> b -> c -> Closure a
->partial_derivate1_3 f a b c = limit $ do
->    let fabc = f a b c
->    eps <- epsilon_stream
->    return $! (f (a + eps) b c - fabc) / eps
-
->-- | \[\lim_{\epsilon\rightarrow 0}{{f(a,b+\epsilon,c)-f(a,b,c)}\over{\epsilon}}\]
->partial_derivate2_3 :: (Infinitesimal a)
->                    => (b -> a -> c -> a) -> b -> a -> c -> Closure a
->partial_derivate2_3 f a b c = limit $ do
->    let fabc = f a b c
->    eps <- epsilon_stream
->    return $! (f a (b + eps) c - fabc) / eps
-
->-- | \[\lim_{\epsilon\rightarrow 0}{{f(a,b,c+\epsilon)-f(a,b,c)}\over{\epsilon}}\]
->partial_derivate3_3 :: (Infinitesimal a)
->                    => (b -> c -> a -> a) -> b -> c -> a -> Closure a
->partial_derivate3_3 f a b c = limit $ do
->    let fabc = f a b c
->    eps <- epsilon_stream
->    return $! (f a b (c + eps) - fabc) / eps
-
 >-- | <http://en.wikipedia.org/wiki/Arithmetic%E2%80%93geometric_mean Arithmetic-geometric mean>
 
->agm :: (Floating a, Limiting a) => a -> a -> Closure a
+>agm :: (Floating a, Limiting str a) => a -> a -> Closure str a
 >agm x y = limit $ fmap fst $ iterate_stream (\(x,y) -> ((x+y)/2, sqrt(x*y))) (x,y)
 
 >-- | <http://en.wikipedia.org/wiki/Exponential_function Exponential function>
@@ -585,31 +511,32 @@ infimum = negate_limit . supremum_gen . map negate_limit
 >           return $! (1 + (xr/fromIntegral n))^^n
 
 >instance Numerics R where
->   newtons_method f x = accumulation_point $ newtons_method_real f x
+>   newtons_method f x = accumulation_point $ newtons_method_real_closure f x
 
->newtons_method_real :: (Infinitesimal a, Closed a) => (a -> a) -> a -> Closure a
->newtons_method_real f x = limit $ iterate_stream iteration x
+>newtons_method_real_closure :: (Closed a) => (a -> a) -> a -> Closure Stream a
+>newtons_method_real_closure f x = limit $ iterate_stream iteration x
 >   where iteration z' = z' - f z' / accumulation_point (derivate_closed f z')
 
->eigenvalue :: (Infinitesimal a, Closed a,
->               Applicative m, Traceable m a,
->               VectorSpace ((m :*: m) a),
->               Scalar ((m :*: m) a) ~ a
+>eigenvalue :: (Closed a,
+>  LinearTraceable LinearMap m a,
+>  Linearizable LinearMap (:*:) m m a, 
+>               Applicative m, a ~ Scalar (m a),
+>               VectorSpace (m a), LinearTransform m m a
 >               )
->           => (m :*: m) a -> Closure a
->eigenvalue m = newtons_method_real (characteristicPolynomial m) 0
+>           => m a :-> m a -> Closure Stream a
+>eigenvalue m = newtons_method_real_closure (characteristicPolynomial m) 0
 
->integrate_vector :: (Enum (Scalar a), VectorSpace a, Limiting a,
->                     Limiting (Scalar a))
->   => (Scalar a -> a) -> Closure (Scalar a) -> (Scalar a,Scalar a) -> Closure a
+>integrate_vector :: (Enum (Scalar a), VectorSpace a, Limiting str a,
+>                     Limiting str (Scalar a))
+>   => (Scalar a -> a) -> Closure str (Scalar a) -> (Scalar a,Scalar a) -> Closure str a
 >integrate_vector f dx ~(xa,ya) = limit $ do
 >   eps <- approximations dx
 >   return $ vsum $ map ((eps %*) . f) [xa,xa + eps..ya]
 
 >-- | <https://en.wikipedia.org/wiki/Methods_of_contour_integration>
 
->integrate :: (Enum a, Num a, Limiting a)
->          => (a -> a) -> Closure a -> (a,a) -> Closure a
+>integrate :: (Enum a, Num a, Limiting str a)
+>          => (a -> a) -> Closure str a -> (a,a) -> Closure str a
 >integrate f dx ~(xa,ya) = limit $ do
 >   eps <- approximations dx
 >   return $! (eps *) $! Prelude.sum $! map f [xa,xa+eps..ya]
@@ -631,8 +558,8 @@ infimum = negate_limit . supremum_gen . map negate_limit
 
 
 >-- | for integrate_curve (xa,ya) curve f dx, Requires: \(\lim_{x \rightarrow 0}curve(x) = 0 \land \lim_{i\rightarrow \infty} dx_i = 0\)
->integrate_curve :: (Enum a, Num a, Num r, Limiting a, Limiting r)
->                => (a,a) -> (a -> r) -> (r -> r) -> Closure a -> Closure r
+>integrate_curve :: (Enum a, Num a, Num r, Limiting str a, Limiting str r)
+>                => (a,a) -> (a -> r) -> (r -> r) -> Closure str a -> Closure str r
 >integrate_curve (xa,ya) curve f dx  = limit $ do
 >   eps <- approximations dx
 >   return $! (curve eps *) $! Prelude.sum $! map (f . curve) [xa,xa+eps..ya]
@@ -640,15 +567,15 @@ infimum = negate_limit . supremum_gen . map negate_limit
 >-- | <http://en.wikipedia.org/wiki/Integral Integral>
 >-- This doesn't converge well.
 
->gamma_via_integral :: R -> Closure R  
+>gamma_via_integral :: R -> Closure Stream R  
 >gamma_via_integral zz = integral (close 0,infinity_gen) $ \t -> exp (negate t) * (t ** RClosure (zz-1))
     
 >instance (TypeError (Text "Equality of constructive reals is undecidable." :$$:
 >                     Text "Please use (<%) and (%<) from Math.Number.Interface.DedekindCut class")) => Eq R where
 >  xs == ys = error "equality of constructive reals is undecidable"
 
->instance Limiting Bool where
->   data Closure Bool = BoolClosure { runBoolClosure :: Stream Bool }
+>instance (Monad str, StreamObserver str, StreamBuilder str) => Limiting str Bool where
+>   data Closure str Bool = BoolClosure { runBoolClosure :: str Bool }
 >   limit s = BoolClosure s
 >   approximations (BoolClosure s) = s
 > 
@@ -661,13 +588,13 @@ infimum = negate_limit . supremum_gen . map negate_limit
 >         b = show_at_precision y 7
 
 
->constructively_less :: Rational -> R -> R -> Closure Bool
+>constructively_less :: Rational -> R -> R -> Closure Stream Bool
 >constructively_less between (Limit ~(Pre a ar)) (Limit ~(Pre b br)) = limit $
 >   (a < between || between < b)
 >   `Pre` (approximations $ constructively_less between (Limit ar) (Limit br))
 
 
->equality :: Closure R -> Closure R -> Closure Bool
+>equality :: (Infinitesimal str R) => Closure str R -> Closure str R -> Closure str Bool
 >equality str str'
 >   = limit $ liftA3 (\a b eps -> abs (b - a) < eps) astr astr' aeps
 >  where astr = fmap approximate $ approximations str
@@ -792,17 +719,17 @@ instance RealFrac R where
 >    negate = lift_real negate
 >    abs = lift_real abs
 >    signum = lift_real signum
->    fromInteger i = Limit $ Stream.constant $ fromInteger $! i
+>    fromInteger i = Limit $ constant $ fromInteger $! i
 
 >instance Fractional R where
 >    (Limit s) / (Limit t) = Limit $ liftA2 (/) s t
 >    recip = lift_real recip
->    fromRational r = Limit $ Stream.constant $! r
+>    fromRational r = Limit $ constant $! r
 
 >toReal :: Rational -> R
 >toReal = fromRational
 
->instance Fractional (Closure R) where
+>instance Fractional (Closure Stream R) where
 >   (RClosure x) / (RClosure y) = RClosure $ x / y
 >   recip (RClosure x) = RClosure $ recip x
 >   fromRational r = RClosure $ fromRational r
@@ -819,18 +746,18 @@ instance RealFrac R where
 >napiers_constant :: R
 >napiers_constant = exp 1.0
 
->logarithm_by_newton :: R -> Closure R
->logarithm_by_newton e = newtons_method_real (\x -> exp x - e) 1
+>logarithm_by_newton :: R -> Closure Stream R
+>logarithm_by_newton e = newtons_method_real_closure (\x -> exp x - e) 1
 
->invert_by_newton :: (Closed a, Infinitesimal a) => (a -> a) -> a -> Closure a
->invert_by_newton f e = newtons_method_real (\x -> f x - e) 1
+>invert_by_newton :: (Closed a) => (a -> a) -> a -> Closure Stream a
+>invert_by_newton f e = newtons_method_real_closure (\x -> f x - e) 1
 
 >-- computes x from equation @(Df)(x) = y@ by newton's method
->differential_equation1 :: (Closed a, Infinitesimal a) => (a -> a) -> a -> Closure a
->differential_equation1 f y = newtons_method_real (\x -> accumulation_point (derivate_closed f x) - y) 1
+>differential_equation1 :: (Closed a) => (a -> a) -> a -> Closure Stream a
+>differential_equation1 f y = newtons_method_real_closure (\x -> accumulation_point (derivate_closed f x) - y) 1
 
 
->exp_by_powers :: (Fractional r, Limiting r) => r -> Closure r
+>exp_by_powers :: (Fractional r, Limiting Stream r) => r -> Closure Stream r
 >exp_by_powers x = limit $ do
 >     n <- naturals
 >     let n2 = 10^n
@@ -858,8 +785,8 @@ instance RealFrac R where
 >riemann_zeta_complex s = sum_stream $ fmap term nonzero_naturals
 >   where term n = 1 / (n ** s)
 
->instance (Fractional a, Limiting a) => Infinitesimal (Stream a) where
->  epsilon_stream = cells stream_epsilon
+instance (Fractional a, Limiting a, Closed a) => Infinitesimal Stream (Stream a) where
+  epsilon_stream = cells_linear stream_epsilon
 
 instance RealFloat R where
    floatRadix  x = 10
@@ -920,12 +847,12 @@ primitive_root_of_unity i = newtons_method (\x -> x ^^ i - (1 :+ 0)) (0 :+ 1)
 >floating_approximations_real :: R -> Stream Double
 >floating_approximations_real = fmap fromRational . approximate
 
->instance Approximations R where
+>instance Approximations Stream R where
 >   floating_approximations = floating_approximations_real
 >   rational_approximations = approximate
 
 
->logarithm_by_power :: (Floating a, Limiting a) => a -> Closure a
+>logarithm_by_power :: (Floating a, Limiting Stream a) => a -> Closure Stream a
 >logarithm_by_power x = limit $ do
 >                n <- naturals
 >                return $! n * (x ** (1/n) - 1)
@@ -948,8 +875,8 @@ ssrt is Inverse function for tetration. Don't have implementation.
 >tetrate2 x = sinh xln + cosh xln
 >   where xln = x*log(x)
 
->log_newton :: (Floating a, Infinitesimal a, Closed a) => a -> a
->log_newton a = accumulation_point $ newtons_method_real (\x -> exp x - a) 1
+>log_newton :: (Floating a, Closed a) => a -> a
+>log_newton a = accumulation_point $ newtons_method_real_closure (\x -> exp x - a) 1
 
 >cos_generating_function_ = Pre 1 $ Pre 0 $ liftA2 (*) signs fact
 > where signs = stail $ stail $ alternating_possibly_negative_bits
@@ -1078,3 +1005,9 @@ mandelbrot c = limit (mandelbrot_stream c)
 >  acosh x = log $ x + sqrt (x*x-1)
 >  atanh x = log ((1 + x)/(1-x)) / 2
 
+>-- | this computes partial derivates of the scalar-value 2D vector field
+>-- along both variables simultaneously.
+>del_vector2 :: (Infinitesimal str a) => (Vector2 a -> a) -> Vector2 a -> Vector2 (Closure str a)
+>del_vector2 f (Vector2 x y) = Vector2 (partial_derivate1_2 ff x y)
+>                                      (partial_derivate2_2 ff x y)
+>  where ff a b = f (Vector2 a b)

@@ -5,10 +5,12 @@
 >import Math.Test.Common
 >import qualified Math.Number.Stream as Stream
 >import Math.Number.Stream
+>import Math.Number.StreamInterface
 
 >prop_sqrt_squared_naturals :: Property
 >prop_sqrt_squared_naturals = property $ (sqrt_stream s * sqrt_stream s - s) < 0.001
->   where s = fmap fromIntegral naturals
+>   where s :: Stream Double
+>         s = fmap fromIntegral naturals
 
 >prop_primes1 :: Property
 >prop_primes1 = property $ Stream.take 10 primes == [2,3,5,7,11,13,17,19,23,29]

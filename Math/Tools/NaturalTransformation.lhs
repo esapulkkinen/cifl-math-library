@@ -21,7 +21,6 @@
 >import Math.Tools.CoFunctor
 >import Math.Tools.Isomorphism
 >import Math.Matrix.Interface
->import Math.Matrix.Matrix
 >import Prelude hiding ((.),id)
 
 === NATURAL TRANSFORMATION ============

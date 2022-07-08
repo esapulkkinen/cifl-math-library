@@ -18,75 +18,30 @@
 >import safe Math.Tools.Universe
 >import safe Math.Tools.Functor
 >import safe Math.Number.Interface
+>import safe Math.Number.StreamInterface
 >import safe Math.Matrix.Interface
->import safe Math.Matrix.Covector
 >import safe Math.Tools.CoMonad
 >import safe Math.Tools.Median
 >import safe Math.Tools.NaturalTransformation
+>import safe Math.Tools.Isomorphism
 >import safe Math.Tools.Orthogonal hiding (outer3)
 >import safe Math.Tools.Visitor
 >import safe Math.Tools.PrettyP
->import safe Math.Matrix.Matrix
->import safe Math.Tools.Prop
+>import safe Math.Tools.I
+>import safe Math.Tools.Arrow
 >import safe Math.Number.Group
 >import safe Math.Matrix.Vector1
 >import safe Math.Matrix.Vector2
 >import safe Math.Matrix.Indexable
->import safe Math.Matrix.Simple
 >import safe Math.Matrix.FiniteVector
->import safe qualified Math.Number.Stream as Stream
->import safe Math.Number.Stream (Limiting(..), Infinitesimal(..), Stream(..), Closed(..))
->import safe Math.Number.Real
+>import safe qualified Math.Number.StreamInterface as Stream
+>import safe Math.Number.StreamInterface (Limiting(..), Infinitesimal(..), Closed(..))
 
->-- | Three element vector
->data Vector3 s = Vector3 { 
->   xcoord3 :: s,
->   ycoord3 :: s,
->   zcoord3 :: s }
->       deriving (Eq, Typeable, Data, Generic)
 
->-- | this computes partial derivates of the scalar-valued 3D vector field
->-- along each variable simultaneously.
->-- \[\nabla f({\mathbb{v}}) = \frac{\partial \mathbb{f}}{\partial x}{\mathbb{i}}
->--                     + \frac{\partial \mathbb{f}}{\partial y}{\mathbb{j}}
->--                     + \frac{\partial \mathbb{f}}{\partial z}{\mathbb{k}}\]
->del_vector3 :: (Infinitesimal a)
->  => (Vector3 a -> a) -> Vector3 a -> Vector3 (Closure a)
->del_vector3 f (Vector3 x y z) = Vector3 (partial_derivate1_3 ff x y z)
->                                        (partial_derivate2_3 ff x y z)
->                                        (partial_derivate3_3 ff x y z)
->  where ff a b c = f (Vector3 a b c)
-
->instance DifferentialOperator Vector3 where
->   partial = del_partial3
-
->del_partial3 :: (DifferentiallyClosed a) => (Vector3 a -> a) -> Vector3 a -> Vector3 a
->del_partial3 f (Vector3 x y z) = Vector3 (partial1_3 ff x y z)
->                                         (partial2_3 ff x y z)
->                                         (partial3_3 ff x y z)
->  where ff a b c = f (Vector3 a b c)
-
->partial_derivate_vector3 :: (Infinitesimal (Scalar a)
-> , VectorSpace a, Num a, Limiting a)
->   => (Vector3 (Scalar a) -> a) -> Vector3 (Scalar a) -> Closure (Vector3 a)
->partial_derivate_vector3 f (Vector3 x y z) = Vector3Closure $
->      Vector3 (pd1 (callf f) x y z)
->              (pd2 (callf f) x y z)
->              (pd3 (callf f) x y z)
->   where
->      callf ff a b c = ff (Vector3 a b c)
->      pd1 ff a b c = limit $ epsilon_stream >>= \ eps ->
->            return $ (1/(2*eps)) %* (ff (a+eps) b c - ff (a-eps) b c)
->      pd2 ff a b c = limit $ epsilon_stream >>= \ eps ->
->            return $ (1/(2*eps)) %* (ff a (b+eps) c - ff a (b-eps) c)
->      pd3 ff a b c = limit $ epsilon_stream >>= \ eps ->
->            return $ (1/(2*eps)) %* (ff a b (c+eps) - ff a b (c-eps))
-
->cov3 :: Vector3 (Dual (Vector3 a))
->cov3 = Vector3 (covector xcoord3) (covector ycoord3) (covector zcoord3)
-
->instance ProjectionDual Vector3 a where
->   projection_dual = cov3
+>deriving instance (Eq a) => Eq (Vector3 a)
+>deriving instance (Typeable a) => Typeable (Vector3 a)
+>deriving instance (Data a) => Data (Vector3 a)
+>deriving instance (Generic a) => Generic (Vector3 a)
 
 >instance (Binary s) => Binary (Vector3 s) where
 >   put (Vector3 x y z) = put x >> put y >> put z
@@ -101,13 +56,20 @@
 >dim3 = Vector3 0 1 2
 
 >i3 :: (Num a) => Vector3 a
->i3 = identity dim3 <!> (xcoord3,id)
+>i3 = identity <!> (xcoord3,id)
 
 >j3 :: (Num a) => Vector3 a
->j3 = identity dim3 <!> (ycoord3,id)
+>j3 = identity <!> (ycoord3,id)
 > 
 >k3 :: (Num a) => Vector3 a
->k3 = identity dim3 <!> (zcoord3,id)
+>k3 = identity <!> (zcoord3,id)
+
+>instance Transposable Stream Vector3 a where
+>   transpose_impl (Matrix (Pre v vr))
+>     = Matrix (Vector3 (Pre (xcoord3 v) (fmap xcoord3 vr))
+>                       (Pre (ycoord3 v) (fmap ycoord3 vr))
+>                       (Pre (zcoord3 v) (fmap zcoord3 vr)))
+
 
 >instance CircularComonad Vector3 where
 >   rotate (Vector3 x y z) = Vector3 y z x
@@ -130,13 +92,6 @@
 >                        (\b -> ycoord3 $ f $ Vector3 b b b)
 >                        (\c -> zcoord3 $ f $ Vector3 c c c)
 
->-- | <https://en.wikipedia.org/wiki/Dual_space#Injection_into_the_double-dual>
-
->instance (Num a, a ~ Scalar a) => FiniteDimensional (Vector3 a) where
->   finite (Matrix (Covector f)) = Vector3
->                                    (f (covector xcoord3))
->                                    (f (covector ycoord3))
->                                    (f (covector zcoord3)) 
 
 >type Matrix3 a = (Vector3 :*: Vector3) a
 
@@ -147,18 +102,6 @@
 >finite3 :: Vector3 a -> Vec 3 a
 >finite3 (Vector3 x y z) = Cons x (Cons y (Cons z Empty))
 
->vector3_to_vec3 :: Vector3 a -> ThreeD -> a
->vector3_to_vec3 (Vector3 x y z) = svec3 x y z
-
->vec3_iso_obj :: Vector3 ThreeD
->vec3_iso_obj = Vector3 ThreeD0 ThreeD1 ThreeD2
-
->vec3_to_vector3 :: (ThreeD -> a) -> Vector3 a
->vec3_to_vector3 f = fmap f vec3_iso_obj
-
->vector3_natiso :: (->) ThreeD :<~>: Vector3
->vector3_natiso = NaturalIso (NatTrans vec3_to_vector3)
->                            (NatTrans vector3_to_vec3)
 
 >constant3 :: a -> Vector3 a
 >constant3 x = Vector3 x x x
@@ -214,17 +157,17 @@
 >   where app f g = Matrix $ f $ fmap g m
 
 >cofactor3 :: (Num a) => Matrix3 a -> Matrix3 a
->cofactor3 m = pure (*) <*> fmap fromIntegral signs3 <*> fmap determinant (remove_index3 m)
+>cofactor3 m = pure (*) <*> fmap fromIntegral signs3 <*> fmap determinant_impl (remove_index3 m)
 
 >-- | <https://en.wikipedia.org/wiki/Adjugate_matrix>
 
 >adjucate3 :: (Num a) => Matrix3 a -> Matrix3 a
->adjucate3 = transpose . cofactor3
+>adjucate3 = transpose_impl . cofactor3
 
 >-- | <https://en.wikipedia.org/wiki/Invertible_matrix>
 
 >inverse3 :: (Fractional a) => Matrix3 a -> Matrix3 a
->inverse3 m = (1 / determinant m) %* adjucate3 m
+>inverse3 m = (1 / determinant_impl m) %* adjucate3 m
 
 >set3 :: Vector3 a -> Vector3 a -> (Vector3 :*: Vector3) a
 >set3 (Vector3 x y z) v = Matrix $ Vector3 (setx3 x v) (sety3 y v) (setz3 z v)
@@ -271,7 +214,7 @@
 >swapyz3 (Vector3 x y z) = Vector3 x z y
 
 >mul3Matrix :: (Num a,VectorSpace a) => Scalar a -> Vector3 ((Vector3 :*: Vector3) a)
->mul3Matrix = fmap (`functionMatrix` dim3) . mul3
+>mul3Matrix = fmap functionMatrix . mul3
 
 >signs3 :: (Integral a) => Matrix3 a
 >signs3 = fmap (\ (i,j) -> ((i+j+1) `mod` 2) * 2 - 1) matrix_indices3
@@ -282,10 +225,6 @@
 >instance Visitor (Vector3 a) where
 >  data Fold (Vector3 a) b = Vector3Fold (a -> a -> a -> b)
 >  visit (Vector3Fold f) (Vector3 x y z) = f x y z
-
->instance MetricSpace (Vector3 R) where
->  distance (Vector3 x y z) (Vector3 x' y' z') = sqrt $
->       (x'-x)*(x'-x) + (y'-y)*(y'-y) + (z'-z)*(z'-z)
 
 >instance AppendableVector Vector2 Vector1 where
 >  type (Vector2 :+: Vector1) = Vector3
@@ -298,10 +237,6 @@
 >  type (Vector1 :+: Vector2) = Vector3
 >  (Vector1 x) |> (Vector2 y z) = Vector3 x y z
 
->instance AppendableVector Vector3 Stream where
->  type (Vector3 :+: Stream) = Stream
->  (Vector3 x y z) |> a = x `Pre` y `Pre` z `Pre` a
-
 >instance SplittableVector Vector1 Vector2 where
 >  vsplit (Vector3 x y z) = (Vector1 x, Vector2 y z)
 
@@ -310,12 +245,6 @@
 
 >instance Traversable Vector3 where
 >   traverse f (Vector3 x y z) = Vector3 <$> f x <*> f y <*> f z
-
->vector_epsilon :: (Infinitesimal a) => Stream (Vector3 a)
->vector_epsilon = epsilon_stream Stream.>>!= \x ->
->   epsilon_stream Stream.>>!= \y ->
->   epsilon_stream Stream.>>!= \z ->
->   return $! Vector3 x y z
 
 >instance (ShowPrecision s) => ShowPrecision (Vector3 s) where
 >   show_at_precision (Vector3 x y z) p =
@@ -374,62 +303,25 @@ instance (PpShow (f a)) => PpShow ((Vector3 :*: f) a) where
 >  
 >-- | see "Lawvere,Rosebrugh: Sets for mathematics", pg. 167.
 >instance (ConjugateSymmetric a, Num a) => Semigroup ((Vector3 :*: Vector3) a) where
->   (<>) = (%**%)
+>   (<>) = (%*%)
 
 
 >-- | see "Lawvere,Rosebrugh: Sets for mathematics", pg. 167.
 >instance (Num a, ConjugateSymmetric a) => Mon.Monoid ((Vector3 :*: Vector3) a) where
->   mempty  = identity dim3
->   mappend = (%**%)
+>   mempty  = identity
+>   mappend = (%*%)
 
 >instance (Num s) => Group (Vector3 s) where
 >   ginvert (Vector3 x y z) = Vector3 (negate x) (negate y) (negate z)
 
 >instance (Fractional a, ConjugateSymmetric a) => Group ((Vector3 :*: Vector3) a) where
->   ginvert = inverse
-
->instance (Limiting a) => Limiting (Vector3 a) where
->  data Closure (Vector3 a) = Vector3Closure (Vector3 (Closure a))
->  limit str = Vector3Closure $ Vector3
->                      (limit $ fmap xcoord3 str)
->                      (limit $ fmap ycoord3 str)
->                      (limit $ fmap zcoord3 str)
->  approximations (Vector3Closure (Vector3 a b c)) = do
->     (a',b',c') <- fzip3 (approximations a)
->                         (approximations b)
->                         (approximations c)
->     return $! Vector3 a' b' c'
-
->instance (Show a, Limiting a) => Show (Closure (Vector3 a)) where
->   showsPrec _ v = shows $ shead $ approximations v
-
->instance (PpShow a, Limiting a) => PpShow (Closure (Vector3 a)) where
->   pp v = pp $ shead $ approximations v
+>   ginvert = inverse_impl
 
 
 approximations_vector3 :: Vector3 R -> Stream (Vector3 R)
 approximations_vector3 (Vector3 x y z) = do
         (x',(y',z')) <- approximate x `zip` (approximate y `zip` approximate z)
         return $ Vector3 (Limit x') (Limit y') (Limit z')
-
->-- | partial derivate a function defined for each coordinate along
->-- each dimension of three-dimensional vector.
->pderive3 :: (Closed a, Infinitesimal a)
->   => Vector3 (a -> a) -> Vector3 a -> Vector3 a
->pderive3 (Vector3 fx fy fz) (Vector3 x y z) = Vector3
->   (partial_derive chx fx x)
->   (partial_derive chy fy y)
->   (partial_derive chz fz z)
->  where chx eps x = x + eps
->        chy eps y = y + eps
->        chz eps z = z + eps
-
->vector_field_derivate :: (Closed a, Infinitesimal a)
->  => (Vector3 a -> a) -> Vector3 a -> Vector3 a
->vector_field_derivate f v@(Vector3 x y z) = Vector3
->   (partial_derivate dx3 f v)
->   (partial_derivate dy3 f v)
->   (partial_derivate dz3 f v)
 
 >dx3_endo :: (Num a) => a -> Mon.Endo (Vector3 a)
 >dx3_endo = Mon.Endo . dx3
@@ -447,94 +339,9 @@ approximations_vector3 (Vector3 x y z) = do
 >dz3 :: (Num a) => a -> Vector3 a -> Vector3 a
 >dz3 eps = \case { (Vector3 x y z) -> Vector3 x y (z + eps) }
 
->partial_derivate3x :: (Infinitesimal a, Closed a)
->                   => Dual (Vector3 a) -> Dual (Vector3 a)
->partial_derivate3x (Covector f) = covector $ partial_derivate dx3 f
-
->partial_derivate3y :: (Infinitesimal a, Closed a) => Dual (Vector3 a) -> Dual (Vector3 a)
->partial_derivate3y (Covector f) = covector $ partial_derivate dy3 f
-          
->partial_derivate3z :: (Infinitesimal a, Closed a) => Dual (Vector3 a) -> Dual (Vector3 a)
->partial_derivate3z (Covector f) = covector $ partial_derivate dz3 f
-
->-- | \[\nabla_3\], three-dimensional partial derivate. Use Applicative.<*> for applying it.
->del3 :: (Infinitesimal v, Closed v) => Vector3 (Dual (Vector3 v) -> Dual (Vector3 v))
->del3 = Vector3 partial_derivate3x partial_derivate3y partial_derivate3z
-
-
->-- outer product \[\nabla_3 \otimes \nabla_3\] operator for three-dimensional vectors.
->del3_squared :: (v ~ Scalar v, Infinitesimal v, Closed v)
->  => (Vector3 :*: Vector3) (Dual (Vector3 v) -> Dual (Vector3 v))
->del3_squared = matrix (.) del3 del3
 
 >op_dot :: (Num b) => Vector3 (a -> b) -> a -> b
 >op_dot (Vector3 f g h) z = f z + g z + h z
-
->hessian3 :: (v ~ Scalar v,Infinitesimal v, Closed v)
-> => Dual (Vector3 v) -> (Vector3 :*: Vector3) (Dual (Vector3 v))
->hessian3 f = matrix (\a b -> a (b f)) del3 del3
-
->instance (Infinitesimal a, Closed a) => VectorDerivative (Vector3 a) where
->  divergence = divergence3
->  grad = grad3
-
->instance (Infinitesimal a, Closed a) => VectorCrossProduct (Vector3 a) where
->  curl = curl3
-
->instance (Infinitesimal a, Closed a) => VectorLaplacian (Vector3 a) where
->  vector_laplace = vector_laplace3
-
->vector_laplace3 :: (VectorDerivative v) =>
->  LinearMap v (Vector3 (Scalar v)) -> LinearMap v (Vector3 (Scalar v))
->vector_laplace3 f = LinearMap $ \x -> Vector3
-> ((laplace $ linear_dual_3x f) `bracket` x)
-> ((laplace $ linear_dual_3y f) `bracket` x)
-> ((laplace $ linear_dual_3z f) `bracket` x)
-
->-- | <https://en.wikipedia.org/wiki/Divergence>
->divergence3 :: (Infinitesimal a, Closed a)
-> => LinearMap (Vector3 a) (Vector3 a) -> Dual (Vector3 a)
->divergence3 f = partial_derivate3x (linear_dual_3x f)
->              + partial_derivate3y (linear_dual_3y f)
->              + partial_derivate3z (linear_dual_3z f)
-
->linear_dual_3x :: LinearMap v (Vector3 (Scalar v)) -> Dual v
->linear_dual_3x f = covector (xcoord3 . (-!<) f)
-
->linear_dual_3y :: LinearMap v (Vector3 (Scalar v)) -> Dual v
->linear_dual_3y f = covector (ycoord3 . (-!<) f)
-
->linear_dual_3z :: LinearMap v (Vector3 (Scalar v)) -> Dual v
->linear_dual_3z f = covector (zcoord3 . (-!<) f)
-
->cycle3 :: Vector3 a -> Stream a
->cycle3 z@(Vector3 a b c) = a `Pre` b `Pre` c `Pre` cycle3 z
-
-
->-- | <https://en.wikipedia.org/wiki/Gradient>
->grad3 :: (Infinitesimal s, Closed s) => Dual (Vector3 s) -> LinearMap (Vector3 s) (Vector3 s)
->grad3 f = LinearMap $ \z -> Vector3 (partial_derivate3x f `bracket` z)
->                                    (partial_derivate3y f `bracket` z)
->                                    (partial_derivate3z f `bracket` z)
-
->-- | <https://en.wikipedia.org/wiki/Laplace_operator>
->laplace3 :: (Infinitesimal a, Closed a) => Dual (Vector3 a) -> Dual (Vector3 a)
->laplace3 f = divergence3 (grad3 f)
-
-
->-- | <https://en.wikipedia.org/wiki/Curl_(mathematics)>
-
->curl3 :: (Infinitesimal a, Closed a) => LinearMap (Vector3 a) (Vector3 a)
->                           -> LinearMap (Vector3 a) (Vector3 a)
->curl3 f = LinearMap $ \z -> Vector3 ((partial_derivate3y fz - partial_derivate3z fy)
->                       `bracket` z)
->                    ((partial_derivate3z fx - partial_derivate3x fz)
->                       `bracket` z)
->                    ((partial_derivate3x fy - partial_derivate3y fx)
->                       `bracket` z)
->  where fx = linear_dual_3x f
->        fy = linear_dual_3y f
->        fz = linear_dual_3z f
 
 >instance Applicative Vector3 where
 >   pure x = Vector3 x x x
@@ -551,8 +358,8 @@ approximations_vector3 (Vector3 x y z) = do
 >   conj (Vector3 x y z) = Vector3 (conj x) (conj y) (conj z)
 
 >-- | <https://en.wikipedia.org/wiki/Conjugate_transpose>
->instance (ConjugateSymmetric a) => ConjugateSymmetric ((Vector3 :*: Vector3) a) where
->   conj = fmap conj . transpose
+>instance (ConjugateSymmetric a, Num a) => ConjugateSymmetric ((Vector3 :*: Vector3) a) where
+>   conj = fmap conj . transpose_impl
 
 >instance (Floating a, ConjugateSymmetric a) => NormedSpace (Vector3 a) where
 >  norm = innerproductspace_norm 
@@ -571,37 +378,47 @@ approximations_vector3 (Vector3 x y z) = do
 >nth_norm3 :: (Floating a) => a -> Vector3 a -> a
 >nth_norm3 n (Vector3 x y z) = (x**n + y**n + z**n)**(1/n)
 
->instance Summable Vector3 where
+>instance (Num a) => Summable Vector3 a where
 >  sum_coordinates = sum_coordinates3
 
 >instance (Num a) => Diagonalizable Vector3 a where
 >  vector_dimension _ = dim3
->  identity _ = identity3
->  diagonal = diagonal3
->  diagonal_matrix = diagonal_matrix3
+>  identity_impl _ = identity3
+>  identity = identity3
+>  diagonal_impl = diagonal3
+>  diagonal_matrix_impl = diagonal_matrix3
 
 >instance (Num a) => Traceable Vector3 a where
->  trace = trace3 
->  determinant = determinant3 
+>  trace_impl = trace3 
+>  determinant_impl = determinant3 
 
->instance Transposable Vector3 Vector2 where
->  transpose (Matrix (Vector3 (Vector2 x1 y1) (Vector2 x2 y2) (Vector2 x3 y3)))
+>instance Transposable Vector3 Vector2 a where
+>  transpose_impl (Matrix (Vector3 (Vector2 x1 y1) (Vector2 x2 y2) (Vector2 x3 y3)))
 >    = Matrix $ Vector2 (Vector3 x1 x2 x3) (Vector3 y1 y2 y3)
 
->instance Transposable Vector2 Vector3 where
->  transpose (Matrix (Vector2 (Vector3 x1 x2 x3) (Vector3 y1 y2 y3)))
+>instance Transposable Vector2 Vector3 a where
+>  transpose_impl (Matrix (Vector2 (Vector3 x1 x2 x3) (Vector3 y1 y2 y3)))
 >    = Matrix $ Vector3 (Vector2 x1 y1) (Vector2 x2 y2) (Vector2 x3 y3)
 
->instance Transposable Vector3 Vector1 where
->  transpose (Matrix x) = Matrix $ Vector1 (fmap vector_element x)
+>instance Transposable Vector3 Vector1 a where
+>  transpose_impl (Matrix x) = Matrix $ Vector1 (fmap vector_element x)
 
->instance Transposable Vector1 Vector3 where
->  transpose (Matrix (Vector1 x)) = Matrix $ fmap Vector1 x
+>instance Transposable Vector1 Vector3 a where
+>  transpose_impl (Matrix (Vector1 x)) = Matrix $ fmap Vector1 x
 
->instance Transposable Vector3 Vector3 where
->  transpose = transpose3
+>instance (Num a) => Transposable Vector3 Vector3 a where
+>  transpose_impl = transpose3
 
->instance {-# OVERLAPPABLE #-} (Num a) => LinearTransform Vector3 Vector3 a where
+>instance Transposable Vector3 ((->) row) a where
+>   transpose_impl (Matrix (Vector3 x y z))
+>     = Matrix $ \a -> Vector3 (x a) (y a) (z a)
+>instance Transposable ((->) row) Vector3 a where
+>   transpose_impl (Matrix f)
+>     = Matrix $ Vector3 (\a -> xcoord3 (f a))
+>                        (\a -> ycoord3 (f a))
+>                        (\a -> zcoord3 (f a))
+
+>instance {-# OVERLAPPABLE #-} (Num a, ConjugateSymmetric a) => LinearTransform Vector3 Vector3 a where
 >  (<*>>) = left_multiply3
 >  (<<*>) = right_multiply3
 
@@ -617,6 +434,7 @@ approximations_vector3 (Vector3 x y z) = do
 >instance (Num a) => StandardBasis (Vector3 a) where
 >  unit_vectors = [xid,yid,zid]
 
+
 >instance (Num a, ConjugateSymmetric a) => Num ((Vector3 :*: Vector3) a) where
 >  (Matrix v) + (Matrix v') = Matrix $ liftA2 (liftA2 (+)) v v'
 >  (Matrix v) - (Matrix v') = Matrix $ liftA2 (liftA2 subtract) v v'
@@ -624,29 +442,12 @@ approximations_vector3 (Vector3 x y z) = do
 >  negate (Matrix v) = Matrix (negate v)
 >  abs (Matrix v) = Matrix (abs v)
 >  signum (Matrix v) = Matrix (signum v)
->  fromInteger = diagonal_matrix . constant3 . fromInteger
+>  fromInteger = diagonal_matrix_impl . constant3 . fromInteger
 
 >instance (Fractional a, ConjugateSymmetric a) => Fractional ((Vector3 :*: Vector3) a) where
->   recip = inverse
->   fromRational = diagonal_matrix . constant3 . fromRational
+>   recip = inverse_impl
+>   fromRational = diagonal_matrix_impl . constant3 . fromRational
 
->-- | <http://en.wikipedia.org/wiki/Hyperbolic_function hyperbolic function>
->instance (Floating a, Closed a, ConjugateSymmetric a) => Floating ((Vector3 :*: Vector3) a) where
->   pi = error "Matrix pi is not implemented."
->   exp = matrix_exponential3
->   log = error "Matrix log is not implemented."
->   cos = error "Matrix cosine is not implemented."
->   sin = error "Matrix sine is not implemented."
->   tan = error "Matrix tangent is not implemented."
->   sinh x = (exp x - exp (negate x)) / 2
->   cosh x = (exp x + exp (negate x)) / 2
->   tanh x = sinh x / cosh x
->   acos = error "Matrix acos is not implemented."
->   asin = error "Matrix asin is not implemented."
->   atan = error "Matrix atan is not implemented."
->   asinh = error "Matrix asinh is not implemented."
->   acosh = error "Matrix acosh is not implemented."
->   atanh = error "Matrix atanh is not implemented."
 
 >instance (Num a) => Num (Vector3 a) where
 >  (Vector3 x y z) + (Vector3 x' y' z') = Vector3 (x+x') (y+y') (z+z')
@@ -682,9 +483,6 @@ approximations_vector3 (Vector3 x y z) = do
 >instance (Num a) => LieAlgebra (Vector3 a) where
 >   (%<>%) = cross_product
 
->instance (Num a, ConjugateSymmetric a) => LieAlgebra ((Vector3 :*: Vector3) a) where
->   (%<>%) = matrix_commutator
-
 >-- | <https://en.wikipedia.org/wiki/Cross_product>
 >-- WARNING: a cross product produces an axial vector.
 >-- <https://en.wikipedia.org/wiki/Pseudovector>
@@ -697,12 +495,6 @@ approximations_vector3 (Vector3 x y z) = do
 >cross_product3 :: (Num a) => (Vector2 :*: Vector3) a -> Vector3 a
 >cross_product3 (Matrix (Vector2 a b)) = cross_product a b
 
->matrix_exponential3 :: (Closed b, ConjugateSymmetric b, Fractional b)
->   => Matrix3 b -> Matrix3 b
->matrix_exponential3 m = Stream.ssum $ 
->    liftA2 (\x y -> fmap (/y) x)
->               (let v = Pre identity3 (fmap (m `matrix_multiply3`) v) in v)
->               Stream.factorial
 
 >xid,yid,zid :: (Num a) => Vector3 a
 >xid = Vector3 1 0 0
@@ -727,19 +519,23 @@ approximations_vector3 (Vector3 x y z) = do
 >matrix_multiply3 (Matrix m1) m2 
 >   | Matrix m2t <- transpose3 m2 = matrix (%.) m1 m2t
 
->-- | dot3 doesn't work on complex numbers
+>dot3 :: (Num a, ConjugateSymmetric a) => Vector3 a -> Vector3 a -> a
+>dot3 x y = sum_coordinates3 $ liftA2 (*) x (fmap conj y)
 
->dot3 :: (Num a) => Vector3 a -> Vector3 a -> a
->dot3 x y = sum_coordinates3 $ liftA2 (*) x y
+>left_multiply3_gen :: (Functor f, Num a, ConjugateSymmetric a) => Vector3 a -> (f :*: Vector3) a -> f a
+>left_multiply3_gen v (Matrix w) = (sum . (pure (*) <*> v <*>)) <$> fmap conj w
 
->left_multiply3 :: (Num a) => Vector3 a -> Matrix3 a -> Vector3 a
+>right_multiply3_gen :: (VectorSpace (f a), ConjugateSymmetric a, Scalar (f a) ~ a) => (Vector3 :*: f) a -> Vector3 a -> f a
+>right_multiply3_gen (Matrix w) v = vsum $ liftA2 (\a fa -> a %* fa) (conj v) w
+
+>left_multiply3 :: (Num a, ConjugateSymmetric a) => Vector3 a -> Matrix3 a -> Vector3 a
 >left_multiply3 v (Matrix m) = fmap (dot3 v) m
 
->right_multiply3 :: (Num a) => Matrix3 a -> Vector3 a -> Vector3 a
+>right_multiply3 :: (Num a, ConjugateSymmetric a) => Matrix3 a -> Vector3 a -> Vector3 a
 >right_multiply3 (Matrix m) v = fmap (dot3 v) m
              
->transpose3 :: Matrix3 a -> Matrix3 a
->transpose3 (Matrix m) = matrix ($) diagonal_projections3 m
+>transpose3 :: (Num a) => Matrix3 a -> Matrix3 a
+>transpose3 (Matrix m) = matrix runIndex diagonal_projections3 m
 
 >outer3 :: (a -> b -> c) -> Vector3 a -> Vector3 b -> Matrix3 c
 >outer3 f (Vector3 x y z) v
@@ -839,7 +635,7 @@ approximations_vector3 (Vector3 x y z) = do
 >      diagonal_codiagonal3 :: Codiagonal Vector2 a
 >     }
 >   type (Vector3 \\ a) = Vector2 a
->   codiagonal = codiag3
+>   codiagonal_impl = codiag3
 >   (|\|) = matrix3
 >   down_project = down_codiagonal3
 >   right_project = right_codiagonal3
@@ -862,45 +658,54 @@ deriving instance (Show a) => Show (Codiagonal Vector3 a)
 >   (Codiagonal3 f1 f2 fr) <*> (Codiagonal3 x1 x2 xr) =
 >     Codiagonal3 (f1 <*> x1) (f2 <*> x2) (fr <*> xr)
 
->instance Indexable Vector3 where
+>instance (Num a) => Indexable Vector3 a where
 >  diagonal_projections = diagonal_projections3
 >  indexable_indices = Vector3 0 1 2
 
 >diagonal3 :: Matrix3 a -> Vector3 a
->diagonal3 (Matrix x) = diagonal_projections3 <*> x
+>diagonal3 (Matrix m) = Vector3 (xcoord3 $ xcoord3 m) (ycoord3 $ ycoord3 m) (zcoord3 $ zcoord3 m)
 
->diagonal_projections3 :: Vector3 (Vector3 a -> a)
->diagonal_projections3 = Vector3 xcoord3 ycoord3 zcoord3
+>diagonal_projections3 :: (Num a) => Vector3 (Index Vector3 a)
+>diagonal_projections3 = Vector3 (xcoord3 <!-!> \a -> Vector3 a 0 0)
+>                                (ycoord3 <!-!> \a -> Vector3 0 a 0)
+>                                (zcoord3 <!-!> \a -> Vector3 0 0 a)
 
->diagonal3x :: Matrix3 a -> Vector3 a
->diagonal3x (Matrix x) = diagonal_projections3 <*> x
+>diagonal3x :: (Num a) => Matrix3 a -> Vector3 a
+>diagonal3x (Matrix x) = fmap unI $ fmap isomorphism_epimorphism diagonal_projections3 <*> x
   
->diagonal3y :: Matrix3 a -> Vector3 a
->diagonal3y (Matrix x) = rotate_coordinates3 diagonal_projections3 <*> x
+>diagonal3y :: (Num a) => Matrix3 a -> Vector3 a
+>diagonal3y (Matrix x) = fmap unI $ fmap isomorphism_epimorphism (rotate_coordinates3 diagonal_projections3) <*> x
   
->diagonal3z :: Matrix3 a -> Vector3 a
->diagonal3z (Matrix x) = rotate_coordinates3 (rotate_coordinates3 diagonal_projections3) <*> x
+>diagonal3z :: (Num a) => Matrix3 a -> Vector3 a
+>diagonal3z (Matrix x) = fmap unI $ fmap isomorphism_epimorphism (rotate_coordinates3 (rotate_coordinates3 diagonal_projections3)) <*> x
 
 >-- | algorithm from <http://en.wikipedia.org/wiki/Determinant>
 
 >determinant3 :: (Num a) => Matrix3 a -> a
 >determinant3 (Matrix z@(Vector3 (Vector3 a b c) _ _)) =
 >      a * det removex3 - b * det removey3 + c * det removez3
->  where det rc = determinant (Matrix $ removex3 $ fmap rc z)
+>  where det rc = determinant_impl (Matrix $ removex3 $ fmap rc z)
 
 >determinant3_ :: (Num a) => Matrix3 a -> a
 >determinant3_ (Matrix m) = combine $ pure (*) <*> xcoord3 m <*> amv
->   where amv = fmap (determinant . Matrix . removex3 . (`fmap` m)) remove3
+>   where amv = fmap (determinant_impl . Matrix . removex3 . (`fmap` m)) remove3
 >         combine (Vector3 a b c) = a - b + c         
 
 >instance (Num a, ConjugateSymmetric a) => LinearTransform Vector1 Vector3 a where
 >  x <*>> (Matrix (Vector1 m)) = Vector1 $ x %. m
->  (Matrix (Vector1 m)) <<*> (Vector1 x) = x %* m
-
+>  (Matrix (Vector1 m)) <<*> (Vector1 x) = conj x %* m
 
 >instance (Num a,ConjugateSymmetric a) => LinearTransform Vector3 Vector1 a where
->  (Vector1 x) <*>> (Matrix m) = x %* fmap vector_element m
->  (Matrix (Vector3 (Vector1 x) (Vector1 y) (Vector1 z))) <<*> (Vector3 a b c) = Vector1 (x*a+y*b+z*c) 
+>  (Vector1 x) <*>> (Matrix m) = x %* fmap (conj . vector_element) m
+>  (Matrix (Vector3 (Vector1 x) (Vector1 y) (Vector1 z))) <<*> (Vector3 a b c) = Vector1 (x*conj a+y*conj b+z*conj c) 
+
+>instance (Num a, ConjugateSymmetric a) => LinearTransform Vector3 Vector2 a where
+>  (<*>>) = left_multiply2_gen
+>  (<<*>) = right_multiply3_gen
+
+>instance (Num a, ConjugateSymmetric a) => LinearTransform Vector2 Vector3 a where
+>  (<*>>) = left_multiply3_gen
+>  (<<*>) = right_multiply2_gen
 
 instance NumSpace (Vector3 (Complex R)) where
 instance FractionalSpace (Vector3 (Complex R)) where
@@ -943,8 +748,7 @@ instance FractionalSpace (Vector3 (Complex R)) where
 
 >-- | 3 x 3 matrices:
 
->instance {-# OVERLAPPING #-}
->   (Num a) => VectorSpace ((Vector3 :*: Vector3) a) where
+>instance (Num a) => VectorSpace ((Vector3 :*: Vector3) a) where
 >  type Scalar ((Vector3 :*: Vector3) a) = a
 >  vzero = Matrix $ Vector3 vzero vzero vzero
 >  vnegate (Matrix v) = Matrix $ fmap negate v
@@ -956,7 +760,7 @@ instance FractionalSpace (Vector3 (Complex R)) where
 >  norm = innerproductspace_norm
 
 >instance (Floating a, ConjugateSymmetric a) => InnerProductSpace ((Vector3 :*: Vector3) a) where
->  x %. y = trace (transpose x %*% y)
+>  x %. y = trace_impl (transpose_impl x %*% y)
 
 >gram_schmidt3 :: (Fractional (Scalar a), Num a,
 >                  InnerProductSpace a, VectorSpace a)
@@ -971,7 +775,7 @@ instance FractionalSpace (Vector3 (Complex R)) where
 >--   Smith, Oliver K.: Eigenvalues of symmetric 3x3 matrix, 1961, Communications of the ACM., <doi:10.1145/355578.366316>
 >--  The algorithm works reasonably when the matrix is real and symmetric.
 >eigenvalue3 :: (Floating a, Ord a, ConjugateSymmetric a) => (Vector3 :*: Vector3) a -> Vector3 a
->eigenvalue3 m = if p1 == 0 then diagonal m else Vector3 eig1 eig2 eig3
+>eigenvalue3 m = if p1 == 0 then diagonal_impl m else Vector3 eig1 eig2 eig3
 >   where eig1 = q + 2*p*cos(phi)
 >         eig3 = q + 2*p*cos(phi + 2*pi/3)
 >         eig2 = 3*q - eig1 - eig3
@@ -979,12 +783,12 @@ instance FractionalSpace (Vector3 (Complex R)) where
 >                      (m <!> (xcoord3,zcoord3))
 >                      (m <!> (ycoord3,zcoord3))
 >         p1 = pv %. pv
->         q = trace m / 3
->         mdq = diagonal m - return q
+>         q = trace_impl m / 3
+>         mdq = diagonal_impl m - return q
 >         p2 = mdq %. mdq + 2 * p1
 >         p = sqrt (p2 / 6)
->         b = (1 / p) %* (m %- q %* identity dim3)
->         r = determinant b / 2
+>         b = (1 / p) %* (m %- q %* identity_impl dim3)
+>         r = determinant_impl b / 2
 >         phi | r <= -1   = pi / 3
 >             | r >= 1    = 0
 >             | otherwise = acos r / 3
@@ -994,9 +798,9 @@ instance FractionalSpace (Vector3 (Complex R)) where
 >   eigenvalues = eigenvalue3
 
 >instance (Fractional a) => Invertible Vector3 a where
->   cofactor = cofactor3
->   adjucate = adjucate3
->   inverse = inverse3
+>   cofactor_impl = cofactor3
+>   adjucate_impl = adjucate3
+>   inverse_impl = inverse3
 >
 >-- | <https://en.wikipedia.org/wiki/Levi-Civita_symbol>
 >levi_civita3 :: ((Vector3 :*: Vector3) :*: Vector3) Int
@@ -1009,3 +813,23 @@ instance FractionalSpace (Vector3 (Complex R)) where
 >                  | x == 1 && y == 0 && z == 2 = negate 1
 >                  | x == y || y == z || z == x = 0
 
+>instance (Monad str,Limiting str a) => Limiting str (Vector3 a) where
+>  data Closure str (Vector3 a) = Vector3Closure (Vector3 (Closure str a))
+>  limit str = Vector3Closure $ Vector3
+>                      (limit $ fmap xcoord3 str)
+>                      (limit $ fmap ycoord3 str)
+>                      (limit $ fmap zcoord3 str)
+>  approximations (Vector3Closure (Vector3 a b c)) = do
+>     (a',b',c') <- fzip3 (approximations a)
+>                         (approximations b)
+>                         (approximations c)
+>     return $! Vector3 a' b' c'
+
+>instance (Show a, Monad str, Limiting str a) => Show (Closure str (Vector3 a)) where
+>   showsPrec _ v = shows $ shead $ approximations v
+
+>instance (Monad str, PpShow a, Limiting str a) => PpShow (Closure str (Vector3 a)) where
+>   pp v = pp $ shead $ approximations v
+
+>cycle3 :: (StreamBuilder str) => Vector3 a -> str a
+>cycle3 z@(Vector3 a b c) = a `pre` b `pre` c `pre` cycle3 z

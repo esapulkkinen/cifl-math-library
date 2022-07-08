@@ -12,40 +12,30 @@
 >import safe qualified Data.Binary as Bin
 >import safe qualified Data.Sequence as Seq
 >import safe Control.Applicative
+>import safe Control.Category
+>import Prelude hiding ((.),id)
 >import safe Math.Tools.Arrow
 >import safe Math.Tools.Functor
->import safe Math.Matrix.Matrix
 >import safe Math.Tools.PrettyP
 >import safe Math.Tools.Median
 >import safe Math.Tools.Isomorphism
 >import safe Math.Matrix.Interface
->import safe Math.Matrix.Covector
 >import safe Math.Tools.Visitor
 >import safe Math.Tools.CoMonad
 >import safe Math.Tools.Universe
 >import safe Math.Matrix.Vector1
->import safe Math.Matrix.Simple hiding (determinant2)
 >import safe Math.Number.Interface
 >import safe Math.Number.Group
->import safe Math.Number.Real
->import safe Math.Number.Stream
+>import safe Math.Number.StreamInterface
+>import safe Math.Tools.I
 
->data Vector2 s = Vector2 { xcoord2 :: s, ycoord2 :: s }
->   deriving (Eq, Typeable, Data, Generic)
+>deriving instance (Eq a) => Eq (Vector2 a)
+>deriving instance (Typeable a) => Typeable (Vector2 a)
+>deriving instance (Data a) => Data (Vector2 a)
+>deriving instance (Generic a) => Generic (Vector2 a)
 
->-- | this computes partial derivates of the scalar-value 2D vector field
->-- along both variables simultaneously.
->del_vector2 :: (Infinitesimal a) => (Vector2 a -> a) -> Vector2 a -> Vector2 (Closure a)
->del_vector2 f (Vector2 x y) = Vector2 (partial_derivate1_2 ff x y)
->                                      (partial_derivate2_2 ff x y)
->  where ff a b = f (Vector2 a b)
-
-
->cov2 :: Vector2 (Dual (Vector2 a))
->cov2 = Vector2 (covector xcoord2) (covector ycoord2)
-
->instance ProjectionDual Vector2 a where
->   projection_dual = cov2
+>instance (Num a) => Summable Vector2 a where
+>   sum_coordinates (Vector2 x y) = x + y
 
 >instance (Bin.Binary s) => Bin.Binary (Vector2 s) where
 >   put (Vector2 x y) = Bin.put x >> Bin.put y 
@@ -65,18 +55,23 @@
 >instance (Universe a) => Universe (Vector2 a) where
 >   all_elements = Vector2 <$> all_elements <*> all_elements
 
+>instance Transposable Stream Vector2 a where
+>   transpose_impl (Matrix (Pre v vr))
+>     = Matrix (Vector2 (Pre (xcoord2 v) (fmap xcoord2 vr))
+>                       (Pre (ycoord2 v) (fmap ycoord2 vr)))
+
 
 >type ComplexVector2 a = (Vector2 :*: Complex) a
 
 >-- | <https://en.wikipedia.org/wiki/Conjugate_transpose>
->instance (ConjugateSymmetric a) => ConjugateSymmetric ((Vector2 :*: Vector2) a) where
->   conj = fmap conj . transpose
+>instance (Num a, ConjugateSymmetric a) => ConjugateSymmetric ((Vector2 :*: Vector2) a) where
+>   conj = fmap conj . transpose_impl
 
 >i2 :: (Num a) => Vector2 a
->i2 = identity (Vector2 0 1) <!> (xcoord2,id)
+>i2 = identity_impl (Vector2 0 1) <!> (xcoord2,id)
 
 >j2 :: (Num a) => Vector2 a
->j2 = identity (Vector2 0 1) <!> (ycoord2,id)
+>j2 = identity_impl (Vector2 0 1) <!> (ycoord2,id)
 
 >vector2Iso :: Vector2 a :==: Complex a
 >vector2Iso = (\ (Vector2 a b) -> a :+ b) <-> (\(a :+ b) -> Vector2 a b)
@@ -95,7 +90,13 @@
 >   (S21Vector f) <*> (S21Vector x) = S21Vector $ f <*> x
 
 >matrix_root :: (Diagonalizable m a,ProjectionSpace m Vector1) => (m :*: m) a -> a
->matrix_root = vector_element . project_first . diagonal
+>matrix_root = vector_element . project_first . diagonal_impl
+
+
+>instance FunctorArrow Vector2 (:==:) where
+>  amap f = (\ (Vector2 a b) -> Vector2 (runIso f a) (runIso f b))
+>        <-> (\ (Vector2 a b) -> Vector2 (runIsoInverse f a) (runIsoInverse f b))
+
 
 >instance Comonad Vector2 where
 >   extract (Vector2 x _) = x
@@ -105,16 +106,6 @@
 >instance CircularComonad Vector2 where
 >   rotate (Vector2 x y) = Vector2 y x
 
->instance (Num a) => FiniteDimensional (Vector2 a) where
->   finite (Matrix (Covector f)) = Vector2 (f (covector xcoord2))
->                                          (f (covector ycoord2))
-
->x2_op :: Dual (Vector2 s)
->x2_op = covector xcoord2
-
->y2_op :: Dual (Vector2 s)
->y2_op = covector ycoord2
-
 >type Matrix2 a = (Vector2 :*: Vector2) a
 
 >instance CodiagonalMatrix Vector2 a where
@@ -123,7 +114,7 @@
 >     right_codiagonal2 :: Vector1 a
 >   }
 >   type (Vector2 \\ a) = Vector1 a
->   codiagonal = codiagonal2
+>   codiagonal_impl = codiagonal2
 >   (|\|) = mat2
 >   down_project = down_codiagonal2
 >   right_project = right_codiagonal2
@@ -148,8 +139,6 @@ deriving instance (Show a) => Show (Codiagonal Vector2 a)
 >constant2 :: a -> Vector2 a
 >constant2 x = Vector2 x x
 
->vector2_to_vec2 :: Vector2 a -> TwoD -> a
->vector2_to_vec2 (Vector2 x y) = svec2 x y
 
 >-- | <https://en.wikipedia.org/wiki/Complex_number>
 
@@ -214,19 +203,14 @@ deriving instance (Show a) => Show (Codiagonal Vector2 a)
 >  type (Vector1 :+: Vector1) = Vector2
 >  (Vector1 x) |> (Vector1 y) = Vector2 x y
 
->instance AppendableVector Vector2 Stream where
->  type (Vector2 :+: Stream) = Stream
->  (Vector2 x y) |> s = x `Pre` y `Pre` s
-
-
 >instance SplittableVector Vector1 Vector1 where
 >  vsplit (Vector2 x y) = (Vector1 x, Vector1 y)
 
 >instance (Ord a) => Ord (Vector2 a) where
 >   (Vector2 x y) <= (Vector2 x' y') = x <= x' && y <= y'
 
->instance (Limiting a) => Limiting (Vector2 a) where
->   data Closure (Vector2 a) = Vector2Closure (Vector2 (Closure a))
+>instance (Limiting str a, Monad str) => Limiting str (Vector2 a) where
+>   data Closure str (Vector2 a) = Vector2Closure (Vector2 (Closure str a))
 >   limit str = Vector2Closure $ Vector2 
 >                       (limit $ fmap xcoord2 str)
 >                       (limit $ fmap ycoord2 str)
@@ -234,46 +218,7 @@ deriving instance (Show a) => Show (Codiagonal Vector2 a)
 >     (a',b') <- approximations x <&> approximations y
 >     return $ Vector2 a' b'
 
->instance (Infinitesimal a, Closed a) => VectorDerivative (Vector2 a) where
->   divergence = divergence2
->   grad = grad2
-
-
-
->divergence2 :: (Infinitesimal a, Closed a) => LinearMap (Vector2 a) (Vector2 a) -> Dual (Vector2 a)
->divergence2 f = partial_derivate2x (linear_dual_2x f)
->             %+ partial_derivate2y (linear_dual_2y f)
-
->linear_dual_2x :: LinearMap v (Vector2 (Scalar v)) -> Dual v
->linear_dual_2x f = covector (xcoord2 . (-!<) f)
->
->linear_dual_2y :: LinearMap v (Vector2 (Scalar v)) -> Dual v
->linear_dual_2y f = covector (ycoord2 . (-!<) f)
-
->grad2 :: (Infinitesimal a, Closed a) => Dual (Vector2 a) -> LinearMap (Vector2 a) (Vector2 a)
->grad2 f = LinearMap $ \z -> Vector2 (partial_derivate2x f `bracket` z)
->                                    (partial_derivate2y f `bracket` z)
-
->curl2 :: (Infinitesimal a, Closed a) => LinearMap (Vector2 a) (Vector2 a) -> LinearMap (Vector2 a) (Vector2 a)
->curl2 f = LinearMap $ \z -> Vector2 (partial_derivate2y fx `bracket` z
->                     - partial_derivate2x fy `bracket` z)
->                    (partial_derivate2x fy `bracket` z 
->                     - partial_derivate2y fx `bracket` z)
->  where fx = linear_dual_2x f
->        fy = linear_dual_2y f
-
->del2 :: (Infinitesimal v, Closed v) => Vector2 (Dual (Vector2 v) -> Dual (Vector2 v))
->del2 = Vector2 partial_derivate2x partial_derivate2y
-
->hessian2 :: (Infinitesimal a, Closed a)
-> => Dual (Vector2 a) -> (Vector2 :*: Vector2) (Dual (Vector2 a))
->hessian2 f = matrix (\a b -> a (b f)) del2 del2
 > 
->instance (Infinitesimal a, Closed a) => VectorCrossProduct (Vector2 a) where
->  curl = curl2
->
->instance (Infinitesimal a, Closed a) => VectorLaplacian (Vector2 a)
-
 >instance Monad Vector2 where
 >   return x = Vector2 x x
 >   (>>=) = bind_diagonal2
@@ -291,12 +236,12 @@ deriving instance (Show a) => Show (Codiagonal Vector2 a)
 
 >-- | see "Lawvere,Rosebrugh: Sets for mathematics", pg. 167.
 >instance (Num a, ConjugateSymmetric a) => Semigroup ((Vector2 :*: Vector2) a) where
->   (<>) = (%**%)
+>   (<>) = (%*%)
 
 >-- | see "Lawvere,Rosebrugh: Sets for mathematics", pg. 167.
 >instance (Num a, ConjugateSymmetric a) => Monoid ((Vector2 :*: Vector2) a) where
->   mempty = identity (Vector2 0 1)
->   mappend = (%**%)
+>   mempty = identity_impl (Vector2 0 1)
+>   mappend = (%*%)
 
 >instance Applicative Vector2 where
 >   pure x = Vector2 x x
@@ -322,7 +267,7 @@ deriving instance (Show a) => Show (Codiagonal Vector2 a)
 >  show (Vector2 x y) = "[" ++ show x ++ "," ++ show y ++ "]"
 
 >instance (Fractional a, ConjugateSymmetric a) => Group ((Vector2 :*: Vector2) a) where
->   ginvert = inverse
+>   ginvert = inverse2
 
 >instance (Num a) => CoordinateSpace (Vector2 a) where
 >  type Coordinate (Vector2 a) = Int
@@ -332,20 +277,12 @@ deriving instance (Show a) => Show (Codiagonal Vector2 a)
 >  coordinates _ = [0,1,2]
 
 
->instance (Fractional a) => Invertible Vector2 a where
->   cofactor = cofactor2
->   adjucate = adjucate2
->   inverse = inverse2
-
 >instance Foldable Vector2 where
 >   foldMap f (Vector2 x y) = f x `mappend` f y
 
 >instance Traversable Vector2 where
 >   traverse f (Vector2 x y) = Vector2 <$> f x <*> f y
 
->instance (Fractional a, ConjugateSymmetric a) => Fractional ((Vector2 :*: Vector2) a) where
->   recip = inverse
->   fromRational = diagonal_matrix . constant2 . fromRational
 
 >removex2 :: Vector2 a -> Vector1 a
 >removex2 (Vector2 _ y) = Vector1 y
@@ -359,15 +296,20 @@ deriving instance (Show a) => Show (Codiagonal Vector2 a)
 >remove_index2 (Matrix m) = matrix app remove2 remove2
 >  where app f g = Matrix $ f $ fmap g m
 
+>instance (Fractional a) => Invertible Vector2 a where
+>  cofactor_impl = cofactor2
+>  adjucate_impl = adjucate2
+>  inverse_impl = inverse2
+
+
 >cofactor2 :: (Num a) => Matrix2 a -> Matrix2 a
->cofactor2 m = pure (*) <*> fmap fromIntegral signs2 <*> fmap determinant (remove_index2 m)
+>cofactor2 m = pure (*) <*> fmap fromIntegral signs2 <*> fmap determinant_impl (remove_index2 m)
 
 >adjucate2 :: (Num a) => Matrix2 a -> Matrix2 a
->adjucate2 = transpose . cofactor2
+>adjucate2 = transpose_impl . cofactor2
 >
 >inverse2 :: (Fractional a) => Matrix2 a -> Matrix2 a
->inverse2 m = (1/determinant m) %* adjucate2 m
-
+>inverse2 m = (1/determinant_impl m) %* adjucate2 m
 
 >vector_indices2 :: Vector2 Integer
 >vector_indices2 = Vector2 1 2
@@ -385,43 +327,44 @@ deriving instance (Show a) => Show (Codiagonal Vector2 a)
 >   negate (Matrix v) = Matrix $ negate v
 >   abs (Matrix v) = Matrix (abs v)
 >   signum (Matrix v) = Matrix $ signum v
->   fromInteger = diagonal_matrix . constant2 . fromInteger
+>   fromInteger = diagonal_matrix2 . constant2 . fromInteger
 
->instance (Num a, ConjugateSymmetric a) => LieAlgebra ((Vector2 :*: Vector2) a) where
->   (%<>%) = matrix_commutator
+instance (Num a, ConjugateSymmetric a) => LieAlgebra ((Vector2 :*: Vector2) a) where
+   (%<>%) = matrix_commutator
 
 
->partial_derivate2x :: (Fractional a,Infinitesimal a, Closed a) 
->                   => Dual (Vector2 a) -> Dual (Vector2 a)
->partial_derivate2x (Covector f) = covector $ partial_derivate ch f
->  where ch eps (Vector2 x y) = Vector2 (x+eps) y
-
->partial_derivate2y :: (Fractional a,Infinitesimal a, Closed a)
->                   => Dual (Vector2 a) -> Dual (Vector2 a)
->partial_derivate2y (Covector f) = covector $ partial_derivate ch f
->  where ch eps (Vector2 x y) = Vector2 x (y+eps)
 
 >vector_vector2 :: [a] -> Vector2 a
 >vector_vector2 [x,y] = Vector2 x y
 >vector_vector2 _ = error "vector2: Invalid number of elements in vector"
 
->diagonal2 :: Matrix2 a -> Vector2 a
->diagonal2 (Matrix x) = diagonal_projections2 <*> x
+>diagonal2 :: (Num a) => Matrix2 a -> Vector2 a
+>diagonal2 (Matrix m) = appIndex diagonal_projections2 m
 
->instance Indexable Vector2 where
+>instance (Num a) => Indexable Vector2 a where
 >   diagonal_projections = diagonal_projections2
 >   indexable_indices = Vector2 0 1
 
->instance Indexable (Vector2 :*: Vector2) where
+>compose_index :: (m (n a) :==: I (n a)) -> (n a :==: I a) -> (m :*: n) a :==: (I :*: I) a
+>compose_index f g = (Matrix . I . runIso g . unI . runIso f . cells)
+>                 <-> (Matrix . runIsoInverse f . amap (runIsoInverse g) . cells)
+
+
+>instance (Num a) => Indexable (Vector2 :*: Vector2) a where
 >   indexable_indices = Matrix $ Vector2 (Vector2 0 1) (Vector2 3 4)
->   diagonal_projections = fmap (\f -> f . cells) $ 
->      matrix (.) diagonal_projections2 diagonal_projections2
+>   diagonal_projections =
+>      matrix (\x y -> x . amap ((unI <-> I) . y) . (cells <-> Matrix))
+>                 (diagonal_projections :: Vector2 (Index Vector2 a))
+>                 (diagonal_projections :: Vector2 (Index Vector2 a))
 
->diagonal_projections2 :: Vector2 (Vector2 a -> a)
->diagonal_projections2 = Vector2 xcoord2 ycoord2
+>diagonal_projections2 ::  (Num a) => Vector2 (Index Vector2 a)
+>diagonal_projections2 = Vector2 ((I . xcoord2) <-> xcoord2inv)
+>                                  ((I . ycoord2) <-> ycoord2inv)
+>   where xcoord2inv (I a) = Vector2 a 0
+>         ycoord2inv (I a) = Vector2 0 a
 
->transpose2 :: Matrix2 a -> Matrix2 a
->transpose2 (Matrix m) = matrix ($) diagonal_projections2 m
+>transpose2 :: (Num a) => Matrix2 a -> Matrix2 a
+>transpose2 (Matrix m) = matrix index_project diagonal_projections2 m
 
 >rotate2 :: Vector2 a -> Vector2 a
 >rotate2 (Vector2 x y) = Vector2 y x
@@ -458,18 +401,42 @@ deriving instance (Show a) => Show (Codiagonal Vector2 a)
 >  signum (Vector2 x y) = Vector2 (signum x) (signum y)
 >  fromInteger i = error "fromInteger: Vector2 requires 2 components"
 
->left_multiply2 :: (Num a) => Vector2 a -> Matrix2 a -> Vector2 a
+>left_multiply2_gen :: (Functor f, Num a, ConjugateSymmetric a) => Vector2 a -> (f :*: Vector2) a -> f a
+>left_multiply2_gen v (Matrix w) = (sum . (pure (*) <*> v <*>)) <$> fmap conj w
+
+>right_multiply2_gen :: (VectorSpace (f a), ConjugateSymmetric a, Scalar (f a) ~ a) => (Vector2 :*: f) a -> Vector2 a -> f a
+>right_multiply2_gen (Matrix w) v = vsum $ liftA2 (\a fa -> a %* fa) (conj v) w
+
+>left_multiply1_2 :: (Num a, ConjugateSymmetric a) => Vector2 a -> (Vector1 :*: Vector2) a -> Vector1 a
+>left_multiply1_2 (Vector2 x y) (Matrix (Vector1 (Vector2 x1 y1)))
+>   = Vector1 (x*conj x1+y*conj y1)
+>
+>left_multiply2_1 :: (Num a, ConjugateSymmetric a) => Vector1 a -> (Vector2 :*: Vector1) a -> Vector2 a
+>left_multiply2_1 (Vector1 a) (Matrix (Vector2 (Vector1 x) (Vector1 y)))
+>   = Vector2 (a*conj x) (a*conj y)
+
+>left_multiply2 :: (Num a, ConjugateSymmetric a) => Vector2 a -> Matrix2 a -> Vector2 a
 >left_multiply2 (Vector2 x y) (Matrix (Vector2 (Vector2 x1 y1)
 >                                      (Vector2 x2 y2)))
->  = Vector2 (x*x1+y*y1)
->            (x*x2+y*y2)                               
+>  = Vector2 (x*conj x1+y*conj y1)
+>            (x*conj x2+y*conj y2)                               
 
->right_multiply2 :: (Num a) => Matrix2 a -> Vector2 a -> Vector2 a
+>right_multiply2 :: (Num a, ConjugateSymmetric a) => Matrix2 a -> Vector2 a -> Vector2 a
 >right_multiply2 (Matrix (Vector2 (Vector2 x1 y1)
 >                         (Vector2 x2 y2))) (Vector2 x y)
->   = Vector2 (x1*x+x2*y)
->             (y1*x+y2*y)                  
+>   = Vector2 (x1*x'+x2*y')
+>             (y1*x'+y2*y')                  
+>    where x' = conj x
+>          y' = conj y
 
+>right_multiply2_1 :: (ConjugateSymmetric a,Num a) => (Vector2 :*: Vector1) a -> Vector2 a -> Vector1 a
+>right_multiply2_1 (Matrix (Vector2 (Vector1 x) (Vector1 y))) (Vector2 x' y')
+>  = Vector1 (x*conj x'+y*conj y')
+>
+>right_multiply1_2 :: (ConjugateSymmetric a,Num a) => (Vector1 :*: Vector2) a -> Vector1 a -> Vector2 a
+>right_multiply1_2 (Matrix (Vector1 (Vector2 x y))) (Vector1 z)
+>  = Vector2 (x*z') (y*z')
+>    where z' = conj z
 
 >instance (Num a) => VectorSpace (Vector2 a) where
 >  type Scalar (Vector2 a) = a
@@ -489,20 +456,46 @@ deriving instance (Show a) => Show (Codiagonal Vector2 a)
 
 >instance (Num a) => Diagonalizable Vector2 a where
 >  vector_dimension _ = Vector2 0 1
->  diagonal = diagonal2 
->  identity _ = identity2
->  diagonal_matrix = diagonal_matrix2
+>  diagonal_impl = diagonal2 
+>  identity_impl _ = identity2
+>  diagonal_matrix_impl = diagonal_matrix2
+>  identity = identity2
 
 >instance (Num a) => Traceable Vector2 a where
->  determinant = determinant2 
->  trace = trace2 
+>  trace_impl = trace2
+>  determinant_impl = determinant2
 
->instance Transposable Vector2 Vector2 where
->  transpose   = transpose2
 
->instance {-# OVERLAPPABLE #-} (Num a) => LinearTransform Vector2 Vector2 a where
+>instance Transposable Vector2 ((->) row) a where
+>   transpose_impl (Matrix (Vector2 x y))
+>     = Matrix $ \a -> Vector2 (x a) (y a)
+>instance Transposable ((->) row) Vector2 a where
+>   transpose_impl (Matrix f)
+>     = Matrix $ Vector2 (\a -> xcoord2 (f a))
+>                        (\a -> ycoord2 (f a))
+
+
+>instance (Num a) => Transposable Vector2 Vector2 a where
+>  transpose_impl   = transpose2
+
+>instance Transposable Vector2 Vector1 a where
+>  transpose_impl (Matrix (Vector2 (Vector1 x) (Vector1 y)))
+>    = Matrix (Vector1 (Vector2 x y))
+>instance Transposable Vector1 Vector2 a where
+>  transpose_impl (Matrix (Vector1 (Vector2 x y)))
+>    = Matrix (Vector2 (Vector1 x) (Vector1 y))
+
+>instance {-# OVERLAPPABLE #-} (ConjugateSymmetric a, Num a) => LinearTransform Vector2 Vector2 a where
 >  (<*>>) = left_multiply2
 >  (<<*>) = right_multiply2
+
+>instance (ConjugateSymmetric a, Num a) => LinearTransform Vector2 Vector1 a where
+>  (<*>>) = left_multiply2_1
+>  (<<*>) = right_multiply2_1
+>
+>instance (ConjugateSymmetric a, Num a) => LinearTransform Vector1 Vector2 a where
+>  (<*>>) = left_multiply1_2
+>  (<<*>) = right_multiply1_2
 
 >trace2 :: (Num a) => Matrix2 a -> a
 >trace2 t | Vector2 x y <- diagonal2x t = x + y
@@ -555,8 +548,8 @@ deriving instance (Show a) => Show (Codiagonal Vector2 a)
 
 >eigenvalue2 :: (Floating a) => (Vector2 :*: Vector2) a -> Vector2 a
 >eigenvalue2 a = Vector2 ((tra + m) / 2) ((tra - m) / 2)
->  where m = sqrt(tra * tra - 4 * determinant a)
->        tra = trace a
+>  where m = sqrt(tra * tra - 4 * determinant_impl a)
+>        tra = trace_impl a
 
 >instance (Floating a) => EigenDecomposable Vector2 a where
 >   eigenvalues = eigenvalue2
@@ -574,22 +567,13 @@ deriving instance (Show a) => Show (Codiagonal Vector2 a)
 >  vnegate (Matrix v) = Matrix $ fmap negate v
 >  v %* (Matrix x) = Matrix $ fmap (fmap (v*)) x
 >  (Matrix x) %+ (Matrix y) = Matrix $ x %+ y
->
+
 >instance (Num a) => VectorSpace ((Vector1 :*: Vector2) a) where
 >  type Scalar ((Vector1 :*: Vector2) a) = a
 >  vzero = Matrix $ Vector1 vzero 
 >  vnegate (Matrix v) = Matrix $ fmap negate v
 >  v %* (Matrix x) = Matrix $ fmap (fmap (v*)) x
 >  (Matrix x) %+ (Matrix y) = Matrix $ x %+ y
-
->toSimple21 :: (Vector2 :*: Vector1) a -> (TwoD :&: OneD) a
->toSimple21 m = Matrix $ m <!> (vector2_to_vec2, vector1_to_vec1)
-
->toSimple22 :: (Vector2 :*: Vector2) a -> (TwoD :&: TwoD) a
->toSimple22 m = Matrix $ m <!> (vector2_to_vec2, vector2_to_vec2)
-
->toSimple12 :: (Vector1 :*: Vector2) a -> (OneD :&: TwoD) a
->toSimple12 m = Matrix $ m <!> (vector1_to_vec1, vector2_to_vec2)
 
 >-- | <https://en.wikipedia.org/wiki/Levi-Civita_symbol>
 >leviCivita2 :: (Num a) => (Vector2 :*: Vector2) a

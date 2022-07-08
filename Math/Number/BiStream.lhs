@@ -6,8 +6,9 @@
 >import Math.Tools.CoMonad
 >import Data.List (intersperse, reverse)
 >import Math.Matrix.Interface
->import Math.Number.Stream (Stream, naturals, nonzero_naturals, stream_diagonal)
+>import Math.Number.Stream (naturals, nonzero_naturals, stream_diagonal)
 >import qualified Math.Number.Stream as Stream
+>import Math.Number.StreamInterface
 
 >-- | This data type is a bidirectional version of a stream.
 >data BiStream a = BiStream { bifst :: Stream a, bisnd :: Stream a }
@@ -40,16 +41,16 @@
 >fromIntegerStream f = fmap f integers_bistream
 
 >bistream_index :: BiStream a -> Integer -> a
->bistream_index (BiStream x r) i | i < 0 = Stream.shead (Stream.drop (abs (succ i)) x)
->                                | otherwise = Stream.shead (Stream.drop i r)
+>bistream_index (BiStream x r) i | i < 0 = shead (Stream.drop (abs (succ i)) x)
+>                                | otherwise = shead (Stream.drop i r)
 
 >bistream_diagonal :: (BiStream :*: BiStream) a -> BiStream a
->bistream_diagonal (Matrix x) = BiStream (stream_diagonal nn) (stream_diagonal pp)
+>bistream_diagonal (Matrix x) = BiStream (stream_diagonal_impl nn) (stream_diagonal_impl pp)
 >   where nn = Matrix $ fmap bifst (bifst x)
 >         pp = Matrix $ fmap bisnd (bisnd x)
 >
 >bistream_cross_diagonal :: (BiStream :*: BiStream) a -> BiStream a
->bistream_cross_diagonal (Matrix x) = BiStream (stream_diagonal np) (stream_diagonal pn) 
+>bistream_cross_diagonal (Matrix x) = BiStream (stream_diagonal_impl np) (stream_diagonal_impl pn) 
 >  where pn = Matrix $ fmap bisnd (bifst x)
 >        np = Matrix $ fmap bifst (bisnd x)
 

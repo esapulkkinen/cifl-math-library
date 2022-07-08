@@ -29,14 +29,14 @@ dfunction f x y = x `fbind` \a -> y `fbind` (f a)
 
 >outer'' f x y = fmap (\a -> fmap (f a) y) x
 
->outer :: (Functor f, Functor g) => (a -> b -> c) -> f a -> g b -> f (g c)
->outer f x y = x `mapf` \a -> y `mapf` \b -> f a b
+>functor_outer :: (Functor f, Functor g) => (a -> b -> c) -> f a -> g b -> f (g c)
+>functor_outer f x y = x `mapf` \a -> y `mapf` \b -> f a b
 
 >outer_left :: (Functor f, Functor g) => f (a -> b) -> g a -> f (g b)
->outer_left = outer id
+>outer_left = functor_outer id
 
 >outer_right :: (Functor f, Functor g) => f a -> g (a -> b) -> f (g b)
->outer_right = outer (flip id)
+>outer_right = functor_outer (flip id)
 
 >list_dotproduct :: (Num a) => [a] -> [a] -> a
 >list_dotproduct x y = sum $ liftA2 (*) x y  
@@ -56,30 +56,30 @@ dfunction f x y = x `fbind` \a -> y `fbind` (f a)
 >full_outer x f1 f2 = x `mapf` \a -> f1 a `mapf` \b -> f2 a b
 
 >self :: (Functor f) => (a -> a -> b) -> f a -> f (f b)
->self f x = outer f x x
+>self f x = functor_outer f x x
 
 >mapf :: (Functor f) => f a -> (a -> b) -> f b
 >mapf = flip fmap
 
 >outer_product :: (Functor f, Functor g) => f a -> g b -> f (g (a,b))
->outer_product = outer (,)
+>outer_product = functor_outer (,)
 
 >outer_apply :: (Functor f, Functor g) => f (b -> c) -> g b -> f (g c)
->outer_apply = outer id
+>outer_apply = functor_outer id
 
 >(|**|) :: (Functor f, Monad f) => f a -> f b -> f (a,b)
->x |**| y = join $ outer (,) x y
+>x |**| y = join $ functor_outer (,) x y
 
 
 >outer3_functor :: (Functor f, Functor g, Functor h)
 >	=> (a -> b -> c -> d) -> f a -> g b -> h c -> f (g (h d))
->outer3_functor f x x' y = outer (\a b -> fmap (f a b) y) x x'
+>outer3_functor f x x' y = functor_outer (\a b -> fmap (f a b) y) x x'
 
 
 
 >outer4_functor :: (Functor f, Functor g, Functor h, Functor i) =>
 >	(a -> b -> c -> d -> e) -> f a -> g b -> h c -> i d -> f (g (h (i e)))
->outer4_functor f x x' y y' = outer (\a b -> outer (f a b) y y') x x'
+>outer4_functor f x x' y y' = functor_outer (\a b -> functor_outer (f a b) y y') x x'
 
 data LayerSeq f a = LayerSeq a (f (LayerSeq f a))
 

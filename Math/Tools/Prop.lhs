@@ -14,7 +14,6 @@
 >import Math.Tools.Show
 >import Math.Tools.Median
 >import Math.Tools.Arrow
->import Math.Matrix.Matrix
 >import Math.Matrix.Interface
 
 >-- | We must represent classical logic with characteristic functions,
@@ -112,14 +111,6 @@ serial_frames = characteristic (uncurry system_D)
 >vector_equalizer :: (Eq (n a), LinearTransform m n a)
 >                 => (m :*: n) a -> (m :*: n) a -> Prop (m a)
 >vector_equalizer a b = Characteristic $ \v -> a <<*> v == b <<*> v
-
->matrix_equalizer :: (Eq (Scalar (h a)),
->                     InnerProductSpace (h a),
->                     Transposable h f,
->                     Applicative g, Applicative f,
->                     Foldable g, Foldable f)
->                 => (g :*: h) a -> (g :*: h) a -> Prop ((h :*: f) a)
->matrix_equalizer a b = Characteristic $ \v -> a %*% v == b %*% v
 
 >instance OverCategory (->) a where
 >   overmap g f = f . g

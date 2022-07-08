@@ -1,6 +1,8 @@
 >{-# LANGUAGE Safe,MultiParamTypeClasses, TypeSynonymInstances, FlexibleInstances, StandaloneDeriving, FlexibleContexts, TypeOperators, TypeFamilies, DeriveGeneric, DeriveDataTypeable #-}
 >module Math.Matrix.Vector1 where
 >import safe Control.Applicative
+>import safe Control.Category
+>import Prelude hiding ((.),id)
 >import safe GHC.Generics hiding ((:*:), (:+:))
 >import safe Data.Data
 >import safe Data.Typeable
@@ -16,21 +18,15 @@
 >import Math.Tools.Median
 >import Math.Tools.Universe
 >import Math.Tools.PrettyP
->import Math.Matrix.Covector
->import Math.Matrix.Matrix
+>import Math.Tools.Arrow
 >import Math.Matrix.Interface
->import Math.Matrix.Simple
->import Math.Number.Stream
->import Math.Number.Real
+>import Math.Number.StreamInterface
 
->data Vector1 a = Vector1 { vector_element :: a }
->  deriving (Eq, Ord, Typeable, Data, Generic)
-
->cov1 :: Vector1 (Dual (Vector1 a))
->cov1 = Vector1 (covector $ vector_element)
-
->instance ProjectionDual Vector1 a where
->   projection_dual = cov1
+>deriving instance (Eq a) => Eq (Vector1 a)
+>deriving instance (Ord a) => Ord (Vector1 a)
+>deriving instance (Typeable a) => Typeable (Vector1 a)
+>deriving instance (Data a) => Data (Vector1 a)
+>deriving instance (Generic a) => Generic (Vector1 a)
 
 >instance (Bin.Binary s) => Bin.Binary (Vector1 s) where
 >   put (Vector1 x) = Bin.put x
@@ -39,15 +35,31 @@
 >instance (Universe a) => Universe (Vector1 a) where
 >   all_elements = Vector1 <$> all_elements
 
+>instance (Floating a) => Floating (Vector1 a) where
+>   pi = Vector1 pi
+>   exp (Vector1 x) = Vector1 (exp x)
+>   log (Vector1 x) = Vector1 (log x)
+>   sqrt (Vector1 x) = Vector1 (sqrt x)
+>   (Vector1 x) ** (Vector1 y) = Vector1 (x ** y)
+>   logBase (Vector1 x) (Vector1 y) = Vector1 (logBase x y)
+>   sin (Vector1 x) = Vector1 (sin x)
+>   cos (Vector1 x) = Vector1 (cos x)
+>   tan (Vector1 x) = Vector1 (tan x)
+>   asin (Vector1 x) = Vector1 (asin x)
+>   acos (Vector1 x) = Vector1 (acos x)
+>   atan (Vector1 x) = Vector1 (atan x)
+>   sinh (Vector1 x) = Vector1 (sinh x)
+>   cosh (Vector1 x) = Vector1 (cosh x)
+>   tanh (Vector1 x) = Vector1 (tanh x)
+>   asinh (Vector1 x) = Vector1 (asinh x)
+>   acosh (Vector1 x) = Vector1 (acosh x)
+>   atanh (Vector1 x) = Vector1 (atanh x)
+
+>instance FunctorArrow Vector1 (->) where
+>   amap f = fmap f
+
 >instance (ConjugateSymmetric a) => ConjugateSymmetric (Vector1 a) where
->   conj = fmap conj
-
->-- | <https://en.wikipedia.org/wiki/Conjugate_transpose>
->instance (ConjugateSymmetric a) => ConjugateSymmetric ((Vector1 :*: Vector1) a) where
->   conj = fmap conj . transpose
-
->instance (Num a, a ~ Scalar a) => FiniteDimensional (Vector1 a) where
->   finite (Matrix (Covector f)) = Vector1 (f (covector $ vector_element))
+>   conj = amap conj
 
 >instance Foldable Vector1 where
 >   foldMap f (Vector1 x) = f x
@@ -62,6 +74,11 @@
 >   ppf (Vector1 x) = pp '[' Mon.<> (Pretty.sep [pp x]) Mon.<> pp ']'
 
 
+>instance Transposable Stream Vector1 a where
+>   transpose_impl (Matrix (Pre v vr))
+>     = Matrix (Vector1 (Pre (vector_element v) (fmap vector_element vr)))
+
+
 >instance ProjectionSpace Vector1 Vector1 where
 >   data (Vector1 \\\ Vector1) a = S11Vector
 >   project_first = id
@@ -70,20 +87,6 @@
 
 >instance Functor (Vector1 \\\ Vector1) where
 >   fmap _ S11Vector = S11Vector
-
->project_down :: (Functor (m \\\ m'),
->                ProjectionSpace m m',
->                ProjectionSpace n Vector1)
->               => (m :*: n) a -> (m \\\ m') a
->project_down m = fmap vector_element $ m <!> (project_second, project_first)
- 
->project_right :: (ProjectionSpace m Vector1, ProjectionSpace n n')
->              => (m :*: n) a -> (n \\\ n') a
->project_right m = vector_element $ m <!> (project_first, project_second)
-
->project_diagonal :: (ProjectionSpace m m', ProjectionSpace n n')
->                 => (m :*: n) a -> ((m \\\ m') :*: (n \\\ n')) a
->project_diagonal m = Matrix $ m <!> (project_second, project_second)
 
 >grid :: (Applicative n, Applicative (f \\\ n),
 >             ProjectionSpace f n,
@@ -117,9 +120,6 @@
 >horizontal :: (Functor v) => v a -> (Vector1 :*: v) a
 >horizontal = Matrix . Vector1
 
->vector1_to_vec1 :: Vector1 a -> OneD -> a
->vector1_to_vec1 (Vector1 x) = svec1 x
-
 http://en.wikipedia.org/wiki/Bra%E2%80%93ket_notation
 
 >bra :: (Functor v, RealFloat a) => v (Complex a) -> (Vector1 :*: v) (Complex a)
@@ -145,30 +145,17 @@ http://en.wikipedia.org/wiki/Bra%E2%80%93ket_notation
 
 >(%<|>%) a b = vector_element $ vector_element $ cells $ bra a %*% ket b
 
->instance (Limiting a) => Limiting (Vector1 a) where
->  data Closure (Vector1 a) = Vector1Closure { unVector1Limit :: Stream (Vector1 a) }
+>instance (Limiting str a) => Limiting str (Vector1 a) where
+>  data Closure str (Vector1 a) = Vector1Closure { unVector1Limit :: str (Vector1 a) }
 >  limit str = Vector1Closure str
 >  approximations (Vector1Closure a) = a 
 
->instance Indexable Vector1 where
->  diagonal_projections = Vector1 vector_element
+>instance (Num a) => Indexable Vector1 a where
+>  diagonal_projections = Vector1 (vector_element <!-!> Vector1)
 >  indexable_indices = Vector1 0
 
->instance AppendableVector Vector1 Stream where
->  type (Vector1 :+: Stream) = Stream
->  (Vector1 x) |> s = x `Pre` s
-
->instance (Infinitesimal a) => Infinitesimal (Vector1 a) where
+>instance (Infinitesimal str a) => Infinitesimal str (Vector1 a) where
 >  epsilon_stream = fmap Vector1 epsilon_stream
-
->partial_derivate1x :: (Infinitesimal a, Closed a)
->              => Dual (Vector1 a) -> Dual (Vector1 a)
->partial_derivate1x (Covector f) = covector $ partial_derivate ch f
->   where ch eps (Vector1 x) = Vector1 (x+eps)
-
->instance (a ~ Scalar a, Infinitesimal a, Closed a) => VectorDerivative (Vector1 a) where
->   divergence f = partial_derivate1x (covector (vector_element . (-!<) f))
->   grad f = LinearMap $ \z -> Vector1 (partial_derivate1x f `bracket` z)
 
 >instance (MedianAlgebra a) => MedianAlgebra (Vector1 a) where
 >   med (Vector1 a) (Vector1 b) (Vector1 c) = Vector1 (med a b c)
@@ -184,37 +171,12 @@ http://en.wikipedia.org/wiki/Bra%E2%80%93ket_notation
 >inVector1_binary :: (Vector1 a -> Vector1 b -> Vector1 c) -> a -> b -> c
 >inVector1_binary f x y = vector_element (f (Vector1 x) (Vector1 y))
 
->prefix_vector :: (AppendableVector Vector1 n) => a -> n a -> (Vector1 :+: n) a
->prefix_vector d rest = Vector1 d |> rest
-
->prefix_matrix :: (Applicative n, AppendableVector Vector1 m,
->                  AppendableVector Vector1 n) => 
->                  a -> (m a, n a) -> (n :*: m) a
->                  -> ((Vector1 :+: n) :*: (Vector1 :+: m)) a
->prefix_matrix d (row,col) (Matrix m) = Matrix $ 
->   (d `prefix_vector` row) `prefix_vector` liftA2 prefix_vector col m
-
->splittable_codiagonal :: (Functor f, Functor (Vector1 :+: f), Functor (Vector1 :+: g),
->                SplittableVector Vector1 f, SplittableVector Vector1 g)
->            => ((Vector1 :+: f) :*: (Vector1 :+: g)) a -> (a,g a, f a, (f :*: g) a)
->splittable_codiagonal m = (a <!> (vector_element,vector_element),vector_element (cells b),
->                           fmap vector_element (cells c), d)
->   where ((a,b),(c,d)) = split_matrix m
-
 >instance (Num a) => Semigroup (Vector1 a) where
 >   (<>) = (%+)
 
 >instance (Num a) => Monoid (Vector1 a) where
 >  mempty = vzero
 >  mappend = (%+)
-
->instance (Num a, ConjugateSymmetric a) => Semigroup ((Vector1 :*: Vector1) a) where
->   (<>) = (%**%)
-
->-- | see "Lawvere,Rosebrugh: Sets for mathematics", pg. 167.
->instance (Num a, ConjugateSymmetric a) => Monoid ((Vector1 :*: Vector1) a) where
->   mempty = identity mempty
->   mappend = (%**%)
 
 >instance Monad Vector1 where
 >  return x = Vector1 x
@@ -262,20 +224,26 @@ http://en.wikipedia.org/wiki/Bra%E2%80%93ket_notation
 >  norm (Vector1 x) = x
 
 >instance (Num a, ConjugateSymmetric a) => InnerProductSpace (Vector1 a) where
->  (Vector1 x) %. (Vector1 y) = x*conj y
+>  (Vector1 x) %. (Vector1 y) = x * conj y
+
+>instance (Num a) => Traceable Vector1 a where
+>   trace_impl (Matrix (Vector1 (Vector1 a))) = a
+>   determinant_impl (Matrix (Vector1 (Vector1 a))) = a
 
 >instance (Num a) => Diagonalizable Vector1 a where
 >  vector_dimension _ = Vector1 0
->  diagonal (Matrix (Vector1 (Vector1 x))) = Vector1 x
->  identity _ = Matrix $ Vector1 (Vector1 1)
->  diagonal_matrix (Vector1 x) = Matrix $ Vector1 $ Vector1 x
+>  diagonal_impl (Matrix (Vector1 (Vector1 x))) = Vector1 x
+>  identity_impl _ = Matrix $ Vector1 (Vector1 1)
+>  diagonal_matrix_impl (Vector1 x) = Matrix $ Vector1 $ Vector1 x
 
->instance (Num a) => Traceable Vector1 a where
->  determinant (Matrix (Vector1 (Vector1 x))) = x
->  trace (Matrix (Vector1 (Vector1 x))) = x
 
->instance Transposable Vector1 Vector1 where
->  transpose (Matrix (Vector1 (Vector1 x))) = Matrix $ Vector1 (Vector1 x)
+>instance Transposable Vector1 Vector1 a where
+>  transpose_impl (Matrix (Vector1 (Vector1 x))) = Matrix $ Vector1 (Vector1 x)
+
+>instance Transposable Vector1 ((->) row) a where
+>  transpose_impl (Matrix (Vector1 f)) = Matrix $ \a -> Vector1 (f a)
+>instance Transposable ((->) row) Vector1 a where
+>  transpose_impl (Matrix f) = Matrix $ Vector1 $ \a -> vector_element (f a)
 
 >instance (Num a) => LinearTransform Vector1 Vector1 a where
 >  (Vector1 x) <*>> (Matrix (Vector1 (Vector1 y))) = Vector1 (x*y)
@@ -283,6 +251,12 @@ http://en.wikipedia.org/wiki/Bra%E2%80%93ket_notation
 
 >instance (Num a) => StandardBasis (Vector1 a) where
 >  unit_vectors = [Vector1 1]
+
+>instance (Num a) => VectorSpace ((Vector1 :*: Vector1) a) where
+>  type Scalar ((Vector1 :*: Vector1) a) = a
+>  vzero = Matrix $ Vector1 $ Vector1 0
+>  m %+ n = liftA2 (+) m n
+>  a %* m = fmap (a*) m
 
 >instance (Num a) => CoordinateSpace (Vector1 a) where
 >  type Coordinate (Vector1 a) = Int

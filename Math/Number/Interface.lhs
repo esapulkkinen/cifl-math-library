@@ -4,7 +4,7 @@
 >import safe Control.Applicative
 >import safe Data.Monoid
 >import safe Data.Ratio
->import safe Math.Number.Stream
+>import safe Math.Number.StreamInterface
 >import safe Math.Matrix.Interface
 
 >nthroot :: (Floating a) => a -> a -> a
@@ -30,10 +30,9 @@
 >  x >% y = y %< x
 >  is_apart x q y = (x <% q && q %< y) || (y <% q && q %< x)
 
-
->class Approximations a where
->   floating_approximations :: a -> Stream Double
->   rational_approximations :: a -> Stream Rational
+>class Approximations str a where
+>   floating_approximations :: a -> str Double
+>   rational_approximations :: a -> str Rational
 
 >class Infinitary a where
 >   infinite :: a
@@ -104,16 +103,10 @@
 >derivate_anticommutator :: (DifferentiallyClosed r) => (r -> r) -> (r -> r) -> r -> r
 >derivate_anticommutator f g x = derivate f x * g x + f x * (derivate g x)
 
->derivates :: (DifferentiallyClosed r) => (r -> r) -> Stream (r -> r)
->derivates f = Pre f $ fmap derivate $ derivates f
+>derivates :: (StreamBuilder str, DifferentiallyClosed r)
+> => (r -> r) -> str (r -> r)
+>derivates f = pre f $ fmap derivate $ derivates f
 
->-- | <https://en.wikipedia.org/wiki/Taylor_series>
->taylor :: (Fractional a, DifferentiallyClosed a) => (a -> a) -> a -> (Stream :*: Stream) a
->taylor f a = Matrix $ sum_stream $ mapper <$> sub_powers
->   where mapper p = liftA3 (\a b c -> a*b*c) der divider p
->         divider = fmap (1/) factorial
->         der = derivates f <*> constant a
->         sub_powers = cells $ stream_powers (s_z-fromNum a)
 
 
 >-- | <http://en.wikipedia.org/wiki/Atan2 Atan2>
@@ -174,6 +167,7 @@
 >line_integral f r (a,b) = integral (a,b) $ \t ->
 >   f (r t) * abs (derivate r t)
 
+
 >instance ShowPrecision Double where
 >  show_at_precision r _ = show r
 
@@ -186,24 +180,12 @@
 >instance ShowPrecision Float where
 >  show_at_precision r _ = show r
 
->instance Approximations Float where
->  floating_approximations = constant . realToFrac
->  rational_approximations = constant . toRational
-
->instance Approximations Double where
->  floating_approximations = constant
->  rational_approximations = constant . toRational
 
 >-- | compare to a certain precision, appropriate for floating point
 >-- style numeric types. first argument is precision.
 >precisionCompare :: (Ord a, Num a) => a -> a -> a -> Bool
 >precisionCompare prec a b = abs (a - b) < prec
 
->instance Infinitary (Closure Rational) where
->   infinite = InfiniteRational
-
->instance Infinitary (Closure Integer) where
->   infinite = InfiniteInteger
 
 >instance DedekindCut Rational Rational where
 >   x <% y = x < y

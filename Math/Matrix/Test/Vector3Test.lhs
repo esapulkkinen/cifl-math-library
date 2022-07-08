@@ -31,10 +31,10 @@ https://en.wikipedia.org/wiki/Eigenvalues_and_eigenvectors
 >checkEigenValue a v l = (a <<*> v) ~=? (1 %* v)
 
 >checkEigenValueTrace :: (Vector3 :*: Vector3) Float -> Test
->checkEigenValueTrace a = trace a ~=? sum_coordinates (eigenvalues a)
+>checkEigenValueTrace a = trace_impl a ~=? sum_coordinates (eigenvalues a)
 
->testEigenValue3_identity = checkEigenValue (identity dim3) (Vector3 1 2 3) 1
->testEigenValue3_trace_identity    = checkEigenValueTrace (identity dim3)
+>testEigenValue3_identity = checkEigenValue identity (Vector3 1 2 3) 1
+>testEigenValue3_trace_identity    = checkEigenValueTrace identity
 
 >prop_vector3_vectorspace = MatrixTest.vectorspace (const () :: Vector3 Integer -> ())
 >prop_vector2_vectorspace = MatrixTest.vectorspace (const () :: Vector2 Integer -> ())
