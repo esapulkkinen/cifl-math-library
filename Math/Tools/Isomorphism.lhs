@@ -34,7 +34,7 @@
 >           (\fb -> fmap isomorphism_section f <*> fb)
 
 >type Iso a b = a :==: b
->type Aut a = a :==: a
+>type Automorphism a = a :==: a
 
 >-- | <https://en.wikipedia.org/Galois_Connection>
 >-- Note that since we don't check the equations for isomorphisms,
@@ -52,7 +52,7 @@
 >rightIdempotent :: a :==: b -> Endo b 
 >rightIdempotent i = Endo $ isomorphism_epimorphism i . isomorphism_section i
 
->automorphism :: Endo a -> Endo a -> Aut a
+>automorphism :: Endo a -> Endo a -> Automorphism a
 >automorphism (Endo f) (Endo g) = f <-> g
 
 >visit_iso :: (ComposableVisitor v) => v :==: a -> v -> a
@@ -156,7 +156,7 @@
 >curryIso :: ((a,b) -> c) :==: (a -> b -> c)
 >curryIso = curry <-> uncurry
 
->intIso :: Aut a -> (Integer -> a) :==: a
+>intIso :: Automorphism a -> (Integer -> a) :==: a
 >intIso (Iso s p) = (\ f -> f 0) <-> foldInt
 >   where foldInt x0 0 = x0
 >         foldInt x0 i | i < 0 = p (foldInt x0 (i+1))      
@@ -176,7 +176,7 @@
 
 TODO: negative integers?
 
->squareIso :: Aut Integer
+>squareIso :: Automorphism Integer
 >squareIso = absIso >>> (sqrIso <||> sqrIso) >>> invertA absIso
 >   where sqrIso = (\i -> i*i) <-> square_root_integer
 
@@ -186,11 +186,11 @@ TODO: negative integers?
 >absIso = (\i -> (if signum i /= -1 then Left else Right) (abs i))
 >           <-> (either id negate)
 
->plusminusIso :: (Integral a) => Aut (a,a)
+>plusminusIso :: (Integral a) => Automorphism (a,a)
 >plusminusIso = (\ (x,y) -> (x+y,x-y))
 >                 <-> (\(a,b) -> ((a+b)`div` 2, (a-b) `div` 2))
 
->timesDivideIso :: (Floating a) => Aut (a,a)
+>timesDivideIso :: (Floating a) => Automorphism (a,a)
 >  -- bug: sign is lost. Solution: e^(i*pi) == -1
 >  -- bug: y must be non-zero
 >timesDivideIso = (\ (x,y) -> (x*y,x/y))
@@ -343,10 +343,10 @@ coexponentialIso :: arr (arr' c (Either a b)) (arr' (arr' c b) a)
 >encodeDecode :: (Bin.Binary a) => a :==: Bytes.ByteString
 >encodeDecode = Bin.encode <-> Bin.decode
 
->encoding :: (Bin.Binary a) => Aut Bytes.ByteString -> Aut a
+>encoding :: (Bin.Binary a) => Automorphism Bytes.ByteString -> Automorphism a
 >encoding f = encodeDecode >>> f >>> invertA encodeDecode
 >
->decoding :: (Bin.Binary a) => Aut a -> Aut Bytes.ByteString
+>decoding :: (Bin.Binary a) => Automorphism a -> Automorphism Bytes.ByteString
 >decoding f = invertA encodeDecode >>> f >>> encodeDecode
 
 >product3 :: a :==: b -> c :==: d -> e :==: f -> (a,c,e) :==: (b,d,f)

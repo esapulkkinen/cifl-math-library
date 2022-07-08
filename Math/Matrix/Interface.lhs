@@ -82,10 +82,6 @@ cells_linear = cells . fromLinear
 >matrix f x y = Matrix $ flip fmap x $ \a -> 
 >                        flip fmap y $ \b -> f a b
 
-mapMatrix :: (LinearTransform f g b, LinearIso g f a,
- Diagonalizable f a, Transposable f g a)
- => (a -> b) -> f a :-> g a -> f b :-> g b
-
 
 >tensor_product :: (Num a, Functor m, Functor n) => m a -> n a -> (m :*: n) a
 >tensor_product x y = matrix (*) x y

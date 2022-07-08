@@ -26,6 +26,7 @@
 >import Math.Tools.Arrow
 >import Math.Tools.Universe
 
+>-- | Linear maps <https://en.wikipedia.org/wiki/Linear_map>
 >data LinearMap v w where
 >   MatIdentity :: LinearMap b b
 >   Mat11 :: (Num a, ConjugateSymmetric a) => (Vector1 :*: Vector1) a -> LinearMap (Vector1 a) (Vector1 a)
@@ -169,6 +170,10 @@
 
 >data (:<->:) v w where
 >  (:<->:) :: v :-> w -> w :-> v -> v :<->: w
+
+>type End a = LinearMap a a
+>type Aut a = a :<->: a
+>type GL a = a :<->: a
 
 >instance Category (:<->:) where
 >  id = id :<->: id

@@ -629,18 +629,19 @@ instance (Num a) => Matrix.VectorSpace ((Stream :*: Stream) a) where
 >                                 $ fmap (liftA2 (*) g) (cells $ stream_powers f)
 >compose _ _ = error "Stream must begin with zero to be pre-composed"
 
-matrix_convolution :: (Functor g,
-                       VectorSpace (f a),
-                       SupportsMatrixMultiplication f g h a,
-                       Scalar (g (h a)) ~ a,
-                       Matrix.Transposable h f a,
-                       Matrix.InnerProductSpace (h a),
-                       Matrix.VectorSpace ((g :*: f) (Matrix.Scalar (h a))))
-                       => Stream (g a :-> h a)
-                       -> Stream (h a :-> f a)
-                       -> Stream (g (Matrix.Scalar (h a)) :-> f (Matrix.Scalar (h a)))
-
+>matrix_convolution :: (InnerProductSpace (g a), Transposable g h a, Functor f,
+>  VectorSpace ((f :*: h) a), Scalar (g a) ~ a)
+> => Stream ((f :*: g) a) -> Stream ((g :*: h) a) -> Stream ((f :*: h) a)
 >matrix_convolution x y = fmap Matrix.vsum $ codiagonals_seq $ matrix (Matrix.%*%) x y
+
+>matrix_convolution_linear ::
+> (InnerProductSpace (g a), Transposable g h a, Functor f,
+> Linearizable LinearMap (:*:) g h a, Linearizable LinearMap (:*:) f g a,
+> Linearizable LinearMap (:*:) f h a,
+>  VectorSpace ((f :*: h) a), Scalar (g a) ~ a)
+> => Stream (f a :-> g a) -> Stream (g a :-> h a) -> Stream (f a :-> h a)
+>matrix_convolution_linear x y = fmap linear $
+>   matrix_convolution (fmap fromLinear x) (fmap fromLinear y)
 
 >matrix_convolution_product_linear :: (Closed a, Fractional a, ConjugateSymmetric a) => (Stream a :-> Stream a) -> (Stream a :-> Stream a) -> (Stream a :-> Stream a)
 >matrix_convolution_product_linear x y =
