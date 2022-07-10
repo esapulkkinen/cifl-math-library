@@ -60,8 +60,8 @@
 >           rbounds@(rbeg,rend) = (max abeg bbeg, min aend bend)
 >   k %* a = fmap (k*) a
 
->transpose_ :: (Ix i, Ix j) => Bitmap i j a -> Bitmap j i a
->transpose_ m = (fromArray . ixmap bnds (\ (a,b) -> (b,a)) . toArray) m
+>transpose_bitmap :: (Ix i, Ix j) => Bitmap i j a -> Bitmap j i a
+>transpose_bitmap m = (fromArray . ixmap bnds (\ (a,b) -> (b,a)) . toArray) m
 >  where (x,x') = bounds (cells m)
 >        (y,y') = bounds (cells m ! x)
 >        bnds = ((y,x),(y',x'))

@@ -78,6 +78,8 @@
 >linear_map :: (Linearizable LinearMap (:*:) f g a) => (f :*: g) a -> f a :-> g a
 >linear_map = linear
 
+
+
 >instance (Eq (f (g a)), Linearizable LinearMap (:*:) f g a) => Eq (f a :-> g a) where
 >  f == g = fromLinear f == fromLinear g
 
@@ -156,11 +158,12 @@
 >     Covector :: (f a :-> Vector1 a) -> Dual (f a)
 >  deriving (Typeable)
 
->instance (Num a, Linearizable LinearMap (:*:) f Vector1 a,
+>instance (Num a, ConjugateSymmetric a, Linearizable LinearMap (:*:) f Vector1 a,
 > Diagonalizable f a,
 > LinearTransform f Vector1 a) => VectorSpace (Dual (f a)) where
 >   type Scalar (Dual (f a)) = a
 >   vzero = Covector $ arr_linear $ const 0
+>   vnegate (Covector f) = Covector $ arr_linear negate . f
 >   (Covector f) %+ (Covector g) = Covector $ arr_linear $ \x -> f -!< x %+ g -!< x
 >   a %* (Covector f) = Covector $ arr_linear $ \x -> a %* (f -!< x)
 
@@ -307,10 +310,6 @@
 >appLinear (Mat2Ind f) x = f <<*> x
 >appLinear (Mat3Ind f) x = f <<*> x
 >appLinear (Mat4Ind f) x = f <<*> x
->appLinear (Mat1D f) x = f <<*> x
->appLinear (Mat2D f) x = f <<*> x
->appLinear (Mat3D f) x = f <<*> x
->appLinear (Mat4D f) x = f <<*> x
 >appLinear (MatD1 f) x = f <<*> x
 >appLinear (MatD2 f) x = f <<*> x
 >appLinear (MatD3 f) x = f <<*> x

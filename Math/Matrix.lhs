@@ -34,6 +34,8 @@
 >   module Math.Matrix.Covector, 
 >-- ** data structure for linear arrows
 >   module Math.Matrix.Linear,
+>-- ** data structure for bilinear arrows
+>   module Math.Matrix.Bilinear,
 >-- ** unicode syntax
 >   module Math.Matrix.Unicode,
 >-- ** commutator and characteristic polynomials
@@ -52,6 +54,7 @@
 >import safe Math.Matrix.Instances
 >import safe Math.Matrix.Transpose
 >import safe Math.Matrix.Linear
+>import safe Math.Matrix.Bilinear
 >import safe Math.Matrix.QuasiQuoter
 >import safe Math.Matrix.Unicode
 >import safe Math.Matrix.SIMD
