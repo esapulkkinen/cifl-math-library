@@ -21,7 +21,6 @@
 >import safe Math.Tools.CoFunctor
 >import safe Math.Tools.CoMonad
 >import safe Math.Tools.Arrow
->import safe Math.Tools.PrettyP
 >import safe Math.Matrix.Interface
 >import safe Math.Tools.I
 >import safe Data.Type.Equality
@@ -33,13 +32,6 @@ linear_outer_product :: (InnerProductSpace p, VectorSpace v, Scalar v ~ calar p)
    => p -> v -> LinearMap p v
 linear_outer_product a b = LinearMap Refl $
    Math.Matrix.Interface.outer a b
-
->instance (PpShowVerticalF f, LinearTransform f g a, Linearizable LinearMap (:*:) f g a, PpShowF g, PpShow a, Diagonalizable f a) => PpShow (LinearMap (f a) (g a)) where
->  pp x = pp $ fromLinear x
-
->instance (Diagonalizable f a, Linearizable LinearMap (:*:) f g a, LinearTransform f g a, Show ((f :*: g) a))
-> => Show (LinearMap (f a) (g a)) where
->  showsPrec i x = showsPrec i (fromLinear x)
 
 >contract :: (Scalar (v a) ~ a, LinearTransform v Vector1 a)
 >  => (Dual :*: v) a -> (Vector1 :*: v) a -> Scalar (v a)
@@ -77,6 +69,10 @@ linear_outer_product a b = LinearMap Refl $
 >-- | unicode support for laplace. Use with parenthesis.
 >(∇·∇) :: (VectorDerivative v d arr) => d v -> d v
 >(∇·∇) = laplace
+
+>-- doubly applied curl
+>(∇×∇×) :: (VectorCrossProduct v arr) => arr v v -> arr v v
+>(∇×∇×) = curl . curl
 
 differential_commutator :: (VectorDerivative v, v ~ Scalar v)
                         => Dual v -> Dual v -> v :-> I (Scalar v)
@@ -124,7 +120,8 @@ directional_derivative :: (VectorDerivative v, InnerProductSpace v)
 >  => v -> Endo (Dual v)
 >directional_derivative_endo v = Endo $ directional_derivative v
 
->dconst :: (Linearizable LinearMap (:*:) f Vector1 v, Diagonalizable f v) => v -> Dual (f v)
+
+>dconst :: (Scalar (f v) ~ v, Dualizable (f v) d, Linearizable LinearMap (:*:) f Vector1 v, Diagonalizable f v) => v -> d (f v)
 >dconst x = covector $ \a -> x
 
 >outer_vector :: (Linearizable LinearMap (:*:) f g w, DualNum f w, DualNum g w) => Dual (f w) -> g w -> f w :-> g w
@@ -211,7 +208,7 @@ scalar_map :: Vector1 (Scalar a) :-> Vector1 (Scalar a) -> Dual a -> Dual a
 >scalar_map :: Vector1 a :-> Vector1 a -> Dual (f a) -> Dual (f a)
 >scalar_map f (Covector g) = Covector (f . g)
 
->operator_map :: (Diagonalizable w a, LinearTransform v Vector1 a, Linearizable LinearMap (:*:) w Vector1 a)
+>operator_map :: (Scalar (w a) ~ a, Dualizable (w a) Dual, Dualizable (v a) Dual, Diagonalizable w a, LinearTransform v Vector1 a, Linearizable LinearMap (:*:) w Vector1 a)
 >  => ((v a -> a) -> w a -> a) -> Dual (v a) -> Dual (w a)
 >operator_map f g = covector $ f (bracket g)
 
@@ -234,7 +231,7 @@ scalar_map :: Vector1 (Scalar a) :-> Vector1 (Scalar a) -> Dual a -> Dual a
 >instance (v ~ Scalar (f v), VectorSpace (f v), DualNum f v) => LieAlgebra (Dual (f v)) where
 >  f %<>% g = f*g - g*f
 
->type DualNum f v = (LinearTransform f Vector1 v, ConjugateSymmetric v, Diagonalizable f v, Linearizable LinearMap (:*:) f Vector1 v, VectorSpace (f v), v ~ Scalar (f v))
+>type DualNum f v = (LinearTransform f Vector1 v, Dualizable (f v) Dual, ConjugateSymmetric v, Diagonalizable f v, Linearizable LinearMap (:*:) f Vector1 v, VectorSpace (f v))
 
 >instance (DualNum f v) => Num (Dual (f v)) where
 >  (Covector f) + (Covector g) =
@@ -254,7 +251,7 @@ scalar_map :: Vector1 (Scalar a) :-> Vector1 (Scalar a) -> Dual a -> Dual a
 >  recip = scalar_map (arr_linear recip)
 >  fromRational r = covector $ \_ -> fromRational r
 > 
->instance (LinearTransform f Vector1 v, ConjugateSymmetric v, Linearizable LinearMap (:*:) f Vector1 v, FractionalSpace (f v),
+>instance (Dualizable (f v) Dual, LinearTransform f Vector1 v, ConjugateSymmetric v, Linearizable LinearMap (:*:) f Vector1 v, FractionalSpace (f v),
 >   v ~ Scalar (f v), Floating v, Diagonalizable f v)
 > => Floating (Dual (f v)) where
 >   pi = covector $ const pi
@@ -288,7 +285,7 @@ scalar_map :: Vector1 (Scalar a) :-> Vector1 (Scalar a) -> Dual a -> Dual a
 > => (Dual v -> Dual w  -> c) -> v -> w -> (Dual v -> Dual w -> c)
 >dual_derivative f x y = cells $ matrix f (x ·∇) (y ·∇)
 
->dual_differential_outer_product :: (LinearTransform f Vector1 v, ConjugateSymmetric v, Diagonalizable f v, v ~ Scalar (f v), Linearizable LinearMap (:*:) f Vector1 v, VectorDerivative (f v) Dual LinearMap, InnerProductSpace (f v))
+>dual_differential_outer_product :: (Dualizable (f v) Dual, LinearTransform f Vector1 v, ConjugateSymmetric v, Diagonalizable f v, Linearizable LinearMap (:*:) f Vector1 v, VectorDerivative (f v) Dual LinearMap, InnerProductSpace (f v))
 > => f v -> f v -> Dual (f v) -> Dual (f v)  -> Dual (f v)
 >dual_differential_outer_product = dual_derivative (*)
 
@@ -296,8 +293,8 @@ scalar_map :: Vector1 (Scalar a) :-> Vector1 (Scalar a) -> Dual a -> Dual a
 >  => f v -> f v -> Dual (f v) -> Dual (f v) -> Scalar (Dual (f v))
 >dual_differential_dot_product = dual_derivative (%.)
 
->norm_covector :: (v ~ Scalar (f v), Diagonalizable f v, Linearizable LinearMap (:*:) f Vector1 v,
-> NormedSpace (f v)) => Dual (f v)
+>norm_covector :: (Diagonalizable f v, Linearizable LinearMap (:*:) f Vector1 v, Dualizable (f v) d,
+> NormedSpace (f v)) => d (f v)
 >norm_covector = covector norm
 
 >del2 :: (ConjugateSymmetric v, Closed v) => Vector2 (Dual (Vector2 v) -> Dual (Vector2 v))

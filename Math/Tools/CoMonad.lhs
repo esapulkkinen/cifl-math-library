@@ -88,36 +88,36 @@
 
 
 >instance Functor (CoState s) where
->	  fmap g (CoState f x) = CoState (g . f) x
+>         fmap g (CoState f x) = CoState (g . f) x
 >
 >instance Comonad (CoState s) where
->	  extract (CoState g x) = g x
->	  duplicate (CoState f c) = CoState (CoState f) c
+>    extract (CoState g x) = g x
+>    duplicate (CoState f c) = CoState (CoState f) c
 
-	  (CoState g s) =>> f = CoState (\s' -> f (CoState g s')) s
-	  (CoState g s) .>> b = CoState (\s' -> seq (g s') b) s
+          (CoState g s) =>> f = CoState (\s' -> f (CoState g s')) s
+          (CoState g s) .>> b = CoState (\s' -> seq (g s') b) s
 
 >instance Comonad ((,) a) where
->	  extract (c,x) = x
->	  duplicate (c,x) = (c,(c,x))
->         extend f z@(a,b) = (a,f z)
+>      extract (c,x) = x
+>      duplicate (c,x) = (c,(c,x))
+>      extend f z@(a,b) = (a,f z)
 
 >newtype CoKleisli w a b = CoKleisli { unCoKleisli :: w a -> b }
 
 >instance Functor (CoKleisli w a) where
->	  fmap g (CoKleisli f) = CoKleisli (g . f)
+>         fmap g (CoKleisli f) = CoKleisli (g . f)
 
 >instance (Comonad w) => Category (CoKleisli w) where
 >         id = CoKleisli extract
->	  (CoKleisli b) . (CoKleisli a) = CoKleisli (b . fmap a . duplicate)
+>         (CoKleisli b) . (CoKleisli a) = CoKleisli (b . fmap a . duplicate)
 
 
 >instance (Comonad w) => Arrow (CoKleisli w) where
->	  arr f = CoKleisli (f . extract)
->	  (CoKleisli a) &&& (CoKleisli b) = CoKleisli (a &&& b)
->	  (CoKleisli a) *** (CoKleisli b) = CoKleisli (a . fmap fst &&& b . fmap snd)
->	  first a = a *** arr id
->	  second a = arr id *** a
+>      arr f = CoKleisli (f . extract)
+>      (CoKleisli a) &&& (CoKleisli b) = CoKleisli (a &&& b)
+>      (CoKleisli a) *** (CoKleisli b) = CoKleisli (a . fmap fst &&& b . fmap snd)
+>      first a = a *** arr id
+>      second a = arr id *** a
 
 putTwoChars :: OI (Char, Char) -> ()
 putTwoChars ctx = ctx .>> stdPutChar (fst $ coeval x)
@@ -136,11 +136,11 @@ putTwoChars ctx = let (a,b) = eval ctx in  ctx .>> coPutChar a stdOI .>> coPutCh
 c (f id (x id))
 
 >instance Monad (Neg o) where
->	  return x = Neg (\c -> c x)
->	  (Neg x) >>= f = Neg (\c -> x (\v -> let Neg g = f v in g c))
+>      return x = Neg (\c -> c x)
+>      (Neg x) >>= f = Neg (\c -> x (\v -> let Neg g = f v in g c))
 
 >instance Continuation (Neg o) where
->	  escape h = Neg (\c -> let Neg g = h (\v -> Neg (\c' -> c v)) in g c)
+>      escape h = Neg (\c -> let Neg g = h (\v -> Neg (\c' -> c v)) in g c)
 
 >evalC :: Neg o o -> o
 >evalC (Neg f) = f id
@@ -171,18 +171,18 @@ c (f id (x id))
 data STObject o w = NewST { this_st :: IORef o, input_st :: IO w }
 
 instance Comonad (STObject o) where
-	  extract (NewST _ x) = unsafePerformIO x
-	  z@(NewST this i) =>> method = NewST this 
-		 (return (method $! z))
+      extract (NewST _ x) = unsafePerformIO x
+      z@(NewST this i) =>> method = NewST this 
+         (return (method $! z))
 
 data Object o w = New { this :: o, input :: w }
 
 instance Comonad (Object o) where
-	  extract (New _ x) = x
-	  (New s i) =>> method = New s (method (New s i))
+      extract (New _ x) = x
+      (New s i) =>> method = New s (method (New s i))
 
 instance Functor (Object o) where
-	  fmap = wmap
+      fmap = wmap
 
 o1 :: Object Int ()
 o1 = New 10 ()
@@ -195,7 +195,7 @@ class Comonad w => Private s w where
       set :: w (s,a) -> w a
 
 instance Private Object where
-	  use (New o _) = New o o
+      use (New o _) = New o o
 
 type Method a b = Comonad w => w a -> b
 
@@ -203,19 +203,19 @@ type Method a b = Comonad w => w a -> b
 data CoObject o w = L o | R w
 
 instance Monad (CoObject o) where
-	  return x = R x
-	  (L o) >>= f = L o
-	  (R p) >>= f = f p
+      return x = R x
+      (L o) >>= f = L o
+      (R p) >>= f = f p
 
 instance Functor (CoObject o) where
-	  fmap f w = w >>= (return . f)
+      fmap f w = w >>= (return . f)
 
 
 data IORep m w a i o = IORep (a (w i) (m o))
 
 instance (Monad m, Comonad w, Arrow a) => Arrow (IORep m w a) where
-	  arr f = IORep (arr (\c -> return $ f $ extract c))
-	  (IORep x) >>> (IORep y) = IORep (\c -> x c >>= \v ->
-						 y (c =>> (\_ -> v)))
-	  first (IORep x) = IORep (arr (\c -> let (a,b) = extract c
-					  in x a >>= \v -> return (v,b)))
+      arr f = IORep (arr (\c -> return $ f $ extract c))
+      (IORep x) >>> (IORep y) = IORep (\c -> x c >>= \v ->
+                         y (c =>> (\_ -> v)))
+      first (IORep x) = IORep (arr (\c -> let (a,b) = extract c
+                      in x a >>= \v -> return (v,b)))

@@ -1,5 +1,6 @@
 >{-# LANGUAGE Trustworthy, DataKinds, MultiParamTypeClasses, GADTs, FlexibleInstances, FlexibleContexts, UndecidableInstances, TypeOperators, KindSignatures, TypeFamilies, ExistentialQuantification, ScopedTypeVariables, TypeOperators, AllowAmbiguousTypes #-}
 >{-# LANGUAGE OverloadedStrings, UndecidableSuperClasses, ConstraintKinds #-}
+>{-# LANGUAGE TypeApplications #-}
 >module Math.Matrix.FiniteVector where
 >import qualified Text.PrettyPrint as Pretty
 >import Control.Applicative
@@ -12,8 +13,9 @@
 >-- for another approach on finite vectors.
 >data Vec :: Nat -> * -> * where
 >  Empty :: Vec 0 a 
->  Cons :: a -> Vec n a -> Vec (1 + n) a
+>  Cons :: a -> Vec n a -> Vec (1+n) a
 >  Assoc :: Vec (n + (m + p)) a -> Vec ((n + m) + p) a
+
 
 >vzero_vec = Empty
 >zero = Empty
@@ -62,7 +64,6 @@
 
 >vhead :: Vec (1+n) a -> a
 >vhead (Cons x _) = x
-
 
 >foldv :: b -> (a -> b -> b) -> Vec n a -> b
 >foldv e _ Empty = e

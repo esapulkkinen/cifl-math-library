@@ -77,6 +77,7 @@
 >inverseImageG :: (m a a -> n a a) -> Graph n a -> Graph m a
 >inverseImageG f (Graph s act) = Graph s (act . f)
 
+
 >instance (Eq a, Universe (m a a)) => Eq (Graph m a) where
 >  g@(Graph s _) == g'@(Graph s' _) = s == s' &&
 >    and [ action g sx i == action g' sx i | i <- all_elements, sx <- Set.toList s]
@@ -110,7 +111,6 @@
 
 >edgeG :: (Ord a) => a -> a -> a -> Graph Three a
 >edgeG e x y = Graph (Set.fromList [e,x,y]) (edgesEndo [(e,(x,y))])
-
 
 vectorG :: Set a -> Graph Lin a
 vectorG v = Graph v $ \ (Lin m) -> Endo $ \w -> m <<*> w

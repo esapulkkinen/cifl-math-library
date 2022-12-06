@@ -58,31 +58,31 @@ reflexive_frames  = characteristic (uncurry system_T)
 frames = characteristic (uncurry system_K)
 serial_frames = characteristic (uncurry system_D)
 
->-- | https://en.wikipedia.org/wiki/Modal_logic
+>-- | <https://en.wikipedia.org/wiki/Modal_logic>
 >axiom_N :: (ModalLogic p, ImplicativeLogic p) => p a -> p a
 >axiom_N p = p -=>- always p
 >
->-- | https://en.wikipedia.org/wiki/Modal_logic
+>-- | <https://en.wikipedia.org/wiki/Modal_logic>
 >axiom_K :: (ModalLogic p, ImplicativeLogic p) => p a -> p a -> p a
 >axiom_K p q = always (p -=>- q) -=>- (always p -=>- always q)
 
->-- | https://en.wikipedia.org/wiki/Modal_logic
+>-- | <https://en.wikipedia.org/wiki/Modal_logic>
 >axiom_4 :: (ModalLogic p, ImplicativeLogic p) => p a -> p a
 >axiom_4 p = always p -=>- always (always p)
 
->-- | https://en.wikipedia.org/wiki/Modal_logic
+>-- | <https://en.wikipedia.org/wiki/Modal_logic>
 >axiom_B :: (ModalLogic p, ImplicativeLogic p) => p a -> p a
 >axiom_B p = p -=>- always (eventually p)
 
->-- | https://en.wikipedia.org/wiki/Modal_logic
+>-- | <https://en.wikipedia.org/wiki/Modal_logic>
 >axiom_D :: (ModalLogic p, ImplicativeLogic p) => p a -> p a
 >axiom_D p = always p -=>- eventually p
 >
->-- | https://en.wikipedia.org/wiki/Modal_logic
+>-- | <https://en.wikipedia.org/wiki/Modal_logic>
 >axiom_5 :: (ModalLogic p, ImplicativeLogic p) => p a -> p a
 >axiom_5 p = eventually p -=>- always (eventually p)
 >
->-- | https://en.wikipedia.org/wiki/Modal_logic
+>-- | <https://en.wikipedia.org/wiki/Modal_logic>
 >axiom_T :: (ModalLogic p, ImplicativeLogic p) => p a -> p a
 >axiom_T p = always p -=>- p
 

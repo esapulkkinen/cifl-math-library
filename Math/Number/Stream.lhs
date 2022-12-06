@@ -1837,6 +1837,10 @@ generating_sqrt xplus1 = (`subst` x) $ fmap (binomial (1%2)) naturals
 >         filt p x = x `rem` p /= 0
 
 >-- | derivative calculates the derivative of the generating function.
+>-- <https://en.wikipedia.org/wiki/Generating_function>
+>-- \[{\rm{derivative}}({\bf{a}})_i = {\bf{b}}_i = (i+1){\bf{a}}_{i+1}\]
+>-- \[f(z) = \sum_{i=0}^{\infty}{\bf{a}}_iz^i\]
+>-- \[f'(z) = \sum_{i=0}^{\infty}{\bf{b}}_iz^i = {d\over{dz}} \sum_{i=0}^{\infty}{\bf{a}}_iz^i = \sum_{i=0}^{\infty}(i+1){\bf{a}}_{i+1}z^i\]
 >derivative :: (Num a) => Stream a -> Stream a
 >derivative s = liftA2 (*) nonzero_naturals (stail s)
 

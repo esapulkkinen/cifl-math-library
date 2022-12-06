@@ -21,6 +21,7 @@
 >import Math.Tools.Arrow
 >import Math.Matrix.Interface
 >import Math.Number.StreamInterface
+>import Math.Number.Interface
 
 >deriving instance (Eq a) => Eq (Vector1 a)
 >deriving instance (Ord a) => Ord (Vector1 a)
@@ -54,6 +55,11 @@
 >   asinh (Vector1 x) = Vector1 (asinh x)
 >   acosh (Vector1 x) = Vector1 (acosh x)
 >   atanh (Vector1 x) = Vector1 (atanh x)
+
+>instance DifferentiallyClosed a => DifferentiallyClosed (Vector1 a) where
+>   derivate f (Vector1 x) = Vector1 (derivate (vector_element . f . Vector1) x)
+>   integral (Vector1 x, Vector1 x') f = Vector1 $
+>     integral (x,x') $ \a -> vector_element $ f (Vector1 a)
 
 >instance FunctorArrow Vector1 (->) where
 >   amap f = fmap f

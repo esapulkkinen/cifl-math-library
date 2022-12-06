@@ -61,6 +61,7 @@
 >import Math.Number.Interface ( ShowPrecision(..))
 >import Math.Number.Group
 >import Math.Number.Interface
+>import Math.Tools.Isomorphism
 >import safe qualified Text.ParserCombinators.ReadPrec as ReadPrec
 >import safe qualified Text.Read as TRead
 >import safe qualified Math.Matrix.Covector as Covector

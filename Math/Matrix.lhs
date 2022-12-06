@@ -40,6 +40,8 @@
 >   module Math.Matrix.Unicode,
 >-- ** commutator and characteristic polynomials
 >   module Math.Matrix.Instances,
+>-- ** free vector space
+>   module Math.Matrix.FreeVectorSpace,
 >  ) where
 >import safe Math.Matrix.Interface 
 >import safe Math.Matrix.Matrix
@@ -58,3 +60,4 @@
 >import safe Math.Matrix.QuasiQuoter
 >import safe Math.Matrix.Unicode
 >import safe Math.Matrix.SIMD
+>import safe Math.Matrix.FreeVectorSpace

@@ -23,9 +23,6 @@
 >                                diagonal_projections diagonal_projections
 >  indexable_indices = matrix (\x y -> (x+y)*(x+y+1)`div` 2 + x) indexable_indices indexable_indices
 
->instance (Integral a, Summable f a , Summable g a) => Summable (f :*: g) a where
->   sum_coordinates ~(Matrix m) = sum_coordinates (fmap sum_coordinates m)
-
 indexable_diagonal :: (Indexable f) => (f :*: f) a -> a -> f a
 indexable_diagonal ~(Matrix m) a = index_project (diagonal_projections a) <*> m
 
@@ -85,6 +82,6 @@ kronecker_delta = matrix (\i j -> if i == j then 1 else 0) indexable_indices ind
 >equal_indices a b = a `index_project` indexable_indices
 >                  == b `index_project` indexable_indices
 
->sum_indices :: (Summable f b, Num b) => (f :*: f) b -> b
+>sum_indices :: (Foldable f, Indexable f b, Num b) => (f :*: f) b -> b
 >sum_indices f = sum_coordinates $ with $ \i ->
 >    f <!> (index_project i,index_project i)

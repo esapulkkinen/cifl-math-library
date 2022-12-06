@@ -9,8 +9,7 @@ import Control.Monad.Reader hiding (fix) -- instances of Functor ((->) a) and Mo
 >-- | The problem with this type class is that categories are not represented
 >-- at all. This assumes all functors are F : C -> C.
 >-- This is a standard definition of adjunction from category theory.
->class (Functor f, Functor g) =>
->		Adjunction f g | f -> g, g -> f where
+>class (Functor f, Functor g) => Adjunction f g | f -> g, g -> f where
 >      leftAdjunct :: (f a -> b) -> a -> g b
 >      unit :: a -> g (f a) 
 >      rightAdjunct :: (a -> g b) -> f a -> b
@@ -43,8 +42,8 @@ import Control.Monad.Reader hiding (fix) -- instances of Functor ((->) a) and Mo
 >swap = rightAdjunct (,)
 
 >instance Adjunction ((,) a) ((->) a) where
->	  unit t = \arg -> (arg,t)
->	  counit (x,f) = f x
+>    unit t = \arg -> (arg,t)
+>    counit (x,f) = f x
 
 >data AdjM f g a = AdjM { runAdjM :: g (f a) }
 

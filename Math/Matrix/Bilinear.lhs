@@ -1,3 +1,4 @@
+>-- -*- coding: utf-8 -*-
 >{-# LANGUAGE TypeOperators #-}
 >{-# LANGUAGE GADTs #-}
 >{-# LANGUAGE ConstraintKinds #-}
@@ -11,17 +12,18 @@
 >import Math.Matrix.Linear
 
 >data BilinearMap v w where
->  BilinearMap :: (v1 -> v2 :-> w) -> (v2 -> v1 :-> w) -> BilinearMap (v1,v2) w
+>  BilinearMap :: (v1 a -> v2 a :-> w a) -> (v2 a -> v1 a :-> w a)
+>              -> BilinearMap (v1 a,v2 a) (w a)
 
 >data Tensor a b where
 >  Tensor :: (f :*: g) (a,b) -> Tensor (f a) (g b)
 
 >type v :=> w = BilinearMap v w
->type (a ⮾ b) = Tensor a b
->
->tensor :: (Functor f, Functor g) => (f a, g b) -> f a ⮾ g b
->tensor (a,b) = Tensor $ matrix (,) a b
 
+
+bilinear :: (w a,v a) :=> r a -> (w a ⮾ v a) :-> (w a :-> v a)
+bilinear (BilinearMap f g) = arr_linear $ \ (Tensor m) ->
+    m <!> (f, g)
 
 >type Bilinear f g h a = (Diagonalizable h a, Applicative f,Applicative g,
 > VectorSpace (h a), VectorSpace (g a), VectorSpace (f a),

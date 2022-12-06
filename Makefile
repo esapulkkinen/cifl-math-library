@@ -11,13 +11,14 @@ STACK=stack
 
 unit : test
 
-.PHONY: unit all build test all_with_install install_dependencies configure force-configure document hscolor dependencegraph build-llvm test-llvm interpreter latex-document publish_document install clean
+.PHONY: unit all build test all_with_install install_dependencies configure force-configure document hscolor dependencegraph build-stack-llvm test-stack-llvm build-llvm test-llvm interpreter latex-document publish_document install clean
 
 
 all : configure build test publish_document
 
 all_with_install : all install
 
+llvm : build-stack-llvm test-stack-llvm
 
 install_dependencies :
 	$(CABAL) $(CABALOPTS) $(CABALFLAGS) install HUnit
@@ -52,13 +53,13 @@ build-gui-prof :
 	$(STACK) build --fast cifl-math-library:mathgui --executable-profiling 
 
 build-stack-llvm :
-	$(STACK) build --ghc-options="-fllvm -O3 -Wno-error=unsupported-llvm-version"
+	$(STACK) build --ghc-options="-fllvm -Wno-error=unsupported-llvm-version" --flag '*:LLVM'
 
 build-llvm:
 	$(CABAL) $(CABALOPTS) $(CABALFLAGS) new-build -j4 --ghc-options="-fllvm -Wno-error=unsupported-llvm-version"
 
 test-stack-llvm:
-	$(STACK) test --ghc-options="-fllvm"
+	$(STACK) test --ghc-options="-fllvm -Wno-error=unsupported-llvm-version" --flag '*:LLVM'
 
 test-llvm:
 	$(CABAL) $(CABALOPTS) $(CABALFLAGS) new-test -j4 --ghc-options="-fllvm -Wno-error=unsupported-llvm-version"

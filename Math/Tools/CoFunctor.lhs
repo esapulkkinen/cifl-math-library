@@ -1,9 +1,10 @@
 >{-# LANGUAGE Safe,TypeOperators, MultiParamTypeClasses, FunctionalDependencies, TypeFamilies #-}
->{-# OPTIONS_HADDOCK prune #-}
 >module Math.Tools.CoFunctor where
->import Math.Tools.I
->import Math.Tools.Universe
+>import safe Math.Tools.I
+>import safe Math.Tools.Universe
 
+>-- | For exposition of classical logic used here,
+>-- see "Lawvere,Rosebrugh: Sets for mathematics".
 >class CoFunctor p where
 >   inverse_image :: (a -> b) -> p b -> p a
 >   (|>>) :: p b -> (a -> b) -> p a

@@ -18,6 +18,7 @@
 >import safe Data.Ratio
 >import safe Data.Traversable
 >import safe Data.Complex
+>import safe Data.Foldable
 >import safe Data.List (intersperse)
 >import safe qualified Data.Set
 >import safe Prelude hiding (id,(.))
@@ -136,6 +137,12 @@ bilinear f (x,y) = linear $ bilinear_impl f (fromLinear x) (fromLinear y)
 >  (%+)  :: v -> v -> v -- sum
 >  (%*)  :: Scalar v -> v -> v -- scalar product
 
+>-- | 'cofree' is right adjoint to 'Scalar'
+>class (VectorSpace v) => DecomposableVectorSpace v cofree | v -> cofree where
+>   decompose :: (Scalar v -> res) -> v -> cofree res
+>   project   :: v -> cofree (Scalar v)
+>   project = decompose id
+
 >type VectorSpaceOver v a = (VectorSpace v, Scalar v ~ a)
 >type PrimitiveSpace v = (v ~ Scalar v, VectorSpace v)
 >type ComplexVectorSpace v a = VectorSpaceOver v (Complex a)
@@ -240,10 +247,6 @@ transpose :: (Diagonalizable n a, LinearTransform n m a, LinearTransform m n a, 
 >  basis_vector ind = isomorphism_section ind (I 1)
 >  index_project ind = unI . isomorphism_epimorphism ind
 
->{-# DEPRECATED Summable "Use Foldable instead" #-} 
->class   (Indexable m a) =>  Summable m a  where
->  sum_coordinates :: (Num a) => m a -> a
-
 >-- | <https://en.wikipedia.org/wiki/Square_matrix>
 >class (Num a, Indexable m a, Transposable m m a) => Diagonalizable m a where
 >  vector_dimension :: m a -> m Integer
@@ -252,7 +255,7 @@ transpose :: (Diagonalizable n a, LinearTransform n m a, LinearTransform m n a, 
 >  identity :: (m :*: m) a
 >  diagonal_impl :: (m :*: m) a -> m a
 >  diagonal_matrix_impl :: m a -> (m :*: m) a
->  -- identity = identity_impl diagonal_projections
+>  identity_impl = const identity
 
 >basis :: (Diagonalizable m a) => m (m a)
 >basis = cells identity
@@ -346,6 +349,15 @@ codiagonal = codiagonal_impl . fromLinear
 >   adjucate = linear . adjucate_impl . fromLinear
 >   inverse  = linear . inverse_impl . fromLinear
 
+>-- | this computes \(f(A) = A^{-1}^T\)
+>-- it's used to compute dual basis for a set of basis vectors.
+>dual_basis_impl :: (Invertible m a) => (m :*: m) a -> (m :*: m) a
+>dual_basis_impl a = transpose_impl (inverse_impl a)
+>
+>dual_basis :: (Invertible m a, Linearizable arr (:*:) m m a)
+> => arr (m a) (m a) -> arr (m a) (m a)
+>dual_basis = linear . dual_basis_impl . fromLinear
+
 is_unitary :: (Invertible m a, Eq (LinearMap (m a) (m a)),
               ConjugateSymmetric (LinearMap (m a) (m a)))
   => m a :-> m a -> Bool
@@ -394,10 +406,16 @@ is_unitary m = conj -!< m == inverse m
 >   mat_identity :: (Num a, ConjugateSymmetric a) => arr (v a) (v a)
 
 
+>class (VectorSpace v) => Dualizable v d where
+>  covector :: (v -> Scalar v) -> d v
+>  bracket :: d v -> v -> Scalar v
+
 >-- | <https://en.wikipedia.org/wiki/Laplace_operator>
 >--   <https://en.wikipedia.org/wiki/Divergence>
 >--   <https://en.wikipedia.org/wiki/Gradient>
 >--   <https://en.wikipedia.org/wiki/Directional_derivative>
+>-- Notice: for directional derivative,
+>-- the direction is not automatically normalized, since that needs NormedSpace
 >class (VectorSpace v) => VectorDerivative v d arr | d -> arr where
 >  divergence :: arr v v -> d v  -- (Del %. f)(v)
 >  grad       :: d v -> arr v v    -- (Del f)(v)
@@ -406,6 +424,13 @@ is_unitary m = conj -!< m == inverse m
 >  laplace = divergence . grad
 >  {-# MINIMAL divergence, grad, directional_derivative #-}
 
+>-- | version of directional derivative that normalizes the direction:
+>-- <https://mathworld.wolfram.com/DirectionalDerivative.html>
+>normalized_directional_derivative :: (VectorDerivative v d arr, NormedSpace v, Fractional (Scalar v))
+>   => v -> d v -> d v
+>normalized_directional_derivative v d =
+>   directional_derivative ((1/norm v) %* v) d
+> 
 
 >-- | <https://en.wikipedia.org/wiki/Curl_(mathematics)>
 >class VectorCrossProduct v arr where
@@ -652,6 +677,13 @@ x %^% i = x %*% (x %^% (i-1))
 >instance (ConjugateSymmetric a) => ConjugateSymmetric (a -> a) where
 >   conj x = x . conj
 
+>instance (ConjugateSymmetric a, ConjugateSymmetric b) => ConjugateSymmetric (a,b) where
+>   conj (a,b) = (conj a, conj b)
+>instance (ConjugateSymmetric a, ConjugateSymmetric b, ConjugateSymmetric c) => ConjugateSymmetric (a,b,c) where
+>   conj (a,b,c) = (conj a, conj b, conj c)
+>instance (ConjugateSymmetric a, ConjugateSymmetric b, ConjugateSymmetric c, ConjugateSymmetric d) => ConjugateSymmetric (a,b,c,d) where
+>   conj (a,b,c,d) = (conj a, conj b,conj c, conj d)
+
 >-- | <https://en.wikipedia.org/wiki/Convex_combination>
 >-- This computes \[f([a_0,a_1,...,a_n], [{\mathbf b}_0,{\mathbf b}_1,...,{\mathbf b}_n]) = {{\sum_{j=0}^n{a_j{\mathbf b}_j}} \over \sum_{i=0}^n{a_i}}\]
 >convex_combination :: (VectorSpace v, Fractional (Scalar v), Foldable t,
@@ -742,18 +774,20 @@ instance Diagonalizable Stream Integer where
 >   signum f = f - abs f
 >   fromInteger = Endo . const . fromInteger
 
+>-- | Note: Scalar (Complex a) = Complex a
 >instance (RealFloat a) => VectorSpace (Complex a) where
->   type Scalar (Complex a) = a
+>   type Scalar (Complex a) = Complex a
 >   vzero = 0 :+ 0
 >   vnegate = negate
->   a %* (r :+ i) = a * r :+ a * i
+>   a %* b = a * b
 >   (r1 :+ i1) %+ (r2 :+ i2) = (r1 + r2) :+ (i1 + i2)
 
->instance (RealFloat a) => InnerProductSpace (Complex a) where
->   (r :+ i) %. (r2 :+ i2) = r*r2 - i*i2
+>-- | <https://en.wikipedia.org/wiki/Inner_product_space>
+>instance {-# OVERLAPPABLE #-} (RealFloat a) => InnerProductSpace (Complex a) where
+>   a %. b = a * conj b
 
->instance (RealFloat a) => NormedSpace (Complex a) where
->   norm = magnitude
+>instance {-# OVERLAPPABLE #-} (RealFloat a) => NormedSpace (Complex a) where
+>   norm x = sqrt (x %. x)
 
 >instance (Num a) => VectorSpace (Maybe a) where
 >   type Scalar (Maybe a) = a
@@ -950,7 +984,7 @@ instance VectorSpace (f (Complex a)) => VectorSpace ((f :*: Complex) a) where
   (Matrix v) %+ (Matrix w) = Matrix (v %+ w)
   c %* (Matrix v) = Matrix (c %* v)
 
->instance (Indexable f a, Diagonalizable f a, Functor f, a ~ Scalar (f a), Num a)
+>instance (Indexable f a, Diagonalizable f a, Functor f, Scalar (f a) ~ Complex a, Num a)
 > => Transposable f Complex a where
 >  transpose_impl (Matrix m) = Matrix $ fmap realPart m :+ fmap imagPart m
 
@@ -1033,3 +1067,5 @@ example use: m <!> (xcoord3,ycoord3)
 >reduceI :: (I :*: I) a -> I a
 >reduceI (Matrix (I x)) = x
 
+>sum_coordinates :: (Foldable t, Num a) => t a -> a
+>sum_coordinates = Data.Foldable.foldr (+) 0

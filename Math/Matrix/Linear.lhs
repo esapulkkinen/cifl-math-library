@@ -1,30 +1,32 @@
->{-# LANGUAGE GADTs, RankNTypes, TypeOperators, ScopedTypeVariables #-}
+>-- -*- coding: utf-8 -*-
+>{-# LANGUAGE Safe, GADTs, RankNTypes, TypeOperators, ScopedTypeVariables #-}
 >{-# LANGUAGE FlexibleInstances, MultiParamTypeClasses #-}
 >{-# LANGUAGE FlexibleContexts, TypeFamilies #-}
 >{-# LANGUAGE UndecidableInstances, Arrows #-}
->{-# LANGUAGE DeriveGeneric, StandaloneDeriving #-}
+>{-# LANGUAGE DeriveGeneric, StandaloneDeriving, InstanceSigs #-}
 >module Math.Matrix.Linear where
->import Prelude hiding (id,(.))
->import Control.Category
->import Control.Arrow
->import Control.Applicative
->import Data.Typeable
->import GHC.Generics hiding ((:*:))
->import Math.Matrix.Interface
->import Math.Number.Interface
->import Math.Number.StreamInterface
->import Math.Matrix.Vector1
->import Math.Matrix.Vector2
->import Math.Matrix.Vector3
->import Math.Matrix.Vector4
->import Math.Matrix.FiniteVector
->import Math.Matrix.Points
->import Math.Tools.Isomorphism
->import Math.Tools.NaturalTransformation
->import Math.Tools.Prop
->import Math.Tools.I
->import Math.Tools.Arrow
->import Math.Tools.Universe
+>import safe Prelude hiding (id,(.))
+>import safe Control.Category
+>import safe Control.Arrow
+>import safe Control.Applicative
+>import safe Data.Typeable
+>import safe GHC.Generics hiding ((:*:))
+>import safe Math.Matrix.Interface
+>import safe Math.Number.Interface
+>import safe Math.Number.StreamInterface
+>import safe Math.Matrix.Vector1
+>import safe Math.Matrix.Vector2
+>import safe Math.Matrix.Vector3
+>import safe Math.Matrix.Vector4
+>import safe Math.Matrix.FiniteVector
+>import safe Math.Matrix.Points
+>import safe Math.Tools.Isomorphism
+>import safe Math.Tools.NaturalTransformation
+>import safe Math.Tools.Prop
+>import safe Math.Tools.I
+>import safe Math.Tools.Arrow
+>import safe Math.Tools.Universe
+>import safe Math.Tools.PrettyP
 
 >-- | Linear maps <https://en.wikipedia.org/wiki/Linear_map>
 >data LinearMap v w where
@@ -79,6 +81,27 @@
 >linear_map = linear
 
 
+Tensoring :: (a -> b -> c) -> LinearMap (f a, g b) (f c ⮾ g c)
+Bilinear :: (a -> LinearMap b c) -> (b -> LinearMap a c) -> LinearMap (a ⮾ b) c
+
+matrix_bilinear ::
+   (LinearTransform g (f :*: h) a, Linearizable LinearMap (:*:) f h a,
+    LinearTransform f (g :*: h) a, Linearizable LinearMap (:*:) g h a)
+ =>  (f :*: (g :*: h)) a -> (g :*: (f :*: h)) a -> (f a, g a) :-> h a
+matrix_bilinear b c = Bilinear (\a -> linear $ b <<*> a) (\a' -> linear $ c <<*> a')
+
+-- Unicode character "CIRCLED X".
+type (a ⮾ b) = Tensor a b
+
+tensor :: (Functor f, Functor g) => (f a, g b) -> f a ⮾ g b
+tensor (a,b) = Tensor $ matrix (,) a b
+
+>instance (PpShowVerticalF f, LinearTransform f g a, Linearizable LinearMap (:*:) f g a, PpShowF g, PpShow a, Diagonalizable f a) => PpShow (LinearMap (f a) (g a)) where
+>  pp x = pp $ fromLinear x
+
+>instance (Diagonalizable f a, Linearizable LinearMap (:*:) f g a, LinearTransform f g a, Show ((f :*: g) a))
+> => Show (LinearMap (f a) (g a)) where
+>  showsPrec i x = showsPrec i (fromLinear x)
 
 >instance (Eq (f (g a)), Linearizable LinearMap (:*:) f g a) => Eq (f a :-> g a) where
 >  f == g = fromLinear f == fromLinear g
@@ -109,7 +132,6 @@
 >instance (Num a, ConjugateSymmetric a) => Linearizable LinearMap (:*:) Vector1 Vector2 a where { fromLinear (Mat12 x) = x ; linear = Mat12 }
 >instance (Num a, ConjugateSymmetric a) => Linearizable LinearMap (:*:) Vector1 Vector3 a where { fromLinear (Mat13 x) = x ; linear = Mat13 }
 >instance (Num a, ConjugateSymmetric a) => Linearizable LinearMap (:*:) Vector1 Vector4 a where { fromLinear (Mat14 x) = x ; linear = Mat14 }
-
 
 >instance (Num a, ConjugateSymmetric a) => Linearizable LinearMap (:*:) Vector2 Vector1 a where { fromLinear (Mat21 x) = x ; linear = Mat21 }
 >instance (Num a, ConjugateSymmetric a) => Linearizable LinearMap (:*:) Vector2 Vector2 a where { fromLinear (Mat22 x) = x ; fromLinear MatIdentity = identity ; linear = Mat22 }
@@ -161,12 +183,53 @@
 >instance (Num a, ConjugateSymmetric a, Linearizable LinearMap (:*:) f Vector1 a,
 > Diagonalizable f a,
 > LinearTransform f Vector1 a) => VectorSpace (Dual (f a)) where
->   type Scalar (Dual (f a)) = a
+>   type Scalar (Dual (f a)) = Scalar (f a)
 >   vzero = Covector $ arr_linear $ const 0
 >   vnegate (Covector f) = Covector $ arr_linear negate . f
 >   (Covector f) %+ (Covector g) = Covector $ arr_linear $ \x -> f -!< x %+ g -!< x
 >   a %* (Covector f) = Covector $ arr_linear $ \x -> a %* (f -!< x)
 
+>instance (Universe a) => Foldable ((->) a) where
+>   foldMap :: (Monoid m) => (b -> m) -> (a -> b) -> m
+>   foldMap f g = foldMap (f . g) all_elements
+
+>-- | Foldable instance requires input 'f a' of 'LinearMap (f a)' to be finite.
+>instance Foldable (LinearMap (f a)) where
+>   foldMap _ MatIdentity = mempty
+>   foldMap f (Mat11 (Matrix m)) = foldMap f m
+>   foldMap f (Mat12 (Matrix m)) = foldMap f m
+>   foldMap f (Mat13 (Matrix m)) = foldMap f m
+>   foldMap f (Mat14 (Matrix m)) = foldMap f m
+>   foldMap f (Mat21 (Matrix m)) = foldMap f m 
+>   foldMap f (Mat22 (Matrix m)) = foldMap f m
+>   foldMap f (Mat23 (Matrix m)) = foldMap f m
+>   foldMap f (Mat24 (Matrix m)) = foldMap f m
+>   foldMap f (Mat31 (Matrix m)) = foldMap f m
+>   foldMap f (Mat32 (Matrix m)) = foldMap f m
+>   foldMap f (Mat33 (Matrix m)) = foldMap f m
+>   foldMap f (Mat34 (Matrix m)) = foldMap f m
+>   foldMap f (Mat41 (Matrix m)) = foldMap f m
+>   foldMap f (Mat42 (Matrix m)) = foldMap f m
+>   foldMap f (Mat43 (Matrix m)) = foldMap f m
+>   foldMap f (Mat44 (Matrix m)) = foldMap f m
+>   foldMap f (MatInd (Matrix m)) = foldMap f m
+>   foldMap f (MatInd1 (Matrix m)) = foldMap f m
+>   foldMap f (MatInd2 (Matrix m)) = foldMap f m
+>   foldMap f (MatInd3 (Matrix m)) = foldMap f m
+>   foldMap f (MatInd4 (Matrix m)) = foldMap f m
+>   foldMap f (Mat1Ind (Matrix m)) = foldMap f m
+>   foldMap f (Mat2Ind (Matrix m)) = foldMap f m
+>   foldMap f (Mat3Ind (Matrix m)) = foldMap f m
+>   foldMap f (Mat4Ind (Matrix m)) = foldMap f m
+>   foldMap f (Mat1D (Matrix m)) = foldMap f m
+>   foldMap f (Mat2D (Matrix m)) = foldMap f m
+>   foldMap f (Mat3D (Matrix m)) = foldMap f m
+>   foldMap f (Mat4D (Matrix m)) = foldMap f m
+>   foldMap f (Mat1S (Matrix m)) = foldMap f m
+>   foldMap f (Mat2S (Matrix m)) = foldMap f m
+>   foldMap f (Mat3S (Matrix m)) = foldMap f m
+>   foldMap f (Mat4S (Matrix m)) = foldMap f m
+>   foldMap f _ = error "foldMap for LinearMap (f a) supports only finite structures."
 
 >infixr 0 :->
 >type (:->) a b = LinearMap a b
@@ -367,11 +430,11 @@ instance (forall b. VectorSpace (g b), forall b. VectorSpace (f b), Indexable f 
 > ) =>  (f :*: g) a -> g a :-> f a
 >linear_inverse_impl m = linear $ transpose_impl m
 
->outerLin :: (LinearTransform f g (m -> v), InnerProductSpace m,
-> Linearizable LinearMap (:*:) f g (m -> v),
->  VectorSpace v, Scalar m ~ Scalar v)
-> => f m -> g v -> f (m -> v) :-> g (m -> v)
->outerLin = matrixLin Math.Matrix.Interface.outer
+>lin_outer :: (Linearizable LinearMap (:*:) f g a, Diagonalizable f a,
+>      InnerProductSpace (f a), VectorSpace (g a),
+>      Scalar (f a) ~ Scalar (g a))
+>  => f a -> g a -> f a :-> g a
+>lin_outer x y = arr_linear (outer x y)
 
 >matrixLin :: (LinearTransform f g c, Linearizable LinearMap (:*:) f g c)
 > => (a -> b -> c) -> f a -> g b -> f c :-> g c
@@ -537,6 +600,9 @@ dual_lin_apply f (Matrix g) = matrixLin (-!!<) (fmap bracketMap f) g
 > => f (v a) -> g (v a) -> f a :-> g a
 >linear_outer_product a b = matrixLin (%.) a b
 
+>mapInnerProduct :: (InnerProductSpace (n a), LinearTransform m n a) =>
+>  m a :-> n a -> m a -> m a -> Scalar (n a)
+>mapInnerProduct f x y = f -!< x %. f -!< y
 
 >linear_invert :: (Transposable g f a, Linearizable LinearMap (:*:) f g a,
 > Linearizable LinearMap (:*:) g f a
@@ -579,23 +645,40 @@ instance (Num a, a ~ Scalar a) => FiniteDimensional (Vector1 a) Dual I LinearMap
    finite = LinearMap Refl $ \ (Matrix (Covector f)) ->
                (f -!< (covector $ vector_element))
 
+>instance (ConjugateSymmetric a,Num a) => Dualizable (Vector1 a) Dual where
+>   covector = covector_impl
+>   bracket = bracket_impl
+
 >instance (ConjugateSymmetric a, Num a, Closed a) => VectorDerivative (Vector1 a) Dual LinearMap where
 >   divergence f = partial_derivate1x (covector (vector_element . (-!<) f))
 >   grad f = arr_linear $ \z -> Vector1 (partial_derivate1x f `bracket` z)
 >   directional_derivative = directional_derivative_impl
 
->-- <https://en.wikipedia.org/wiki/Directional_derivative>
+>-- | <https://en.wikipedia.org/wiki/Directional_derivative>
+>-- Note: the direction v is not guaranteed to be normalized.
 >directional_derivative_prim :: (Infinitesimal str a, Scalar (v a) ~ a, VectorSpace (v a))
 >  => v a -> (v a -> a) -> v a -> Closure str a
->directional_derivative_prim v f x = let fx = f x in limit $ do
+>directional_derivative_prim v f x = let
+>  fx = f x
+> in limit $ do
 >   h <- epsilon_stream
 >   return $ (1/h) * (f (x %+ h %* v) - fx)
 
+>-- | <https://en.wikipedia.org/wiki/Directional_derivative>
+>-- Note: the direction v is not guaranteed to be normalized.
 >directional_derivative_impl :: (LinearTransform v Vector1 a, Closed a, VectorSpace (v a), Linearizable LinearMap (:*:) v Vector1 a, Diagonalizable v a, Scalar (v a) ~ a)
 >  => v a -> Dual (v a) -> Dual (v a)
 >directional_derivative_impl v (Covector f) = Covector $ arr_linear $
 >   Vector1 . accumulation_point
 >           . directional_derivative_prim v (vector_element . appLinear f)
+
+>directional_derivative_impl_ ::
+>  (a ~ Scalar (v a), LinearTransform v v a, InnerProductSpace (v a),
+>   Linearizable LinearMap (:*:) v Vector1 a, Diagonalizable v a,
+>   Dualizable (v a) d,
+>   VectorDerivative (v a) d LinearMap)
+>  => v a -> d (v a) -> d (v a)
+>directional_derivative_impl_ v d = covector $ \x -> v %. (grad d -!< x)
 
 
 -- | <https://en.wikipedia.org/wiki/Conjugate_transpose>
@@ -629,6 +712,10 @@ instance (Num a) => FiniteDimensional (Vector2 a) Dual Vector1 LinearMap where
    finite = arr_linear $ \ (Matrix (Covector f)) -> let f' = appLinear f
              in Vector1 $ Vector2 (f' (covector xcoord2)) (f' (covector ycoord2))
 
+>instance (Num a,ConjugateSymmetric a) => Dualizable (Vector2 a) Dual where
+>   covector = covector_impl
+>   bracket = bracket_impl
+
 >instance (ConjugateSymmetric a, Infinitesimal Stream a, Closed a) => VectorDerivative (Vector2 a) Dual LinearMap where
 >   divergence = divergence2
 >   grad = grad2
@@ -638,12 +725,12 @@ instance (Num a) => FiniteDimensional (Vector2 a) Dual Vector1 LinearMap where
 >divergence2 f = partial_derivate2x (linear_dual_2x f)
 >             %+ partial_derivate2y (linear_dual_2y f)
 
->linear_dual_2x :: (Diagonalizable f v, LinearTransform f Vector2 v, Linearizable LinearMap (:*:) f Vector1 v)
-> => LinearMap (f v) (Vector2 v) -> Dual (f v)
+>linear_dual_2x :: (Dualizable (f v) d, Diagonalizable f v, LinearTransform f Vector2 v, Linearizable LinearMap (:*:) f Vector1 v)
+> => LinearMap (f v) (Vector2 v) -> d (f v)
 >linear_dual_2x f = covector (xcoord2 . (-!<) f)
 >
->linear_dual_2y :: (Diagonalizable f v, LinearTransform f Vector2 v, Linearizable LinearMap (:*:) f Vector1 v)
-> => LinearMap (f v) (Vector2 v) -> Dual (f v)
+>linear_dual_2y :: (Dualizable (f v) d, Diagonalizable f v, LinearTransform f Vector2 v, Linearizable LinearMap (:*:) f Vector1 v)
+> => LinearMap (f v) (Vector2 v) -> d (f v)
 >linear_dual_2y f = covector (ycoord2 . (-!<) f)
 
 >grad2 :: (ConjugateSymmetric a, Closed a, Fractional a) => Dual (Vector2 a) -> LinearMap (Vector2 a) (Vector2 a)
@@ -691,6 +778,14 @@ instance (Num a, LinearTransform Dual Vector1 (Vector3 a), ConjugateSymmetric a)
 >vector3_natiso = NaturalIso (NatTrans vec3_to_vector3)
 >                            (NatTrans vector3_to_vec3)
 
+>instance (ConjugateSymmetric a,Num a) => Dualizable (Vector3 a) Dual where
+>   covector = covector_impl
+>   bracket = bracket_impl
+
+>instance (ConjugateSymmetric a,Num a) => Dualizable (Vector4 a) Dual where
+>   covector = covector_impl
+>   bracket = bracket_impl
+
 >instance (Closed a, Num a, ConjugateSymmetric a) => VectorDerivative (Vector3 a) Dual LinearMap where
 >  divergence = divergence3
 >  grad = grad3
@@ -705,7 +800,7 @@ instance (Num a, LinearTransform Dual Vector1 (Vector3 a), ConjugateSymmetric a)
 >vector_laplace3 :: (a ~ Scalar (f a), VectorDerivative (f a) Dual LinearMap,
 > LinearTransform f Vector3 a,
 > LinearTransform f Vector1 a,
-> Diagonalizable f a,
+> Diagonalizable f a, Dualizable (f a) Dual,
 > Linearizable LinearMap (:*:) f Vector3 a,
 > Linearizable LinearMap (:*:) f Vector1 a
 > ) =>
@@ -746,14 +841,14 @@ instance (Num a, LinearTransform Dual Vector1 (Vector3 a), ConjugateSymmetric a)
 >        fy = linear_dual_3y f
 >        fz = linear_dual_3z f
 
->linear_dual_3x :: (Diagonalizable f a,Linearizable LinearMap (:*:) f Vector1 a,LinearTransform f Vector3 a) => (f a) :-> (Vector3 a) -> Dual (f a)
+>linear_dual_3x :: (Dualizable (f a) Dual, Diagonalizable f a,Linearizable LinearMap (:*:) f Vector1 a,LinearTransform f Vector3 a) => (f a) :-> (Vector3 a) -> Dual (f a)
 >linear_dual_3x f = covector (xcoord3 . (-!<) f)
 
->linear_dual_3y :: (Diagonalizable f a,Linearizable LinearMap (:*:) f Vector1 a,LinearTransform f Vector3 a) => (f a) :-> (Vector3 a) -> Dual (f a)
+>linear_dual_3y :: (Dualizable (f a) Dual, Diagonalizable f a,Linearizable LinearMap (:*:) f Vector1 a,LinearTransform f Vector3 a) => (f a) :-> (Vector3 a) -> Dual (f a)
 >linear_dual_3y f = covector (ycoord3 . (-!<) f)
 
 >linear_dual_3z :: (Linearizable LinearMap (:*:) f Vector1 a,
->                  Diagonalizable f a,
+>                  Diagonalizable f a, Dualizable (f a) Dual,
 >                  LinearTransform f Vector3 a)
 > => (f a) :-> (Vector3 a) -> Dual (f a)
 >linear_dual_3z f = covector (zcoord3 . (-!<) f)
@@ -779,7 +874,7 @@ instance (Num a, LinearTransform Dual Vector1 (Vector3 a), ConjugateSymmetric a)
 >partial_derivate3z :: (ConjugateSymmetric a,Closed a, Num a) => Dual (Vector3 a) -> Dual (Vector3 a)
 >partial_derivate3z (Covector f) = covector $ partial_derivate dz3 (vector_element . appLinear f)
 
->-- | \[\nabla_3\], three-dimensional partial derivate. Use Applicative.<*> for applying it.
+>-- | \[\nabla_3\], three-dimensional partial derivate. Use Applicative.\<*\> for applying it.
 >del3 :: (ConjugateSymmetric v,Num v,Closed v) => Vector3 (Dual (Vector3 v) -> Dual (Vector3 v))
 >del3 = Vector3 partial_derivate3x partial_derivate3y partial_derivate3z
 
@@ -845,12 +940,9 @@ instance (Num a, LinearTransform Dual Vector1 (Vector3 a), ConjugateSymmetric a)
 >pderive3 :: (Closed a, Num a)
 >   => Vector3 (a -> a) -> Vector3 a -> Vector3 a
 >pderive3 (Vector3 fx fy fz) (Vector3 x y z) = Vector3
->   (partial_derive chx fx x)
->   (partial_derive chy fy y)
->   (partial_derive chz fz z)
->  where chx eps x = x + eps
->        chy eps y = y + eps
->        chz eps z = z + eps
+>   (partial_derive (+) fx x)
+>   (partial_derive (+) fy y)
+>   (partial_derive (+) fz z)
 
 >vector_field_derivate :: (Closed a, Num a)
 >  => (Vector3 a -> a) -> Vector3 a -> Vector3 a
@@ -870,8 +962,8 @@ instance (Num a, LinearTransform Dual Vector1 (Vector3 a), ConjugateSymmetric a)
 >  => f a :-> g a -> (g a -> f b :-> h b) -> f b :-> h b
 >lin_bind m f = linear $ mat_bind (fromLinear m) (fromLinear . f)
 
->covector :: (Linearizable LinearMap (:*:) f Vector1 b, Diagonalizable f b) => (f b -> b) -> Dual (f b)
->covector f = Covector (arr_linear (Vector1 . f))
+>covector_impl :: (Linearizable LinearMap (:*:) f Vector1 b, Diagonalizable f b) => (f b -> b) -> Dual (f b)
+>covector_impl f = Covector (arr_linear (Vector1 . f))
 
 >linear_outer_product_ a b = arr_linear (Math.Matrix.Interface.outer a b)
 
@@ -885,5 +977,5 @@ instance (Num a, LinearTransform Dual Vector1 (Vector3 a), ConjugateSymmetric a)
 >bracketMap :: Dual (f a) -> f a :-> Vector1 a
 >bracketMap (Covector f) = f
 
->bracket :: (LinearTransform f Vector1 a) => Dual (f a) -> f a -> a
->bracket x = vector_element . appLinear (bracketMap x)
+>bracket_impl :: (LinearTransform f Vector1 a) => Dual (f a) -> f a -> a
+>bracket_impl x = vector_element . appLinear (bracketMap x)

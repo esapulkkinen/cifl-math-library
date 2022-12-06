@@ -90,7 +90,6 @@ data Three = TId | TDom | TCod deriving (Eq,Show,Ord, Typeable, Data, Generic)
 >   mempty = TId
 >   mappend = mappend_three
 
->   
 >mappend_three :: Three b c -> Three a b -> Three a c
 >mappend_three TId x = x
 >mappend_three x TId = x

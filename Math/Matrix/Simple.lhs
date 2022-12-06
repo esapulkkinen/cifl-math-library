@@ -1,5 +1,5 @@
 >{-# LANGUAGE Safe,FlexibleInstances, MultiParamTypeClasses, TypeOperators, TypeFamilies, Arrows, LambdaCase, DeriveAnyClass, ExistentialQuantification, ScopedTypeVariables, FlexibleContexts, UndecidableInstances #-}
->{-# LANGUAGE QuantifiedConstraints #-}
+>{-# LANGUAGE QuantifiedConstraints, LambdaCase #-}
 >-- | This module provides matrices with indices.
 >-- Matrices are constructed using smatrix and svec operations, example:
 >-- 
@@ -102,48 +102,62 @@ instance (Universe row, Universe col, Universe dep, Universe tim, PpShow elem) =
 >instance (Num a) => VectorSpace (((->) row :*: (->) col) a) where
 >   type Scalar (((->) row :*: (->) col) a) = a
 >   vzero = Matrix $ const $ const 0
+>   vnegate (Matrix m) = Matrix $ \i j -> negate (m i j)
 >   (Matrix m) %+ (Matrix n) = Matrix $ \i j -> m i j + n i j
 >   a %* (Matrix m) = Matrix $ \i j -> a * m i j
 
 >instance (Num a) => VectorSpace (((->) row :*: Vector1) a) where
 >   type Scalar (((->) row :*: Vector1) a) = a
 >   vzero = Matrix $ const $ vzero
+>   vnegate (Matrix m) = Matrix $ \i -> vnegate (m i)
 >   (Matrix m) %+ (Matrix n) = Matrix $ \i -> m i %+ n i
 >   a %* (Matrix m) = Matrix $ \i -> a %* m i
 >instance (Num a) => VectorSpace (((->) row :*: Vector2) a) where
 >   type Scalar (((->) row :*: Vector2) a) = a
 >   vzero = Matrix $ const $ vzero
+>   vnegate (Matrix m) = Matrix $ \i -> vnegate (m i)
 >   (Matrix m) %+ (Matrix n) = Matrix $ \i -> m i %+ n i
 >   a %* (Matrix m) = Matrix $ \i -> a %* m i
 >instance (Num a) => VectorSpace (((->) row :*: Vector3) a) where
 >   type Scalar (((->) row :*: Vector3) a) = a
 >   vzero = Matrix $ const $ vzero
+>   vnegate (Matrix m) = Matrix $ \i -> vnegate (m i)
 >   (Matrix m) %+ (Matrix n) = Matrix $ \i -> m i %+ n i
 >   a %* (Matrix m) = Matrix $ \i -> a %* m i
 >instance (Num a) => VectorSpace (((->) row :*: Vector4) a) where
 >   type Scalar (((->) row :*: Vector4) a) = a
 >   vzero = Matrix $ const $ vzero
+>   vnegate (Matrix m) = Matrix $ \i -> vnegate (m i)
 >   (Matrix m) %+ (Matrix n) = Matrix $ \i -> m i %+ n i
 >   a %* (Matrix m) = Matrix $ \i -> a %* m i
 
 >instance (Num a) => VectorSpace ((Vector1 :*: (->) col) a) where
 >   type Scalar ((Vector1 :*: (->) col) a) = a
 >   vzero = Matrix $ Vector1 vzero
+>   vnegate (Matrix (Vector1 m)) = Matrix $ Vector1 $ negate . m
 >   (Matrix m) %+ (Matrix n) = Matrix $ liftA2 (liftA2 (+)) m n
 >   a %* (Matrix (Vector1 x)) = Matrix $ Vector1 (a %* x)
 >instance (Num a) => VectorSpace ((Vector2 :*: (->) col) a) where
 >   type Scalar ((Vector2 :*: (->) col) a) = a
 >   vzero = Matrix $ Vector2 vzero vzero
+>   vnegate (Matrix (Vector2 m n)) = Matrix $ Vector2 (negate . m) (negate . n)
 >   (Matrix m) %+ (Matrix n) = Matrix $ liftA2 (liftA2 (+)) m n
 >   a %* (Matrix (Vector2 x y)) = Matrix $ Vector2 (a %* x) (a %* y)
 >instance (Num a) => VectorSpace ((Vector3 :*: (->) col) a) where
 >   type Scalar ((Vector3 :*: (->) col) a) = a
 >   vzero = Matrix $ Vector3 vzero vzero vzero
+>   vnegate (Matrix (Vector3 m n o)) = Matrix $ Vector3 (negate . m)
+>                                                       (negate . n)
+>                                                       (negate . o)
 >   (Matrix m) %+ (Matrix n) = Matrix $ liftA2 (liftA2 (+)) m n
 >   a %* (Matrix (Vector3 x y z)) = Matrix $ Vector3 (a %* x) (a %* y) (a %* z)
 >instance (Num a) => VectorSpace ((Vector4 :*: (->) col) a) where
 >   type Scalar ((Vector4 :*: (->) col) a) = a
 >   vzero = Matrix $ Vector4 vzero vzero vzero vzero
+>   vnegate (Matrix (Vector4 m n o p)) = Matrix $ Vector4 (negate . m)
+>                                                         (negate . n)
+>                                                         (negate . o)
+>                                                         (negate . p)
 >   (Matrix m) %+ (Matrix n) = Matrix $ liftA2 (liftA2 (+)) m n
 >   a %* (Matrix (Vector4 t x y z)) = Matrix $ Vector4 (a %* t) (a %* x) (a %* y) (a %* z)
 
@@ -210,11 +224,11 @@ instance Transposable ((->) row) ((->) col) a where
 >partial_derivate_ind :: (Integral ind, Universe ind, Eq ind, ConjugateSymmetric a, Closed a, Infinitesimal Stream a) => ind -> Dual (ind -> a) -> Dual (ind -> a)
 >partial_derivate_ind ind' (Covector f) = Covector $ arr_linear $ Vector1 . partial_derivate (index_delta ind') (vector_element . appLinear f)
 
-partial_derivate_list :: (Closed a, Infinitesimal a, Eq ind, Universe ind)
-   => [Dual (ind -> a) -> Dual (ind -> a)]
-
 >partial_derivate_list :: (Universe a, Eq a, Integral a, ConjugateSymmetric b, Closed b, Infinitesimal Stream b) => [Dual (a -> b) -> Dual (a -> b)]
 >partial_derivate_list = map partial_derivate_ind all_elements
+
+>instance (Integral a, Universe a, Num b, ConjugateSymmetric b) => Dualizable (a -> b) Dual where
+>  covector = covector_impl
 
 >divergence_index :: (ConjugateSymmetric b, Closed b, Infinitesimal Stream b, Integral ind, Eq ind, Universe a, Universe ind)
 > => (ind -> b) :-> (a -> b) -> Dual (ind -> b)
@@ -228,6 +242,8 @@ partial_derivate_list :: (Closed a, Infinitesimal a, Eq ind, Universe ind)
 >laplace_index :: (ConjugateSymmetric a, Closed a, Infinitesimal Stream a, Integral ind,Eq ind, Universe ind)
 >  => Dual (ind -> a) -> Dual (ind -> a)
 >laplace_index f = divergence_index (grad_index f)
+
+
 
 >instance (b ~ Scalar a, Scalar (a -> b) ~ b, Integral a, VectorSpace b, ConjugateSymmetric b, Closed b, Infinitesimal Stream b, Eq a, Universe a)
 > => VectorDerivative (a -> b) Dual LinearMap where
@@ -284,7 +300,7 @@ partial_derivate_list :: (Closed a, Infinitesimal a, Eq ind, Universe ind)
 
 >cov_index :: (Integral a, Universe a, Num (Scalar a), ConjugateSymmetric (Scalar a))
 >  => a -> Dual (a -> Scalar a)
->cov_index x = covector $ \f -> f x
+>cov_index x = covector_impl $ \f -> f x
 
 >instance (Integral row, Integral col, Floating a, Universe row, Universe col, ConjugateSymmetric a)
 > => NormedSpace (((->) row :*: (->) col) a) where
@@ -300,6 +316,7 @@ partial_derivate_list :: (Closed a, Infinitesimal a, Eq ind, Universe ind)
 >instance (Num a, Eq dim, Integral dim) => Diagonalizable ((->) dim) a where
 >   vector_dimension f = indexable_indices
 >   identity = Matrix kronecker_delta
+>   identity_impl = const (Matrix kronecker_delta)
 >   diagonal_impl (Matrix f) = \i -> f i i
 >   diagonal_matrix_impl f = Matrix $ \i j -> if i == j then f i else 0
 >
@@ -395,10 +412,7 @@ instance (Universe a, Integral a, InnerProductSpace b) => CoordinateSpace (a -> 
    listVector lst = \i -> lst !! fromIntegral (toInteger i)
    dimension_size (f :: a -> b) = length (all_elements :: [a])
    coordinates (f :: a -> b) = (all_elements :: [a])
-   
->instance (Num a, Universe row, Integral row) => Summable ((->) row) a where
->   sum_coordinates = sumS
->
+
 >instance (Integral col, Floating elem, Scalar (col -> elem) ~ elem, VectorSpace elem, Fractional (Scalar elem), Integral row, Universe row, Universe col, ConjugateSymmetric elem)
 > => Num ((row :&: col) elem) where
 >   f + g = linear $ Matrix $ \i j -> (f # (i, j)) + (g # (i, j))
@@ -899,4 +913,20 @@ to map indices.
 >   signum _ = OneD0
 >   fromInteger _ = OneD0
 
+>instance (Num a) => DecomposableVectorSpace (Vector4 a) ((->) FourD) where
+>   decompose f (Vector4 x y z t) = \case { FourD0 -> f x ; FourD1 -> f y ; FourD2 -> f z ; FourD3 -> f t }
 
+>instance (Num a) => DecomposableVectorSpace (Vector3 a) ((->) ThreeD) where
+>   decompose f (Vector3 x y z) = \case { ThreeD0 -> f x ; ThreeD1 -> f y ; ThreeD2 -> f z }
+
+>instance (Num a) => DecomposableVectorSpace (Vector2 a) ((->) TwoD) where
+>   decompose f (Vector2 x y) = \case { TwoD0 -> f x ; TwoD1 -> f y }
+
+>instance (Num a) => DecomposableVectorSpace (Vector1 a) ((->) OneD) where
+>   decompose f (Vector1 x) = \case { OneD0 -> f x }
+
+>instance (Num a) => DecomposableVectorSpace (Stream a) ((->) Integer) where
+>   decompose f (Pre x xr) = \case
+>       0 -> f x
+>       i | i > 0 -> decompose f xr (i-1)
+>         | i < 0 -> error "negative index"

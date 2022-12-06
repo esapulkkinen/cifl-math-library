@@ -7,7 +7,7 @@ otherwise infinite list interleaving doesn't work. Note also that
 interleave swaps arguments after every element.
 
 >interleave_list :: [a] -> [a] -> [a]
->interleave_list (c:cr) lst = (c:interleave lst cr)
+>interleave_list (c:cr) lst = (c:interleave_list lst cr)
 >interleave_list [] lst = lst
 
 >-- | computes iterates of the given function while they are monotone.

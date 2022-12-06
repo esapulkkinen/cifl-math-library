@@ -1,11 +1,11 @@
 >{-# LANGUAGE Safe, TypeFamilies, FlexibleInstances, ScopedTypeVariables #-}
 >{-# LANGUAGE TypeOperators, DataKinds, UndecidableInstances #-}
 >{-# LANGUAGE StandaloneDeriving, DeriveAnyClass #-}
->{-# LANGUAGE MultiParamTypeClasses #-}
+>{-# LANGUAGE MultiParamTypeClasses, FlexibleContexts, GADTs #-}
 >module Math.Number.R (
-> R(Limit), lim, real, approximate, rational_approximations,
-> floating_approximations, epsilon, infinite_r, liftR,
-> liftR2, inverseImage, liftWithAccuracy, approximate_as,
+> R(Limit), lim, real, approximate, rational_approximations, 
+> floating_approximations, epsilon, infinite_r, liftR, derivate_generic_stream,
+> liftR2, inverseImage, liftWithAccuracy, approximate_as, 
 > limit_compose, inverseImageEndo, differentialLiftR, derivate_rational,
 > derivate_r, newtons_method, sqrt_r, log_by_newton,
 > exp_r, pi_r, log_r, integral_r, foldable_integral, foldable_simple_integral,
@@ -258,6 +258,11 @@
 >derivate_rational eps f i = (f (i + eps) - fi) / eps
 >   where fi = f i
 
+>derivate_generic_stream :: (Fractional a) => (a -> a) -> Stream a -> Stream a
+>derivate_generic_stream f (Pre i z@(Pre di r)) = let
+>    f' di' i' = (f (i' + di') - f i') / di'
+>  in Pre (f' di i) (derivate_generic_stream (\dd -> f' dd i) z)
+
 >-- | computes derivate. \[{{df}\over{dt}} = \lim_{\epsilon\rightarrow 0}{{f(t+\epsilon)-f(t)}\over{\epsilon}}\]
 >derivate_r :: (R -> R) -> R -> R
 >derivate_r f (Limit x) = real $ \eps ->
@@ -266,8 +271,6 @@
 >  where fx = f (real $ \eps'' -> x `appEndo` eps'')
 >        -- computing fx separately is an optimization that should allow
 >        -- sharing the value of 'fx' to many invocations at different precision.
-
-
 >instance DifferentiallyClosed R where
 >   derivate = derivate_r
 >   integral = integral_r
@@ -312,9 +315,14 @@
 >integral_r (x,y) f = foldable_integral acc f
 >   where acc = map fromRational . integral_accuracy f x y
 
+
 >foldable_integral :: (Foldable t, Functor t) => (Rational -> t b) -> (b -> R) -> R
 >foldable_integral border f = real $ \eps ->
 >   foldable_simple_integral border ((`approximate` eps) . f) eps
+
+>foldable_vector_integral :: (VectorSpace (v a), Scalar (v a) ~ a, Foldable t, Functor t)
+>  => (a -> t b) -> (b -> v a) -> a -> v a
+>foldable_vector_integral border f eps = eps %* (vsum $! fmap f $! border eps)
 
 >foldable_simple_integral :: (Num a, Foldable t, Functor t) =>
 >  (a -> t b) -> (b -> a) -> a -> a

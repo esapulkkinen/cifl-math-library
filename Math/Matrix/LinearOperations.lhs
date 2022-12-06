@@ -87,7 +87,7 @@
 >    (partial_derivate4y f' x)
 >    (partial_derivate4z f' x)
 
->curl4 :: (Closed a, LinearTransform Vector4 Vector1 a) => Vector4 (Covector.Dual (Vector4 a))
+>curl4 :: (Closed a, ConjugateSymmetric a, LinearTransform Vector4 Vector1 a) => Vector4 (Covector.Dual (Vector4 a))
 >                                    -> Vector4 a
 >                                    -> (Vector4 :*: Vector4) a
 >curl4 (Vector4 ft' fx' fy' fz')
@@ -133,6 +133,7 @@
 >  vector_laplace = vector_laplace4
 
 >vector_laplace4 :: (VectorDerivative (v a) Dual LinearMap,
+>                   Dualizable (v a) Dual,
 >                   Diagonalizable v a, 
 >                   LinearTransform v Vector4 a,
 >                   LinearTransform v Vector1 a,
@@ -145,18 +146,18 @@
 >   ((laplace $ linear_dual_4y f) `bracket` x)
 >   ((laplace $ linear_dual_4z f) `bracket` x)
 
->linear_dual_4t :: (Diagonalizable v a, LinearTransform v Vector4 a, Linearizable LinearMap (:*:) v Vector1 a)
+>linear_dual_4t :: (Dualizable (v a) Dual, Diagonalizable v a, LinearTransform v Vector4 a, Linearizable LinearMap (:*:) v Vector1 a)
 > => v a :-> Vector4 a -> Dual (v a)
 >linear_dual_4t f = covector (tcoord4 . (-!<) f)
 
->linear_dual_4x :: (Diagonalizable v a, LinearTransform v Vector4 a, Linearizable LinearMap (:*:) v Vector1 a)
+>linear_dual_4x :: (Dualizable (v a) Dual, Diagonalizable v a, LinearTransform v Vector4 a, Linearizable LinearMap (:*:) v Vector1 a)
 > => v a :-> (Vector4 a) -> Dual (v a)
 >linear_dual_4x f = covector (xcoord4 . (-!<) f)
 
->linear_dual_4y :: (Diagonalizable v a, LinearTransform v Vector4 a, Linearizable LinearMap (:*:) v Vector1 a)
+>linear_dual_4y :: (Dualizable (v a) Dual,Diagonalizable v a, LinearTransform v Vector4 a, Linearizable LinearMap (:*:) v Vector1 a)
 > => v a :-> (Vector4 a) -> Dual (v a)
 >linear_dual_4y f = covector (ycoord4 . (-!<) f)
 
->linear_dual_4z :: (Diagonalizable v a, LinearTransform v Vector4 a, Linearizable LinearMap (:*:) v Vector1 a)
+>linear_dual_4z :: (Dualizable (v a) Dual, Diagonalizable v a, LinearTransform v Vector4 a, Linearizable LinearMap (:*:) v Vector1 a)
 > => v a :-> (Vector4 a) -> Dual (v a)
 >linear_dual_4z f = covector (zcoord4 . (-!<) f)

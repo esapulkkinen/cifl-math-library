@@ -50,7 +50,7 @@
 >import Math.Matrix.Vector3
 >import Math.Matrix.Vector2
 
-#if __GLASGOW_HASKELL__ >= 800 && __GLASGOW_HASKELL_LLVM__ >= 500
+#if __GLASGOW_HASKELL__ >= 800 && defined(WITH_LLVM)
 
 >{-# OPTIONS_GHC -fllvm #-}
 
@@ -88,6 +88,10 @@
 
 >sum_coordinates1Complex :: SIMDVec 1 (Complex Double) -> Complex Double
 >sum_coordinates1Complex (ComplexVec1 x) = D# a :+ D# b
+>   where (# a,b #) = unpackDoubleX2# x
+
+>sum_coordinates1Complex_components :: SIMDVec 1 (Complex Double) -> Double
+>sum_coordinates1Complex_components (ComplexVec1 x) = D# (a +## b)
 >   where (# a,b #) = unpackDoubleX2# x
 
 >sum_coordinates2Int :: SIMDVec 2 Int64 -> Int64
@@ -231,21 +235,21 @@
 >          res = packFloatX4# (# realres1,imagres1,realres2,imagres2 #)
 >  abs = mapCVec2 abs
 >  signum = mapCVec2 signum
->  fromInteger i = let D# d = fromInteger i
->                   in ComplexVec2 (packFloatX4# (# d,0#,d,0# #) )
+>  fromInteger i = let F# d = fromInteger i
+>                   in ComplexVec2 (packFloatX4# (# d,0.0#,d,0.0# #) )
 
 >instance Num (SIMDVec 1 (Complex Double)) where
 >  (ComplexVec1 x) + (ComplexVec1 y) = ComplexVec1 (plusDoubleX2# x y)
 >  (ComplexVec1 x) - (ComplexVec1 y) = ComplexVec1 (minusDoubleX2# x y)
->  (ComplexVec1 x) * (ComplexVec1 y) = ComplexVec1 (packFloatX2# (# rr,ri #) )
+>  (ComplexVec1 x) * (ComplexVec1 y) = ComplexVec1 (packDoubleX2# (# rr,ri #) )
 >    where (# x1,x2 #) = unpackDoubleX2# x
 >          (# y1,y2 #) = unpackDoubleX2# y
->          rr = minusFloat# (timesDouble# x1 y1) (timesDouble# x2 y2)
->          ri = plusFloat# (timesDouble# x1 y2) (timesDouble# x2 y1)
+>          rr = (x1 *## y1) -## (x2 *## y2)
+>          ri = (x1 *## y2) +## (x2 *## y1)
 >  abs = mapCVec1 abs
 >  signum = mapCVec1 signum
 >  fromInteger i = let D# d = fromInteger i
->                   in ComplexVec1 (packDoubleX2# (# d,0# #) )
+>                   in ComplexVec1 (packDoubleX2# (# d,0.0## #) )
 
 >eqSVec2 :: SIMDVec 2 Int64 -> SIMDVec 2 Int64 -> Bool
 >eqSVec2 (Int64SVec2 x) (Int64SVec2 y) = case unpackInt64X2# (minusInt64X2# x y) of
@@ -318,12 +322,13 @@
 >fromComplexVector2 (Vector2 (F# a :+ F# b) (F# c :+ F# d)) = ComplexVec2 (packFloatX4# (# a,b,c,d #) )
 >
 >toComplexVector2 :: SIMDVec 2 (Complex Float) -> Vector2 (Complex Float)
->toComplexVector2 (ComplexVec2 x) = let (# a,b,c,d #) = unpackFloatX4# x in Vector2 (D# a :+ D# b) (D# c :+ D# d)
+>toComplexVector2 (ComplexVec2 x) = Vector2 (F# a :+ F# b) (F# c :+ F# d)
+>     where (# a,b,c,d #) = unpackFloatX4# x
 
 >fromComplexVector1 :: Complex Double -> SIMDVec 1 (Complex Double)
 >fromComplexVector1 (D# x :+ D# y) = ComplexVec1 (packDoubleX2# (# x,y #))
 
->toComplexVector1 :: SIMDVec1 (Complex Double) -> Complex Double
+>toComplexVector1 :: SIMDVec 1 (Complex Double) -> Complex Double
 >toComplexVector1 (ComplexVec1 x) = let (# a,b #) = unpackDoubleX2# x in D# a :+ D# b
 
 >{-# INLINE fromFloatVector4 #-}
@@ -468,6 +473,34 @@
 >         F# ra :+ F# rb = f (F# a :+ F# b) (F# a' :+ F# b')
 >         F# rc :+ F# rd = f (F# c :+ F# d) (F# c' :+ F# d')
 >         res = packFloatX4# (# ra,rb,rc,rd #)
+
+>zipCVec2_components :: (Float -> Float -> Float) ->
+>        SIMDVec 2 (Complex Float) -> SIMDVec 2 (Complex Float) -> SIMDVec 2 (Complex Float)
+>zipCVec2_components f (ComplexVec2 x) (ComplexVec2 y) = ComplexVec2 res
+>   where (# a,b,c,d #) = unpackFloatX4# x
+>         (# a',b',c',d' #) = unpackFloatX4# y
+>         F# resa = f (F# a) (F# a')
+>         F# resb = f (F# b) (F# b')
+>         F# resc = f (F# c) (F# c')
+>         F# resd = f (F# d) (F# d')
+>         res = packFloatX4# (# resa, resb, resc, resd #)
+
+>zipCVec1 :: (Complex Double -> Complex Double -> Complex Double) ->
+>        SIMDVec 1 (Complex Double) -> SIMDVec 1 (Complex Double) -> SIMDVec 1 (Complex Double)
+>zipCVec1 f (ComplexVec1 x) (ComplexVec1 y) = ComplexVec1 res
+>   where (# a,b #) = unpackDoubleX2# x
+>         (# a',b' #) = unpackDoubleX2# y
+>         (D# resa :+ D# resb) = f (D# a :+ D# b) (D# a' :+ D# b')
+>         res = packDoubleX2# (# resa, resb #)
+>
+>zipCVec1_components :: (Double -> Double -> Double) ->
+>        SIMDVec 1 (Complex Double) -> SIMDVec 1 (Complex Double) -> SIMDVec 1 (Complex Double)
+>zipCVec1_components f (ComplexVec1 x) (ComplexVec1 y) = ComplexVec1 res
+>   where (# a,b #) = unpackDoubleX2# x
+>         (# a',b' #) = unpackDoubleX2# y
+>         D# resa = f (D# a) (D# a')
+>         D# resb = f (D# b) (D# b')
+>         res = packDoubleX2# (# resa, resb #)
 > 
 >{-# INLINE mapSVec2 #-}
 >mapSVec2 :: (Int64 -> Int64) -> SIMDVec 2 Int64 -> SIMDVec 2 Int64
@@ -504,14 +537,21 @@
 
 >mapCVec2 :: (Complex Float -> Complex Float) -> SIMDVec 2 (Complex Float) -> SIMDVec 2 (Complex Float)
 >mapCVec2 f (ComplexVec2 x) = let (# a,b,c,d #) = unpackFloatX4# x
->                                F# a' :+ F# b' = f (F# a :+ F# b)
->                                F# c' :+ F# d' = f (F# c :+ F# d)
+>                                 F# a' :+ F# b' = f (F# a :+ F# b)
+>                                 F# c' :+ F# d' = f (F# c :+ F# d)
 >                              in ComplexVec2 (packFloatX4# (# a',b',c',d' #))
 > 
 >mapCVec1 :: (Complex Double -> Complex Double) -> SIMDVec 1 (Complex Double) -> SIMDVec 1 (Complex Double)
->mapCVec1 f (ComplexVec2 x) = let (# a,b #) = unpackDoubleX2# x
->                                D# a' :+ D# b' = f (D# a :+ D# b)
->                              in ComplexVec2 (packDoubleX2# (# a',b' #))
+>mapCVec1 f (ComplexVec1 x) = let (# a,b #) = unpackDoubleX2# x
+>                                 D# a' :+ D# b' = f (D# a :+ D# b)
+>                              in ComplexVec1 (packDoubleX2# (# a',b' #))
+
+>mapCVec1_components :: (Double -> Double) -> SIMDVec 1 (Complex Double) -> SIMDVec 1 (Complex Double)
+>mapCVec1_components f (ComplexVec1 x) = ComplexVec1 res
+>    where (# a,b #) = unpackDoubleX2# x
+>          D# a' = f (D# a)
+>          D# b' = f (D# b)
+>          res = packDoubleX2# (# a', b' #)
 
 
 >{-# INLINE fvec4_x #-}
@@ -657,6 +697,18 @@
 >constantSVec16 :: Int8 -> SIMDVec 16 Int8
 >constantSVec16 (I8# x# ) = Int8SVec16 (broadcastInt8X16# x# )
 
+>constantCVec1 :: Complex Double -> SIMDVec 1 (Complex Double)
+>constantCVec1 (D# a :+ D# b) = ComplexVec1 (packDoubleX2# (# a,b #) )
+
+>constantCVec1_components :: Double -> SIMDVec 1 (Complex Double)
+>constantCVec1_components (D# a) = ComplexVec1 (packDoubleX2# (# a,a #) )
+
+>constantCVec2 :: Complex Float -> SIMDVec 2 (Complex Float)
+>constantCVec2 (F# a :+ F# b) = ComplexVec2 (packFloatX4# (# a,b,a,b #) )
+> 
+>constantCVec2_components :: Float -> SIMDVec 2 (Complex Float)
+>constantCVec2_components (F# a) = ComplexVec2 (packFloatX4# (# a,a,a,a #) )
+
 >{-# INLINE makeFVec4 #-}
 >makeFVec4 :: Float -> Float -> Float -> Float -> SIMDVec 4 Float
 >makeFVec4 (F# a) (F# b) (F# c) (F# d) =
@@ -699,6 +751,13 @@
 >   (FloatFVec4 x) %+ (FloatFVec4 y) = FloatFVec4 (plusFloatX4# x y)
 >   (F# x) %* (FloatFVec4 v) = FloatFVec4 (timesFloatX4# (broadcastFloatX4# x) v)
 
+>instance VectorSpace (SIMDVec 2 Double) where
+>   type Scalar (SIMDVec 2 Double) = Double
+>   vzero = DoubleFVec2 (broadcastDoubleX2# 0.0##)
+>   vnegate (DoubleFVec2 x) = DoubleFVec2 (negateDoubleX2# x)
+>   (DoubleFVec2 x) %+ (DoubleFVec2 y) = DoubleFVec2 (plusDoubleX2# x y)
+>   (D# x) %* (DoubleFVec2 v) = DoubleFVec2 (timesDoubleX2# (broadcastDoubleX2# x) v)
+
 >instance VectorSpace (SIMDVec 2 Int64) where
 >   type Scalar (SIMDVec 2 Int64) = Int64
 >   vzero = Int64SVec2 (broadcastInt64X2# 0#)
@@ -730,21 +789,21 @@
 
 >instance VectorSpace (SIMDVec 2 (Complex Float)) where
 >   type Scalar (SIMDVec 2 (Complex Float)) = Complex Float
->   vzero = ComplexVec2 (broadcastFloatX4# 0#)
+>   vzero = ComplexVec2 (broadcastFloatX4# 0.0#)
 >   vnegate (ComplexVec2 x) = ComplexVec2 (negateFloatX4# x)
 >   (ComplexVec2 x) %+ (ComplexVec2 y) = ComplexVec2 (plusFloatX4# x y)
 >   (F# x :+ F# y) %* (ComplexVec2 v) = ComplexVec2 (timesFloatX4# (packFloatX4# (# x,y,x,y #) ) v)
 > 
 >instance VectorSpace (SIMDVec 1 (Complex Double)) where
 >   type Scalar (SIMDVec 1 (Complex Double)) = Complex Double
->   vzero = ComplexVec1 (broadcastDoubleX2# 0#)
+>   vzero = ComplexVec1 (broadcastDoubleX2# 0.0##)
 >   vnegate (ComplexVec1 x) = ComplexVec1 (negateDoubleX2# x)
 >   (ComplexVec1 x) %+ (ComplexVec1 y) = ComplexVec1 (plusDoubleX2# x y)
 >   (D# x :+ D# y) %* (ComplexVec1 v) = ComplexVec1 (timesDoubleX2# (packDoubleX2# (# x,y #) ) v)
 
 #else
 
-#warning "SIMD optimizations are disabled. -fllvm is required for SIMD optimizations."
+#warning "SIMD optimizations are disabled. --flag '*:LLVM' is required for SIMD optimizations."
 
 >import GHC.Int
 >import GHC.TypeLits
@@ -768,8 +827,15 @@
 >mapCVec2 :: (Complex Float -> Complex Float) -> SIMDVec 2 (Complex Float) -> SIMDVec 2 (Complex Float)
 >mapCVec2 f (CVec2 x y) = CVec2 (f x) (f y)
 >
+>mapCVec2_components :: (Float -> Float) -> SIMDVec 2 (Complex Float) -> SIMDVec 2 (Complex Float)
+>mapCVec2_components f (CVec2 (x :+ xi) (y :+ yi))
+>  = CVec2 (f x :+ f xi) (f y :+ f yi)
+>
 >mapCVec1 :: (Complex Double -> Complex Double) -> SIMDVec 1 (Complex Double) -> SIMDVec 1 (Complex Double)
 >mapCVec1 f (CVec1 x) = CVec1 (f x)
+
+>mapCVec1_components :: (Double -> Double) -> SIMDVec 1 (Complex Double) -> SIMDVec 1 (Complex Double)
+>mapCVec1_components f (CVec1 (x :+ xi)) = CVec1 (f x :+ f xi)
 
 >conjSIMD2 :: SIMDVec 2 (Complex Float) -> SIMDVec 2 (Complex Float)
 >conjSIMD2 (CVec2 x y) = CVec2 (conjugate x) (conjugate y)
@@ -891,9 +957,20 @@
 >     -> SIMDVec 2 (Complex Float) -> SIMDVec 2 (Complex Float) -> SIMDVec 2 (Complex Float)
 >zipCVec2 f (CVec2 a b) (CVec2 a' b') = CVec2 (f a a') (f b b')
 
+>zipCVec2_components :: (Float -> Float -> Float)
+>    -> SIMDVec 2 (Complex Float) -> SIMDVec 2 (Complex Float) -> SIMDVec 2 (Complex Float)
+>zipCVec2_components f (CVec2 (a :+ ai) (a' :+ ai'))
+>                      (CVec2 (b :+ bi) (b' :+ bi')) =
+>   CVec2 (f a b :+ f ai bi) (f a' b' :+ f ai' bi')
+
 >zipCVec1 :: (Complex Double -> Complex Double -> Complex Double)
 >   -> SIMDVec 1 (Complex Double) -> SIMDVec 1 (Complex Double) -> SIMDVec 1 (Complex Double)
 >zipCVec1 f (CVec1 a) (CVec1 b) = CVec1 (f a b)
+>
+>zipCVec1_components :: (Double -> Double -> Double)
+>    -> SIMDVec 1 (Complex Double) -> SIMDVec 1 (Complex Double) -> SIMDVec 1 (Complex Double)
+>zipCVec1_components f (CVec1 (a :+ ai)) (CVec1 (b :+ bi)) =
+>   CVec1 (f a b :+ f ai bi)
 >
 >constantFVec2 :: Double -> SIMDVec 2 Double
 >constantFVec2 a = FVec2 a a
@@ -916,6 +993,12 @@
 >                          a a a a
 >                          a a a a
 >                          a a a a
+
+>constantCVec1 :: Complex Double -> SIMDVec 1 (Complex Double)
+>constantCVec1 = CVec1
+>
+>constantCVec2 :: Complex Float -> SIMDVec 2 (Complex Float)
+>constantCVec2 x = CVec2 x x
 
 >instance Num (SIMDVec 16 Int8) where
 >  (+) = zipSVec16 (+)
@@ -1216,6 +1299,9 @@
 >sum_coordinates1Complex :: SIMDVec 1 (Complex Double) -> Complex Double
 >sum_coordinates1Complex (CVec1 x) = x
 
+>sum_coordinates1Complex_components :: SIMDVec 1 (Complex Double) -> Double
+>sum_coordinates1Complex_components (CVec1 (x :+ xi)) = x + xi
+
 #endif
 
 
@@ -1273,6 +1359,12 @@
 >instance InnerProductSpace (SIMDVec 1 (Complex Double)) where
 >   a %. b = sum_coordinates1Complex (a * conjSIMD1 b)
 
+>instance NormedSpace (SIMDVec 2 (Complex Float)) where
+>   norm a = sqrt (a %. a)
+>
+>instance NormedSpace (SIMDVec 1 (Complex Double)) where
+>   norm a = sqrt (a %. a)
+
 >class (VectorSpace a) => Optimal a where
 >   type Optimized a
 >   toO :: a -> Optimized a
@@ -1282,9 +1374,23 @@
 >   sumCoordinatesO :: Optimized a -> Scalar a
 >   constantO :: Scalar a -> Optimized a
 
+>instance Optimal (Vector2 (Complex Float)) where
+>   type Optimized (Vector2 (Complex Float)) = SIMDVec 2 (Complex Float)
+>   toO = fromComplexVector2
+>   fromO = toComplexVector2
+>   zipO = zipCVec2
+>   mapO = mapCVec2
+>   sumCoordinatesO = sum_coordinates2Complex
+>   constantO = constantCVec2
+
 >instance Optimal (Complex Double) where
 >   type Optimized (Complex Double) = SIMDVec 1 (Complex Double)
->   
+>   toO = fromComplexVector1
+>   fromO = toComplexVector1
+>   zipO = zipCVec1
+>   mapO = mapCVec1
+>   sumCoordinatesO = sum_coordinates1Complex
+>   constantO = constantCVec1
 
 >instance Optimal (Vector2 Double) where
 >   type Optimized (Vector2 Double) = SIMDVec 2 Double
@@ -1419,3 +1525,8 @@
 >   a %. b = (toO a) %. (toO b)
 >instance {-# OVERLAPS #-} (Scalar (SIMDVec 2 Double) ~ Double) => InnerProductSpace (Vector2 Double) where
 >   a %. b = (toO a) %. (toO b)
+
+>instance {-# OVERLAPS #-} NormedSpace (Vector2 (Complex Float)) where
+>   norm x = norm (toO x)
+>instance {-# OVERLAPS #-} NormedSpace (Complex Double) where
+>   norm x = norm (toO x)

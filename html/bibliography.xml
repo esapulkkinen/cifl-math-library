@@ -722,6 +722,17 @@ authors.
     <field name="isPartOf">http://hackage.haskell.org</field>
   </SoftwareSourceCode>
   <SoftwareSourceCode>
+    <summary>TeX live</summary>
+    <field name="author" type="Organization">
+      <summary name="name">Debian TeX Task Force</summary>
+    </field>
+    <field name="publisher" type="Organization">
+      <summary name="name">Ubuntu</summary>
+    </field>
+    <field name="headline">TeX Live</field>
+    <field name="url">http://www.tug.org/texlive/</field>
+  </SoftwareSourceCode>
+  <SoftwareSourceCode>
     <summary>arrows</summary>
     <field name="author" type="Person"><summary name="name">Ross Paterson</summary></field>
     <field name="maintainer">Ross Paterson</field>

@@ -34,9 +34,6 @@
 >deriving instance (Data a) => Data (Vector2 a)
 >deriving instance (Generic a) => Generic (Vector2 a)
 
->instance (Num a) => Summable Vector2 a where
->   sum_coordinates (Vector2 x y) = x + y
-
 >instance (Bin.Binary s) => Bin.Binary (Vector2 s) where
 >   put (Vector2 x y) = Bin.put x >> Bin.put y 
 >   get = do { x <- Bin.get ; y <- Bin.get ; return (Vector2 x y) }

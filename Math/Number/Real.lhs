@@ -283,13 +283,6 @@ instance MedianAlgebra R where
 >  a %+ b = a + b
 >  a %* b = a * b
 
-instance VectorDerivative R Math.Matrix.Linear.Dual LinearMap where
-  divergence f = covector $ real_derivate ((-!<) f)
-  grad (Covector f) = arr_linear $ \x -> real_derivate (f -!!<) x
-
-instance VectorCrossProduct R LinearMap where
-  curl f = arr_linear $ \x -> real_derivate ((-!<) f) x
-
 >-- | The following instance declaration represents the completeness of the
 >-- real number system. 
 >instance Limiting Stream R where
@@ -534,7 +527,6 @@ infimum = negate_limit . supremum_gen . map negate_limit
 >   return $ vsum $ map ((eps %*) . f) [xa,xa + eps..ya]
 
 >-- | <https://en.wikipedia.org/wiki/Methods_of_contour_integration>
-
 >integrate :: (Enum a, Num a, Limiting str a)
 >          => (a -> a) -> Closure str a -> (a,a) -> Closure str a
 >integrate f dx ~(xa,ya) = limit $ do
@@ -546,7 +538,7 @@ infimum = negate_limit . supremum_gen . map negate_limit
 >   (eps, xa, ya) <- fzip3 (approximate $ runRClosure epsilon_closure)
 >                          (approximate x)
 >                          (approximate y)
->   return $! (fromRational eps *) $! Prelude.sum $!
+>   return $! (fromRational eps %*) $! vsum $!
 >      map (f . fromRational) [xa,xa+eps..ya]
 
 >integral_rational :: (R,R) -> (Rational -> Rational) -> R

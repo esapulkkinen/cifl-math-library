@@ -37,7 +37,6 @@
 >import safe qualified Math.Number.StreamInterface as Stream
 >import safe Math.Number.StreamInterface (Limiting(..), Infinitesimal(..), Closed(..))
 
-
 >deriving instance (Eq a) => Eq (Vector3 a)
 >deriving instance (Typeable a) => Typeable (Vector3 a)
 >deriving instance (Data a) => Data (Vector3 a)
@@ -91,6 +90,7 @@
 >   colambda f = Vector3 (\a -> xcoord3 $ f $ Vector3 a a a)
 >                        (\b -> ycoord3 $ f $ Vector3 b b b)
 >                        (\c -> zcoord3 $ f $ Vector3 c c c)
+
 
 
 >type Matrix3 a = (Vector3 :*: Vector3) a
@@ -377,9 +377,6 @@ approximations_vector3 (Vector3 x y z) = do
 >-- | nth root of a sum of nth powers
 >nth_norm3 :: (Floating a) => a -> Vector3 a -> a
 >nth_norm3 n (Vector3 x y z) = (x**n + y**n + z**n)**(1/n)
-
->instance (Num a) => Summable Vector3 a where
->  sum_coordinates = sum_coordinates3
 
 >instance (Num a) => Diagonalizable Vector3 a where
 >  vector_dimension _ = dim3

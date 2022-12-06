@@ -1,11 +1,12 @@
 >{-# LANGUAGE Safe, TypeOperators, UnicodeSyntax, FlexibleInstances #-}
->{-# LANGUAGE MultiParamTypeClasses #-}
+>{-# LANGUAGE MultiParamTypeClasses, FlexibleContexts #-}
 >module Math.Number.Interface where
 >import safe Control.Applicative
 >import safe Data.Monoid
 >import safe Data.Ratio
 >import safe Math.Number.StreamInterface
 >import safe Math.Matrix.Interface
+>import safe Math.Tools.CoFunctor
 
 >nthroot :: (Floating a) => a -> a -> a
 >nthroot x k = exp (log x / k)
@@ -55,6 +56,13 @@
 >class (Num r) => DifferentiallyClosed r where
 >   derivate :: (r -> r) -> r -> r
 >   integral :: (r,r) -> (r -> r) -> r
+
+>integral_vector :: (VectorSpace b, Applicative f, Enum a, Num a)
+>  => (f a, f a) -> (a -> b) -> f a -> f b
+>integral_vector (x,y) f eps = fmap vsum $ liftA3 (\ x' y' eps -> map f [x',x' + eps .. y']) x y eps
+
+>derivate_vector :: (Applicative t, DifferentiallyClosed r) => t (r -> r) -> t r -> t r
+>derivate_vector = liftA2 derivate
 
 >class DifferentialOperator t where
 >   partial :: (DifferentiallyClosed a) => (t a -> a) -> t a -> t a

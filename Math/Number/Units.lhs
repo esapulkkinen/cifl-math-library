@@ -66,6 +66,8 @@
 >import safe GHC.Read (readPrec)
 >import safe Text.ParserCombinators.ReadPrec (lift)
 >import safe Text.ParserCombinators.ReadP (skipSpaces, string)
+>import Math.Tools.Isomorphism
+>import Math.Tools.Arrow
 
 >-- | Notice that 'Math.Number.DimensionalAnalysis.fromAmount' from Unit class
 >-- has type @(Unit u) => UnitName u@.
@@ -325,6 +327,9 @@
 >angleDegrees :: Angle -> DegreesAngle
 >angleDegrees (Radians r) = Degrees $ r * 180.0 / pi
 
+>isoDegreesToAngle :: DegreesAngle :==: Angle
+>isoDegreesToAngle = degreesAngle <-> angleDegrees
+
 >instance Unit DegreesAngle where
 >   amount = degrees
 >   fromAmount = Degrees
@@ -479,6 +484,15 @@
 > deriving (Eq,Ord, Typeable, Data, Generic)
 > deriving newtype (Binary)
 >instance Show Temperature where { show = show_unit }
+
+>isoCelciusToKelvin :: DegreesTemperature :==: Temperature
+>isoCelciusToKelvin = celciusToKelvin <-> kelvinToCelcius
+>
+>celciusToKelvin :: DegreesTemperature -> Temperature
+>celciusToKelvin (DegreesCelcius x) = DegreesKelvin (x + 273.15)
+
+>kelvinToCelcius :: Temperature -> DegreesTemperature
+>kelvinToCelcius (DegreesKelvin x) = DegreesCelcius (x - 273.15)
 
 >newtype Substance = Moles { moles :: Double }
 > deriving (Eq,Ord, Typeable, Data, Generic)
