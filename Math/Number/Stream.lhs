@@ -97,27 +97,22 @@ instance ProjectionDual Stream Math.Matrix.Linear.Dual a where
 >power_series_exp :: (Fractional a, Closed a) => Stream a -> Stream a
 >power_series_exp = compose_power_series exponential_stream
 
-
-matrix_exponential_stream :: (Fractional (Scalar ((g :*: g) a)), Num (g a :-> g a),
-                      Diagonalizable g a, InnerProductSpace (g a),
-                      Transposable g g a, LinearTransform g g a,
-    Scalar a ~ a, Scalar (g (g a)) ~ a,
-                      VectorSpace ((g :*: g) a), Scalar (g a) ~ a)
-   => g a :-> g a -> Stream (g a :-> g a)
-
+>matrix_exponential_stream ::
+> (Fractional (Scalar ((g :*: g) a)),
+>   Diagonalizable g a, LinearTransform g g a,
+>   InnerProductSpace (g a), VectorSpace ((g :*: g) a),
+>   Num ((g :*: g) a), Scalar (g (g a)) ~ Scalar (g a),
+>   Scalar (g a) ~ a, Scalar a ~ a) =>
+>    (g :*: g) a -> Stream ((g :*: g) a)
 >matrix_exponential_stream x = sum_stream str
 >  where str = liftA2 (\x' kf -> (1 / kf) %* x') (matrix_powers x) factorial
 
 >-- | <https://en.wikipedia.org/wiki/Matrix_exponential>
-
-matrix_exponential :: (Fractional (Scalar ((g :*: g) a)),
-                      Num (g a :-> g a),
-                      Transposable g g a, LinearTransform g g a,
-                      Scalar a ~ a, Scalar (g (g a)) ~ a,
-                      Diagonalizable g a, InnerProductSpace (g a),
-                      VectorSpace ((g :*: g) a), Scalar (g a) ~ a)
-                     => g a :-> g a -> g a :-> g a
-
+>matrix_exponential :: (Fractional (Scalar ((g :*: g) a)),
+>                             Diagonalizable g a, LinearTransform g g a, InnerProductSpace (g a),
+>                             VectorSpace ((g :*: g) a), Num ((g :*: g) a),
+>                             Scalar (g (g a)) ~ Scalar (g a), Scalar (g a) ~ a, Scalar a ~ a) =>
+>                            (g :*: g) a -> (g :*: g) a
 >matrix_exponential x = shead $ drop 10 (matrix_exponential_stream x)
 
 >-- | <https://en.wikipedia.org/wiki/Matrix_exponential>
