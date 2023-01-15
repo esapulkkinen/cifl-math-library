@@ -195,7 +195,7 @@ tensor (a,b) = Tensor $ matrix (,) a b
 
 >-- | Foldable instance requires input 'f a' of 'LinearMap (f a)' to be finite.
 >instance Foldable (LinearMap (f a)) where
->   foldMap _ MatIdentity = mempty
+>   foldMap f MatIdentity = mempty
 >   foldMap f (Mat11 (Matrix m)) = foldMap f m
 >   foldMap f (Mat12 (Matrix m)) = foldMap f m
 >   foldMap f (Mat13 (Matrix m)) = foldMap f m
@@ -538,7 +538,8 @@ dual_lin_apply f (Matrix g) = matrixLin (-!!<) (fmap bracketMap f) g
 >(-!<) :: (LinearTransform f g a) => f a :-> g a -> f a -> g a
 >(-!<) = appLinear
 
->fromLinear_impl :: f a :-> g a -> (f :*: g) a
+>fromLinear_impl :: (Diagonalizable f a) => f a :-> g a -> (f :*: g) a
+>fromLinear_impl MatIdentity = identity
 >fromLinear_impl (Mat11 x) = x
 >fromLinear_impl (Mat12 x) = x
 >fromLinear_impl (Mat13 x) = x
