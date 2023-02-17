@@ -450,7 +450,8 @@
 >(=*) :: (VectorSpace v) => Scalar v -> v -> v
 >(=*) = (%*)
 
->deca,hecto,kilo,mega,giga,tera,peta,exa,zetta,yotta :: (VectorSpace u, Num (Scalar u)) => u -> u
+>-- | <https://en.wikipedia.org/wiki/Metric_prefix>
+>deca,hecto,kilo,mega,giga,tera,peta,exa,zetta,yotta,ronna,quetta :: (VectorSpace u, Num (Scalar u)) => u -> u
 >deca = (10 =*)
 >hecto = (100 =*)
 >kilo = (1000 =*)
@@ -461,10 +462,13 @@
 >exa  = (1000000000000000000 =*)
 >zetta = (1000000000000000000000 =*)
 >yotta = (1000000000000000000000000 =*)
+>ronna = (1000000000000000000000000000 =*)
+>quetta =(1000000000000000000000000000000 =*)
 
 >prefix_value :: (Num a) => Prefix a -> a
 >prefix_value f = value_amount $ f $ 1 `As` dimensionless
 
+>-- | <https://en.wikipedia.org/wiki/Metric_prefix>
 >decimal_prefixes :: (Num a) => [(String,a)]
 >decimal_prefixes = [
 >   ("deca",prefix_value deca),
@@ -476,8 +480,11 @@
 >   ("peta",prefix_value peta),
 >   ("exa", prefix_value exa),
 >   ("zetta", prefix_value zetta),
->   ("yotta", prefix_value yotta)]
+>   ("yotta", prefix_value yotta),
+>   ("ronna", prefix_value ronna),
+>   ("quetta", prefix_value quetta)]
 
+>-- | <https://en.wikipedia.org/wiki/Metric_prefix>
 >floating_prefixes :: (Floating a) => [(String,a)]
 >floating_prefixes = decimal_prefixes ++ [ 
 >   ("deci",prefix_value deci ),
@@ -489,7 +496,9 @@
 >   ("femto",prefix_value femto ),
 >   ("atto", prefix_value atto),
 >   ("zepto",prefix_value zepto ),
->   ("yocto",prefix_value yocto)]
+>   ("yocto",prefix_value yocto),
+>   ("ronto",prefix_value ronto),
+>   ("quecto",prefix_value quecto)]
 >                    
 >binary_prefixes :: (Num a) => [(String,a)]
 >binary_prefixes = [
@@ -515,7 +524,7 @@
 >zebi = (1180591620717411303424 =*)
 >yobi = (1208925819614629174706176 =*)
 
->deci,centi,milli,micro,nano,pico,femto,atto,zepto,yocto :: (VectorSpace u, Floating (Scalar u)) => u -> u
+>deci,centi,milli,micro,nano,pico,femto,atto,zepto,yocto,ronto,quecto :: (VectorSpace u, Floating (Scalar u)) => u -> u
 >deci x = 0.1 =* x
 >centi x = 0.01 =* x
 >milli x = 0.001 =* x
@@ -526,6 +535,8 @@
 >atto  x = (10**(-18)) =* x
 >zepto x = (10**(-21)) =* x
 >yocto x = (10**(-24)) =* x
+>ronto x = (10**(-27)) =* x
+>quecto x = (10**(-30)) =* x
 
 >(=+=) :: (VectorSpace v) => v -> v -> v
 >(=+=) = (%+)
@@ -1351,7 +1362,9 @@ order in the table is significant
 
 >-- | <https://en.wikipedia.org/wiki/Metric_prefix>
 >siPrefixes :: (Floating a) => [(String,Prefix a)]
->siPrefixes = [("Y", yotta),
+>siPrefixes = [("R", ronna),
+>              ("Q", quetta),
+>              ("Y", yotta),
 >              ("Z", zetta),
 >              ("E", exa),
 >              ("P", peta),
@@ -1370,6 +1383,10 @@ order in the table is significant
 >              ("p", pico),
 >              ("f", femto),
 >              ("a", atto),
+>              ("z", zepto),
+>              ("y", yocto),
+>              ("r", ronto),
+>              ("q", quecto),
 >              ("Ki", kibi),
 >              ("Mi", mebi),
 >              ("Gi", gibi),
