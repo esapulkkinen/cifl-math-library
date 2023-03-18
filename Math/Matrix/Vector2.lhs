@@ -28,6 +28,7 @@
 >import safe Math.Number.Group
 >import safe Math.Number.StreamInterface
 >import safe Math.Tools.I
+>import safe qualified Control.Monad.Zip
 
 >deriving instance (Eq a) => Eq (Vector2 a)
 >deriving instance (Typeable a) => Typeable (Vector2 a)
@@ -93,6 +94,12 @@
 >instance FunctorArrow Vector2 (:==:) where
 >  amap f = (\ (Vector2 a b) -> Vector2 (runIso f a) (runIso f b))
 >        <-> (\ (Vector2 a b) -> Vector2 (runIsoInverse f a) (runIsoInverse f b))
+
+
+>instance Control.Monad.Zip.MonadZip Vector2 where
+>  mzip ~(Vector2 x y) ~(Vector2 x' y') = Vector2 (x,x') (y,y')
+>  mzipWith f ~(Vector2 x y) ~(Vector2 x' y') = Vector2 (f x x') (f y y')
+>  munzip (Vector2 ~(x,x') ~(y,y')) = (Vector2 x y, Vector2 x' y')
 
 
 >instance Comonad Vector2 where
@@ -363,6 +370,10 @@ instance (Num a, ConjugateSymmetric a) => LieAlgebra ((Vector2 :*: Vector2) a) w
 >transpose2 :: (Num a) => Matrix2 a -> Matrix2 a
 >transpose2 (Matrix m) = matrix index_project diagonal_projections2 m
 
+>transpose2_impl :: Matrix2 a -> Matrix2 a
+>transpose2_impl ~(Matrix ~(Vector2 ~(Vector2 x1 y1) ~(Vector2 x2 y2))) =
+>  Matrix $ Vector2 (Vector2 x1 x2) (Vector2 y1 y2)
+
 >rotate2 :: Vector2 a -> Vector2 a
 >rotate2 (Vector2 x y) = Vector2 y x
 
@@ -472,8 +483,8 @@ instance (Num a, ConjugateSymmetric a) => LieAlgebra ((Vector2 :*: Vector2) a) w
 >                        (\a -> ycoord2 (f a))
 
 
->instance (Num a) => Transposable Vector2 Vector2 a where
->  transpose_impl   = transpose2
+>instance Transposable Vector2 Vector2 a where
+>  transpose_impl   = transpose2_impl
 
 >instance Transposable Vector2 Vector1 a where
 >  transpose_impl (Matrix (Vector2 (Vector1 x) (Vector1 y)))

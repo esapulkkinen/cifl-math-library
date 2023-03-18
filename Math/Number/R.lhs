@@ -10,7 +10,7 @@
 > derivate_r, newtons_method, sqrt_r, log_by_newton,
 > exp_r, pi_r, log_r, integral_r, foldable_integral, foldable_simple_integral,
 > integral_accuracy, asin_r, acos_r, atan_r, sin_by_series,
-> cos_by_series, gamma_r
+> cos_by_series, gamma_r, lub_r, glb_r, unsafe_real_to_rational
 > ) where
 >import safe Control.Applicative
 >import safe Control.Monad
@@ -33,11 +33,17 @@
 >-- | This real representation takes 'epsilon' as input as in epsilon-delta proof.
 >newtype R = Limit { approximate_endo :: (Endo Rational) }
 
->instance (TypeError (Text "Cannot compare reals for equality." :$$:
->                     Text "Real equality is undecidable." :$$:
->                     Text "Please use (<%) and (%<) from Math.Number.Interface.DedekindCut class"))
->  => Eq R where
->   x == y = error "cannot compare reals for equality"
+
+
+>-- | this real_to_rational operation sets precision $\eps$ to 0 and produces
+>-- corresponding rational number.
+>-- Many algorithms for reals will go to infinite loop, if this is used,
+>-- or produce divide-by-zero. In particular, this is expected for irrationals.
+>-- if rational number is produced, it's exact.
+>-- However, computations on rational numbers, where real number was created
+>-- using fromRational, will produce that rational.
+>unsafe_real_to_rational :: R -> Rational
+>unsafe_real_to_rational (Limit r) = r `appEndo` 0
 
 >-- | tricky stuff. We use the denominator from the rational to determine
 >-- what accuracy to use for comparison, then use rational comparison.
@@ -82,7 +88,7 @@
 >       if abs (y `approximate` eps - x `approximate` eps) < eps
 >         then y `approximate` eps
 >         else runRClosure (limit z) `approximate` eps
->   approximations (RClosure r) = fmap f $ fmap (1 /) $ power 10
+>   approximations ~(RClosure r) = fmap f $ fmap (1 /) $ power 10
 >      where f p = real $ \eps -> r `approximate` min p eps
 
 >instance Infinitesimal Stream R where
@@ -140,6 +146,21 @@
 >real :: (Rational -> Rational) -> R
 >real = Limit . Endo
 
+>-- approximate takes a real r, and a rational q
+>-- and produces a rational q2 such that |r - q2| <= q
+>--
+>-- r1 * (r2 * q) == (r1 * r2) * q, where r1,r2 \in R, q \in Q.
+>--
+>-- that is,
+>-- approximate(r1) o approximate(r2) = approximate(r1 * r2)
+>-- that is,
+>-- approximate(r1,approximate(r2,q)) = approximate(r1 * r2, q)
+>-- that is
+>--  approximate(r1,q3)=q2 <=> |r1 - q2| <= q3
+>--  approximate(r2,q) =q3 <=> |r2 - q3| <= q
+>--  approximate(r1*r2, q)=q2 <=> |r1*r2 - q2| <= q
+>--  approximate(r1*r2, q)=approximate(r1,q3)=approximate(r1,approximate(r2,q))
+>--  <=> |r1 - q2| <= q3 /\ |r2 - q3| <= q
 >approximate :: R -> Rational -> Rational
 >approximate = appEndo . approximate_endo
 
@@ -163,7 +184,6 @@
 
 >gamma_r :: R -> R
 >gamma_r z = integral (epsilon,1) $ \t -> (log (1/t))**(z-1)
-
 
 >epsilon :: R
 >epsilon = real id
@@ -206,15 +226,29 @@
 >inverseImageEndo g = Endo $ \ (Limit f) -> real $ appEndo g . appEndo f
 > 
 
+>lub_r :: [R] -> Maybe R
+>lub_r [] = Nothing
+>lub_r (Limit c:cr) = maybe (Just (Limit c)) f (lub_r cr)
+>   where f (Limit v) = Just $ real $ \eps ->
+>              max (v `appEndo` eps) (c `appEndo` eps)
+>
+>glb_r :: [R] -> Maybe R
+>glb_r [] = Nothing
+>glb_r (Limit c:cr) = maybe (Just (Limit c)) f (glb_r cr)
+>   where f (Limit v) = Just $ real $ \eps ->
+>             min (v `appEndo` eps) (c `appEndo` eps)
 
+>-- | Note zero reals are special, we avoid divide by zero by implementing
+>-- zero as epsilon.
 >instance Num R where
 >   (+) = liftR2 (+)
 >   (-) = liftR2 (-)
->   (Limit f) * (Limit g) = real $ \eps -> f `appEndo` (eps / 2)
->                                        * g `appEndo` (eps / 2)
+>   (Limit f) * (Limit g) = real $ \eps -> f `appEndo` (eps/2)
+>                                        * g `appEndo` (eps/2)
 >   negate = liftR negate
 >   abs = liftR abs
 >   signum = liftR signum
+>   fromInteger 0 = real id
 >   fromInteger i = real $ const (fromInteger i)
 
 
@@ -231,10 +265,12 @@
 >              | 0 /= divisor eps = dividend eps * recip (divisor eps)
 >              | otherwise = checker (eps/2)
 >   recip (Limit f) = real checker
->     where divisor eps = (f `appEndo` (recip eps))
+>     where divisor eps = (f `appEndo` recip eps)
 >           checker eps = if 0 /= divisor eps then recip (divisor eps)
 >                               else checker (eps/2)
+>   fromRational 0  = real id
 >   fromRational x  = real $ const x
+
 
 >instance ConjugateSymmetric R where
 >   conj (Limit f) = real (conj . appEndo f)
@@ -271,6 +307,7 @@
 >  where fx = f (real $ \eps'' -> x `appEndo` eps'')
 >        -- computing fx separately is an optimization that should allow
 >        -- sharing the value of 'fx' to many invocations at different precision.
+> 
 >instance DifferentiallyClosed R where
 >   derivate = derivate_r
 >   integral = integral_r
@@ -301,7 +338,7 @@
 >pi_r = lim $ sum_stream $ do
 >   k <- naturals
 >   let kr = k % 1
->   return $! fromRational $! (16^^(negate k))*(4/(8*kr+1) - 2/(8*kr+4)
+>   return $ fromRational $ (16^^(negate k))*(4/(8*kr+1) - 2/(8*kr+4)
 >                              - 1/(8*kr+5) - 1/(8*kr+6))
 
 >-- <http://en.wikipedia.org/wiki/Logarithm Logarithm>
@@ -315,7 +352,6 @@
 >integral_r (x,y) f = foldable_integral acc f
 >   where acc = map fromRational . integral_accuracy f x y
 
-
 >foldable_integral :: (Foldable t, Functor t) => (Rational -> t b) -> (b -> R) -> R
 >foldable_integral border f = real $ \eps ->
 >   foldable_simple_integral border ((`approximate` eps) . f) eps
@@ -326,7 +362,7 @@
 
 >foldable_simple_integral :: (Num a, Foldable t, Functor t) =>
 >  (a -> t b) -> (b -> a) -> a -> a
->foldable_simple_integral border f eps = eps * (sum $! fmap f $! border eps)
+>foldable_simple_integral border f eps = sum $ fmap ((eps*) . f) $ border eps
 
 >integral_accuracy :: (Fractional t) => (t -> R) -> R -> R -> Rational -> [Rational]
 >integral_accuracy f x y eps = [x',x'+eps..y']
@@ -341,7 +377,8 @@
 >
 >-- | <https://en.wikipedia.org/wiki/Inverse_trigonometric_functions>
 >acos_r :: R -> R
->acos_r x = (pi_r / 2) - asin_r x
+>acos_r x = integral (x,1) $ \z -> 1 / sqrt(1 - z*z)
+> -- (pi_r / 2) - asin_r x
 >
 >-- | <https://en.wikipedia.org/wiki/Inverse_trigonometric_functions>
 >atan_r :: R -> R

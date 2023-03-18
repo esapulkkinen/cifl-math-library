@@ -242,19 +242,23 @@ commute :: Complex (g a :-> g a) -> Complex (g a :-> g a) -> ((g :*: g) (Complex
 >cofunctor_map :: (CoFunctor f, CoFunctor g) => (a -> b) -> (g :*: f) a -> (g :*: f) b
 >cofunctor_map f (Matrix x) = Matrix (inverse_image (inverse_image f) x)
 
+instance (Comonad f, Comonad g, forall b. Transposable f g b) => Comonad (g :*: f) where
+  extract (Matrix v) = extract (extract v)
+  duplicate (Matrix m) = Matrix $ fmap (fmap (transpose_impl . Matrix)) (duplicate . fmap duplicate m)
 
->instance (Monad f, Monad g, forall a. Indexable f a) => Monad ((:*:) f g) where
->   return x = Matrix $ return (return x)
->   (Matrix v) >>= f = Matrix $ liftA2 (\d x -> x >>= (index_project d . cells . f)) diagonal_projections v
+
+instance (Monad f, Monad g, forall a. Indexable f a) => Monad ((:*:) f g) where
+   return x = Matrix $ return (return x)
+   (Matrix v) >>= f = Matrix $ liftA2 (\d x -> x >>= (index_project d . cells . f)) diagonal_projections v
 
 >in_transpose :: (Monad g, Indexable f b, Integral b) => (f :*: g) a -> (a -> (g :*: f) b) -> (f :*: g) b
 >in_transpose (Matrix v) f = Matrix $ liftA2 (\d x -> x >>= (fmap (index_project d) . cells . f))
 >                                            diagonal_projections v
 
->instance (MonadZip g, MonadZip f, forall a. Indexable g a) => MonadZip (g :*: f) where
+>instance (MonadZip g, MonadZip f, forall b. Transposable f g b) => MonadZip (g :*: f) where
 >   mzipWith f (Matrix a) (Matrix b) = Matrix $ mzipWith (mzipWith f) a b
 
->instance (MonadPlus g, forall a. Indexable g a, MonadPlus f) => MonadPlus (g :*: f) where
+>instance (MonadPlus g, MonadPlus f, forall b. Transposable f g b) => MonadPlus (g :*: f) where
 >   mzero = Matrix mzero
 >   mplus (Matrix f) (Matrix g) = Matrix $ liftA2 mplus f g
 
@@ -291,9 +295,9 @@ instance (Functor g, Functor f, Builder a) => Builder (Matrix g f a) where
 >   where (a,b) = m <!> (vsplit,vsplit)
 
 
->join_matrix :: (AppendableVector m' n', AppendableVector m n) =>
+>append_matrix :: (AppendableVector m' n', AppendableVector m n) =>
 >    (m :*: m') a -> (m :*: n') a -> (n :*: m') a -> (n :*: n') a -> ((m :+: n) :*: (m' :+: n')) a
->join_matrix (Matrix a) (Matrix b) (Matrix c) (Matrix d) = Matrix $ (liftA2 (|>) a b) |> (liftA2 (|>) c d)
+>append_matrix (Matrix a) (Matrix b) (Matrix c) (Matrix d) = Matrix $ (liftA2 (|>) a b) |> (liftA2 (|>) c d)
 
 >matrix_iso :: f (g a) :==: (f :*: g) a
 >matrix_iso = Matrix <-> cells

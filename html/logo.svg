@@ -1,0 +1,22 @@
+<svg:svg xmlns:svg="http://www.w3.org/2000/svg" width="20cm" height="10cm">
+  <svg:rect x="4.9cm" y="0.5cm" width="8.5cm" height="9cm"
+            fill="green"/>
+  <svg:g stroke="black">
+    <svg:circle cx="10cm" cy="5cm" r="4.5cm" fill="purple"/>
+    <svg:circle cx="8cm" cy="5cm" r="2cm" fill="darkblue"/>
+    <svg:circle cx="13.5cm" cy="3cm" r="1cm" fill="white" stroke="white"/>
+    <svg:circle cx="13.5cm" cy="7cm" r="1cm" fill="white" stroke="white"/>
+    <svg:circle cx="5.5cm" cy="5cm" r="1.5cm" fill="white" stroke="white"/>
+    <svg:circle cx="8cm" cy="5cm" r="1cm" fill="white" stroke="white"/>
+    <svg:circle cx="5.5cm" cy="5cm" r="1.3cm" fill="red" stroke="black"/>
+    <svg:circle cx="12cm" cy="5cm" r="1.5cm" fill="yellow" stroke="purple"/>
+    <svg:circle cx="10cm" cy="2.5cm" r="2cm" fill="red" stroke="black"/>
+    <svg:circle cx="10cm" cy="2.5cm" r="1.5cm" fill="white" stroke="red"/>
+    <svg:circle cx="10cm" cy="2.5cm" r="1.2cm" fill="yellow" stroke="white"/>
+    <svg:line x1="4.2cm" y1="5cm" x2="14.5cm" y2="5cm"/>
+    <svg:text x="6.2cm" y="7.65cm" font-family="bookman"
+              font-size="30pt" fill="black" stroke="black">
+      CIFL math library
+    </svg:text>
+  </svg:g>
+</svg:svg>

@@ -28,6 +28,7 @@
 >import safe Data.Type.Equality
 >import safe qualified Control.Applicative as Applicative
 >import safe Control.Monad.Fix (fix)
+>import safe Control.Monad (join)
 >import safe Math.Tools.PrettyP
 >import safe Math.Tools.Visitor
 >import safe Math.Tools.FixedPoint
@@ -211,6 +212,10 @@ lie_compose m1 m2 = linmatrix (bilinear (%<>%)) (cells_linear m1, (cells_linear 
 
 >instance Transposable ((->) row) ((->) col) a where
 >  transpose_impl (Matrix f) = Matrix $ \a b -> f b a
+
+>-- | Oddly, scalars must match.
+>instance (Scalar a ~ Scalar b) => Transposable ((,) a) ((,) b) c where
+>   transpose_impl (Matrix (a,(b,c))) = Matrix (b,(a,c))
 
 transpose :: (Diagonalizable n a, LinearTransform n m a, LinearTransform m n a, Diagonalizable m a,Num a, Transposable m n a) => m a :-> n a -> n a :-> m a
 
@@ -757,6 +762,14 @@ instance Diagonalizable Stream Integer where
 >   a %* b = a * b
 >   a %+ b = a + b
 
+>-- | a pair of vector spaces is a vector space if they are over the same set of scalars.
+>instance (VectorSpace a, VectorSpace b, Scalar a ~ Scalar b) => VectorSpace (a,b) where
+>   type Scalar (a,b) = Scalar a
+>   vzero = (vzero,vzero)
+>   vnegate (a,b) = (vnegate a,vnegate b)
+>   (a,b) %+ (a',b') = (a %+ a', b %+ b')
+>   a %* (b,c) = (a %* b, a %* c)
+
 >instance (Num a) => VectorSpace (Endo a) where
 >   type Scalar (Endo a) = a
 >   vzero = Endo (const 0)
@@ -900,13 +913,6 @@ instance (Floating a) => NormedSpace [a] where
 >instance (Floating a) => LieAlgebra (Product a) where
 >   f %<>% g = (f <> g) %- (g <> f)
 
->instance (Scalar v ~ Scalar w, VectorSpace v, VectorSpace w) => VectorSpace (v,w) where
->   type Scalar (v,w) = Scalar v
->   vzero = (vzero,vzero)
->   vnegate (v,w) = (vnegate v, vnegate w)
->   a %* (x,y) = (a %* x, a %* y)
->   (x,y) %+ (x',y') = (x %+ x', y %+ y')
-
 >instance (LinearInnerProductSpace v w, Num (Scalar w)) => InnerProductSpace (v,w) where
 >   (a,b) %. (c,d) = a %. c + b %. d
 
@@ -1026,7 +1032,6 @@ instance {-# OVERLAPPING #-}
 >   pure = Matrix . pure . pure
 >   (Matrix fs) <*> (Matrix xs) = Matrix $ pure (<*>) <*> fs <*> xs
 
-
 >instance (Alternative f, Alternative g) => Alternative (g :*: f) where
 >   empty = Matrix Applicative.empty
 >   (Matrix a) <|> (Matrix b) = Matrix $ pure (<|>) <*> a <*> b
@@ -1069,3 +1074,15 @@ example use: m <!> (xcoord3,ycoord3)
 
 >sum_coordinates :: (Foldable t, Num a) => t a -> a
 >sum_coordinates = Data.Foldable.foldr (+) 0
+
+>instance (Monad f, Monad g, forall b. Transposable g f b) => Monad (f :*: g) where
+>   return = Matrix . return . return
+>   v >>= f = join_matrix $ fmap f v
+>   fail msg = Matrix $ fmap (const $ fail msg) (fail msg)
+
+>join_matrix :: (Monad g, Monad f, forall b. Transposable g f b)
+> => (f :*: g) ((f :*: g) a) -> (f :*: g) a
+>join_matrix = Matrix . fmap join . join . fmap (cells . transpose_impl . Matrix) . cells . fmap cells
+
+>instance Transposable IO IO a where
+>  transpose_impl = id

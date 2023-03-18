@@ -4,12 +4,14 @@
 >{-# LANGUAGE FlexibleContexts, TypeFamilies #-}
 >{-# LANGUAGE UndecidableInstances, Arrows #-}
 >{-# LANGUAGE DeriveGeneric, StandaloneDeriving, InstanceSigs #-}
+>{-# LANGUAGE TypeApplications #-}
 >module Math.Matrix.Linear where
 >import safe Prelude hiding (id,(.))
 >import safe Control.Category
 >import safe Control.Arrow
 >import safe Control.Applicative
 >import safe Data.Typeable
+>import qualified Data.Foldable
 >import safe GHC.Generics hiding ((:*:))
 >import safe Math.Matrix.Interface
 >import safe Math.Number.Interface
@@ -194,8 +196,9 @@ tensor (a,b) = Tensor $ matrix (,) a b
 >   foldMap f g = foldMap (f . g) all_elements
 
 >-- | Foldable instance requires input 'f a' of 'LinearMap (f a)' to be finite.
->instance Foldable (LinearMap (f a)) where
->   foldMap f MatIdentity = mempty
+>instance (Foldable f,Diagonalizable f a) => Foldable (LinearMap (f a)) where
+>   foldMap f (MatIdentity :: LinearMap (f a) b) =
+>     Data.Foldable.foldMap f (cells identity)
 >   foldMap f (Mat11 (Matrix m)) = foldMap f m
 >   foldMap f (Mat12 (Matrix m)) = foldMap f m
 >   foldMap f (Mat13 (Matrix m)) = foldMap f m
@@ -244,7 +247,6 @@ tensor (a,b) = Tensor $ matrix (,) a b
 >instance Category (:<->:) where
 >  id = id :<->: id
 >  (f :<->: finv) . (g :<->: ginv) = (f . g) :<->: (ginv . finv)
-
 
 >compose_linear :: v :-> w -> u :-> v -> u :-> w
 >compose_linear MatIdentity f = f
@@ -346,7 +348,7 @@ tensor (a,b) = Tensor $ matrix (,) a b
 >  id = MatIdentity
 >  (.) = compose_linear
 
->appLinear :: (LinearTransform f g a) => f a :-> g a -> f a -> g a
+>appLinear :: (LinearTransform f g a) => f a :-> g b -> f a -> g b
 >appLinear MatIdentity x = x
 >appLinear (Mat11 f) x = f <<*> x
 >appLinear (Mat12 f) x = f <<*> x

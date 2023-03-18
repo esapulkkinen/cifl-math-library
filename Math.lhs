@@ -8,6 +8,8 @@
 >-- Stability: experimental
 >-- Portability: POSIX
 >--
+>-- ![CIFL math libraries](https://esapulkkinen.github.io/cifl-math-library/logo2.svg)
+>-- 
 >-- Haskell libraries containing graphs, vector spaces, matrices,               
 >--           real numbers.
 >--               

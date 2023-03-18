@@ -652,6 +652,43 @@ instance (Num a) => Matrix.VectorSpace ((Stream :*: Stream) a) where
 >distance_product :: (Floating a, ConjugateSymmetric a) => Stream a -> Stream a -> Stream a
 >distance_product a b = fmap (sqrt . sum) $ codiagonals_seq $ matrix (*) a (conj b)
 
+>nonzero_permutation :: (Num a, Eq a) => Stream a -> (Stream a, Stream Integer)
+>nonzero_permutation (Pre 0 r) = (Pre x (Pre 0 r'),
+>                                 Pre (xp+1) (Pre 0 $ fmap (+1) rp))
+>   where ~(Pre x r', Pre xp rp) = nonzero_permutation r
+>nonzero_permutation z = (z, naturals)
+
+>prefix_matrix :: a -> Stream a -> Stream a -> (Stream :*: Stream) a -> (Stream :*: Stream) a
+>prefix_matrix x row col rest =
+>   stream_matrix_impl (Pre x $ stream_diagonal_impl rest) $
+>                      (Pre (row,col) $ stream_codiagonal_impl rest)
+
+>compose_permutation :: Stream Integer -> Stream Integer -> Stream Integer
+>compose_permutation (Pre i r) s = Pre (i `streamindex` s) $ compose_permutation r s
+
+>permutation_matrix_from_indices :: (Num a) => Stream Integer -> (Stream :*: Stream) a
+>permutation_matrix_from_indices indices = Matrix $ fmap (\i ->
+>    prefix (take i (constant 0)) $ Pre 1 $ constant 0) indices
+
+>-- | <https://en.wikipedia.org/wiki/LU_decomposition>
+>-- This has some bug still, l_matrix computation gets stuck.
+>lu_decomposition_stream_matrix :: (Floating a, Eq a)
+> => (Stream :*: Stream) a -> ((Stream :*: Stream) a, (Stream :*: Stream) a, Stream Integer)
+>lu_decomposition_stream_matrix a = (l_matrix,u_matrix, perm `compose_permutation` rest_p_perm)
+>  where (dd,(xx,y),m) = dematrix_impl a
+>        ((Pre d x), perm) = nonzero_permutation (Pre dd y)
+>        dinv = 1/d
+>        diag1 = Pre 1 $ diagonal_impl rest_l_matrix
+>        l_matrix = stream_matrix_impl diag1 $
+>                Pre (constant 0, dinv %* x) $
+>                 stream_codiagonal_impl rest_l_matrix
+>        diag2 = Pre d $ diagonal_impl rest_u_matrix
+>        u_matrix = stream_matrix_impl diag2 $
+>                    Pre (xx,constant 0) $
+>                     stream_codiagonal_impl rest_u_matrix
+>        rest = liftA2 (-) m ((dinv %* x) `tensor_product` xx)
+>        (rest_l_matrix,rest_u_matrix, rest_p_perm) = lu_decomposition_stream_matrix rest
+
 >instance (ConjugateSymmetric a) => ConjugateSymmetric ((Stream :*: Stream) a) where
 >   conj = fmap conj
 

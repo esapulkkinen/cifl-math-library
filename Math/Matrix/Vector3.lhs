@@ -15,6 +15,7 @@
 >import safe Data.Binary
 >import safe qualified Data.Sequence as Seq
 >import safe qualified Data.Monoid as Mon
+>import safe qualified Control.Monad.Zip
 >import safe Math.Tools.Universe
 >import safe Math.Tools.Functor
 >import safe Math.Number.Interface
@@ -294,6 +295,11 @@ instance (PpShow (f a)) => PpShow ((Vector3 :*: f) a) where
 >  return x = Vector3 x x x
 >  x >>= f = diagonal3 $ Matrix $ fmap f x
 
+>instance Control.Monad.Zip.MonadZip Vector3 where
+>  mzip ~(Vector3 x y z) ~(Vector3 x' y' z') = Vector3 (x,x') (y,y') (z,z')
+>  mzipWith f ~(Vector3 x y z) ~(Vector3 x' y' z') = Vector3 (f x x') (f y y') (f z z')
+>  munzip (Vector3 ~(x,x') ~(y,y') ~(z,z')) = (Vector3 x y z, Vector3 x' y' z')
+
 >instance (Num s) => Semigroup (Vector3 s) where
 >   (<>) = (%+)
 
@@ -403,8 +409,8 @@ approximations_vector3 (Vector3 x y z) = do
 >instance Transposable Vector1 Vector3 a where
 >  transpose_impl (Matrix (Vector1 x)) = Matrix $ fmap Vector1 x
 
->instance (Num a) => Transposable Vector3 Vector3 a where
->  transpose_impl = transpose3
+>instance Transposable Vector3 Vector3 a where
+>  transpose_impl = transpose3_impl
 
 >instance Transposable Vector3 ((->) row) a where
 >   transpose_impl (Matrix (Vector3 x y z))
@@ -533,6 +539,14 @@ approximations_vector3 (Vector3 x y z) = do
              
 >transpose3 :: (Num a) => Matrix3 a -> Matrix3 a
 >transpose3 (Matrix m) = matrix runIndex diagonal_projections3 m
+
+>transpose3_impl :: Matrix3 a -> Matrix3 a
+>transpose3_impl ~(Matrix ~(Vector3 ~(Vector3 x1 y1 z1)
+>                                   ~(Vector3 x2 y2 z2)
+>                                   ~(Vector3 x3 y3 z3)))
+>   = Matrix $ Vector3 (Vector3 x1 x2 x3)
+>                      (Vector3 y1 y2 y3)
+>                      (Vector3 z1 z2 z3)
 
 >outer3 :: (a -> b -> c) -> Vector3 a -> Vector3 b -> Matrix3 c
 >outer3 f (Vector3 x y z) v

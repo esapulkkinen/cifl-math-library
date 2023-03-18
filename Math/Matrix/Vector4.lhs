@@ -28,6 +28,7 @@ import Math.Matrix.Dimension
 >import safe Math.Number.Interface
 >import safe Math.Number.Group
 >import safe Math.Number.StreamInterface
+>import safe qualified Control.Monad.Zip
 
 >deriving instance (Eq a) => Eq (Vector4 a)
 >deriving instance (Typeable a) => Typeable (Vector4 a)
@@ -302,7 +303,7 @@ instance FractionalSpace (Vector4 (Complex R))
 >right_multiply4_gen (Matrix w) v = vsum $ liftA2 (\a fa -> a %* fa) (conj v) w
 
 >matrix_multiply4 :: (Num a, ConjugateSymmetric a) => Matrix4 a -> Matrix4 a -> Matrix4 a
->matrix_multiply4 (Matrix v) w | Matrix wt <- transpose4 w = Matrix $ functor_outer dot4 v wt
+>matrix_multiply4 (Matrix v) w | Matrix wt <- transpose4_impl w = Matrix $ functor_outer dot4 v wt
 
 >dot4 :: (Num a, ConjugateSymmetric a) => Vector4 a -> Vector4 a -> a
 >dot4 x y = sum_coordinates4 $ pure (*) <*> x <*> conj y
@@ -468,8 +469,8 @@ instance FractionalSpace (Vector4 (Complex R))
 >  (Matrix x) %+ (Matrix y) = Matrix $ liftA2 (liftA2 (+)) x y
 
 >-- | 4 x 4 matrices
->instance (Num a) => Transposable Vector4 Vector4 a where
->   transpose_impl = transpose4
+>instance Transposable Vector4 Vector4 a where
+>   transpose_impl = transpose4_impl
 
 >instance Transposable Vector4 ((->) row) a where
 >   transpose_impl (Matrix (Vector4 t x y z))
@@ -493,12 +494,27 @@ instance FractionalSpace (Vector4 (Complex R))
 >   conj = fmap conj
 
 >-- | <https://en.wikipedia.org/wiki/Conjugate_transpose>
->instance (Num a, ConjugateSymmetric a) => ConjugateSymmetric ((Vector4 :*: Vector4) a) where
->   conj = fmap conj . transpose4
+>instance (ConjugateSymmetric a) => ConjugateSymmetric ((Vector4 :*: Vector4) a) where
+>   conj = fmap conj . transpose4_impl
+
+>instance Control.Monad.Zip.MonadZip Vector4 where
+>  mzip ~(Vector4 t x y z) ~(Vector4 t' x' y' z') = Vector4 (t,t') (x,x') (y,y') (z,z')
+>  mzipWith f ~(Vector4 t x y z) ~(Vector4 t' x' y' z') = Vector4 (f t t') (f x x') (f y y') (f z z')
+>  munzip ~(Vector4 ~(t,t') ~(x,x') ~(y,y') ~(z,z')) = (Vector4 t x y z, Vector4 t' x' y' z')
 
 
 >transpose4 :: (Num a) => Matrix4 a -> Matrix4 a
 >transpose4 = indexable_transpose
+
+>transpose4_impl :: Matrix4 a -> Matrix4 a
+>transpose4_impl ~(Matrix ~(Vector4 ~(Vector4 x1 x2 x3 x4)
+>                                 ~(Vector4 y1 y2 y3 y4)
+>                                 ~(Vector4 z1 z2 z3 z4)
+>                                 ~(Vector4 t1 t2 t3 t4)))
+>   = Matrix $ Vector4 (Vector4 x1 y1 z1 t1)
+>                      (Vector4 x2 y2 z2 t2)
+>                      (Vector4 x3 y3 z3 t3)
+>                      (Vector4 x3 y4 z4 t4)
 
 >-- | 4 x 4 matrices
 >instance (Floating a, ConjugateSymmetric a) => NormedSpace ((Vector4 :*: Vector4) a) where

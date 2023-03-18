@@ -1,0 +1,22 @@
+<?xml version="1.0" standalone="no"?>
+<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
+<svg xmlns="http://www.w3.org/2000/svg" width="3cm" height="3cm">
+  <rect x="0cm" y="0cm" width="3cm" height="3cm" stroke="black"
+                  fill="red"/>
+  <circle cx="1.5cm" cy="1.5cm" r="1.5cm" fill="white"/>
+  <rect x="0.42cm" y="0.42cm" width="2.12cm" height="2.12cm"
+            fill="blue" />
+  <circle cx="1.5cm" cy="1.5cm" r="1.0cm" fill="white"/>
+  <text x="0.9cm" y="1.0cm" font-family="ui-rounded"
+            font-size="18" fill="black" stroke="black">
+    CIFL
+  </text>
+  <text x="0.9cm" y="1.5cm" font-family="ui-rounded"
+            font-size="22" fill="black" stroke="black">
+    Math
+  </text>
+  <text x="0.65cm" y="2.0cm" font-family="ui-rounded"
+            font-size="18" fill="black" stroke="black">
+    Library
+  </text>
+</svg>
