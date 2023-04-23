@@ -237,7 +237,6 @@ http://en.wikipedia.org/wiki/Bra%E2%80%93ket_notation
 >   determinant_impl (Matrix (Vector1 (Vector1 a))) = a
 
 >instance (Num a) => Diagonalizable Vector1 a where
->  vector_dimension _ = Vector1 0
 >  diagonal_impl (Matrix (Vector1 (Vector1 x))) = Vector1 x
 >  identity_impl _ = Matrix $ Vector1 (Vector1 1)
 >  identity = Matrix $ Vector1 (Vector1 1)

@@ -463,7 +463,6 @@ instance (Num a, ConjugateSymmetric a) => LieAlgebra ((Vector2 :*: Vector2) a) w
 >  (Vector2 x y) %. (Vector2 x' y') = x*conj x' + y*conj y'
 
 >instance (Num a) => Diagonalizable Vector2 a where
->  vector_dimension _ = Vector2 0 1
 >  diagonal_impl = diagonal2 
 >  identity_impl _ = identity2
 >  diagonal_matrix_impl = diagonal_matrix2

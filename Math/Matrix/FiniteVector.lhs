@@ -102,7 +102,6 @@
 >instance (DiagonalizableVector n , Indexable (Vec n) a, VectorSpace (Vec n a),
 > LinearTransform (Vec n) (Vec n) a,
 > Transposable (Vec n) (Vec n) a, Num a) => Diagonalizable (Vec n) a where
->   vector_dimension m = vdimension m
 > --  identity = Matrix . videntity
 >   diagonal_matrix_impl x = Matrix (vdiagonal_matrix x)
 >   diagonal_impl (Matrix x) = vdiagonal x

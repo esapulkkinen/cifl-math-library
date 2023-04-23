@@ -254,7 +254,6 @@ transpose :: (Diagonalizable n a, LinearTransform n m a, LinearTransform m n a, 
 
 >-- | <https://en.wikipedia.org/wiki/Square_matrix>
 >class (Num a, Indexable m a, Transposable m m a) => Diagonalizable m a where
->  vector_dimension :: m a -> m Integer
 >  identity_impl :: m Integer -> (m :*: m) a
 >  -- ^ argument to identity_impl is dimension of the matrix
 >  identity :: (m :*: m) a
@@ -324,9 +323,12 @@ codiagonal = codiagonal_impl . fromLinear
 >   fromLinear :: arr (f a) (g a) -> (prod f g) a
 >   linear :: (prod f g) a -> arr (f a) (g a)
 
+>-- | <https://ncatlab.org/nlab/show/dimension>
 >class (Diagonalizable m a) => Traceable m a where
 >  trace_impl :: (m :*: m) a -> a
 >  determinant_impl :: (m :*: m) a -> a
+>  vector_dimension :: m a -> a
+>  vector_dimension (f :: m a) = trace_impl (identity :: (m :*: m) a)
 
 >class (Traceable m a) => LinearTraceable arr m a where
 >  determinant :: arr (m a) (m a) -> a
@@ -409,7 +411,6 @@ is_unitary m = conj -!< m == inverse m
 
 >class HasIdentityLinear v arr where
 >   mat_identity :: (Num a, ConjugateSymmetric a) => arr (v a) (v a)
-
 
 >class (VectorSpace v) => Dualizable v d where
 >  covector :: (v -> Scalar v) -> d v
@@ -634,7 +635,7 @@ linear_power (LinearMap p f) 0 = LinearMap Refl $ identity_impl (vector_dimensio
 linear_power f i = f . linear_power f (i-1)
 
 >(%^%) :: (a ~ Scalar (f a), InnerProductSpace (f a), Transposable f f a, Diagonalizable f (f a), Diagonalizable f a) => (f :*: f) a -> Integer -> (f :*: f) a
->x %^% 0 = identity_impl (vector_dimension $ cells x)
+>x %^% 0 = identity
 >x %^% i = x %*% (x %^% (i-1))
 
 (%^%) :: (LinearTransform h h b, Scalar b ~ b, Functor h, Diagonalizable h b, Transposable h h b, Indexable h
@@ -801,6 +802,12 @@ instance Diagonalizable Stream Integer where
 
 >instance {-# OVERLAPPABLE #-} (RealFloat a) => NormedSpace (Complex a) where
 >   norm x = sqrt (x %. x)
+
+>instance (RealFloat a) => MetricSpace (Complex a) where
+>   distance a b = norm (b - a)
+
+>instance (Num a) => StandardBasis (Complex a) where
+>   unit_vectors = [(1 :+ 0), (0 :+ 1)]
 
 >instance (Num a) => VectorSpace (Maybe a) where
 >   type Scalar (Maybe a) = a
@@ -990,13 +997,27 @@ instance VectorSpace (f (Complex a)) => VectorSpace ((f :*: Complex) a) where
   (Matrix v) %+ (Matrix w) = Matrix (v %+ w)
   c %* (Matrix v) = Matrix (c %* v)
 
->instance (Indexable f a, Diagonalizable f a, Functor f, Scalar (f a) ~ Complex a, Num a)
+>instance {-# OVERLAPPING #-} (Indexable f a, Diagonalizable f a, Functor f, Scalar (f a) ~ Complex a, Num a)
 > => Transposable f Complex a where
 >  transpose_impl (Matrix m) = Matrix $ fmap realPart m :+ fmap imagPart m
 
->instance (LinearTransform f Complex a, Diagonalizable Complex a, Applicative f, Num a)
+>instance {-# OVERLAPPING #-} (LinearTransform f Complex a, Diagonalizable Complex a, Applicative f, Num a)
 > => Transposable Complex f a where
 >  transpose_impl (Matrix (m :+ n)) = Matrix $ liftA2 (:+) m n
+
+>-- | notice matrix of two complex numbers has special properties as matrix.
+>instance {-# OVERLAPS #-} Transposable Complex Complex a where
+>  transpose_impl (Matrix ((m :+ mi)
+>                      :+ (ni :+ n)))
+>    = Matrix $ ((m :+ ni)
+>             :+ (mi :+ n))
+
+>-- | diagonalizable instance for complex numbers.
+>-- diagonal ((a+bi)+i(c+di)) = (a-d) + i(b+c)
+>instance (Num a) => Diagonalizable Complex a where
+>  identity = Matrix $ (1 :+ 0) :+ (0 :+ 1)
+>  diagonal_impl (Matrix ((a :+ b) :+ (c :+ d))) = (a-d) :+ (b+c)
+>  diagonal_matrix_impl (a :+ b) = Matrix $ (a :+ 0) :+ (0 :+ negate b)
 
 >instance (Show (f a)) => Show ((Complex :*: f) a) where
 >  show (Matrix (a :+ b)) = show a ++ " :+ " ++ show b

@@ -1,5 +1,6 @@
 >{-# LANGUAGE Safe, TypeOperators, UnicodeSyntax, FlexibleInstances #-}
 >{-# LANGUAGE MultiParamTypeClasses, FlexibleContexts #-}
+>{-# LANGUAGE FunctionalDependencies #-}
 >module Math.Number.Interface where
 >import safe Control.Applicative
 >import safe Data.Monoid
@@ -13,6 +14,9 @@
 
 >logroot :: (Floating a) => a -> a -> a
 >logroot x k = exp (log x / log k)
+
+>cuberoot :: (Floating a, Numerics a) => a -> a
+>cuberoot = newtons_method (\x -> x*x*x)
 
 >-- | Dedekind cut. Notice typically in constructive reals,
 >-- it's possible to implement comparison between rational and real
@@ -31,7 +35,7 @@
 >  x >% y = y %< x
 >  is_apart x q y = (x <% q && q %< y) || (y <% q && q %< x)
 
->class Approximations str a where
+>class Approximations str a | a -> str where
 >   floating_approximations :: a -> str Double
 >   rational_approximations :: a -> str Rational
 

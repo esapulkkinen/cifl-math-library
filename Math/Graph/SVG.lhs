@@ -4,6 +4,7 @@
 >import qualified Data.Text.IO as IO
 >import Math.Number.Stream
 >import qualified Math.Number.Stream as S
+>import qualified Math.Number.StreamInterface as StrI
 >import Control.Applicative
 > 
 >type Coord = T.Text
@@ -11,6 +12,7 @@
 >type Fill = T.Text
 >type FontFamily = T.Text
 >type FontSize = T.Text
+>type Stream = StrI.Stream
 
 >data SVG = Line { x1 :: Coord, y1 :: Coord, x2 :: Coord, y2 :: Coord }
 >         | Rect { x :: Coord, y :: Coord, width :: Coord, height :: Coord }
@@ -28,7 +30,8 @@
 >tag t attrs body = "<svg:" <> t <> " " <> T.concat attrs <> ">" <> body <> "</svg:" <> t <> ">\n"
 
 >toHTML :: SVG -> T.Text
->toHTML (SVG elems) = tag "svg" [] $ T.concat (fmap toHTML elems)
+>toHTML (SVG elems) = tag "svg" [attr "xmlns:svg" "http://www.w3.org/2000/svg", attr "xmlns" "http://www.w3.org/2000/svg"] $
+>   T.concat (fmap toHTML elems)
 >toHTML (Group s f elems) = tag "g" [attr "stroke" s, attr "fill" f] $
 >   T.concat (fmap toHTML elems)
 >toHTML (Text x y ff fs fi te) = tag "text" attrs te
@@ -47,8 +50,13 @@
 >htmlSuffix :: T.Text
 >htmlSuffix = "</svg:svg></p>\n</body>\n</html>\n"
 
+>svgPrelude :: T.Text
+>svgPrelude = "<?xml version=\"1.0\" standalone=\"no\"?>\n<!DOCTYPE svg PUBLIC \"-//W3C//DTD SGV 1.1//EN\" \"http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd\">\n"
 >instance Show SVG where
 >   show x = T.unpack $ htmlPrelude <> toHTML x <> htmlSuffix
+
+>writeSVG :: FilePath -> SVG -> IO ()
+>writeSVG fname svg = IO.writeFile fname (svgPrelude <> toHTML svg)
 
 >writeHTML :: FilePath -> SVG -> IO ()
 >writeHTML fname svg = IO.writeFile fname (htmlPrelude <> toHTML svg <> htmlSuffix)
@@ -66,7 +74,7 @@
 >                                           else "0.15cm")) row) source2
 
 >logoSVG :: SVG
->logoSVG = Group "black" "white" $ fmap (Group "black" "black") $ S.take 40 $ fmap (S.take 40) sourceSVG
+>logoSVG = SVG [Group "black" "white" $ fmap (Group "black" "black") $ S.take 40 $ fmap (S.take 40) sourceSVG]
 
 >writeLogo :: IO ()
->writeLogo = writeHTML "logo2.svg" logoSVG
+>writeLogo = writeSVG "logo3.svg" logoSVG

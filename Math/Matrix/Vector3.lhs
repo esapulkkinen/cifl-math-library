@@ -385,7 +385,6 @@ approximations_vector3 (Vector3 x y z) = do
 >nth_norm3 n (Vector3 x y z) = (x**n + y**n + z**n)**(1/n)
 
 >instance (Num a) => Diagonalizable Vector3 a where
->  vector_dimension _ = dim3
 >  identity_impl _ = identity3
 >  identity = identity3
 >  diagonal_impl = diagonal3

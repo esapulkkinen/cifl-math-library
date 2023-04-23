@@ -314,7 +314,6 @@ instance Transposable ((->) row) ((->) col) a where
 >kronecker_delta i j = if i == j then 1 else 0
 
 >instance (Num a, Eq dim, Integral dim) => Diagonalizable ((->) dim) a where
->   vector_dimension f = indexable_indices
 >   identity = Matrix kronecker_delta
 >   identity_impl = const (Matrix kronecker_delta)
 >   diagonal_impl (Matrix f) = \i -> f i i

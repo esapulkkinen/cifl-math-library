@@ -423,7 +423,6 @@ instance (Num a) => Matrix.VectorSpace ((Stream :*: Stream) a) where
 
 >-- | square matrix implementation for streams.
 >instance (Num a) => Matrix.Diagonalizable Stream a where
->  vector_dimension s = liftA2 seq s $ naturals
 >  identity = stream_matrix_impl (constant 1) $ codiag
 >     where codiag = (zero,zero) `Pre` codiag
 >  identity_impl dim = identity

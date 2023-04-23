@@ -525,7 +525,6 @@ instance FractionalSpace (Vector4 (Complex R))
 >  x %. y = trace_impl (transpose_impl x %*% y)
 
 >instance (Num a) => Diagonalizable Vector4 a where
->  vector_dimension _ = dim4
 >  identity_impl _ = identity4
 >  identity = identity4
 >  diagonal_impl = diagonal4

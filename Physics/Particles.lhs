@@ -2,6 +2,8 @@
 >module Physics.Particles where
 >import Data.Ratio
 >import GHC.Real
+>import qualified Math.Number.Stream as Stream
+>import qualified Math.Number.StreamInterface as StreamI
 > 
 >-- | <https://en.wikipedia.org/wiki/Particle_zoo>
 >-- | <https://en.wikipedia.org/wiki/List_of_particles>
@@ -155,3 +157,28 @@
 >rational_isospin (-3 :% 2) = HalfIsoSpin
 >rational_isospin (-1 :% 1) = HalfIsoSpin
 >rational_isospin _ = error "invalid isospin"
+
+>data ElectronQN = ElectronQN {
+>   principal_qn :: Integer,
+>   azimuthal_qn :: Integer,
+>   magnetic_qn :: Integer,
+>   spin_qn :: Rational
+> }
+>  deriving (Eq)
+>
+>instance Show ElectronQN where
+>   show z@(ElectronQN {}) = show (principal_qn z)
+>                          ++ (azi_letter !! fromIntegral (azimuthal_qn z))
+>                          : show (magnetic_qn z)
+>                          ++ (spin_letter !! fromIntegral (1+Data.Ratio.numerator (spin_qn z))) : []
+>     where azi_letter = "spdfghiklmnopqrstuvwxyz"
+>           spin_letter = "s0S"
+> 
+
+>particles :: StreamI.Stream ElectronQN
+>particles = Stream.cycle $ do
+>   pn <- [1..]
+>   pl <- [0..pn-1]
+>   ml <- [-pl..pl]
+>   s <- [-1%2, 1%2]
+>   return $ ElectronQN pn pl ml s
