@@ -374,11 +374,11 @@
 >instance Numerics R where
 >   newtons_method = newtons_method_r
 
->-- | square root of a real number \(x\), computed with newton's method as inverse of \(t \mapsto t^2 - x\).
+>-- | square root of a real number \(x\), computed with newton's method as root of \(t \mapsto t^2 - x\).
 >sqrt_r :: R -> R
 >sqrt_r v = newtons_method (\x -> x*x - v) 1
 
->-- | logarithm of a real number \(x\), computed with newton's method as inverse of \(t \mapsto e^t - x\).
+>-- | logarithm of a real number \(x\), computed with newton's method as root of \(t \mapsto e^t - x\).
 >log_by_newton :: R -> R
 >log_by_newton v = newtons_method (\x -> exp x - v) 1
 
