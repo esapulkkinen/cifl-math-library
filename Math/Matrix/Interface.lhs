@@ -102,10 +102,10 @@ cells_linear = cells . fromLinear
 
 
 >-- | bilinearity :
->--    \(f (a + b) c = f a c + f b c\)
->--    \(f (a %* b) c = a %* f b c\)
->--    \(f a (b + c) = f a b + f a c\)
->--    \(f a (b %* c) = b %* f a c\)
+>--    \[f (a + b,c) = f(a, c) + f(b, c)\]
+>--    \[f (k b, c) = k f(b, c)\]
+>--    \[f (a, b + c) = f(a, b) + f(a,c)\]
+>--    \[f (a, k c) = k f(a, c)\]
 >-- <https://en.wikipedia.org/wiki/Bilinear_map>
 >bilinear_impl :: (VectorSpace (g c), Scalar (g c) ~ c,
 > Indexable f c, Indexable g c, Integral c, VectorSpace ((f :*: g) c))
