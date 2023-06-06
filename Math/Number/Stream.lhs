@@ -453,11 +453,9 @@ instance (Num a) => Matrix.VectorSpace ((Stream :*: Stream) a) where
 >    => Matrix.NormedSpace (Stream a) where
 >  norm x = sqrt (x Matrix.%. x)
 
->instance (Closed a, Num a) => Matrix.LinearTransform Stream Stream a where
->  s <*>> m = fmap (ssum . liftA2 (*) s) $ cells m
->  m <<*> s = fmap (ssum . liftA2 (*) s) $ cells $ transpose_impl $ m
-
-
+>instance (Closed a, ConjugateSymmetric a, Num a) => Matrix.LinearTransform Stream Stream a where
+>  s <*>> m = fmap (%. s) $ cells $ transpose_impl m
+>  m <<*> s = fmap (%. s) $ cells $ m
 
 >instance (Matrix.ConjugateSymmetric a) => Matrix.ConjugateSymmetric (Stream a) where
 >   conj (Pre x xr) = Pre (Matrix.conj x) (Matrix.conj xr)
@@ -1357,6 +1355,9 @@ codiagonals3 = codiagonals . linear . Matrix . fmap codiagonals . cells_linear
 >s_z3 :: (Num a) => Stream (Stream (Stream a))
 >s_z3 = Pre s_z2 0
 
+>s_z4 :: (Num a) => Stream (Stream (Stream (Stream a)))
+>s_z4 = Pre s_z3 0
+
 >z3_matrix :: (Num a) => ((Stream :*: Stream) :*: Stream) a
 >z3_matrix = Matrix (Matrix s_z3)
 
@@ -2050,4 +2051,38 @@ instance (Closed a) => Closed (Complex a) where
 >instance (Infinitesimal Stream a, Num a) => Infinitesimal Stream (Stream a) where
 >   epsilon_stream = cells $ matrix (*) epsilon_stream epsilon_stream
 
+>derivative_coefficients :: (Integral a) => (Stream :*: Stream) a
+>derivative_coefficients = Matrix $ s_z2 `div` (1 - s_z*s_z2)^(2 :: Integer)
 
+>derivative_coefficients_fractional :: (Fractional a) => (Stream :*: Stream) a
+>derivative_coefficients_fractional = Matrix $ s_z2 / (1 - s_z*s_z2)^(2 :: Integer)
+
+>derivative_linear_map :: (ConjugateSymmetric a, Closed a) => Stream a :-> Stream a
+>derivative_linear_map = linear_map derivative_coefficients_fractional
+
+>-- | <https://en.wikipedia.org/wiki/Bernoulli_number>
+>bernoulli_minus :: (Fractional a) => Integer -> a
+>bernoulli_minus m = sum $ do
+>   k <- [0..m]
+>   v <- [0..k]
+>   return $ (fromInteger ((negate 1)^v)) * fromInteger (binomial_coefficient k v) * (fromInteger v^m)/(fromInteger k+1)
+
+>-- | <https://en.wikipedia.org/wiki/Bernoulli_number>
+>bernoulli_plus :: (Fractional a) => Integer -> a
+>bernoulli_plus 1 = 1/2
+>bernoulli_plus n = bernoulli_minus n
+
+>bernoulli :: (Fractional a) => Stream a
+>bernoulli = fromIntegerSeq bernoulli_plus
+
+>-- | <https://en.wikipedia.org/wiki/Bernoulli_polynomial>
+>bernoulli_polynomial :: (Fractional b) => b -> Integer -> b
+>bernoulli_polynomial x n = sum $ do
+>   k <- [0..n]
+>   return $ fromInteger (binomial_coefficient n k) * bernoulli_minus (n - k) * x^k
+
+>bernoulli_polynomials :: (Fractional a) => (Stream :*: Stream) a
+>bernoulli_polynomials = Matrix $ fmap (bernoulli_polynomial s_z) naturals
+
+>bernoulli_polynomial_coefficients :: (Fractional a) => Stream [a]
+>bernoulli_polynomial_coefficients = codiagonals (lower_triangle_impl bernoulli_polynomials)

@@ -2,6 +2,7 @@
 >module Math.Number.GeneratingFunction where
 >import Control.Applicative
 >import Math.Number.Stream
+>import Math.Number.StreamInterface
 >import Math.Matrix.Interface
 >import Math.Tools.PrettyP
 >import Math.Tools.Median
@@ -12,7 +13,7 @@
 >   deriving newtype (Functor, Applicative, Monad, ConjugateSymmetric)
 
 >z_ogf :: (Num a) => OGF a
->z_ogf = OGF z
+>z_ogf = OGF s_z
 
 >-- | EGF = Exponential generating function <https://en.wikipedia.org/wiki/Generating_function>
 >newtype EGF a = EGF { unEGF :: Stream a }
@@ -22,8 +23,8 @@
 >ogf_to_egf :: (Num a) => OGF a -> EGF a
 >ogf_to_egf (OGF s) = EGF $ liftA2 (*) s factorial
 
->egf_to_pg :: (Floating a, Eq a) => EGF a -> PG a
->egf_to_pg (EGF s) = PG $ s / exp z
+>egf_to_pg :: (Floating a, ConjugateSymmetric a, Closed a, Eq a) => EGF a -> PG a
+>egf_to_pg (EGF s) = PG $ s / exp s_z
 
 >-- | Poisson generating function
 >newtype PG a = PG { unPG :: Stream a }
@@ -56,7 +57,7 @@
 >   (EGF a) - (EGF b) = EGF (a - b)
 >   (EGF x) * (EGF y) = EGF $ fmap sum_seq $ liftA2 (liftA2 (*)) q p
 >      where p = codiagonals_seq $ matrix (*) x y
->            q = codiagonals_seq $ Matrix $ 1 / (1 - z - z2)
+>            q = codiagonals_seq $ Matrix $ 1 / (1 - s_z - s_z2)
 >   negate (EGF x) = EGF (negate x)
 >   abs (EGF x) = EGF (abs x)
 >   signum (EGF x) = EGF (signum x)

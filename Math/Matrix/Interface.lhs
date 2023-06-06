@@ -591,6 +591,7 @@ index2 (row,col) (C e) = index col (index row e)
 >(%*%) :: (a ~ Scalar (g a), Functor f, InnerProductSpace (g a), Transposable g h a) => (f :*: g) a -> (g :*: h) a -> (f :*: h) a
 >(%*%) (Matrix m1) m2 = matrix (%.) m1 (cells $ transpose_impl m2)
 
+
 >(%**%) :: (InnerProductSpace (g a), Transposable g h a,
 >        Linearizable arr (:*:) f h a, Linearizable arr (:*:) f g a,
 >        Linearizable arr (:*:) g h a, Functor f, Scalar (g a) ~ a)

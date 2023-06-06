@@ -54,6 +54,8 @@
 >-- prop> isVertex v => target v == v
 >-- 
 >module Math.Graph (
+>-- * digraphs
+>    module Math.Graph.Digraph,
 >-- * operations for building graphs
 >    module Math.Graph.Reversible,
 >-- ** labeled graphs
@@ -84,6 +86,7 @@
 >    module Math.Graph.Action
 >  ) where
 >import safe qualified Math.Graph.Action
+>import safe Math.Graph.Digraph
 >import safe Math.Graph.Reversible
 >import safe Math.Graph.TransformationMonoid
 >import safe Math.Graph.Labeled

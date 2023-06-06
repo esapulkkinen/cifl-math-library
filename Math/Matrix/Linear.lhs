@@ -83,6 +83,7 @@
 >linear_map = linear
 
 
+
 Tensoring :: (a -> b -> c) -> LinearMap (f a, g b) (f c ⮾ g c)
 Bilinear :: (a -> LinearMap b c) -> (b -> LinearMap a c) -> LinearMap (a ⮾ b) c
 

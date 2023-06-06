@@ -183,3 +183,4 @@
 >instance StreamObserver Stream where
 >   shead = shead_impl
 >   stail = stail_lazy
+

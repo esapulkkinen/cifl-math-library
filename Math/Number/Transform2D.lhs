@@ -26,6 +26,9 @@
 >element2D :: a -> a -> Transform2D () a
 >element2D x y = Transform2D (\ () -> x) (\ () () -> y) (\ () m () -> m)
 
+>elementIter2D :: a -> a -> (a -> a) -> Transform2D () a
+>elementIter2D x y f = Transform2D (\ () -> x) (\ () () -> y) (\ () m () -> f m)
+
 >vector2D :: (Floating (Scalar v), InnerProductSpace v)
 >  => (v -> Scalar v -> v -> Scalar v) -> Transform2D v (Scalar v)
 >vector2D = Transform2D innerproductspace_norm (%.)

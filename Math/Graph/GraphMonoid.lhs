@@ -24,6 +24,29 @@
 >import Math.Matrix.Interface
 >import Math.Graph.Action
 >import Data.Kind
+>import Data.Typeable
+>import Data.Data
+
+>data GraphElem v e = Vertex v | Edge e
+>  deriving (Eq, Ord, Show, Read)
+
+>deriving instance Typeable (GraphElem v e)
+>deriving instance (Data v, Data e) => Data (GraphElem v e)
+
+>instance (PpShow v, PpShow e) => PpShow (GraphElem v e) where
+>   pp (Vertex v) = "vertex(" <> pp v <> ")"
+>   pp (Edge e)   = "edge(" <> pp e <> ")"
+
+>mapGraphElem :: (v -> v') -> (e -> e') -> GraphElem v e -> GraphElem v' e'
+>mapGraphElem f g (Vertex v) = Vertex (f v)
+>mapGraphElem f g (Edge e) = Edge (g e)
+>
+>eitherGraphElem :: (v -> w) -> (e -> w) -> GraphElem v e -> w
+>eitherGraphElem f g (Vertex v) = f v
+>eitherGraphElem f g (Edge e) = g e
+
+>instance (Universe v, Universe e) => Universe (GraphElem v e) where
+>   all_elements = (map Vertex all_elements) ++ (map Edge all_elements)
 
 >class (Eq (arr a a), Monoid.Monoid (arr a a)) => GraphMonoid arr a where
 >   gdom :: arr a a
@@ -54,6 +77,7 @@
 >deriving instance Ord (Three a a)
 >deriving instance Typeable (Three a a)
 >deriving instance (Typeable a, Data a) => Data (Three a a)
+
 
 >instance Cat.Category Three where
 >   id = TId
@@ -210,12 +234,24 @@ data Four = FId | FDom | FCod | FNot deriving (Eq,Show, Ord, Typeable, Data, Gen
 >               | m == gcod = y
 >               | otherwise = a
 
+>edgeE :: e -> (v,v) -> Three (GraphElem v e) (GraphElem v e) -> GraphElem v e
+>edgeE a (x,y) m | m == gdom = Vertex x
+>                | m == gcod = Vertex y
+>                | otherwise = Edge a
+
 >bidirectionalEdge :: (a,a) -> (a,a) -> Four a a -> a
 >bidirectionalEdge (a,ra) (x,y) m
 > | m == gdom   = x
 > | m == gcod   = y
 > | m == mempty = a
 > | m == gnot   = ra
+>
+>bidirectionalEdgeE :: (e,e) -> (v,v) -> Four (GraphElem v e) (GraphElem v e) -> GraphElem v e
+>bidirectionalEdgeE (a,ra) (x,y) m
+> | m == gdom = Vertex x
+> | m == gcod = Vertex y
+> | m == mempty = Edge a
+> | m == gnot   = Edge ra
 
 >edgesFromMapArr :: (Ord a, ArrowChoice arr, FailureArrow arr String) => Map a (a,a) -> Three a a -> arr a a
 >edgesFromMapArr edgemap m = proc a -> do
@@ -235,9 +271,22 @@ data Four = FId | FDom | FCod | FNot deriving (Eq,Show, Ord, Typeable, Data, Gen
 >                       vertices = map fst edges ++ map snd edges
 >                    in if a `elem` vertices then a else error "edgesFromMapEndo: Cannot find vertex"
 
+>edgesFromMapEndoE :: (Ord e, Ord v) => Map e (v,v) -> Three (GraphElem v e) (GraphElem v e) -> Endo (GraphElem v e)
+>edgesFromMapEndoE edgemap m = Endo $ \case
+> (Edge e) -> case Map.lookup e edgemap of
+>     (Just (x,y)) -> edgeE e (x,y) m
+>     Nothing -> error "edgesFromMapEndoE: cannot find edge"
+> (Vertex v) -> let edges = Map.elems edgemap
+>                   vertices = map fst edges ++ map snd edges
+>               in if v `elem` vertices then Vertex v
+>                    else error "edgesFromMapEndoE: cannot find vertex"
+
 >-- | from list of (v_i,e_i), the loopEndo contains edges e_i : v_i -> v_i
 >loopEndo :: (Eq a) => [(a,a)] -> Three a a -> Endo a
->loopEndo lst = edgesEndo $ map (\(v,e) -> (v,(e,e))) lst
+>loopEndo lst = edgesEndo $ map (\(v,e) -> (e,(v,v))) lst
+
+>loopEndoE :: (Eq v, Eq e) => [(v,e)] -> Three (GraphElem v e) (GraphElem v e) -> Endo (GraphElem v e)
+>loopEndoE lst = edgesEndoE $ map (\(v,e) -> (e,(v,v))) lst
 
 >edgesArr :: (Eq a, ArrowChoice arr, FailureArrow arr String) => [(a,(a,a))] -> Three a a -> arr a a
 >edgesArr lst m = proc a -> do
@@ -247,7 +296,10 @@ data Four = FId | FDom | FCod | FNot deriving (Eq,Show, Ord, Typeable, Data, Gen
 >        let vertices = map (fst . snd) lst ++ map (snd . snd) lst
 >          in if a `elem` vertices then returnA -< a else failA -< "Cannot find vertex"
 
-
+>edgesEndoE :: (Eq v, Eq e)
+> => [(e,(v,v))] -> Three (GraphElem v e) (GraphElem v e) -> Endo (GraphElem v e)
+>edgesEndoE lst m = edgesEndo lst' m
+>   where lst' = fmap (\ (e,(v1,v2)) -> (Edge e,(Vertex v1, Vertex v2))) lst
 
 >edgesEndo :: (Eq a) => [(a,(a,a))] -> Three a a -> Endo a
 >edgesEndo lst m = Endo $ \a -> case lookup a lst of
@@ -262,6 +314,11 @@ data Four = FId | FDom | FCod | FNot deriving (Eq,Show, Ord, Typeable, Data, Gen
 >        domLookup = proc a -> returnA -< maybe a (fst . snd) (lookup a fwdSearch)
 >        codLookup = proc a -> returnA -< maybe a (snd . snd) (lookup a fwdSearch)
 >        negLookup = proc a -> returnA -< maybe a fst (lookup a fwdSearch)
+
+>reversibleEdgesEndoE :: (Eq v, Eq e)
+> => [((e,e),(v,v))] -> Four (GraphElem v e) (GraphElem v e) -> Endo (GraphElem v e)
+>reversibleEdgesEndoE lst = reversibleEdgesEndo $
+>  fmap (\((e1,e2), (v1,v2)) -> ((Edge e1, Edge e2), (Vertex v1, Vertex v2))) lst
 
 >reversibleEdgesEndo :: (Eq a) => [((a,a),(a,a))] -> Four a a -> Endo a
 >reversibleEdgesEndo lst = four_action id domLookup codLookup negLookup

@@ -57,6 +57,7 @@
 >--
 >-- Note that the monoid data structure contains only names of the monoid elements -
 >-- the action_endomorphism is then used to convert it to actual operation.
+>--
 >data Graph m a = Graph {
 > elements :: !(Set a),
 > action_endomorphism :: m a a -> Endo a }
@@ -121,6 +122,7 @@ vectorG v = Graph v $ \ (Lin m) -> Endo $ \w -> m <<*> w
 >binopG :: Set b -> (arr b b -> b -> b) -> Graph arr b
 >binopG x op = Graph x $ \i -> Endo $ \j -> op i j
 
+>outerG :: (Ord a) => Graph (,) a -> Graph (,) a -> Graph (,) (a,a)
 >outerG (Graph e act) (Graph e' act') = Graph ee ract
 >   where ee = joinSet $ outerSet (,) e e'
 >         ract (m,n) = Endo $ \(a,b) -> (act m `appEndo` a, act' n `appEndo` b)
@@ -231,6 +233,7 @@ vectorG v = Graph v $ \ (Lin m) -> Endo $ \w -> m <<*> w
 >        reversedEdges = map (snd . fst) lst
 >        sources = map (fst . snd) lst
 >        targets = map (snd . snd) lst         
+
 
 >subobjectClassifierGraphG :: Graph Four Text
 >subobjectClassifierGraphG = reversibleEdgesG [

@@ -1,6 +1,7 @@
+>{-# OPTIONS_GHC -Wno-unrecognised-pragmas #-}
+>{-# HLINT ignore "Use camelCase" #-}
 >{-# LANGUAGE Safe, TypeFamilies, FlexibleInstances, ScopedTypeVariables #-}
 >{-# LANGUAGE TypeOperators, DataKinds, UndecidableInstances #-}
->{-# LANGUAGE StandaloneDeriving, DeriveAnyClass #-}
 >{-# LANGUAGE MultiParamTypeClasses, FlexibleContexts, GADTs #-}
 >module Math.Number.R (
 > R(Limit), lim, real, approximate, rational_approximations, 
@@ -35,7 +36,7 @@
 >
 >
 >-- | This real representation takes 'epsilon' as input as in epsilon-delta proof.
->newtype R = Limit { approximate_endo :: (Endo Rational) }
+>newtype R = Limit { approximate_endo :: Endo Rational }
 
 >-- | this real_to_rational operation sets precision \(\epsilon\) to 0 and produces
 >-- corresponding rational number.
@@ -76,6 +77,7 @@
 
 >approximately_greater_than_r :: Rational -> R -> R -> Bool
 >approximately_greater_than_r eps f g = f `approximate` eps > g `approximate` eps
+
 >approximately_equal_to_r :: Rational -> R -> R -> Bool
 >approximately_equal_to_r eps f g = f `approximate` eps == g `approximate` eps
 
@@ -303,7 +305,6 @@
 >   signum = liftR signum
 >   fromInteger 0 = real id
 >   fromInteger i = real $ const (fromInteger i)
-
 
 >-- | For division, if a rational approximation of the divisor
 >-- is zero, we increase accuracy. Notice this makes

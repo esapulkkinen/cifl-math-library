@@ -150,7 +150,7 @@ max_convergence_ratio = fmap (foldl1 max) . cauchy
 >-- \[\forall \epsilon > 0. \exists n. \forall k > n. |s_k - t_k| < \epsilon \].
 >-- However, this is undecidable in particular with respect to what to choose for 'n'.
 >-- We can nonetheless compute the stream of distances.
->cauchy_sequence_equivalence :: (Closed a, Num a) => Stream a -> Stream a -> Stream a
+>cauchy_sequence_equivalence :: (ConjugateSymmetric a, Closed a, Num a) => Stream a -> Stream a -> Stream a
 >cauchy_sequence_equivalence s t = diagonal_impl $ cseq_difference_matrix s t
 
 >-- | cseq_equivalence_matrix computes equivalence of cauchy sequences.
@@ -165,7 +165,7 @@ max_convergence_ratio = fmap (foldl1 max) . cauchy
 >-- of the modulus.
 >-- The other differences are included so computations and analysis of the situation
 >-- can be easier to perform.
->cseq_equivalence_matrix :: (Num a, Closed a, Infinitesimal Stream eps)
+>cseq_equivalence_matrix :: (Num a, ConjugateSymmetric a, Closed a, Infinitesimal Stream eps)
 > => (eps -> Integer) -> Stream a -> Stream a -> (Stream :*: Stream) a
 >cseq_equivalence_matrix modulus x y = Matrix $ do
 >   eps <- epsilon_stream
@@ -195,10 +195,10 @@ max_convergence_ratio = fmap (foldl1 max) . cauchy
 >-- best and worst approximation in the same depth of approximations.
 >-- for the equality of the cauchy sequences to hold, the best approximation should
 >-- stay close to zero and better so when further elements of the stream are obtained.
->cseq_convergence :: (Closed a, Num a) => Stream a -> Stream a -> Stream [a]
+>cseq_convergence :: (ConjugateSymmetric a, Closed a, Num a) => Stream a -> Stream a -> Stream [a]
 >cseq_convergence s t = codiagonals $ cseq_difference_matrix s t
 
->cseq_equivalence_list :: (Closed a, Num a, Infinitesimal Stream eps) => (eps -> Integer) -> Stream a -> Stream a -> Stream [a]
+>cseq_equivalence_list :: (Closed a, ConjugateSymmetric a, Num a, Infinitesimal Stream eps) => (eps -> Integer) -> Stream a -> Stream a -> Stream [a]
 >cseq_equivalence_list modulus x y = codiagonals $ cseq_equivalence_matrix modulus x y
 
 >converges :: (MetricSpace a) => Stream a -> a -> Stream [Scalar a]

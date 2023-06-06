@@ -11,6 +11,7 @@
 >-- > ("3 kg" :: Mass) %+ ("5 kg" :: Mass)
 >-- > 8.0 kg
 >import GHC.Exts (IsList(..), IsString(..))
+>import safe Math.Number.StreamInterface
 >import safe Math.Number.Stream
 >import safe Math.Number.DimensionalAnalysis
 >import safe Math.Number.Units

@@ -1,7 +1,8 @@
 >{-# LANGUAGE Safe,ExistentialQuantification, TypeOperators, Rank2Types #-}
 >{-# LANGUAGE Arrows, TypeFamilies, StandaloneDeriving, FlexibleContexts #-}
 >{-# LANGUAGE FlexibleInstances, PatternSynonyms #-}
->{-# LANGUAGE QuantifiedConstraints, UndecidableInstances #-}
+>{-# LANGUAGE QuantifiedConstraints, UndecidableInstances, GADTs, DataKinds #-}
+>{-# LANGUAGE PatternSynonyms, MultiParamTypeClasses, AllowAmbiguousTypes #-}
 >module Math.Matrix.Matrix where
 >import Data.Complex
 >import Data.Array (Array)
@@ -29,6 +30,8 @@
 >import Math.Matrix.Linear
 >import Math.Tools.CoMonad
 >import Data.Type.Equality
+>import Data.Kind
+>import GHC.TypeLits
 >import Prelude hiding (id, (.))
 
 The :*: should be used when the number of dimensions of matrix is
@@ -301,3 +304,41 @@ instance (Functor g, Functor f, Builder a) => Builder (Matrix g f a) where
 
 >matrix_iso :: f (g a) :==: (f :*: g) a
 >matrix_iso = Matrix <-> cells
+
+>matrix_size :: (CoordinateSpace (g (f a)), CoordinateSpace (f (g a)), Transposable f g a)
+>  => (f :*: g) a -> (Int,Int)
+>matrix_size m = ((dimension_size $ cells m),
+>                 (dimension_size $ cells $ transpose_impl m))
+
+>data Strassen_Split f g a where
+>  Strassen_Two :: (Vector2 :*: Vector2) a -> Strassen_Split Vector1 Vector1 a
+>  Strassen_PowerOfTwo :: Strassen_Split f g a -> Strassen_Split f g a
+>                     -> Strassen_Split f g a -> Strassen_Split f g a
+>                     -> Strassen_Split f g a
+
+>strassen_plus :: (Num a) => Strassen_Split f g a -> Strassen_Split f g a -> Strassen_Split f g a
+>strassen_plus (Strassen_Two a) (Strassen_Two b) = Strassen_Two (a %+ b)
+>strassen_plus (Strassen_PowerOfTwo a b c d) (Strassen_PowerOfTwo a' b' c' d')
+>   = Strassen_PowerOfTwo (strassen_plus a a') (strassen_plus b b') (strassen_plus c c') (strassen_plus d d')
+>strassen_minus :: (Num a) => Strassen_Split f g a -> Strassen_Split f g a -> Strassen_Split f g a
+>strassen_minus (Strassen_Two a) (Strassen_Two b) = Strassen_Two (a %- b)
+>strassen_minus (Strassen_PowerOfTwo a b c d) (Strassen_PowerOfTwo a' b' c' d')
+>   = Strassen_PowerOfTwo (strassen_minus a a') (strassen_minus b b') (strassen_minus c c') (strassen_minus d d')
+
+>-- | <https://en.wikipedia.org/wiki/Strassen_algorithm>
+>strassen_matrix_multiply ::
+> (ConjugateSymmetric a,Num a) => Strassen_Split f g a -> Strassen_Split g h a -> Strassen_Split f h a
+>strassen_matrix_multiply (Strassen_Two m) (Strassen_Two n) = Strassen_Two (m %*% n)
+>strassen_matrix_multiply (Strassen_PowerOfTwo a11 a12 a21 a22) (Strassen_PowerOfTwo b11 b12 b21 b22)
+>     = Strassen_PowerOfTwo c11 c12 c21 c22
+>  where c11 = m1 `strassen_plus` m4 `strassen_minus` m5 `strassen_plus` m7
+>        c12 = m3 `strassen_plus` m5
+>        c21 = m2 `strassen_plus` m4
+>        c22 = m1 `strassen_minus` m2 `strassen_plus` m3 `strassen_plus` m6
+>        m1 = (a11 `strassen_plus` a22) `strassen_matrix_multiply` (b11 `strassen_plus` b22)
+>        m2 = (a21 `strassen_plus` a22) `strassen_matrix_multiply` b11
+>        m3 = a11 `strassen_matrix_multiply` (b12 `strassen_minus` b22)
+>        m4 = a22 `strassen_matrix_multiply` (b21 `strassen_minus` b11)
+>        m5 = (a11 `strassen_plus` a12) `strassen_matrix_multiply` b22
+>        m6 = (a21 `strassen_minus` a11) `strassen_matrix_multiply` (b11 `strassen_plus` b12)
+>        m7 = (a12 `strassen_minus` a22) `strassen_matrix_multiply` (b21 `strassen_plus` b22)
