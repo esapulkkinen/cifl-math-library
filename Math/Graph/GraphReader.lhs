@@ -1,4 +1,4 @@
->{-# LANGUAGE Safe #-}
+>{-# LANGUAGE Safe, FlexibleContexts #-}
 >module Math.Graph.GraphReader where
 >import Math.Graph.GraphMonoid
 >import qualified Data.Set as Set
@@ -7,7 +7,7 @@
 >import Math.Graph.Reversible
 >import Math.Graph.InGraphMonad
 
->dfsM :: (Monad m, Ord e, GraphMonoid mon e) => e -> InGraphM mon e m (Forest e)
+>dfsM :: (Monad m, Ord e, GraphMonoid mon Bool) => e -> InGraphM mon e m (Forest e)
 >dfsM root = do edgeset <- edgesStartingFromM root
 >               let edgelist = Set.toList edgeset
 >               childnodes <- mapM targetM edgelist              

@@ -80,13 +80,16 @@
 >currentGraphM :: (Monad m) => InGraphM mon e m (Graph mon e)
 >currentGraphM = InGraphM ask
 
->actM :: (Monad m) => e -> mon e e -> InGraphM mon e m e
->actM e m = do { g <- currentGraphM ; return (action g e m) }
+>actM :: (Monad m) => e -> mon Bool Bool -> InGraphM mon e m e
+>actM e m = currentGraphM >>= \g -> return $ action g e m
 
->elementsM :: (Monad m) => InGraphM mon e m (Set e)
+>actSetM :: (Monad m, Ord e) => Set e -> mon Bool Bool -> InGraphM mon e m (Set e)
+>actSetM e m = do { g <- currentGraphM ; return $ Set.map (\ee -> action g ee m) e }
+
+>elementsM :: (Monad m, Ord e) => InGraphM mon e m (Set e)
 >elementsM = InGraphM $ do { g <- ask ; return (elements g) }
 
->instance (GraphMonoid mon e, Monad m, Ord e) => GraphMonad (InGraphM mon e m) e where
+>instance (GraphMonoid mon Bool, Monad m, Ord e) => GraphMonad (InGraphM mon e m) e where
 >  gelements = elementsM
 >  gvertices = verticesM
 >  gedges = edgesM
@@ -97,51 +100,50 @@
 >  gtarget = targetM
 >  gisVertex = isVertexM
 
->instance (ReversibleGraphMonoid mon e, Monad m, Ord e) => ReversibleGraphMonad (InGraphM mon e m) e where
+>instance (ReversibleGraphMonoid mon Bool, Monad m, Ord e) => ReversibleGraphMonad (InGraphM mon e m) e where
 >   ginverse = inverseM
 >   greversibleLinks = reversibleLinksM
 
->verticesM :: (Ord e, GraphMonoid mon e, Monad m) => InGraphM mon e m (Set e)
+>verticesM :: (Ord e, GraphMonoid mon Bool, Monad m) => InGraphM mon e m (Set e)
 >verticesM = InGraphM $ do
->   g <- ask 
->   return $ Set.filter (\a -> action g a gdom == a) $ elements g
+>   g <- ask
+>   return $ vertices g
 
->edgesM :: (Ord e, GraphMonoid mon e, Monad m) => InGraphM mon e m (Set e)
+>edgesM :: (Ord e, GraphMonoid mon Bool, Monad m) => InGraphM mon e m (Set e)
 >edgesM = InGraphM $ do
 >          g <- ask
->          return $ Set.filter (\a -> action g a gdom /= a) $ elements g
+>          return $ edges g
 
->nodesLinkedFromM :: (Monad m, Ord e, GraphMonoid mon e)
+>nodesLinkedFromM :: (Monad m, Ord e, GraphMonoid mon Bool)
 >                  => e -> InGraphM mon e m (Set e)
 >nodesLinkedFromM node = do edges <- edgesStartingFromM node
 >                           mapSetM targetM edges
 
->edgesStartingFromM :: (Monad m, Ord e, GraphMonoid mon e)
+>edgesStartingFromM :: (Monad m, Ord e, GraphMonoid mon Bool)
 >                   => e -> InGraphM mon e m (Set e)
 >edgesStartingFromM x = InGraphM $ do
 >                         edges <- runInGraphM edgesM
 >                         g <- ask
->                         return $ Set.filter (\a -> action g a gdom == x) edges
+>                         return $ Set.filter (\ e -> action g e gdom == x) $ edges
 
->edgesEndingToM :: (Monad m, Ord e, GraphMonoid mon e)
+>edgesEndingToM :: (Monad m, Ord e, GraphMonoid mon Bool)
 >               => e -> InGraphM mon e m (Set e)
 >edgesEndingToM x = InGraphM $ do
 >                         edges <- runInGraphM edgesM
 >                         g <- ask
->                         return $ Set.filter (\a -> action g a gcod == x) edges
+>                         return $ Set.filter (\ e -> action g e gcod == x) $ edges
 
->linksM :: (Monad m, Ord e, GraphMonoid mon e) => InGraphM mon e m (Set (e,e,e))
+>linksM :: (Monad m, Ord e, GraphMonoid mon Bool) => InGraphM mon e m (Set (e,e,e))
 >linksM = InGraphM $ do 
 >            g <- ask
 >            edges <- runInGraphM edgesM
 >            return $ Set.map (\e -> (e,action g e gdom, action g e gcod)) edges
 
-
->reversibleLinksM :: (Monad m, Ord e, ReversibleGraphMonoid mon e) => InGraphM mon e m (Set ((e,e),(e,e)))
+>reversibleLinksM :: (Monad m, Ord e, ReversibleGraphMonoid mon Bool) => InGraphM mon e m (Set ((e,e),(e,e)))
 >reversibleLinksM = InGraphM $ do
 >                     g <- ask
 >                     edges <- runInGraphM edgesM
->                     let edgedata =  Set.map (\e -> ((e,action g e gnot), (action g e gdom, action g e gcod))) edges 
+>                     let edgedata = Set.map (\e -> ((e,action g e gnot), (action g e gdom, action g e gcod))) edges
 >                     return $ fst $ includeExcludeEdges edgedata
 >    where includeExcludeEdges s = Set.fold (\ ((e,re),(x,y)) (include,exclude) 
 >                                          -> if not $ e `Set.member` exclude then
@@ -149,16 +151,16 @@
 >                                                Set.insert re exclude)
 >                                              else (include,Set.insert re exclude)) (Set.empty,Set.empty) s
 
->sourceM :: (GraphMonoid mon e, Monad m) => e -> InGraphM mon e m e
+>sourceM :: (GraphMonoid mon Bool, Monad m) => e -> InGraphM mon e m e
 >sourceM e = e `actM` gdom
 
->targetM :: (GraphMonoid mon e, Monad m) => e -> InGraphM mon e m e
+>targetM :: (GraphMonoid mon Bool, Monad m) => e -> InGraphM mon e m e
 >targetM e = e `actM` gcod
 
->inverseM :: (ReversibleGraphMonoid mon e, Monad m) => e -> InGraphM mon e m e
+>inverseM :: (ReversibleGraphMonoid mon Bool, Monad m) => e -> InGraphM mon e m e
 >inverseM e = e `actM` gnot
 
->isSourceVertexM :: (GraphMonoid mon e, Monad m, Eq e) => e -> InGraphM mon e m Bool
+>isSourceVertexM :: (GraphMonoid mon Bool, Monad m, Eq e) => e -> InGraphM mon e m Bool
 >isSourceVertexM element = sourceM element >>= \s -> return (s == element)
 
 >-- | equally valid implementation. These are equivalent in normal graphs
@@ -182,16 +184,16 @@
 >-- prop> target . target == target
 >--
 >-- Due to the first two, it's not necessary to distinguish these operations.
->isTargetVertexM :: (GraphMonoid mon e, Monad m, Eq e) => e -> InGraphM mon e m Bool
+>isTargetVertexM :: (GraphMonoid mon Bool, Monad m, Eq e) => e -> InGraphM mon e m Bool
 >isTargetVertexM element = targetM element >>= \s -> return (s == element)
 
->isVertexM :: (GraphMonoid mon e, Monad m, Eq e) => e -> InGraphM mon e m Bool
+>isVertexM :: (GraphMonoid mon Bool, Monad m, Eq e) => e -> InGraphM mon e m Bool
 >isVertexM e = liftM2 (&&) (isSourceVertexM e) (isTargetVertexM e)
 
->isEdgeM :: (GraphMonoid mon e, Monad m, Eq e) => e -> InGraphM mon e m Bool
+>isEdgeM :: (GraphMonoid mon Bool, Monad m, Eq e) => e -> InGraphM mon e m Bool
 >isEdgeM element = isVertexM element >>= (return . not)
 
->hasPathM :: (GraphMonoid mon e, Monad m, Eq e) => [e] -> InGraphM mon e m Bool
+>hasPathM :: (GraphMonoid mon Bool, Monad m, Eq e) => [e] -> InGraphM mon e m Bool
 >hasPathM [c] = isEdgeM c
 >hasPathM (c:d:cr) = do e <- isEdgeM c
 >                       t <- targetM c
@@ -201,20 +203,20 @@
 >hasPathM []  = return False
 
 
->isEdgeBetweenM :: (Monad m, GraphMonoid mon e, Eq e)
+>isEdgeBetweenM :: (Monad m, GraphMonoid mon Bool, Eq e)
 >        => e -> e -> e -> InGraphM mon e m Bool
 >isEdgeBetweenM edge x y = do s <- sourceM edge
 >                             t <- targetM edge
 >                             return (x == s && y == t)
 
->isLoopM :: (Eq e, Monad m, GraphMonoid mon e) => e -> InGraphM mon e m Bool
+>isLoopM :: (Eq e, Monad m, GraphMonoid mon Bool) => e -> InGraphM mon e m Bool
 >isLoopM edge = do { s <- sourceM edge ; t <- targetM edge ; return (s == t) }
 
->isOneLaneLoopM :: (Eq e, Monad m, ReversibleGraphMonoid mon e)
+>isOneLaneLoopM :: (Eq e, Monad m, ReversibleGraphMonoid mon Bool)
 >               => e -> InGraphM mon e m Bool
 >isOneLaneLoopM edge = inverseM edge >>= \ie -> return (ie == edge)
 
->instance (Ord a, GraphMonoid m a) => Visitor (Graph m a) where
+>instance (Ord a, GraphMonoid m Bool) => Visitor (Graph m a) where
 >   data Fold (Graph m a) b = GraphFold {
 >     graphfold_initial :: b,
 >     graphfold_vertex  :: a -> b -> b,
@@ -235,7 +237,7 @@ liftStateGraph m = ask >>= \g -> lift (inGraphM g m)
 >                => InGraphM mon e m a -> t m a
 >liftReaderGraph m = ask >>= \g -> lift (inGraphM g m)
 
->instance (Monad m, Ord e, GraphMonoid mon e) => GraphMonad (ReaderT (Graph mon e) m) e where
+>instance (Monad m, Ord e, GraphMonoid mon Bool) => GraphMonad (ReaderT (Graph mon e) m) e where
 >   gisVertex e = liftReaderGraph (gisVertex e)
 >   gsource e = liftReaderGraph (gsource e)
 >   gtarget e = liftReaderGraph (gtarget e)
@@ -246,6 +248,6 @@ liftStateGraph m = ask >>= \g -> lift (inGraphM g m)
 >   gedgesEndingTo = liftReaderGraph . gedgesEndingTo
 >   glinks = liftReaderGraph glinks
 
->instance (Monad m, Ord e, ReversibleGraphMonoid mon e) => ReversibleGraphMonad (ReaderT (Graph mon e) m) e where
+>instance (Monad m, Ord e, ReversibleGraphMonoid mon Bool) => ReversibleGraphMonad (ReaderT (Graph mon e) m) e where
 >   ginverse = liftReaderGraph . ginverse
 >   greversibleLinks = liftReaderGraph greversibleLinks

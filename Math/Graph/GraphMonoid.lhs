@@ -16,6 +16,8 @@
 >import Math.Tools.PrettyP
 >import Math.Tools.CoMonad
 >import Math.Tools.Adjunction (swap)
+>import Data.Set (Set)
+>import qualified Data.Set as Set
 >import Data.Map (Map)
 >import qualified Data.Map as Map
 >import qualified Data.Monoid as Monoid
@@ -30,7 +32,7 @@
 >data GraphElem v e = Vertex v | Edge e
 >  deriving (Eq, Ord, Show, Read)
 
->deriving instance Typeable (GraphElem v e)
+>deriving instance (Typeable v, Typeable e) => Typeable (GraphElem v e)
 >deriving instance (Data v, Data e) => Data (GraphElem v e)
 
 >instance (PpShow v, PpShow e) => PpShow (GraphElem v e) where
@@ -45,8 +47,8 @@
 >eitherGraphElem f g (Vertex v) = f v
 >eitherGraphElem f g (Edge e) = g e
 
->instance (Universe v, Universe e) => Universe (GraphElem v e) where
->   all_elements = (map Vertex all_elements) ++ (map Edge all_elements)
+instance (Universe v, Universe e) => Universe (GraphElem v e) where
+   all_elements = (map Vertex all_elements) ++ (map Edge all_elements)
 
 >class (Eq (arr a a), Monoid.Monoid (arr a a)) => GraphMonoid arr a where
 >   gdom :: arr a a
@@ -75,8 +77,8 @@
 >deriving instance Eq (Three a a)
 >deriving instance Show (Three a a)
 >deriving instance Ord (Three a a)
->deriving instance Typeable (Three a a)
->deriving instance (Typeable a, Data a) => Data (Three a a)
+>deriving instance (Typeable a) => Typeable (Three a a)
+>deriving instance (Data a) => Data (Three a a)
 
 
 >instance Cat.Category Three where
@@ -85,13 +87,17 @@
 
 data Three = TId | TDom | TCod deriving (Eq,Show,Ord, Typeable, Data, Generic)
 
->three_action :: (g -> g) -> (g -> g) -> (g -> g) -> Three g g -> Endo g
+>-- | intent is that g =~= F Bool, where F : 2^{op} -> Set. But opposite categories are difficult to represent.
+>three_action :: (g -> g) -> (g -> g) -> (g -> g)
+>   -> Three Bool Bool -> Endo g
 >three_action a b c = \case
 >  TId -> Endo a
 >  TDom -> Endo b
 >  TCod -> Endo c
 
->three_action_arr :: (ArrowChoice arr) => arr g g -> arr g g -> arr g g -> Three g g -> arr g g
+
+>-- | intent is that g =~= F Bool, where F : 2^{op} -> Set. But opposite categories are difficult to represent.
+>three_action_arr :: (ArrowChoice arr) => arr g g -> arr g g -> arr g g -> Three Bool Bool -> arr g g
 >three_action_arr a b c f = proc i -> case f of { TId -> a -< i ; TDom -> b -< i ; TCod -> c -< i }
 
 >instance (Arrow arr) => MonoidArrow arr (Three Bool Bool) Bool where
@@ -122,7 +128,7 @@ data Three = TId | TDom | TCod deriving (Eq,Show,Ord, Typeable, Data, Generic)
 >mappend_three TCod TDom = TCod
 >mappend_three TCod TCod = TCod
 
->instance GraphMonoid Three a where
+>instance GraphMonoid Three Bool where
 >   gdom = TDom
 >   gcod = TCod
 
@@ -141,24 +147,22 @@ data Three = TId | TDom | TCod deriving (Eq,Show,Ord, Typeable, Data, Generic)
 >data Restricted (g :: * -> Constraint) a b where
 >  Restricted :: (g a) => a -> Restricted g a a
 
->data GEndo b c where
->  GEndo :: Endo a -> GEndo a a
->
-
 data Four = FId | FDom | FCod | FNot deriving (Eq,Show, Ord, Typeable, Data, Generic)
 
 >three_to_four :: Three a b -> Four a b
 >three_to_four = \case { TId -> FId ;  TDom -> FDom ; TCod -> FCod }
 
+>-- | intent is that g =~= F Bool, where F : 2^{op} -> Set. But opposite categories are difficult to represent.
 >four_action_arr :: (ArrowChoice arr)
->  => arr g g -> arr g g -> arr g g -> arr g g -> Four g g -> arr g g
+>  => arr g g -> arr g g -> arr g g -> arr g g -> Four Bool Bool -> arr g g
 >four_action_arr aid adom acod anot f = proc v -> case f of
 >   FId -> aid -< v
 >   FDom -> adom -< v
 >   FCod -> acod -< v
 >   FNot -> anot -< v
 
->four_action :: (g -> g) -> (g -> g) -> (g -> g) -> (g -> g) -> Four g g -> Endo g
+>-- | intent is that g =~= F Bool, where F : 2^{op} -> Set. But opposite categories are difficult to represent.
+>four_action :: (g -> g) -> (g -> g) -> (g -> g) -> (g -> g) -> Four Bool Bool -> Endo g
 >four_action aid adom acod anot = \case
 >  FId -> Endo aid
 >  FDom -> Endo adom
@@ -181,10 +185,10 @@ data Four = FId | FDom | FCod | FNot deriving (Eq,Show, Ord, Typeable, Data, Gen
 >   monoidA FNot = arr not
 
 
->instance Semigroup (Four a a) where
+>instance Semigroup (Four Bool Bool) where
 >   (<>) = mappend_four
 
->instance Monoid (Four a a) where
+>instance Monoid (Four Bool Bool) where
 >   mempty = FId
 >   mappend = mappend_four
 >
@@ -205,22 +209,22 @@ data Four = FId | FDom | FCod | FNot deriving (Eq,Show, Ord, Typeable, Data, Gen
 >mappend_four FNot FCod = FDom
 >mappend_four FNot FNot = FId
 
->instance Group (Four a a) where
+>instance Group (Four Bool Bool) where
 >   ginvert FId = FId
 >   ginvert FDom = FCod
 >   ginvert FCod = FDom
 >   ginvert FNot = FNot
 
->instance Group (Three a a) where
+>instance Group (Three Bool Bool) where
 >   ginvert TId = TId
 >   ginvert TDom = TCod
 >   ginvert TCod = TDom
 
->instance GraphMonoid Four a where
+>instance GraphMonoid Four Bool where
 >   gdom = FDom
 >   gcod = FCod
 
->instance ReversibleGraphMonoid Four a where
+>instance ReversibleGraphMonoid Four Bool where
 >   gnot = FNot
 
 >vertexEndo :: m -> Endo a
@@ -229,32 +233,34 @@ data Four = FId | FDom | FCod | FNot deriving (Eq,Show, Ord, Typeable, Data, Gen
 >optEndo :: (Eq a) => [(a,a)] -> Bool -> Endo a
 >optEndo lst m = Endo $ \a -> if m then maybe a id (lookup a lst) else a
 
->edge :: a -> (a,a) -> Three a a -> a
->edge a (x,y) m | m == gdom = x
->               | m == gcod = y
->               | otherwise = a
+>edge :: a -> (a,a) -> Three Bool Bool -> a
+>edge a (x,y) = \m -> case m of
+>    TDom -> x
+>    TCod -> y
+>    TId -> a
 
->edgeE :: e -> (v,v) -> Three (GraphElem v e) (GraphElem v e) -> GraphElem v e
->edgeE a (x,y) m | m == gdom = Vertex x
->                | m == gcod = Vertex y
->                | otherwise = Edge a
+>edgeE :: e -> (v,v) -> Three Bool Bool -> GraphElem v e
+>edgeE a (x,y) = \m -> case m of
+>    TDom -> Vertex x
+>    TCod -> Vertex y
+>    _ -> Edge a
 
->bidirectionalEdge :: (a,a) -> (a,a) -> Four a a -> a
->bidirectionalEdge (a,ra) (x,y) m
-> | m == gdom   = x
-> | m == gcod   = y
-> | m == mempty = a
-> | m == gnot   = ra
+>bidirectionalEdge :: (f a,f a) -> (f a,f a) -> Four a a -> f a
+>bidirectionalEdge (a,ra) (x,y) = \m -> case m of
+>  FDom -> x
+>  FCod -> y
+>  FId -> a
+>  FNot -> ra
 >
 >bidirectionalEdgeE :: (e,e) -> (v,v) -> Four (GraphElem v e) (GraphElem v e) -> GraphElem v e
->bidirectionalEdgeE (a,ra) (x,y) m
-> | m == gdom = Vertex x
-> | m == gcod = Vertex y
-> | m == mempty = Edge a
-> | m == gnot   = Edge ra
+>bidirectionalEdgeE (a,ra) (x,y) = \m -> case m of
+> FDom -> Vertex x
+> FCod -> Vertex y
+> FId -> Edge a
+> FNot -> Edge ra
 
->edgesFromMapArr :: (Ord a, ArrowChoice arr, FailureArrow arr String) => Map a (a,a) -> Three a a -> arr a a
->edgesFromMapArr edgemap m = proc a -> do
+>edgesFromMapArr :: (Ord a, ArrowChoice arr, FailureArrow arr String) => Map a (a,a) -> Three Bool Bool -> arr a a
+>edgesFromMapArr edgemap = \ m -> proc a -> do
 >   v <- arr (\ (a',e) -> Map.lookup a' e) -< (a,edgemap)
 >   case v of
 >     (Just (x,y)) -> returnA -< edge a (x,y) m
@@ -264,15 +270,15 @@ data Four = FId | FDom | FCod | FNot deriving (Eq,Show, Ord, Typeable, Data, Gen
 >        if a `elem` vertices then returnA -< a
 >                   else failA -< "edgesFromMapArr: Cannot find vertex"
 
->edgesFromMapEndo :: (Ord a) => Map a (a,a) -> Three a a -> Endo a
->edgesFromMapEndo edgemap m = Endo $ \a -> case Map.lookup a edgemap of
+>edgesFromMapEndo :: (Ord a) => Map a (a,a) -> Three Bool Bool -> Endo a
+>edgesFromMapEndo edgemap = \m -> Endo $ \a -> case Map.lookup a edgemap of
 >   (Just (x,y)) -> edge a (x,y) m
 >   Nothing      -> let edges = Map.elems edgemap
 >                       vertices = map fst edges ++ map snd edges
 >                    in if a `elem` vertices then a else error "edgesFromMapEndo: Cannot find vertex"
 
->edgesFromMapEndoE :: (Ord e, Ord v) => Map e (v,v) -> Three (GraphElem v e) (GraphElem v e) -> Endo (GraphElem v e)
->edgesFromMapEndoE edgemap m = Endo $ \case
+>edgesFromMapEndoE :: (Ord e, Ord v) => Map e (v,v) -> Three Bool Bool -> Endo (GraphElem v e)
+>edgesFromMapEndoE edgemap = \m -> Endo $ \case
 > (Edge e) -> case Map.lookup e edgemap of
 >     (Just (x,y)) -> edgeE e (x,y) m
 >     Nothing -> error "edgesFromMapEndoE: cannot find edge"
@@ -282,45 +288,44 @@ data Four = FId | FDom | FCod | FNot deriving (Eq,Show, Ord, Typeable, Data, Gen
 >                    else error "edgesFromMapEndoE: cannot find vertex"
 
 >-- | from list of (v_i,e_i), the loopEndo contains edges e_i : v_i -> v_i
->loopEndo :: (Eq a) => [(a,a)] -> Three a a -> Endo a
+>loopEndo :: (Ord a) => [(a,a)] -> Three Bool Bool -> Endo a
 >loopEndo lst = edgesEndo $ map (\(v,e) -> (e,(v,v))) lst
 
->loopEndoE :: (Eq v, Eq e) => [(v,e)] -> Three (GraphElem v e) (GraphElem v e) -> Endo (GraphElem v e)
+>loopEndoE :: (Ord v, Ord e) => [(v,e)] -> Three Bool Bool -> Endo (GraphElem v e)
 >loopEndoE lst = edgesEndoE $ map (\(v,e) -> (e,(v,v))) lst
 
->edgesArr :: (Eq a, ArrowChoice arr, FailureArrow arr String) => [(a,(a,a))] -> Three a a -> arr a a
->edgesArr lst m = proc a -> do
+>edgesArr :: (Eq a, ArrowChoice arr, FailureArrow arr String) => [(a,(a,a))] -> Three Bool Bool -> arr a a
+>edgesArr lst = \m -> proc a -> do
 >   case lookup a lst of
 >     (Just pair) -> returnA -< edge a pair m
 >     Nothing -> do
 >        let vertices = map (fst . snd) lst ++ map (snd . snd) lst
 >          in if a `elem` vertices then returnA -< a else failA -< "Cannot find vertex"
 
->edgesEndoE :: (Eq v, Eq e)
-> => [(e,(v,v))] -> Three (GraphElem v e) (GraphElem v e) -> Endo (GraphElem v e)
->edgesEndoE lst m = edgesEndo lst' m
->   where lst' = fmap (\ (e,(v1,v2)) -> (Edge e,(Vertex v1, Vertex v2))) lst
+>edgesEndoE :: (Ord v, Ord e)
+> => [(e,(v,v))] -> Three Bool Bool -> Endo (GraphElem v e)
+>edgesEndoE lst = edgesEndo (lst' lst)
+>   where lst' ll = fmap (\ (e,(v1,v2)) -> (Edge e,(Vertex v1, Vertex v2))) ll
 
->edgesEndo :: (Eq a) => [(a,(a,a))] -> Three a a -> Endo a
->edgesEndo lst m = Endo $ \a -> case lookup a lst of
+>edgesEndo :: (Ord a) => [(a,(a,a))] -> Three Bool Bool -> Endo a
+>edgesEndo lst m = Endo find
+>   where find a = case lookup a lst of
+>            (Just pair) -> edge a pair m
+>            Nothing  -> let vertices = map (fst . snd) lst ++ map (snd . snd) lst
+>                         in if a `elem` vertices then a else error "Cannot find vertex"
+
+>edgesEndo' :: (Eq a) => [(a,(a,a))] -> Three Bool Bool -> Endo a
+>edgesEndo' lst = \m -> Endo $ \a -> case lookup a lst of
 >   (Just pair) -> edge a pair m
 >   Nothing  -> let vertices = map (fst . snd) lst ++ map (snd . snd) lst
 >                in if a `elem` vertices then a else error "Cannot find vertex"
 
->reversibleEdgesArr :: (Eq a, ArrowChoice arr) => [((a,a),(a,a))] -> Four a a -> arr a a
->reversibleEdgesArr lst = four_action_arr Cat.id domLookup codLookup negLookup
->  where fwdSearch = map (\ ~(~(a,b),x) -> (a,(b,x))) lst
->                  ++ map (\ ~(~(a,b),x) -> (b,(a,swap x))) lst
->        domLookup = proc a -> returnA -< maybe a (fst . snd) (lookup a fwdSearch)
->        codLookup = proc a -> returnA -< maybe a (snd . snd) (lookup a fwdSearch)
->        negLookup = proc a -> returnA -< maybe a fst (lookup a fwdSearch)
-
->reversibleEdgesEndoE :: (Eq v, Eq e)
-> => [((e,e),(v,v))] -> Four (GraphElem v e) (GraphElem v e) -> Endo (GraphElem v e)
+>reversibleEdgesEndoE :: (Ord v, Ord e)
+> => [((e,e),(v,v))] -> Four Bool Bool -> Endo (GraphElem v e)
 >reversibleEdgesEndoE lst = reversibleEdgesEndo $
 >  fmap (\((e1,e2), (v1,v2)) -> ((Edge e1, Edge e2), (Vertex v1, Vertex v2))) lst
 
->reversibleEdgesEndo :: (Eq a) => [((a,a),(a,a))] -> Four a a -> Endo a
+>reversibleEdgesEndo :: (Ord a) => [((a,a),(a,a))] -> Four Bool Bool -> Endo a
 >reversibleEdgesEndo lst = four_action id domLookup codLookup negLookup
 >   where fwdSearch = map (\ ~(~(a,b),x) -> (a,(b,x))) lst
 >                  ++ map (\ ~(~(a,b),x) -> (b,(a,swap x))) lst
@@ -329,7 +334,7 @@ data Four = FId | FDom | FCod | FNot deriving (Eq,Show, Ord, Typeable, Data, Gen
 >         negLookup a = maybe a fst         (lookup a fwdSearch)
 
 >edgePairEndo :: (m -> Endo a) -> (n -> Endo b) -> (m,n) -> Endo (a,b)
->edgePairEndo f g (x,y) = Endo $ \(a,b) -> (f x `appEndo` a, g y `appEndo` b)
+>edgePairEndo f g = \(x,y) -> Endo $ \(a,b) -> (f x `appEndo` a, g y `appEndo` b)
 
 >-- | This is closest that the endomorphism is to a functor.
 >mapEndo :: a :==: b -> Endo a :==: Endo b

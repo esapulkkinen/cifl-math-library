@@ -15,9 +15,6 @@
 >  id = GraphMap id
 >  (GraphMap f) . (GraphMap g) = GraphMap (f . g)
 
->actGraph :: (Ord a) => m a a -> GraphMap m a a
->actGraph m = GraphMap $ \ (Graph s act) -> Graph (Set.map (appEndo (act m)) s) act
-
 >terminal :: GraphMap m a ()
 >terminal = GraphMap (const emptyG)
   
@@ -25,5 +22,5 @@
 >element g = GraphMap (const g)
 
 >graphIso :: (Arrow m, Ord a, Ord b) => a :==: b -> GraphMap m a b
->graphIso (Iso f g) = GraphMap $ \ (Graph s act) -> Graph (Set.map f s) (action act)
->   where action act m = Endo $ \b -> f $ act (arr g . m . arr f) `appEndo` (g b)
+>graphIso (Iso f g) = GraphMap $ \ (Graph v e act) -> Graph (Set.map f v) (Set.map f e) (action act)
+>   where action act m = Endo $ f . appEndo (act m) . g

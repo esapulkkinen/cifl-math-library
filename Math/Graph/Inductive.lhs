@@ -1,4 +1,4 @@
->{-# LANGUAGE Safe #-}
+>{-# LANGUAGE Safe, FlexibleContexts #-}
 >module Math.Graph.Inductive where
 >import Data.Maybe
 >import Data.Set (Set)
@@ -10,7 +10,7 @@
 >import Math.Graph.GraphMonoid
 >import qualified Data.Graph.Inductive.Graph as HGraph
 >
->convertToInductiveGraph :: (Monad m, Ord a, HGraph.Graph gr, GraphMonoid mon a) => InGraphM mon a m (gr a a)
+>convertToInductiveGraph :: (Monad m, Ord a, HGraph.Graph gr, GraphMonoid mon Bool) => InGraphM mon a m (gr a a)
 >convertToInductiveGraph = do
 >   vertices <- verticesM
 >   let vertexlist = zip (Set.toList vertices) [0..]

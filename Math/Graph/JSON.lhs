@@ -16,7 +16,7 @@
 >import qualified Data.Text as T hiding (concatMap)
 >import Data.String
 
->jsonDigraphToJSON :: (Monad m, GraphMonoid mon JSON.JSValue) => InGraphM mon JSON.JSValue m JSON.JSValue
+>jsonDigraphToJSON :: (Monad m, GraphMonoid mon Bool) => InGraphM mon JSON.JSValue m JSON.JSValue
 >jsonDigraphToJSON = do edges <- linksM
 >                       let edges' = JSON.makeObj $ map (first JSON.encodeStrict) $ concatMap jlist (Set.toList edges)
 >                       vertices <- verticesM
@@ -25,7 +25,7 @@
 >     where jlist (e,f,t) = [(e,JSON.makeObj [("from", JSON.showJSON f),
 >                                             ("to", JSON.showJSON t)])]
 
->textDigraphToJSON :: (Monad m, GraphMonoid mon T.Text) => InGraphM mon T.Text m JSON.JSValue
+>textDigraphToJSON :: (Monad m, GraphMonoid mon Bool) => InGraphM mon T.Text m JSON.JSValue
 >textDigraphToJSON = do edges <- linksM
 >                       let edges' = JSON.makeObj $ map (first T.unpack) $ concatMap jlist (Set.toList edges)
 >                       vertices <- verticesM
@@ -33,7 +33,7 @@
 >                                              ("edges", JSON.showJSON edges')]
 >    where jlist (e,f,t) = [(e,JSON.makeObj [("from", JSON.showJSON f), ("to",JSON.showJSON t)])]
 
->digraphToJSON :: (Monad m, GraphMonoid mon String) => InGraphM mon String m JSON.JSValue
+>digraphToJSON :: (Monad m, GraphMonoid mon Bool) => InGraphM mon String m JSON.JSValue
 >digraphToJSON = do edges <- linksM
 >                   let edges' = JSON.makeObj $ concatMap jlist (Set.toList edges)
 >                   vertices <- verticesM
@@ -42,8 +42,8 @@
 >   where jlist (e,f,t) = [(e,JSON.makeObj [("from",JSON.showJSON f),
 >                                            ("to",JSON.showJSON t)])]
 
->digraphToJSONString :: (Monad m, GraphMonoid mon String) => InGraphM mon String m String
+>digraphToJSONString :: (Monad m, GraphMonoid mon Bool) => InGraphM mon String m String
 >digraphToJSONString = digraphToJSON >>= (return . JSON.encode)
 
->digraphToJSONText :: (Monad m, GraphMonoid mon T.Text) => InGraphM mon T.Text m T.Text
+>digraphToJSONText :: (Monad m, GraphMonoid mon Bool) => InGraphM mon T.Text m T.Text
 >digraphToJSONText = textDigraphToJSON >>= (return . T.pack . JSON.encode)

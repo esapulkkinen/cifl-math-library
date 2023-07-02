@@ -1,4 +1,4 @@
->{-# LANGUAGE Trustworthy #-}
+>{-# LANGUAGE Trustworthy, FlexibleContexts #-}
 >module Math.Graph.Dot where
 >import Data.Text.Lazy hiding (map)
 >import Data.Set (Set)
@@ -10,7 +10,7 @@
 >import Math.Graph.GraphMonoid
 >import Math.Graph.InGraphMonad
 
->convertToDotGraph :: (Monad m, Ord n,Show n, GraphMonoid mon n) => InGraphM mon n m (DotGraph n)
+>convertToDotGraph :: (Monad m, Ord n,Show n, GraphMonoid mon Bool) => InGraphM mon n m (DotGraph n)
 >convertToDotGraph = do
 >   vertices <- verticesM
 >   links    <- linksM
