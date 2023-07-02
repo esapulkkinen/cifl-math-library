@@ -116,14 +116,15 @@
 >destructvec3 :: Vector3 a -> (a,a,a)
 >destructvec3 (Vector3 x y z) = (x,y,z)
 
+>-- lambda used to ensure inlining.
 >setx3 :: s -> Vector3 s -> Vector3 s
->setx3 x v = v { xcoord3 = x }
+>setx3 x = \v -> v { xcoord3 = x }
 
 >sety3 :: s -> Vector3 s -> Vector3 s
->sety3 y v = v { ycoord3 = y }
+>sety3 y = \v -> v { ycoord3 = y }
 
 >setz3 :: s -> Vector3 s -> Vector3 s
->setz3 z v = v { zcoord3 = z }
+>setz3 z = \v -> v { zcoord3 = z }
 
 >set_endo :: Vector3 s -> Vector3 (Mon.Endo (Vector3 s))
 >set_endo = fmap Mon.Endo . set_vector_action
@@ -229,14 +230,14 @@
 
 >instance AppendableVector Vector2 Vector1 where
 >  type (Vector2 :+: Vector1) = Vector3
->  (Vector2 x y) |> (Vector1 z) = Vector3 x y z
+>  (Vector2 x y) ||>> (Vector1 z) = Vector3 x y z
 
 >instance SplittableVector Vector2 Vector1 where
 >  vsplit (Vector3 x y z) = (Vector2 x y,Vector1 z)
 
 >instance AppendableVector Vector1 Vector2 where
 >  type (Vector1 :+: Vector2) = Vector3
->  (Vector1 x) |> (Vector2 y z) = Vector3 x y z
+>  (Vector1 x) ||>> (Vector2 y z) = Vector3 x y z
 
 >instance SplittableVector Vector1 Vector2 where
 >  vsplit (Vector3 x y z) = (Vector1 x, Vector2 y z)
@@ -289,7 +290,7 @@ instance (PpShow (f a)) => PpShow ((Vector3 :*: f) a) where
   pp (Matrix (Vector3 x y z)) = verticalize $ map pp [x,y,z]
 
 >instance Functor Vector3 where
->  fmap f (Vector3 x y z) = Vector3 (f x) (f y) (f z)
+>  fmap f = \ (Vector3 x y z) -> Vector3 (f x) (f y) (f z)
 
 >instance Monad Vector3 where
 >  return x = Vector3 x x x
@@ -347,7 +348,7 @@ approximations_vector3 (Vector3 x y z) = do
 
 
 >op_dot :: (Num b) => Vector3 (a -> b) -> a -> b
->op_dot (Vector3 f g h) z = f z + g z + h z
+>op_dot (Vector3 f g h) = \ z -> f z + g z + h z
 
 >instance Applicative Vector3 where
 >   pure x = Vector3 x x x
@@ -508,8 +509,9 @@ approximations_vector3 (Vector3 x y z) = do
 
 
 >matrix_power3 :: (ConjugateSymmetric a,Num a) => Matrix3 a -> Integer -> Matrix3 a
->matrix_power3 mat 0 = identity3
->matrix_power3 mat i = mat `matrix_multiply3` matrix_power3 mat (pred i)
+>matrix_power3 mat = \case
+>    0 -> identity3
+>    i -> mat `matrix_multiply3` matrix_power3 mat (pred i)
 
 >vector_indices3 :: (Integral a) => Vector3 a
 >vector_indices3 = Vector3 1 2 3

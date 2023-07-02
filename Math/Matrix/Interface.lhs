@@ -81,12 +81,12 @@ cells_linear = cells . fromLinear
 >-- This is the functoriality of the tensor product.
 
 >matrix :: (Functor m, Functor n) => (a -> b -> c) -> m a -> n b -> (m :*: n) c
->matrix f x y = Matrix $ flip fmap x $ \a -> 
->                        flip fmap y $ \b -> f a b
+>matrix f x = \y -> Matrix $ flip fmap x $ \a -> 
+>                            flip fmap y $ \b -> f a b
 
 
 >tensor_product :: (Num a, Functor m, Functor n) => m a -> n a -> (m :*: n) a
->tensor_product x y = matrix (*) x y
+>tensor_product x = \y -> matrix (*) x y
 
 >tensor_product_lin :: (Linearizable arr (:*:) f g a, Num a, Functor f, Functor g)
 > => f a -> g a -> arr (f a) (g a)
@@ -236,10 +236,10 @@ transpose :: (Diagonalizable n a, LinearTransform n m a, LinearTransform m n a, 
 >f <!-!> finv = (I . f) <-> (finv . unI)
 
 >runIndex :: Index m a -> m a -> a
->runIndex f x = unI (f =< x)
+>runIndex f = \ x -> unI (f =< x)
 
 >appIndex :: (Applicative f) => f (Index m a) -> f (m a) -> f a
->appIndex f x = fmap unI $ appIso f =< x
+>appIndex f = \x -> fmap unI $ appIso f =< x
 
 >type Index m a = m a :==: I a
 
@@ -378,7 +378,7 @@ is_unitary m = conj -!< m == inverse m
 
 >class (Applicative m, Applicative n) => AppendableVector m n where
 >  type (m :+: n) :: * -> *
->  (|>) :: m a -> n a -> (m :+: n) a
+>  (||>>) :: m a -> n a -> (m :+: n) a
 
 >class (AppendableVector m n) => SplittableVector m n where
 >  vsplit   :: (m :+: n) a -> (m a, n a)
@@ -843,7 +843,7 @@ instance (Floating a) => NormedSpace [a] where
 
 >instance AppendableVector [] [] where
 >  type ([] :+: []) = []
->  lst |> lst' = lst ++ lst'
+>  lst ||>> lst' = lst ++ lst'
 
 >instance {-# OVERLAPPABLE #-}
 >     (Show (f a)) => Show (([] :*: f) a) where

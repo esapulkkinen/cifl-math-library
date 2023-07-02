@@ -205,7 +205,7 @@ deriving instance (Show a) => Show (Codiagonal Vector2 a)
 
 >instance AppendableVector Vector1 Vector1 where
 >  type (Vector1 :+: Vector1) = Vector2
->  (Vector1 x) |> (Vector1 y) = Vector2 x y
+>  (Vector1 x) ||>> (Vector1 y) = Vector2 x y
 
 >instance SplittableVector Vector1 Vector1 where
 >  vsplit (Vector2 x y) = (Vector1 x, Vector1 y)
@@ -388,7 +388,7 @@ instance (Num a, ConjugateSymmetric a) => LieAlgebra ((Vector2 :*: Vector2) a) w
 >            Vector2 yx _ = f y
 
 >instance Functor Vector2 where 
->   fmap f (Vector2 x y) = Vector2 (f x) (f y)
+>   fmap f = \ (Vector2 x y) -> Vector2 (f x) (f y)
 
 >cross_product_scalar2 :: (Num a) => Vector2 a -> Vector2 a -> a
 >cross_product_scalar2 (Vector2 x y) (Vector2 x' y') = (x*y') - (y*x')

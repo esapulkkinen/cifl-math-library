@@ -45,14 +45,14 @@
 >-- | \[ {\rm{partial\_derivate}}(\Delta, f, x) = \lim_{\epsilon \rightarrow 0}{{f(\Delta_{\epsilon}(x)) - f(x)}\over{\Delta_{\epsilon}(x) - x}} \]
 >partial_derivate :: (Closed eps, Fractional eps)
 > => (eps -> a -> a) -> (a -> eps) -> (a -> eps)
->partial_derivate delta f v = accumulation_point $ limit $ do
+>partial_derivate delta f = \v -> accumulation_point $ limit $ do
 >   let fv = f v
 >   eps <- epsilon_stream
 >   return $! (f (delta eps v) - fv) / eps
 
 >-- | \[ {\rm{partial\_derive}}(\Delta, f, x) = \lim_{\epsilon \rightarrow 0}{{f(\Delta_{\epsilon}(x)) - f(x)}\over{\Delta_{\epsilon}(x) - x}} \]
 >partial_derive :: (Closed a, Infinitesimal Stream a, Fractional a) => (a -> a -> a) -> (a -> a) -> a -> a
->partial_derive delta f v = accumulation_point $ limit $ do
+>partial_derive delta f = \v -> accumulation_point $ limit $ do
 >   let fv = f v
 >   eps <- epsilon_stream
 >   let v_plus_dv = delta eps v
@@ -64,35 +64,35 @@
 >-- \[ \lim_{\epsilon \rightarrow 0} {{f(x+\epsilon)-f(x-\epsilon)}\over{2\epsilon}} \]
 
 >derivate_around :: (Infinitesimal str a) => (a -> a) -> a -> Closure str a
->derivate_around f x = limit $ do
+>derivate_around f = \x -> limit $ do
 >    eps <- epsilon_stream
 >    return $! (f (x + eps) - f (x - eps)) / (2 * eps)
 
 
 >vector_derivate :: (Infinitesimal str (Scalar a), VectorSpace a, Limiting str a)
 > => (Scalar a -> a) -> Scalar a -> Closure str a
->vector_derivate f x = limit $ do
+>vector_derivate f = \x -> limit $ do
 >   let fx = f x -- optimization
 >   eps <- epsilon_stream
 >   return $! (1 / eps) %* (f (x + eps) %- fx)
 
 >derivate_closed :: (Infinitesimal str a) => (a -> a) -> a -> Closure str a
->derivate_closed f x = let fx = f x in limit $ do
+>derivate_closed f = \x -> let fx = f x in limit $ do
 >    eps <- epsilon_stream
 >    return $! (f (x + eps) - fx) / eps
 
 >newtons_method_real :: (Infinitesimal Stream a, Closed a) => (a -> a) -> a -> Closure Stream a
->newtons_method_real f x = limit $ iterate_stream iteration x
+>newtons_method_real f = \x -> limit $ iterate_stream iteration x
 >   where iteration z' = z' - f z' / accumulation_point (derivate_closed f z')
 
 >iterate_stream :: (StreamBuilder str) => (a -> a) -> a -> str a
->iterate_stream f x = pre x $ iterate_stream f (f x)
+>iterate_stream f = \x -> pre x $ iterate_stream f (f x)
 
 
 >-- | <https://en.wikipedia.org/wiki/Differential_calculus>
 >pseudo_derivate :: (Fractional r, Limiting str r, Infinitesimal str a)
 >                => (a -> r) -> a -> Closure str r
->pseudo_derivate f x = limit $ do
+>pseudo_derivate f = \x -> limit $ do
 >    let fx = f x
 >    eps <- epsilon_stream
 >    return $! (f (x + eps) - fx) / f eps

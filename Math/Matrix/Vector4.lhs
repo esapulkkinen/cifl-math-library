@@ -162,25 +162,25 @@ import Math.Matrix.Dimension
 
 >instance AppendableVector Vector1 Vector3 where
 >  type (Vector1 :+: Vector3) = Vector4
->  (Vector1 x) |> (Vector3 y z t) = Vector4 x y z t
+>  (Vector1 x) ||>> (Vector3 y z t) = Vector4 x y z t
 
 >instance SplittableVector Vector1 Vector3 where
 >  vsplit (Vector4 x y z t) = (Vector1 x,Vector3 y z t)
 
 >instance AppendableVector Vector3 Vector1 where
 >  type (Vector3 :+: Vector1) = Vector4
->  (Vector3 x y z) |> (Vector1 t) = Vector4 x y z t
+>  (Vector3 x y z) ||>> (Vector1 t) = Vector4 x y z t
 
 >instance SplittableVector Vector3 Vector1 where
 >  vsplit (Vector4 x y z t) = (Vector3 x y z,Vector1 t)
 
 >instance AppendableVector Vector2 Vector2 where
 >  type (Vector2 :+: Vector2) = Vector4
->  (Vector2 x y) |> (Vector2 z t) = Vector4 x y z t
+>  (Vector2 x y) ||>> (Vector2 z t) = Vector4 x y z t
 
 >instance (StreamBuilder str) => AppendableVector Vector4 str where
 >  type (Vector4 :+: str) = str
->  (Vector4 x y z a) |> s = x `pre` y `pre` z `pre` a `pre` s
+>  (Vector4 x y z a) ||>> s = x `pre` y `pre` z `pre` a `pre` s
 
 >instance SplittableVector Vector2 Vector2 where
 >  vsplit (Vector4 x y z t) = (Vector2 x y, Vector2 z t)
@@ -225,7 +225,7 @@ instance FractionalSpace (Vector4 (Complex R))
 >  show (Matrix (Vector4 a b c d)) = show a ++ "\n" ++ show b ++ "\n" ++ show c ++ "\n" ++ show d
 
 >instance Functor Vector4 where
->  fmap f (Vector4 t x y z) = Vector4 (f t) (f x) (f y) (f z) 
+>  fmap f = \ (Vector4 t x y z) -> Vector4 (f t) (f x) (f y) (f z) 
 
 >instance Monad Vector4 where
 >  return x = Vector4 x x x x

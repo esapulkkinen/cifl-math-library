@@ -162,7 +162,7 @@
 >hasDimension (_ `As` d) d' = d == d'
 
 >instance Functor Quantity where
->   fmap f (x `As` d) = f x `As` d
+>   fmap f = \ (x `As` d) -> f x `As` d
 
 >data DimensionException = InvalidDimensionsException Dimension Dimension String
 >  deriving (Typeable, Show)
@@ -178,7 +178,7 @@
 >mapQuantity :: (a -> b)
 >            -> (Dimension -> Dimension)
 >            -> Quantity a -> Quantity b
->mapQuantity f g ~(r `As` d) = f r `As` g d
+>mapQuantity f g = \ ~(r `As` d) -> f r `As` g d
 
 >mapQuantity2 :: (a -> b -> c) -> (Dimension -> Dimension -> Dimension)
 >             -> Quantity a -> Quantity b -> Quantity c
@@ -215,7 +215,7 @@
 >   conversionFactor _ = 1
 
 >fromQuantityDef :: (Monad m, Alternative m, Show a) => Dimension -> (a -> b) -> Quantity a -> m b
->fromQuantityDef dim ctr (x `As` d) = do { guard (d == dim) ; return $! ctr x }
+>fromQuantityDef dim ctr = \ (x `As` d) -> do { guard (d == dim) ; return $! ctr x }
 >                                <|> invalidDimensionsM "fromQuantityDef" d dim x x
 
 

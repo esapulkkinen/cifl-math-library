@@ -1,10 +1,12 @@
 >{-# LANGUAGE Trustworthy,FlexibleInstances, MultiParamTypeClasses, RankNTypes, ImpredicativeTypes, Arrows, TypeOperators, LambdaCase, ScopedTypeVariables, TypeFamilies #-}
+>{-# LANGUAGE GADTs #-}
 >module Math.Tools.Isomorphism where
 >import Prelude hiding ((.),id)
 >import Data.Map (Map)
 >import Data.Complex
 >import Data.Monoid
 >import qualified Data.Map as Map
+>import qualified Data.Set (Set, map)
 >import Control.Category
 >import Control.Arrow
 >import Control.Monad.Fix (fix)
@@ -45,6 +47,14 @@
 >instance FunctorArrow I (:==:) where
 >   amap f = (I <-> unI) . f . (unI <-> I)
 
+instance FunctorArrow Data.Set.Set (OrderedCat (:==:)) where
+   amap (OrderedCat f) = (OrderedCat . amap (isomorphism_epimorphism f)) <-> (OrderedCat . amap (isomorphism_section f))
+
+>data OrderedCat arr a b where
+>   OrderedCat :: (Ord a, Ord b) => arr a b -> OrderedCat arr a b
+
+>instance FunctorArrow Data.Set.Set (OrderedCat (->)) where
+>   amap (OrderedCat f) = OrderedCat (Data.Set.map f)
 
 >-- | <https://en.wikipedia.org/Galois_Connection>
 >-- Note that since we don't check the equations for isomorphisms,

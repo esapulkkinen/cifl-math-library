@@ -55,7 +55,7 @@ import qualified Model.Nondeterminism as Nondet
 >import safe qualified Math.Tools.Nondeterministic as Nondeterministic
 >import safe qualified Data.List as List
 >import safe qualified Math.Matrix.Interface as Matrix
->import safe Math.Matrix.Interface hiding ((|>))
+>import safe Math.Matrix.Interface hiding ((||>>))
 >import safe Math.Number.StreamInterface
 >import safe Math.Number.Interface
 
@@ -75,7 +75,7 @@ instance ProjectionDual Stream Math.Matrix.Linear.Dual a where
      fmap (\e -> Covector (bracketMap e C.. stail_lazy)) projection_dual
 
 >(!) :: Stream a -> Integer -> a
->(!) s i = shead (drop i s)
+>(!) s = \i -> shead (drop i s)
 
 >stail_stream :: Stream a -> Stream a
 >stail_stream ~(Pre _ xr) = xr
@@ -274,7 +274,7 @@ instance (Num a) => FiniteDimensional a Math.Matrix.Linear.Dual Stream LinearMap
 >limiting_iso = limit TArrow.<-> approximations
 
 >vec_stream :: Stream a -> Integer -> a
->vec_stream ~(Pre x xr) i = if i == 0 then x else vec_stream xr (pred i)
+>vec_stream ~(Pre x xr) = \i -> if i == 0 then x else vec_stream xr (pred i)
 
 >-- | mapping operation for closures.
 >-- Note we cannot make this a Functor instance due to constraint in the type.
@@ -361,11 +361,11 @@ instance (Closed a, Applicative f, Applicative g,
 >-- | <https://en.wikipedia.org/wiki/Taylor_series>
 >taylor :: (Fractional a, DifferentiallyClosed a)
 >  => (a -> a) -> a -> (Stream :*: Stream) a
->taylor f a = Matrix $ sum_stream $ mapper <$> sub_powers
->   where mapper p = liftA3 (\a b c -> a*b*c) der divider p
+>taylor f = \a -> Matrix $ sum_stream $ mapper a <$> sub_powers a
+>   where mapper a' p = liftA3 (\a b c -> a*b*c) (der a') divider p
 >         divider = fmap (1/) factorial
->         der = derivates f <*> constant a
->         sub_powers = cells $ stream_powers (s_z-fromNum a)
+>         der a' = derivates f <*> constant a'
+>         sub_powers a' = cells $ stream_powers (s_z-fromNum a')
 
 
 >instance Limiting Stream (IO ()) where
@@ -479,7 +479,7 @@ instance (Num a) => Matrix.VectorSpace ((Stream :*: Stream) a) where
 >  where res = increasing_substream (dropWhile (< x) xr)
 
 >sub_member :: (Ord a) => Stream a -> a -> Bool
->sub_member s x = prim_member (increasing_substream s) x
+>sub_member s = \x -> prim_member (increasing_substream s) x
 >   where prim_member ~(Pre x' xr) y = case compare x' y of
 >              EQ -> True
 >              GT -> False
@@ -1178,7 +1178,7 @@ codiagonals_seq_linear = linear . Matrix . codiagonals_seq . fromLinear
 >uncodiagonals_impl _ = error "form requirements for input to uncodiagonals not satisfied."
 
 >takes :: Stream Integer -> Stream a -> Stream [a]
->takes ~(Pre x xr) s = Pre (take x s) $ takes xr (drop x s)
+>takes ~(Pre x xr) = \s -> Pre (take x s) $ takes xr (drop x s)
 
 >split_dimension :: (ConjugateSymmetric a, Num a, Closed a) => Stream a -> Stream a :-> Stream a
 >split_dimension = uncodiagonals . takes nonzero_naturals
@@ -1245,7 +1245,7 @@ codiagonals3 = codiagonals . linear . Matrix . fmap codiagonals . cells_linear
 >sum_join = fmap sum . codiagonals_seq
 >
 >sum_bind :: (Num b) => Stream a -> (a -> Stream b) -> Stream b
->sum_bind x f = sum_join $ Matrix $ fmap f x
+>sum_bind x = \f -> sum_join $ Matrix $ fmap f x
 
 >-- | cojoin is "better" version of join for streams. cojoin does not
 >-- satisfy monad laws (Right identity and associativity do not hold.).
@@ -1443,7 +1443,7 @@ codiagonals3 = codiagonals . linear . Matrix . fmap codiagonals . cells_linear
 >stream_if = liftA3 (\c x y -> if c then x else y)
 
 >either :: (a -> c) -> (b -> c) -> Stream (Either a b) -> Stream c
->either f g z' = fmap (P.either f g) z'
+>either f g = \z' -> fmap (P.either f g) z'
 
 >split_either :: Stream (Either a b) -> (Stream a, Stream b)
 >split_either (Pre (Left x) xr) = let ~(a,b) = split_either xr in (Pre x a,b)
@@ -1501,7 +1501,7 @@ codiagonals3 = codiagonals . linear . Matrix . fmap codiagonals . cells_linear
 >-- from first input stream and odd indexed elements of result are from
 >-- second stream.
 >interleave_stream :: Stream a -> Stream a -> Stream a
->interleave_stream ~(Pre x xr) y = Pre x (interleave_stream y xr)
+>interleave_stream ~(Pre x xr) = \y -> Pre x (interleave_stream y xr)
 
 >instance InterleaveFunctor Stream where
 >   interleave = interleave_stream
@@ -1555,23 +1555,23 @@ codiagonals3 = codiagonals . linear . Matrix . fmap codiagonals . cells_linear
 
 >-- | drop a specified number of elements from beginning of a stream.
 >drop :: Integer -> Stream a -> Stream a
->drop 0 x = x
->drop n ~(Pre _ xr) = drop (n-1) xr
+>drop 0 = \x -> x
+>drop n = \ ~(Pre _ xr) -> drop (n-1) xr
 
 >-- | take a specified number of elements from the beginning of the stream.
 >take :: Integer -> Stream a -> [a]
->take 0 _ = []
->take n ~(Pre x xr) = x : take (n-1) xr
+>take 0 = \_ -> []
+>take n = \ ~(Pre x xr) -> x : take (n-1) xr
 
 >-- | split a stream from index.
 >splitAt :: Integer -> Stream a -> ([a],Stream a)
->splitAt i x = (take i x, drop i x)
+>splitAt i = \x -> (take i x, drop i x)
 
 >take2d :: (Integer,Integer) -> (Stream :*: Stream) a -> ([] :*: []) a
->take2d (x,y) m = Matrix $ m <!> (take x, take y)
+>take2d (x,y) = \m -> Matrix $ m <!> (take x, take y)
 
 >drop2d :: (Integer,Integer) -> (Stream :*: Stream) a -> (Stream :*: Stream) a
->drop2d (x,y) m = Matrix $ m <!> (drop x, drop y)
+>drop2d (x,y) = \m -> Matrix $ m <!> (drop x, drop y)
 
 >-- | count how many elements from a beginning of a stream satisfy a predicate.
 >countWhile :: (a -> Bool) -> Stream a -> Integer
@@ -1930,12 +1930,12 @@ generating_sqrt xplus1 = (`subst` x) $ fmap (binomial (1%2)) naturals
 >-- | derivate a stream function at a particular point.
 >stream_derivate :: (Fractional a, Closed a, Infinitesimal str (Stream a)) => 
 >                   (Stream a -> Stream a) -> Stream a -> Closure str (Stream a)
->stream_derivate f x = limit $ do
+>stream_derivate f = \x -> limit $ do
 >    dx <- epsilon_stream
 >    return $ (f (x + dx) - f x) / dx
 
 >stream_integral :: (Closed b, Infinitesimal str (Stream b), Fractional b, Enum b) => (Stream b -> Stream b) -> (Stream b, Stream b) -> Closure str (Stream b)
->stream_integral f (xa,ya) = limit $ do
+>stream_integral f = \ (xa,ya) -> limit $ do
 >   eps <- epsilon_stream
 >   return $ (eps *) $ sum $ fmap f [xa,xa+eps..ya]
 
@@ -2040,7 +2040,7 @@ instance (Closed a) => Closed (Complex a) where
 
 >instance AppendableVector Vector3 Stream where
 >  type (Vector3 :+: Stream) = Stream
->  (Vector3 x y z) |> a = x `Pre` y `Pre` z `Pre` a
+>  (Vector3 x y z) ||>> a = x `Pre` y `Pre` z `Pre` a
 
 >vector_epsilon :: (Infinitesimal Stream a) => Stream (Vector3 a)
 >vector_epsilon = epsilon_stream >>!= \x ->

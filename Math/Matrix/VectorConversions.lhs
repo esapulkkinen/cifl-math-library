@@ -28,4 +28,4 @@
 
 >instance AppendableVector Vector2 Stream where
 >  type (Vector2 :+: Stream) = Stream
->  (Vector2 x y) |> s = x `Pre` y `Pre` s
+>  (Vector2 x y) ||>> s = x `Pre` y `Pre` s

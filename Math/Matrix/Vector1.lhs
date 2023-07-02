@@ -195,7 +195,7 @@ http://en.wikipedia.org/wiki/Bra%E2%80%93ket_notation
 >  show (Vector1 x) = "[" ++ show x ++ "]"
 
 >instance Functor Vector1 where
->  fmap f (Vector1 x) = Vector1 (f x)
+>  fmap f = \ (Vector1 x) -> Vector1 (f x)
 
 >instance (Num a) => Num (Vector1 a) where
 >  (Vector1 x) + (Vector1 y) = Vector1 (x+y)

@@ -1,7 +1,7 @@
 >{-# LANGUAGE Safe,Rank2Types, KindSignatures, MultiParamTypeClasses,
 >             FunctionalDependencies, FlexibleInstances, TypeSynonymInstances,
 >             TupleSections,  TypeOperators, AllowAmbiguousTypes, Arrows,TypeFamilies,
->             LambdaCase, IncoherentInstances
+>             LambdaCase, IncoherentInstances, FlexibleContexts
 > #-}
 >-- |
 >-- Module: Math.Tools.Arrow
@@ -19,8 +19,8 @@
 >import Control.Category
 >import Data.Monoid
 >import Prelude hiding (id,(.))
->import safe Math.Tools.PrettyP (render,pp)
->import safe Math.Tools.I
+>import Math.Tools.PrettyP (render,pp)
+>import Math.Tools.I
 
 >class (Category ar, Category ar') => ArrowTransformation ar ar' where
 >      mapA :: ar a b -> ar' a b
@@ -95,6 +95,9 @@
 
 >class CoFunctorArrow (f :: * -> *) (arr :: * -> * -> *) where
 >      inverseImage :: arr c d -> arr (f d) (f c)
+
+>(|>) :: (CoFunctorArrow f (->)) => f d -> (c -> d) -> f c
+>x |> f = inverseImage f x
 
 >class (Category arr, Category arr')
 >     => AdjunctionArrow arr arr' f g

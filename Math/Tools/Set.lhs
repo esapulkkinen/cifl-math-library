@@ -30,6 +30,9 @@
 >zipSet :: (Ord a, Ord b) => Set a -> Set b -> Set (a,b)
 >zipSet s s' = joinSet $ Set.map (\a -> Set.map (\b -> (a,b)) s') s
 
+>zipSet3 :: (Ord a, Ord b, Ord c) => Set a -> Set b -> Set c -> Set (a,b,c)
+>zipSet3 s s' s'' = joinSet $ joinSet $ Set.map (\a -> Set.map (\b -> Set.map (\c -> (a,b,c)) s'') s') s
+
 >all_sets :: (Ord a) => [a] -> [Set a]
 >all_sets [] = [Set.empty]
 >all_sets (c:cr) = Set.empty : map (Set.insert c) (all_sets cr)

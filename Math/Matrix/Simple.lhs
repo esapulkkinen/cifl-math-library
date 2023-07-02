@@ -73,7 +73,7 @@
 
 >mapDimensions :: (Universe a, Universe b, Integral a, ConjugateSymmetric c, Num c)
 > => (->) a :~> f -> (->) b :~> g -> (a :&: b) c -> (f :*: g) c
->mapDimensions col row m = Matrix $ nattrans_component col $
+>mapDimensions col row = \m -> Matrix $ nattrans_component col $
 >    fmap (nattrans_component row) $ cells $ fromLinear m
 
 >simpleMatrix :: (Integral a, Universe b, Universe a, ConjugateSymmetric c, Num c,Functor m, Functor n) =>

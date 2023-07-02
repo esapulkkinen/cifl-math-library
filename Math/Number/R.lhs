@@ -62,9 +62,20 @@
 >ceiling_r :: (Integral b) => R -> b
 >ceiling_r r = ceiling (r `approximate` (1%2))
 
-
 >properFraction_r :: (Integral b) => R -> (b, R)
 >properFraction_r r = let res = floor_r r in (res, r - fromIntegral res)
+
+Can't implement Real or RealFrac, because (Ord R) is not available.
+
+instance Real R where
+   toRational = unsafe_real_to_rational
+
+instance RealFrac R where
+   properFraction = properFraction_r
+   truncate = truncate_r
+   round = round_r
+   ceiling = ceiling_r
+   floor = floor_r
 
 >approximately_less_than_or_equal_r :: Rational -> R -> R -> Bool
 >approximately_less_than_or_equal_r eps f g = f `approximate` eps <= g `approximate` eps
@@ -148,7 +159,7 @@
 >  fromRational r = RClosure (fromRational r)
 >
 >liftRClosure :: (R -> R) -> Closure Stream R -> Closure Stream R
->liftRClosure f (RClosure x) = RClosure (f x)
+>liftRClosure f = \(RClosure x) -> RClosure (f x)
 > 
 >liftRClosure2 :: (R -> R -> R) -> Closure Stream R -> Closure Stream R -> Closure Stream R
 >liftRClosure2 f (RClosure x) (RClosure y) = RClosure (f x y)
@@ -245,7 +256,7 @@
 
 >-- | this propagates accuracy without changing it.
 >liftR :: (Rational -> Rational) -> R -> R
->liftR g (Limit (Endo f)) = real $ g . f
+>liftR g = \ (Limit (Endo f)) -> real $ g . f
 
 >-- | this propagates accuracy without changing it
 >liftR2 :: (Rational -> Rational -> Rational) -> R -> R -> R
@@ -265,7 +276,7 @@
 >-- | The first argument is the function lifted. The second argument
 >-- describes change in accuracy by the function.
 >liftWithAccuracy :: (Rational -> Rational) -> (Rational -> Rational) -> R -> R
->liftWithAccuracy f acc r = liftR f (inverseImage acc r)
+>liftWithAccuracy f acc = \r -> liftR f (inverseImage acc r)
 
 >-- | approx_compose will use the second real as the level
 >--   of approximation to compute the first.
@@ -355,10 +366,9 @@
 
 >-- | computes derivate. \[{{df}\over{dt}} = \lim_{\epsilon\rightarrow 0}{{f(t+\epsilon)-f(t)}\over{\epsilon}}\]
 >derivate_r :: (R -> R) -> R -> R
->derivate_r f xx@(Limit x) = real $ \eps ->
+>derivate_r f = \ xx@(Limit x) -> let fx = f $! xx in real $ \eps ->
 >    ((f (real $ \eps' -> x `appEndo` eps' + eps) - fx)
 >     `approximate` eps)/eps
->  where fx = f $! xx
 >        -- computing fx separately is an optimization that should allow
 >        -- sharing the value of 'fx' to many invocations at different precision.
 > 
@@ -369,8 +379,8 @@
 >-- | newton's method for finding root of function.
 >-- \[x_{i+1} = x_i - {{f(x_i)}\over{f'(x_i)}}\]
 >newtons_method_r :: (R -> R) -> R -> R
->newtons_method_r f x = lim $ iterate_stream iteration x 
->  where iteration z' = z' - f z' / derivate f z'
+>newtons_method_r f = \x -> lim $ iterate_stream iteration x 
+>  where iteration = \z' -> z' - f z' / derivate f z'
 > 
 >instance Numerics R where
 >   newtons_method = newtons_method_r
@@ -384,7 +394,7 @@
 >log_by_newton v = newtons_method (\x -> exp x - v) 1
 
 >inverse_of_r :: (R -> R) -> R -> R
->inverse_of_r f v = newtons_method (\x -> f x - v) 1
+>inverse_of_r f = \ v -> newtons_method (\x -> f x - v) 1
 
 >exp_r :: R -> R
 >exp_r x = runRClosure $ limit $ do
@@ -410,20 +420,20 @@
 >     return $! (1 / (2 * fromIntegral n + 1))*a'^(2*n+1))
 
 >integral_r :: (R,R) -> (R -> R) -> R
->integral_r (x,y) f = foldable_integral acc f
->   where acc = map fromRational . integral_accuracy f x y
+>integral_r (x,y) = \f -> let acc = map fromRational . integral_accuracy f x y
+>                          in foldable_integral acc f
 
 >foldable_integral :: (Foldable t, Functor t) => (Rational -> t b) -> (b -> R) -> R
->foldable_integral border f = real $ \eps ->
+>foldable_integral border = \f -> real $ \eps ->
 >   foldable_simple_integral border ((`approximate` eps) . f) eps
 
 >foldable_vector_integral :: (VectorSpace (v a), Scalar (v a) ~ a, Foldable t, Functor t)
 >  => (a -> t b) -> (b -> v a) -> a -> v a
->foldable_vector_integral border f eps = eps %* (vsum $! fmap f $! border eps)
+>foldable_vector_integral border f = \eps -> eps %* (vsum $! fmap f $! border eps)
 
 >foldable_simple_integral :: (Num a, Foldable t, Functor t) =>
 >  (a -> t b) -> (b -> a) -> a -> a
->foldable_simple_integral border f eps = sum $ fmap ((eps*) . f) $ border eps
+>foldable_simple_integral border f = \eps -> sum $ fmap ((eps*) . f) $ border eps
 
 >integral_accuracy :: (Fractional t) => (t -> R) -> R -> R -> Rational -> [Rational]
 >integral_accuracy f x y eps = [x',x'+eps..y']

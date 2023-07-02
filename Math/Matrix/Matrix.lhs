@@ -287,7 +287,7 @@ instance (Functor g, Functor f, Builder a) => Builder (Matrix g f a) where
 
 >fmap_split :: (SplittableVector m n, AppendableVector m' n') =>
 >   (m a -> m' a') -> (n a -> n' a') -> (m :+: n) a -> (m' :+: n') a'
->fmap_split f g x = let (a,b) = vsplit x in (f a |> g b)
+>fmap_split f g x = let (a,b) = vsplit x in (f a ||>> g b)
 
 >split_matrix :: (SplittableVector m n, SplittableVector f f', Functor (f :+: f'), Functor (m :+: n))
 >             => ((f :+: f') :*: (m :+: n)) a -> 
@@ -300,7 +300,7 @@ instance (Functor g, Functor f, Builder a) => Builder (Matrix g f a) where
 
 >append_matrix :: (AppendableVector m' n', AppendableVector m n) =>
 >    (m :*: m') a -> (m :*: n') a -> (n :*: m') a -> (n :*: n') a -> ((m :+: n) :*: (m' :+: n')) a
->append_matrix (Matrix a) (Matrix b) (Matrix c) (Matrix d) = Matrix $ (liftA2 (|>) a b) |> (liftA2 (|>) c d)
+>append_matrix (Matrix a) (Matrix b) (Matrix c) (Matrix d) = Matrix $ (liftA2 (||>>) a b) ||>> (liftA2 (||>>) c d)
 
 >matrix_iso :: f (g a) :==: (f :*: g) a
 >matrix_iso = Matrix <-> cells
