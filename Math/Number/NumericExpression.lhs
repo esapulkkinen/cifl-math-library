@@ -22,6 +22,39 @@
 >import safe Math.Matrix.Interface
 >import safe Math.Matrix.Matrix
 
+>data (:-) ctx a where
+>   ELam :: (Var a -> (ctx,a) :- b) -> ctx :- (a -> b)
+>   EApp :: ctx :- (a -> b) -> (ctx,a) :- b
+>   ECompose :: b :- c -> a :- b -> a :- c
+>   EVar :: Var a -> ctx :- a
+>   EPair :: ctx :- a -> ctx :- b -> ctx :- (a,b)
+>   EFst :: (ctx,a) :- ctx
+>   ESnd :: (ctx,a) :- a
+>   ECase :: a :- c -> b :- c -> (Either a b) :- c
+>   EIn1  :: a :- Either a b
+>   EIn2  :: b :- Either a b
+>   ETerminal :: ctx :- ()
+>   EInitial  :: Contradiction :- b
+>   EVec :: VectorSpaceExpr v a -> () :- v a
+>   ENum :: NumExpr v a -> () :- a
+
+>data Contradiction
+
+>identity_expr :: ctx :- (b -> b)
+>identity_expr = ELam EVar
+
+>pair_identity_expr :: (a,b) :- (a,b)
+>pair_identity_expr = EPair EFst ESnd
+
+>either_identity_expr :: Either a b :- Either a b
+>either_identity_expr = ECase EIn1 EIn2
+
+>pair_expr :: ctx :- (a -> b -> (a,b))
+>pair_expr = ELam $ \v -> ELam $ \w -> EPair (EVar v) (EVar w)
+
+>var_intro :: (Var a -> (ctx,a) :- b) -> (ctx,a) :- b
+>var_intro = EApp . ELam
+
 >data Var a = Var { var_name :: !String, var_debruijn_index :: !Integer }
 >           | Val !a
 >   deriving (Typeable, Data, Generic, Eq)

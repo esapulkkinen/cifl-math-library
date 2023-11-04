@@ -54,6 +54,9 @@
       <xsl:for-each select="bibliography/CreativeWork|bibliography/Article|bibliography/Report|bibliography/Book|bibliography/ScholarlyArticle|bibliography/BlogPosting|bibliography/TechArticle|bibliography/DigitalDocument|bibliography/PublicationIssue|bibliography/SoftwareApplication|bibliography/WebPage|bibliography/WebSite|bibliography/SoftwareSourceCode|bibliography/Comment|bibliography/QAPage|bibliography/BlogPosting|bibliography/DigitalDocument">
         <xsl:sort select="summary"/>
         <tr itemprop="citation" itemscope="true">
+          <xsl:choose><xsl:when test="@id">
+            <xsl:attribute name="id"><xsl:value-of select="@id"/></xsl:attribute>
+          </xsl:when></xsl:choose>
           <xsl:attribute name="itemtype">http://schema.org/<xsl:value-of select="local-name()"/></xsl:attribute>
           <td colspan="2" width="100%">
             <details>

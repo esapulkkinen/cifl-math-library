@@ -49,6 +49,7 @@
 >import safe Data.Typeable
 >import safe Data.Data
 >import safe Control.Monad.Fix (fix)
+>import safe qualified Numeric.Limits
 
 import qualified Model.Nondeterminism as Nondet
 
@@ -77,14 +78,16 @@ instance ProjectionDual Stream Math.Matrix.Linear.Dual a where
 >(!) :: Stream a -> Integer -> a
 >(!) s = \i -> shead (drop i s)
 
+>{-# SPECIALIZE iterate_stream :: (a -> a) -> a -> Stream a #-}
+
 >stail_stream :: Stream a -> Stream a
->stail_stream ~(Pre _ xr) = xr
+>stail_stream (Pre _ xr) = xr
 
 >shead_strict :: Stream a -> a
 >shead_strict (Pre !x _) = x
 
->matrix_powers :: (Diagonalizable g a, LinearTransform g g a,Transposable g g a,InnerProductSpace (g a),
->                 Scalar a ~ a, Scalar (g a) ~ a, Scalar (g (g a)) ~ Scalar (g a))
+>matrix_powers :: (SupportsMatrixMultiplication g g g a,
+>  Diagonalizable g a, LinearTransform g g a)
 > => (g :*: g) a -> Stream ((g :*: g) a)
 >matrix_powers x = Pre identity $ fmap (x %*%) $ matrix_powers x
 
@@ -100,6 +103,7 @@ instance ProjectionDual Stream Math.Matrix.Linear.Dual a where
 >matrix_exponential_stream ::
 > (Fractional (Scalar ((g :*: g) a)),
 >   Diagonalizable g a, LinearTransform g g a,
+>   SupportsMatrixMultiplication g g g a,
 >   InnerProductSpace (g a), VectorSpace ((g :*: g) a),
 >   Num ((g :*: g) a), Scalar (g (g a)) ~ Scalar (g a),
 >   Scalar (g a) ~ a, Scalar a ~ a) =>
@@ -109,6 +113,7 @@ instance ProjectionDual Stream Math.Matrix.Linear.Dual a where
 
 >-- | <https://en.wikipedia.org/wiki/Matrix_exponential>
 >matrix_exponential :: (Fractional (Scalar ((g :*: g) a)),
+>                         SupportsMatrixMultiplication g g g a,
 >                             Diagonalizable g a, LinearTransform g g a, InnerProductSpace (g a),
 >                             VectorSpace ((g :*: g) a), Num ((g :*: g) a),
 >                             Scalar (g (g a)) ~ Scalar (g a), Scalar (g a) ~ a, Scalar a ~ a) =>
@@ -244,31 +249,89 @@ instance (Num a) => FiniteDimensional a Math.Matrix.Linear.Dual Stream LinearMap
 
 >instance Limiting Stream Double where
 >   data Closure Stream Double = DoubleClosure (Stream Double)
+>                        | InfiniteDouble
+>                        | MinusInfiniteDouble
+>                        | NegativeZeroDouble
+>                        | NaNDouble
+>                        | DenormalizedDouble
 >   limit zz = DoubleClosure zz
->   approximations ~(DoubleClosure x) = x
+>   approximations (DoubleClosure x) = x
+>   approximations DenormalizedDouble = epsilon_stream
+>   approximations InfiniteDouble = power 10
+>   approximations MinusInfiniteDouble = fmap negate $ power 10
+>   approximations NegativeZeroDouble = fmap negate $ fmap (1/) $ power 10
+>   approximations NaNDouble = error "NaN double"
 
 >instance Limiting Stream Float where
 >   data Closure Stream Float = FloatClosure (Stream Float)
+>                        | InfiniteFloat
+>                        | MinusInfiniteFloat
+>                        | NegativeZeroFloat
+>                        | NaNFloat
+>                        | DenormalizedFloat
 >   limit zz = FloatClosure zz
->   approximations ~(FloatClosure x) = x
+>   approximations (FloatClosure x) = x
+>   approximations DenormalizedFloat = epsilon_stream
+>   approximations InfiniteFloat = power 10
+>   approximations MinusInfiniteFloat = fmap negate $ power 10
+>   approximations NegativeZeroFloat = fmap negate $ fmap (1/) $ power 10
+>   approximations NaNFloat = error "NaN float"
+
+>instance Show (Closure Stream Double) where
+>  show (DoubleClosure x) = show x
+>  show DenormalizedDouble = "0"
+>  show InfiniteDouble = "Infinite"
+>  show MinusInfiniteDouble = "-Infinite"
+>  show NegativeZeroDouble = "-0"
+>  show NaNDouble = "NaN"
+>
+>instance Show (Closure Stream Float) where
+>  show (FloatClosure x) = show x
+>  show DenormalizedFloat = "0"
+>  show InfiniteFloat = "Infinite"
+>  show MinusInfiniteFloat = "-Infinite"
+>  show NegativeZeroFloat = "-0"
+>  show NaNFloat = "NaN"
 
 >-- | Notice that after double precision is not sufficient, the infinitesimals are zero.
 >instance Infinitesimal Stream Double where
+>   epsilon_closure = DenormalizedDouble
 >   epsilon_stream = Pre 1.0 $ fmap (/10.0) epsilon_stream
+>   infinite_closure = InfiniteDouble
+>   infinite_stream = Pre 1.0 $ fmap (*10.0) infinite_stream
+>   minus_infinite_closure = MinusInfiniteDouble
+>   minus_infinite_stream = fmap negate infinite_stream
+>   nan_closure = NaNDouble
 
 >-- | Notice that after float precision is not sufficient, the infinitesimals are zero.
 >instance Infinitesimal Stream Float where
+>   epsilon_closure = DenormalizedFloat
 >   epsilon_stream = Pre 1.0 $ fmap (/10.0) epsilon_stream
+>   infinite_closure = InfiniteFloat
+>   infinite_stream = Pre 1.0 $ fmap (*10.0) infinite_stream
+>   minus_infinite_closure = MinusInfiniteFloat
+>   minus_infinite_stream = fmap negate infinite_stream
+>   nan_closure = NaNFloat
 
 >instance Closed Double where
 >   accumulation_point (DoubleClosure ~(Pre x ~(Pre y yr)))
 >     | abs (y - x) <= 1 / (fromInteger $ (floatRadix (0 :: Double)) ^ (floatDigits (0 :: Double) - 1)) = x
 >     | otherwise = accumulation_point (DoubleClosure yr)
+>   accumulation_point InfiniteDouble = Numeric.Limits.infinity
+>   accumulation_point DenormalizedDouble = Numeric.Limits.minValue
+>   accumulation_point MinusInfiniteDouble = negate Numeric.Limits.infinity
+>   accumulation_point NegativeZeroDouble = negate Numeric.Limits.minValue
+>   accumulation_point NaNDouble = Numeric.Limits.nan
 
 >instance Closed Float where
 >   accumulation_point (FloatClosure ~(Pre x ~(Pre y yr)))
 >     | abs (y - x) <= 1 / (fromInteger $ (floatRadix (0 :: Float)) ^ (floatDigits (0 :: Float) - 1)) = x
 >     | otherwise = accumulation_point (FloatClosure yr)
+>   accumulation_point InfiniteFloat = Numeric.Limits.infinity
+>   accumulation_point DenormalizedFloat = Numeric.Limits.minValue
+>   accumulation_point MinusInfiniteFloat = negate Numeric.Limits.infinity
+>   accumulation_point NegativeZeroFloat = negate Numeric.Limits.minValue
+>   accumulation_point NaNFloat = Numeric.Limits.nan
 
 >limiting_iso :: (TArrow.BiArrow arr, Limiting Stream a) => arr (Stream a) (Closure Stream a)
 >limiting_iso = limit TArrow.<-> approximations
@@ -458,7 +521,7 @@ instance (Num a) => Matrix.VectorSpace ((Stream :*: Stream) a) where
 >  m <<*> s = fmap (%. s) $ cells $ m
 
 >instance (Matrix.ConjugateSymmetric a) => Matrix.ConjugateSymmetric (Stream a) where
->   conj (Pre x xr) = Pre (Matrix.conj x) (Matrix.conj xr)
+>   conj ~(Pre x xr) = Pre (Matrix.conj x) (Matrix.conj xr)
 
 >-- | According to <http://patternsinfp.wordpress.com/2010/12/31/stream-monad/>, the diagonal
 >-- is the join of the stream monad.
@@ -621,16 +684,16 @@ instance (Num a) => Matrix.VectorSpace ((Stream :*: Stream) a) where
 >                                 $ fmap (liftA2 (*) g) (cells $ stream_powers f)
 >compose _ _ = error "Stream must begin with zero to be pre-composed"
 
->matrix_convolution :: (InnerProductSpace (g a), Transposable g h a, Functor f,
->  VectorSpace ((f :*: h) a), Scalar (g a) ~ a)
+>matrix_convolution :: (SupportsMatrixMultiplication f g h a,
+>  VectorSpace ((f :*: h) a))
 > => Stream ((f :*: g) a) -> Stream ((g :*: h) a) -> Stream ((f :*: h) a)
 >matrix_convolution x y = fmap Matrix.vsum $ codiagonals_seq $ matrix (Matrix.%*%) x y
 
 >matrix_convolution_linear ::
-> (InnerProductSpace (g a), Transposable g h a, Functor f,
+> (SupportsMatrixMultiplication f g h a,
 > Linearizable LinearMap (:*:) g h a, Linearizable LinearMap (:*:) f g a,
 > Linearizable LinearMap (:*:) f h a,
->  VectorSpace ((f :*: h) a), Scalar (g a) ~ a)
+>  VectorSpace ((f :*: h) a))
 > => Stream (f a :-> g a) -> Stream (g a :-> h a) -> Stream (f a :-> h a)
 >matrix_convolution_linear x y = fmap linear $
 >   matrix_convolution (fmap fromLinear x) (fmap fromLinear y)
@@ -661,7 +724,7 @@ instance (Num a) => Matrix.VectorSpace ((Stream :*: Stream) a) where
 >                      (Pre (row,col) $ stream_codiagonal_impl rest)
 
 >compose_permutation :: Stream Integer -> Stream Integer -> Stream Integer
->compose_permutation (Pre i r) s = Pre (i `streamindex` s) $ compose_permutation r s
+>compose_permutation ~(Pre i r) s = Pre (i `streamindex` s) $ compose_permutation r s
 
 >permutation_matrix_from_indices :: (Num a) => Stream Integer -> (Stream :*: Stream) a
 >permutation_matrix_from_indices indices = Matrix $ fmap (\i ->
@@ -673,7 +736,7 @@ instance (Num a) => Matrix.VectorSpace ((Stream :*: Stream) a) where
 > => (Stream :*: Stream) a -> ((Stream :*: Stream) a, (Stream :*: Stream) a, Stream Integer)
 >lu_decomposition_stream_matrix a = (l_matrix,u_matrix, perm `compose_permutation` rest_p_perm)
 >  where (dd,(xx,y),m) = dematrix_impl a
->        ((Pre d x), perm) = nonzero_permutation (Pre dd y)
+>        (~(Pre d x), perm) = nonzero_permutation (Pre dd y)
 >        dinv = 1/d
 >        diag1 = Pre 1 $ diagonal_impl rest_l_matrix
 >        l_matrix = stream_matrix_impl diag1 $
@@ -790,6 +853,7 @@ and_convolution x y = fmap or $ codiagonals_seq $ linmatrix (bilinear (&&)) (x, 
 
 
 >-- | fold over streams
+>{-# INLINEABLE streamfold #-}
 >streamfold :: (a -> b -> b) -> Fold (Stream a) b
 >streamfold f = let x = StreamFold f x in x
 
@@ -846,6 +910,7 @@ and_convolution x y = fmap or $ codiagonals_seq $ linmatrix (bilinear (&&)) (x, 
 >map_indices :: (Integer -> Integer) -> Stream a -> Stream a
 >map_indices f s = fromIntegerSeq ((`streamindex` s) . f)
 
+>{-# INLINEABLE limit_fold #-}
 >limit_fold :: (a -> a -> a) -> Fold (Stream a) (Integer -> a)
 >limit_fold f = streamfold $
 >   \ x r i -> if i > 0 then f x (r (i-1)) else x
@@ -875,7 +940,7 @@ matrix_inverse :: (InnerProductSpace (f a), InnerProductSpace (h a),
                   Num a)
  => f a :-> h a -> h a :-> f a -> Stream (h a :-> f a)
 
->matrix_inverse :: (
+>matrix_inverse :: (       ConjugateSymmetric (g2 a),
 >                         LinearTransform (f2 :*: g1) (f2 :*: g1) (g2 a),
 >                         TArrow.FunctorArrow (f2 :*: g1) LinearMap,
 >                         InnerProductSpace (f2 (g2 a)), InnerProductSpace (g1 (g2 a)),
@@ -900,6 +965,7 @@ matrix_inverse :: (InnerProductSpace (f a), InnerProductSpace (h a),
 >stream_max :: (Ord a) => Fold (Stream a) (Integer -> a)
 >stream_max = limit_fold max
 >
+>{-# INLINEABLE liftStream2 #-}
 >liftStream2 :: (a -> a -> a) -> Stream a -> Stream a
 >liftStream2 f ~(Pre x xr) = Pre x $ fmap (f x) (liftStream2 f xr)
 
@@ -923,9 +989,11 @@ matrix_inverse :: (InnerProductSpace (f a), InnerProductSpace (h a),
 >-- | sum_stream will produce from a stream \([a_0,a_1,a_2,...]\) a stream
 >-- \([a_0,a_0+a_1,a_0+a_1+a_2,...]\).
 
+>{-# INLINEABLE sum_stream #-}
 >sum_stream :: (Num a) => Stream a -> Stream a
 >sum_stream = liftStream2 (+)
 
+>{-# INLINEABLE vsum_stream #-}
 >vsum_stream :: (VectorSpace a) => Stream a -> Stream a
 >vsum_stream = liftStream2 (%+)
 
@@ -1080,11 +1148,13 @@ triangular_pair_matrix = from_triangular_matrices (constant (0,0))
 >                      yr' <- applyA fr -< yr
 >                      returnA -< Pre y' yr'
 
+>{-# INLINEABLE dematrix #-}
 >dematrix :: (ConjugateSymmetric a, Num a, Closed a) => Stream a :-> Stream a
 >               -> (a, (Stream a, Stream a), Stream a :-> Stream a)
 >dematrix y = let (d,zz,res) = dematrix_impl (fromLinear y)
 >              in (d,zz,linear res)
 
+>{-# INLINEABLE dematrix_impl #-}
 >dematrix_impl :: (Stream :*: Stream) a -> (a, (Stream a, Stream a), (Stream :*: Stream) a)
 >dematrix_impl y = (d,zz,stream_matrix_impl dr cr)
 >  where ~(Pre d  dr) = stream_diagonal_impl y
@@ -1105,6 +1175,7 @@ triangular_pair_matrix = from_triangular_matrices (constant (0,0))
 >-- | This is faster than the version for lists, because
 >-- the suffix computation on Seq is constant time rather than linear.
 >-- However, strictness seems to behave differently.
+>{-# INLINEABLE codiagonals_seq #-}
 >codiagonals_seq :: (Stream :*: Stream) a -> Stream (Seq.Seq a)
 >codiagonals_seq q = Pre (Seq.singleton d) $ Pre (Seq.singleton x Seq.|> y) $
 >                      liftA3 f xr yr $ codiagonals_seq m
@@ -1149,6 +1220,7 @@ codiagonals_seq_linear = linear . Matrix . codiagonals_seq . fromLinear
 >-- 
 >-- The resulting lists would be: 
 >--  @[d], [x,y], [xr0,d',yr0], [xr1,x',y',yr1],...@
+>{-# INLINEABLE codiagonals #-}
 >codiagonals :: (Stream :*: Stream) a -> Stream [a]
 >codiagonals x = fmap Data.Foldable.toList $ codiagonals_seq x
 
@@ -1318,6 +1390,9 @@ codiagonals3 = codiagonals . linear . Matrix . fmap codiagonals . cells_linear
 >integers_stream = naturals
 
 >-- | A stream of increasing numbers starting from 0
+>{-# INLINEABLE naturals #-}
+>{-# SPECIALIZE naturals :: Stream Integer #-}
+>{-# SPECIALIZE naturals :: Stream Rational #-}
 >naturals :: (Num a) => Stream a
 >naturals = Pre 0 nonzero_naturals
 
@@ -1326,6 +1401,9 @@ codiagonals3 = codiagonals . linear . Matrix . fmap codiagonals . cells_linear
 >naturals_starting_from i = dropWhile (< i) naturals
 
 >-- | A stream of increasing numbers starting from 1
+>{-# INLINEABLE nonzero_naturals #-}
+>{-# SPECIALIZE nonzero_naturals :: Stream Integer #-}
+>{-# SPECIALIZE nonzero_naturals :: Stream Rational #-}
 >nonzero_naturals :: (Num a) => Stream a
 >nonzero_naturals = fmap (+ 1) naturals
 
@@ -1373,14 +1451,15 @@ codiagonals3 = codiagonals . linear . Matrix . fmap codiagonals . cells_linear
 >-- | For a stream of terms \(a=[a_0,a_1,a_2,...]\), and \(x=[x_0,x_1,x_2,...]\),
 >-- 'approximate_sums a x' computes
 >-- \[\sum_{i=0}^n{a_ix_i^i}\], where n is the index to the result stream.
-
+>{-# INLINEABLE approximate_sums #-}
 >approximate_sums :: (Fractional a) => Stream a -> Stream a -> Stream a
 >approximate_sums gen x = diagonal_impl $ Matrix $ fmap sum_stream $ cells $ matrix (*) gen (index_powers x)
 
 >-- | exponential_stream computes \(s_{i} = {{1}\over{i!}}\).
 >-- notice that euler's constant \(e = \sum_{i=0}^{\infty}{1\over{i!}}\).
+>-- therefore "sum_stream exponential_stream" produces approximations to 'e'.
 >exponential_stream :: (Fractional a) => Stream a
->exponential_stream = Pre 1 $ fmap (1/) factorial
+>exponential_stream = fmap (1/) factorial
 
 >exponential :: (ConjugateSymmetric a, Closed a, Eq a, Fractional a) => Stream a -> Stream a
 >exponential = compose exponential_stream
@@ -1406,6 +1485,8 @@ codiagonals3 = codiagonals . linear . Matrix . fmap codiagonals . cells_linear
 >cos_generating_function :: (Fractional a) => Stream a 
 >cos_generating_function = liftA2 (*) (1 / (1+s_z*s_z)) (stail $ exponential_stream)
 
+>{-# INLINEABLE factorial #-}
+>{-# SPECIALIZE factorial :: Stream Integer #-}
 >factorial :: (Num a) => Stream a
 >factorial = Pre 1 $ Pre 1 $ liftA2 (*) (stail $ nonzero_naturals) (stail factorial)
 
@@ -1513,6 +1594,7 @@ codiagonals3 = codiagonals . linear . Matrix . fmap codiagonals . cells_linear
 
 >-- | split a stream, elements with even index go to first result stream,
 >-- rest to second.
+>{-# INLINE uninterleave #-}
 >uninterleave :: Stream a -> (Stream a, Stream a)
 >uninterleave ~(Pre x ~(Pre y r)) = (Pre x xr, Pre y yr)
 >   where ~(xr,yr) = uninterleave r
@@ -1624,13 +1706,25 @@ codiagonals3 = codiagonals . linear . Matrix . fmap codiagonals . cells_linear
 >print_square (Matrix s) = pp_list $ take 15 $ fmap (pp_list . fmap pp . take 15) s
 
 >-- | stream of powers of a given integer for fractional items
+
+power :: (Fractional a) => Integer -> Stream a
+power i = 1 / (1 - (fromInteger i * s_z)) 
+
 >power :: (Fractional a) => Integer -> Stream a
->power i = 1 / (1 - (fromInteger i * s_z)) 
+>power i = power_uniform_fractional $ fromInteger i
+
+>power_uniform_fractional :: (Fractional a) => a -> Stream a
+>power_uniform_fractional i = Pre 1 $ fmap (i*) $ power_uniform_fractional i
 
 >-- | stream of powers of a given integer for integral items.
 >power_integral :: (Integral a) => Integer -> Stream a
->power_integral i = 1 `div` (1 - fromIntegral i * s_z)
+>power_integral i = power_uniform_integral $ fromInteger i
+> --1 `div` (1 - fromIntegral i * s_z)
 
+>power_uniform_integral :: (Integral a) => a -> Stream a
+>power_uniform_integral i = Pre 1 $ fmap (i*) $ power_uniform_integral i
+
+>{-# INLINEABLE index_powers #-}
 >index_powers :: (Num a) => Stream a -> Stream a
 >index_powers a = liftA2 (^) a (naturals :: Stream Integer)
 

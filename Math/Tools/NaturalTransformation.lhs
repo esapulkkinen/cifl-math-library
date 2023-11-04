@@ -1,4 +1,4 @@
->{-# LANGUAGE RankNTypes, MultiParamTypeClasses, TypeOperators, Arrows, Safe #-}
+>{-# LANGUAGE RankNTypes, PolyKinds, GADTs, MultiParamTypeClasses, TypeOperators, Arrows, Safe #-}
 >module Math.Tools.NaturalTransformation where
 >
 >-- Basic support for natural transformations.
@@ -8,7 +8,7 @@
 >-- <Natural transformation in wikipedia|https://en.wikipedia.org/wiki/Natural_transformation>
 >-- <Natural transformation in ncatlab|https://ncatlab.org/nlab/show/natural+transformation>
 >-- Roy L. Crole: Categories for Types.
-
+>import Data.Kind
 >import Math.Tools.I
 >import Math.Tools.CoMonad
 >import Control.Monad
@@ -20,12 +20,15 @@
 >import Math.Tools.Arrow
 >import Math.Tools.CoFunctor
 >import Math.Tools.Isomorphism
+>import Math.Tools.FixedPoint
 >import Math.Matrix.Interface
 >import Prelude hiding ((.),id)
 
 === NATURAL TRANSFORMATION ============
 
->newtype f :~> g = NatTrans { nattrans_component :: forall a. f a -> g a }
+>newtype (f :: k -> Type) :~> (g :: k -> Type) = NatTrans {
+>   nattrans_component :: forall (a :: k). f a -> g a
+> }
 
 >type MaybeNT m = Maybe :~> m
 >type EitherNT a m = (Either a) :~> m
@@ -89,14 +92,24 @@
 > => f :~> f' -> g :~> g' -> (a -> b) -> (f :*: g) a -> (f' :*: g') b
 >mapMatrix col row elem m = (col `horiz` row) `nattrans_component` (fmap elem m)
 
+>rec_map :: (Functor f) =>  f :~> g -> Rec f -> Rec g
+>rec_map z (In x) = In $ nattrans_component z $ fmap (rec_map z) x
 
+>transform_map :: (Functor f, Functor g)
+> => Coalgebra f a -> f :~> g -> Algebra g b -> a -> b
+>transform_map divide f combine = fold combine . rec_map f . unfold divide
+
+>tmap :: (InitialAlgebra f a, FinalCoalgebra g b) => f :~> g -> a -> b
+>tmap f = transform_map unCreate f unDestroy
+
+>tapp :: (Functor f) => f :~> g -> (a -> b) -> f a -> g b
+>tapp (NatTrans f) g x = f (fmap g x)
 
 >unyoneda :: (Category cat) => cat a :~> f -> f a
 >unyoneda (NatTrans f) = f id
 
 >yoneda_function :: (Functor t) => t a -> (->) a :~> t
 >yoneda_function f = NatTrans (\g -> fmap g f)
-
 
 >inverse_horiz :: (CoFunctor k) => f :~> k -> f' :~> k'
 >              -> (f :*: k') :~> (k :*: f')

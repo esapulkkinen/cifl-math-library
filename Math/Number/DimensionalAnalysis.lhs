@@ -119,6 +119,11 @@
 >   (x `As` d) == (y `As` d') | d == d' = x == y
 >                       | otherwise = invalidDimensions "==" d d' x y
 
+>instance (Show (Closure Stream r), Eq (Closure Stream r)) => Eq (Closure Stream (Quantity r)) where
+>   (QuantityClosure x d) == (QuantityClosure y d')
+>     | d == d' = x == y
+>     | otherwise = invalidDimensions "==-closure" d d' x y
+
 >equal_up_to :: (Floating a, Show a, Ord a) => a -> Quantity a -> Quantity a -> Bool
 >equal_up_to tolerance (x `As` d) (y `As` d')
 >   | d == d' = abs (x-y) < tolerance
@@ -170,7 +175,13 @@
 >instance Exception DimensionException
 
 >instance (Show r, Infinitesimal Stream r) => Infinitesimal Stream (Quantity r) where
->   epsilon_closure = limit $ fmap (`As` dimensionless) epsilon_stream
+>   epsilon_closure = QuantityClosure epsilon_closure dimensionless
+>   infinite_closure = QuantityClosure infinite_closure dimensionless
+>   minus_infinite_closure = QuantityClosure minus_infinite_closure dimensionless
+>   nan_closure = QuantityClosure nan_closure dimensionless
+>   epsilon_stream = fmap (`As` dimensionless) epsilon_stream
+>   infinite_stream = fmap (`As` dimensionless) infinite_stream
+>   minus_infinite_stream = fmap (`As` dimensionless) minus_infinite_stream
 
 >instance (Show r, InnerProductSpace r, Scalar (Quantity r) ~ Scalar r) => InnerProductSpace (Quantity r) where
 >   (x `As` d) %. (y `As` d') = x %. y
@@ -232,12 +243,21 @@
 >   base_of_logarithm :: r }
 
 >deriving instance Read (Level Double)
+>deriving instance Read (Level (Complex Double))
+>deriving instance Read (Level Integer)
+>deriving instance Read (Level Int)
+>deriving instance Show (Level Double)
+>deriving instance Show (Level (Complex Double))
+>deriving instance Show (Level Integer)
+>deriving instance Show (Level Int)
 
 >scale :: (Show a, Floating a, Real a) => Quantity a -> Level a -> Quantity a
 >scale x (Level q b) = log (x / q) / log (pure b)
 
+>logarithmic :: (Floating a) => a -> Level a -> Quantity a
 >logarithmic x (Level q b) = (b ** x) %* q
 
+>hyperbolic :: (RealFloat a) => Complex a -> Level (Complex a) -> Quantity (Complex a)
 >hyperbolic x (Level q b) = (b ** ((0 :+ 1) * x)) %* q
 
 >-- | This is a way to convert radians to complex numbers
@@ -550,25 +570,47 @@
 >instance Traversable Quantity where
 >   traverse f (fa `As` d) = (`As` d) <$> f fa
 
->instance (Show r) => Limiting Stream (Quantity r) where
->   data Closure Stream (Quantity r) = QuantityClosure (Stream r) Dimension
+>instance (Show r, Limiting Stream r) => Limiting Stream (Quantity r) where
+>   data Closure Stream (Quantity r) = QuantityClosure (Closure Stream r) Dimension
 >   limit z@(Pre (x `As` d) r@(Pre (y `As` d') _))
->     | d == d' = let QuantityClosure yr _ = limit r in QuantityClosure (Pre x yr) d
+>     | d == d' = let QuantityClosure yr _ = limit r in QuantityClosure (limit (Pre x $ approximations yr)) d
 >     | otherwise = invalidDimensions "limit" d d' x y
->   approximations (QuantityClosure a d) = fmap (`As` d) a
+>   approximations (QuantityClosure a d) = fmap (`As` d) (approximations a)
 
->instance (ShowPrecision r, Show (Stream r), Floating r, Ord r) => Show (Stream.Closure Stream (Quantity r)) where
->   show (QuantityClosure s d) = show d ++ ":" ++ show s
+>instance (ShowPrecision r, Show (Closure Stream r), Floating r, Ord r) => Show (Stream.Closure Stream (Quantity r)) where
+>   show (QuantityClosure s d) = show s ++ (if isDimensionless d then "" else ":") ++ show d
 
 >instance (Show r,Fractional r) => Fractional (Quantity r) where
 >   (x `As` r) / (y `As` r') = (x/y) `As` (r %- r')
->   recip (x `As` r) = (1/x) `As` (vnegate r)
+>   recip (x `As` r) = (recip x) `As` (vnegate r)
 >   fromRational x = fromRational x `As` vzero
+
+>instance (Show (Closure Stream r), Fractional (Closure Stream r)) => Fractional (Closure Stream (Quantity r)) where
+>   (QuantityClosure x d) / (QuantityClosure y d') = QuantityClosure (x/y) (d %- d')
+>   recip (QuantityClosure x d) = QuantityClosure (recip x) (vnegate d)
+>   fromRational x = QuantityClosure (fromRational x) dimensionless
 
 >require_dimensionless :: (Show a) => String -> (a -> a) -> Quantity a -> Quantity a
 >require_dimensionless op f ~(x `As` r)
 >   | isDimensionless r = f x `As` dimensionless
 >   | otherwise = invalidDimensions op r dimensionless x (f x)
+
+>instance (Show (Closure Stream a), RealFloat (Closure Stream a)) => RealFloat (Closure Stream (Quantity a)) where
+>   floatRadix (QuantityClosure x _) = floatRadix x
+>   floatDigits (QuantityClosure x _) = floatDigits x
+>   floatRange (QuantityClosure x _) = floatRange x
+>   decodeFloat (QuantityClosure x _) = decodeFloat x
+>   encodeFloat a b = QuantityClosure (encodeFloat a b) dimensionless
+>   exponent (QuantityClosure x _) = exponent x
+>   significand (QuantityClosure x d) = QuantityClosure (significand x) d
+>   scaleFloat a (QuantityClosure x d) = QuantityClosure (scaleFloat a x) d
+>   isNaN (QuantityClosure x _) = isNaN x
+>   isInfinite (QuantityClosure x _) = isInfinite x
+>   isDenormalized (QuantityClosure x _) = isDenormalized x
+>   isNegativeZero (QuantityClosure x _) = isNegativeZero x
+>   isIEEE (QuantityClosure x _) = isIEEE x
+>   atan2 (QuantityClosure x d) (QuantityClosure y d')
+>     | d == d' = QuantityClosure (atan2 x y) d
 
 >instance (Show a, RealFloat a) => RealFloat (Quantity a) where
 >   floatRadix (x `As` _) = floatRadix x
@@ -590,6 +632,37 @@
 
 >instance (Show r, ConjugateSymmetric r) => ConjugateSymmetric (Quantity r) where
 >   conj (x `As` d) = (conj x) `As` d
+
+>lift_quantity_closure :: (Closure Stream a -> Closure Stream b) -> Closure Stream (Quantity a) -> Closure Stream (Quantity b)
+>lift_quantity_closure f (QuantityClosure x d) = QuantityClosure (f x) d
+
+>lift_quantity_closure2 :: (Show (Closure Stream a), Show (Closure Stream b))
+>   => String
+>   -> (Closure Stream a -> Closure Stream b -> Closure Stream c)
+>   -> Closure Stream (Quantity a) -> Closure Stream (Quantity b) -> Closure Stream (Quantity c)
+>lift_quantity_closure2 msg f (QuantityClosure x d) (QuantityClosure y d')
+>    | d == d' = QuantityClosure (f x y) d
+>    | otherwise = invalidDimensions msg d d' x y
+
+>instance (Show (Closure Stream r), Floating (Closure Stream r)) => Floating (Closure Stream (Quantity r)) where
+>  pi = QuantityClosure pi dimensionless
+>  exp = lift_quantity_closure exp
+>  log = lift_quantity_closure log
+>  (**) = lift_quantity_closure2 "(**)-closure" (**)
+>  logBase = lift_quantity_closure2 "logBase-closure" logBase
+>  sqrt = lift_quantity_closure sqrt
+>  sin = lift_quantity_closure sin
+>  cos = lift_quantity_closure cos
+>  tan = lift_quantity_closure tan
+>  asin = lift_quantity_closure asin
+>  acos = lift_quantity_closure acos
+>  atan = lift_quantity_closure atan
+>  sinh = lift_quantity_closure sinh
+>  cosh = lift_quantity_closure cosh
+>  tanh = lift_quantity_closure tanh
+>  asinh = lift_quantity_closure asinh
+>  acosh = lift_quantity_closure acosh
+>  atanh = lift_quantity_closure atanh
 
 >instance (Show r,Floating r, Real r) => Floating (Quantity r) where
 >   pi = pi `As` radian_dimension
@@ -617,6 +690,11 @@
 >     | r == r' = compare (x-y) 0
 >     | otherwise = invalidDimensions "compare" r r' x y
 
+>instance (Show (Closure Stream r), Num (Closure Stream r), Ord (Closure Stream r)) => Ord (Closure Stream (Quantity r)) where
+>   compare (QuantityClosure x d) (QuantityClosure x' d')
+>     | d == d' = compare (x-x') 0
+>     | otherwise = invalidDimensions "compare-closure" d d' x x'
+
 >instance (Show r,RealFrac r) => RealFrac (Quantity r) where
 >   properFraction (x `As` r) = let (b,c) = properFraction x in (b,c `As` r)
 >   round (x `As` r) = round x
@@ -624,14 +702,29 @@
 >   ceiling (x `As` r) = ceiling x
 >   floor (x `As` r) = floor x
 
+>instance (Show (Closure Stream r), RealFrac (Closure Stream r)) => RealFrac (Closure Stream (Quantity r)) where
+>   properFraction (QuantityClosure x d) = let (b,c) = properFraction x in (b,QuantityClosure c d)
+>   round (QuantityClosure x _) = round x
+>   ceiling (QuantityClosure x _) = ceiling x
+>   truncate (QuantityClosure x _) = truncate x
+>   floor (QuantityClosure x _) = floor x
+
 >instance (Show r, Real r) => Real (Quantity r) where
 >   toRational (x `As` r) = toRational x
+
+>instance (Show (Closure Stream r), Real (Closure Stream r)) => Real (Closure Stream (Quantity r)) where
+>   toRational (QuantityClosure x _) = toRational x
 
 >readprefix :: TRead.ReadPrec (Quantity Double -> Quantity Double)
 >readprefix = choose $ map (\(a,b) -> (a,return b)) siPrefixes
 
 >readunit :: TRead.ReadPrec (String,Quantity Double)
 >readunit = choose $ map (\ (a,b) -> (a,return (a,b))) siUnits
+
+>deriving instance Read (Quantity (Complex Double))
+>deriving instance Read (Quantity (Complex Float))
+>deriving instance Read (Quantity Integer)
+>deriving instance Read (Quantity Int)
 
 >-- | This read instance handles input examples such
 >--   as "10 m/(s*s)", "38.4 F", "12 As", "13 kgm/(s*s)",
@@ -728,6 +821,16 @@
 >  abs (x `As` r) = (abs x) `As` r
 >  signum (x `As` r) = (signum x) `As` dimensionless
 >  fromInteger a = (fromInteger a) `As` dimensionless
+
+>instance (Show (Closure Stream r), Num (Closure Stream r)) => Num (Closure Stream (Quantity r)) where
+>  (+) = lift_quantity_closure2 "(+)-closure" (+)
+>  (-) = lift_quantity_closure2 "(-)-closure" (-)
+>  (QuantityClosure x d) * (QuantityClosure x' d') = QuantityClosure (x*x') (d %+ d')
+>  negate = lift_quantity_closure negate
+>  abs = lift_quantity_closure abs
+>  signum = lift_quantity_closure signum
+>  fromInteger a = QuantityClosure (fromInteger a) dimensionless
+
 
 >instance (Num r) => VectorSpace (Quantity r) where
 >   type Scalar (Quantity r) = r

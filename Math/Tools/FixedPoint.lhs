@@ -1,5 +1,6 @@
 >{-# LANGUAGE Safe, TypeFamilies, ExistentialQuantification, MultiParamTypeClasses,
 >    FunctionalDependencies, FlexibleInstances, Rank2Types, FlexibleContexts, UndecidableInstances #-}
+>{-# LANGUAGE StandaloneDeriving, QuantifiedConstraints #-}
 >module Math.Tools.FixedPoint where
 >import Math.Tools.Visitor
 >import Math.Tools.Universe
@@ -41,6 +42,7 @@
 
 >transform :: Functor f => (b -> f b) -> (f a -> a) -> b -> a
 >transform divide combine = fold combine . unfold divide
+
 
 >-- | Note the builder and visitor for Rec f allows every level of the
 >-- recursion to be done by different function. This allows distinctions

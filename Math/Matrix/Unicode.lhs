@@ -73,8 +73,7 @@
 (⊗) = linear_outer_product
 
 >-- | otimes
->(⊗⊗) ∷ (a ~ Scalar (f a), Functor g, Transposable h f a, InnerProductSpace (h a))
->     ⇒ (g :*: h) a → (h :*: f) a → (g :*: f) a
+>(⊗⊗) ∷ (SupportsMatrixMultiplication g h f a) ⇒ (g :*: h) a → (h :*: f) a → (g :*: f) a
 >(⊗⊗) = (%*%)
 
 >-- | boxtimes

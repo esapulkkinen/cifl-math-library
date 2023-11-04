@@ -11,11 +11,19 @@
 >import safe Math.Matrix.Interface
 >import safe Math.Tools.Median
 >import safe Math.Tools.Arrow as TArrow
+>import safe Math.Tools.Isomorphism
 >
 >data Transform2D a b = Transform2D {
 >   transform_diagonal   :: a -> b,
 >   transform_commutator :: a -> a -> b,
 >   transform_symmetry :: a -> b -> a -> b }
+
+>inverseImage2D :: (a -> b) -> Transform2D b c -> Transform2D a c
+>inverseImage2D f (Transform2D d c s) = Transform2D (d . f) (\x y -> c (f x) (f y)) (\x m y -> s (f x) m (f y))
+
+>image2D :: (a :==: b) -> Transform2D c a -> Transform2D c b
+>image2D (Iso f f') (Transform2D d c s) = Transform2D (f . d) (\x y -> f (c x y)) (\x m y -> f (s x (f' m) y))
+
 
 >-- | This operation allows customizing the behaviour of the codiagonals transformation.
 >codiagonalsWith :: (Num a, Closed a) => Transform2D a b -> (Stream :*: Stream) a -> Stream b
@@ -81,7 +89,7 @@
 >flattenList2D :: Transform2D [a] [a]
 >flattenList2D = Transform2D id (++) (\a b c -> a ++ b ++ c)
 
->matrix2D :: (VectorSpace ((f :*: f) a), a ~ Scalar (f a), Functor f, InnerProductSpace (f a), Transposable f f a)
+>matrix2D :: (VectorSpace ((f :*: f) a), SupportsMatrixMultiplication f f f a)
 >  => ((f :*: f) a -> (f :*: f) a -> (f :*: f) a -> (f :*: f) a) -> Transform2D ((f :*: f) a) ((f :*: f) a)
 >matrix2D = Transform2D transpose_impl (%*%)
 
@@ -89,8 +97,7 @@ matrixProduct2D :: (VectorSpace ((f :*: f) a), Transposable f f a,
  InnerProductSpace (f a), VectorSpaceOver (f a) a)
  => Transform2D ((f :*: f) a) ((f :*: f) a)
 
->matrixProduct2D :: (a ~ Scalar (f a), Functor f, InnerProductSpace (f a), Transposable f f a,
-> VectorSpace ((f :*: f) a) )
+>matrixProduct2D :: (SupportsMatrixMultiplication f f f a, VectorSpace ((f :*: f) a))
 > => Transform2D ((f :*: f) a) ((f :*: f) a)
 >matrixProduct2D = Transform2D transpose_impl (\a b -> a %*% b %- b %*% a) (\a m b -> a %*% m %*% transpose_impl b)
 

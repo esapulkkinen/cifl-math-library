@@ -66,7 +66,7 @@
 >data RatSing :: SRat -> * where
 >  SRatOne :: RatSing 'PrOne
 >  SRatTimes :: PrimePowerSing p -> RatSing r -> RatSing ('PrTimes p r)
-
+ 
 >data SRat  = PrOne | PrTimes PrimePower SRat
 >data PrimePower = PrimePower Prime SNat
 >data Prime = PrTwo | NextPrimeAfter Prime
@@ -147,3 +147,4 @@
 >type PSix  = 'PrTimes PPTwo ('PrTimes PPThree 'PrOne)
 >type PSeven = 'PrTimes PPSeven 'PrOne
 >type PEight = 'PrTimes PPEight 'PrOne
+

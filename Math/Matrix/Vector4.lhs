@@ -90,6 +90,25 @@ import Math.Matrix.Dimension
 >dz4 = epsilon_closure %* z4
 >dt4 = epsilon_closure %* t4
 
+>setx4 :: s -> Vector4 s -> Vector4 s
+>setx4 x = \v -> v { xcoord4 = x }
+>sety4 :: s -> Vector4 s -> Vector4 s
+>sety4 x = \v -> v { ycoord4 = x }
+>setz4 :: s -> Vector4 s -> Vector4 s
+>setz4 x = \v -> v { zcoord4 = x }
+>sett4 :: s -> Vector4 s -> Vector4 s
+>sett4 x = \v -> v { tcoord4 = x }
+
+>update_row4 :: g a -> Vector4 ((Vector4 :*: g) a -> (Vector4 :*: g) a)
+>update_row4 x = Vector4 (update_row sett4 x) (update_row setx4 x) (update_row sety4 x) (update_row setz4 x) 
+
+>update_column4 :: (Applicative f) => f a -> Vector4 ((f :*: Vector4) a -> (f :*: Vector4) a)
+>update_column4 x = Vector4 (update_column sett4 x) (update_column setx4 x) (update_column sety4 x) (update_column setz4 x) 
+
+>instance UpdateableMatrixDimension Vector4 where
+>   write_row = update_row4
+>   write_column = update_column4
+
 >type Matrix4 a = (Vector4 :*: Vector4) a
 
 >codiag4 :: (Vector4 :*: Vector4) a -> Codiagonal Vector4 a

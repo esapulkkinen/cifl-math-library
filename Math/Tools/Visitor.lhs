@@ -2,7 +2,7 @@
 >             FlexibleInstances, GADTs, LambdaCase
 >  #-}
 >module Math.Tools.Visitor where
->import safe Math.Tools.I
+>import Math.Tools.I
 >import Data.Array (Array,array,assocs)
 >import Data.Ix
 >import Data.Complex
@@ -42,8 +42,6 @@
 >class (Builder v) => ConstantBuilder v where
 >   newBuilder :: v -> Unfold v a
 
-
-
 >instance FunctorBuilder ((->) b) where
 >   mapBuilder b = FunctionUnfold (\ (f,str) -> build b (f str))
 
@@ -57,6 +55,16 @@
 
 >transform_visitor :: (Visitor v, Builder v) => Fold v b -> Unfold v a ->  a -> b
 >transform_visitor f g = visit f . build g
+
+>data Diff f v w a b = Diff {
+>  diff_unfolder :: Unfold (f v) a,
+>  diff_folder   :: Fold (f w) b
+> }
+
+>integral_visitor :: (Visitor (f w), Builder (f v), Functor f) =>
+>  Diff f v w a b -> (v -> w) -> a -> b
+>integral_visitor (Diff f g) h = visit g . fmap h . build f
+
 
 >class (Builder v) => Unbuilder v b where
 >   -- inverse to 'build'.
@@ -114,6 +122,10 @@
 >   build z@(MapUnfold m) x = maybe Map.empty inserter (m x)
 >      where inserter (i,v,r) = Map.insert i v (build z r)
 
+>mapDiff :: (i -> w -> b -> b) -> b -> (a -> Maybe (i,v,a))
+>        -> Diff (Map i) v w a b
+>mapDiff f x g = Diff (MapUnfold g) (MapFold f x)
+
 >mappingBuilder :: (Ord i) => Unfold (i -> v) (Map i v)
 >mappingBuilder = FunctionUnfold $ \ (m,index) -> m Map.! index
 
@@ -149,6 +161,9 @@
 >   build z@(SetUnfold m) x = maybe Set.empty inserter (m x)
 >     where inserter (i,r) = Set.insert i (build z r)
 
+>setDiff :: (w -> b -> b) -> b -> (a -> Maybe (v,a)) -> Diff Set v w a b
+>setDiff f x g = Diff (SetUnfold g) (SetFold f x)
+
 >instance (Visitor v) => Visitor [v] where
 >   data Fold [v] a = forall b. ListFold a (v -> b -> a) (Fold [v] b)
 >   visit (ListFold n _ _) [] = n
@@ -156,6 +171,9 @@
 
 >instance (Visitor v) => ComposableVisitor [v] where
 >   embed f = ListFold (f []) (\e b -> f (e:b)) (embed id)
+
+>listDiff :: (b -> Maybe (w,b)) -> a -> (v -> a -> a) ->  Diff [] w v b a
+>listDiff f a g = Diff (ListUnfold f) (listfold a g)
 
 >listfold :: a -> (v -> a -> a) -> Fold [v] a
 >listfold a f = let x = ListFold a f x in x
@@ -179,6 +197,10 @@
 >                                            fmap (\ (x',y) -> (x',build g y))
 >                                                 (lst x)
 
+>arrayDiff :: (a,a) -> (b -> [(a,b)]) -> Diff [] v (a,w) b c
+>          -> Diff (Array a) [v] w b c
+>arrayDiff p g (Diff f h) = Diff (ArrayUnfold p g f) (ArrayFold h)
+
 >instance Visitor () where
 >   data Fold () b = TerminalFold b
 >   visit (TerminalFold x) () = x
@@ -188,11 +210,11 @@
 >   build Terminal _ = ()
 
 >instance (Visitor a, Visitor b) => Visitor (a,b) where
->   data Fold (a,b) c = PairFold (a -> b -> c)
->   visit (PairFold f) (x,y) = f x y
+>   data Fold (a,b) c = PairFold (Fold a (Fold b c))
+>   visit (PairFold f) (x,y) = visit (visit f x) y
 
->instance (Visitor a, Visitor b) => ComposableVisitor (a,b) where
->   embed f = PairFold (\a b -> f (a,b))
+>instance (ComposableVisitor a, ComposableVisitor b) => ComposableVisitor (a,b) where
+>   embed f = PairFold $ embed $ \a -> embed $ \b -> f (a,b)
 
 >instance (Builder a, Builder b) => Builder (a,b) where
 >   data Unfold (a,b) c = PairUnfold (Unfold a c,Unfold b c)
@@ -234,6 +256,9 @@ instance (IdBuilder a, IdBuilder b, IdBuilder c) => IdBuilder (a,b,c) where
 >   data Unfold (b -> v) a = FunctionUnfold ((a,b) -> v)
 >   build (FunctionUnfold g) x = \y -> g (x,y)
 
+>functionDiff :: [a] -> (a -> w -> c) -> ([c] -> d) -> ((a',a) -> v) -> Diff ((->) a) v w a' d
+>functionDiff lst f fld ufld = Diff (FunctionUnfold ufld) (FunctionFold lst f fld)
+
 >instance (Visitor v, Visitor w) => Visitor (Either v w) where
 >   data Fold (Either v w) a = EitherFold (Fold v a) (Fold w a)
 >   visit (EitherFold vf _) (Left  x) = visit vf x
@@ -249,6 +274,12 @@ instance (IdBuilder a, IdBuilder b, IdBuilder c) => IdBuilder (a,b,c) where
 >                       (Left ctx) -> Left (build x ctx)
 >                       (Right ctx) -> Right (build y ctx)
 
+>eitherDiff :: (a -> Either a a)
+>           -> Diff f  v  v a b
+>           -> Diff f' v' w a b
+>           -> Diff (Either (f v)) (f' v') (f' w) a b
+>eitherDiff f (Diff u1 f1) (Diff u2 f2) = Diff (EitherUnfold (f,u1,u2)) (EitherFold f1 f2)
+
 >instance (Visitor v) => Visitor (Maybe v) where
 >   data Fold (Maybe v) a = MaybeFold a (Fold v a)
 >   visit (MaybeFold n _) Nothing = n
@@ -261,6 +292,9 @@ instance (IdBuilder a, IdBuilder b, IdBuilder c) => IdBuilder (a,b,c) where
 >   data Unfold (Maybe v) a = MaybeUnfold (a -> Maybe a) (Unfold v a)
 >   build (MaybeUnfold f b) x | Just ctx <- f x = Just (build b ctx)
 >                             | otherwise = Nothing  
+
+>maybeDiff :: (a -> Maybe a) -> b -> Diff f v w a b -> Diff Maybe (f v) (f w) a b
+>maybeDiff f x (Diff uf fld) = Diff (MaybeUnfold f uf) (MaybeFold x fld)
 
 >instance Visitor Bool where
 >   data Fold Bool a = BoolFold a a

@@ -1,13 +1,13 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <bibliography>
-  <Book>
+  <Book id="lawvererosebrugh-sets">
     <summary>Lawvere, Rosebrugh: Sets for Mathematics</summary>
     <field name="author" type="Person"><summary name="name">F. William Lawvere</summary></field>
     <field name="author" type="Person"><summary name="name">Robert Rosebrugh</summary></field>
     <field name="headline">Sets for Mathematics</field>
     <field name="isbn">0-521-01060-8</field>
   </Book>
-  <Book>
+  <Book id="maclane-categories">
     <summary>Mac Lane: Categories for the working mathematician</summary>
     <field name="author" type="Person"><summary name="name">Saunders Mac Lane</summary></field>
     <field name="headline">Categories for the Working Mathematician</field>
@@ -17,7 +17,7 @@
       <summary name="name">Springer</summary>
     </field>
   </Book>
-  <Book>
+  <Book id="gang-of-four">
     <summary>Gamma et al: Design Patterns</summary>
     <field name="headline">Design Patterns, Elements of Reusable Object-Oriented Software</field>
     <field name="isbn">0-201-63361-2</field>
@@ -29,7 +29,7 @@
       <summary name="name">Addison-Wesley Publishing Company</summary>
     </field>
   </Book>
-  <WebSite>
+  <WebSite id="w3-schools-tutorials">
     <summary>W3 schools tutorials</summary>
     <field name="url">https://w3schools.com/xml</field>
     <field name="headline">W3 Schools Online XML tutorial</field>
@@ -37,12 +37,12 @@
       <summary name="name">Refsnes Data</summary>
     </field>
   </WebSite>
-  <WebSite>
+  <WebSite id="haskell-wiki">
     <summary>Haskell Wiki</summary>
     <field name="license">Permissive</field>
     <field name="url">http://wiki.haskell.org/</field>
   </WebSite>
-  <WebSite>
+  <WebSite id="wikipedia">
     <summary>Wikipedia, the free encyclopedia that anyone can edit</summary>
     <field name="license"><a href="https://creativecommons.org/licenses/by-sa/3.0/">CC BY-SA 3.0</a></field>
     <field name="publisher" type="Organization">
@@ -178,7 +178,7 @@
     <field name="hasPart" type="WebPage"><summary name="name">Wirtinger derivatives</summary><field name="url">https://en.wikipedia.org/wiki/Wirtinger_derivatives</field></field>
   </WebSite>
 
-  <SoftwareApplication>
+  <SoftwareApplication id="ghc">
     <summary>GHC compiler</summary>
     <field name="url">http://www.haskell.org/ghc/</field>
     <field name="applicationCategory">Compiler</field>
@@ -212,16 +212,16 @@ LITY OF SUCH DAMAGE.</field>
     <field name="operatingSystem">Windows</field>
     <field name="copyrightHolder">The University Court of the University of Glasgow</field>
   </SoftwareApplication>
-  <WebSite>
+  <WebSite id="schema-org">
     <summary>Schema.org</summary>
     <field name="url">https://schema.org/</field>
   </WebSite>
-  <WebSite>
+  <WebSite id="github-citation-file-format">
     <summary>Github citation file format</summary>
     <field name="url">https://github.com/citation-file-format/citation-file-format/</field>
     <field name="version">1.1.0</field>
   </WebSite>
-  <DigitalDocument>
+  <DigitalDocument id="glx-1.0">
     <summary>GLX-1.0.dtd</summary>
     <field name="url"><a href="http://www.gupro.de/GXL/dtd/gxl-1.0.html">glx-1.0.dtd</a></field>
     <field name="license">
@@ -233,19 +233,19 @@ and used without charge, but with explicit acknowledgement of its
 authors.
     </field>
   </DigitalDocument>
-  <SoftwareSourceCode>
+  <SoftwareSourceCode id="haxml">
     <summary>HaXML</summary>
     <field name="url">https://hackage.haskell.org/package/HaXml</field>
     <field name="license">LGPL</field>
     <field name="author" type="Person"><summary name="name">Malcolm Wallace</summary></field>
   </SoftwareSourceCode>
-  <SoftwareSourceCode>
+  <SoftwareSourceCode id="json">
     <summary>JSON</summary>
     <field name="author" type="Organization"><summary name="name">Galois Inc</summary></field>
     <field name="url">http://hackage.haskell.org/package/json</field>
     <field name="license">BSD3</field>
   </SoftwareSourceCode>
-  <Article>
+  <Article id="smith-oliver-eigenvalues">
     <summary>Smith, Oliver K.: Eigenvalues of symmetric 3x3 matrix, 1961, Communications of the ACM</summary>
     <field name="author" type="Person"><summary name="name">Oliver K. Smith</summary></field>
     <field name="doi">doi:10.1145/355578.366316</field>
@@ -255,7 +255,7 @@ authors.
     </field>
     <field name="headline">Eigenvalues of symmetric 3x3 matrix</field>
   </Article>
-  <SoftwareApplication>
+  <SoftwareApplication id="haddock">
     <summary>Haddock</summary>
     <field name="url">https://www.haskell.org/haddock/</field>
     <field name="applicationCategory">Text</field>
@@ -265,13 +265,13 @@ authors.
       <summary name="name">Simon Marlow</summary>
     </field>
   </SoftwareApplication>
-  <SoftwareApplication>
+  <SoftwareApplication id="stack">
     <summary>Stack</summary>
     <field name="applicationCategory">Build tool</field>
     <field name="operatingSystem">Linux</field>
     <field name="url">https://docs.haskellstack.org/en/stable/README/</field>
   </SoftwareApplication>
-  <SoftwareApplication>
+  <SoftwareApplication id="graphviz">
     <summary>Graphviz</summary>
     <field name="url">https://www.graphviz.org</field>
     <field name="applicationCategory">Visualization</field>
@@ -295,7 +295,7 @@ authors.
     <field name="contributor" type="Person"><summary name="name">Jeroen Scheerder</summary></field>
     <field name="contributor" type="Person"><summary name="name">Gordon Woolhull</summary></field>
   </SoftwareApplication>
-  <SoftwareApplication>
+  <SoftwareApplication id="ps2pdf">
     <summary>ps2pdf</summary>
     <field name="applicationSuite">ghostscript</field>
     <field name="operatingSystem">Linux</field>
@@ -304,12 +304,12 @@ authors.
     <field name="maintainer">Ubuntu Developers</field>
     <field name="discussionURL">mailto:ubuntu-devel-discuss@lists.ubuntu.com</field>
   </SoftwareApplication>
-  <DataCatalog>
+  <DataCatalog id="hackage">
     <summary>hackage</summary>
     <field name="url">http://hackage.haskell.org</field>
     <field name="additionalType">repository</field>
   </DataCatalog>
-  <SoftwareSourceCode>
+  <SoftwareSourceCode id="hunit">
     <summary>HUnit</summary>
     <field name="author" type="Person">
       <summary name="name">Dean Herington</summary>
@@ -320,7 +320,7 @@ authors.
     <field name="url">http://hackage.haskell.org/package/HUnit</field>
     <field name="isPartOf">http://hackage.haskell.org</field>
   </SoftwareSourceCode>
-  <SoftwareSourceCode>
+  <SoftwareSourceCode id="quickcheck">
     <summary>QuickCheck</summary>
     <field name="author" type="Person">
       <summary name="name">Koen Claessen</summary>
@@ -331,7 +331,7 @@ authors.
     <field name="url">http://hackage.haskell.org/package/QuickCheck</field>
     <field name="isPartOf">http://hackage.haskell.org</field>
   </SoftwareSourceCode>
-  <SoftwareApplication>
+  <SoftwareApplication id="cabal">
     <summary>Cabal</summary>
     <field name="author">Cabal Development Team</field>
     <field name="applicationCategory">Build tool</field>
@@ -341,7 +341,7 @@ authors.
     <field name="version">2.4.1.0</field>
     <field name="isPartOf">http://hackage.haskell.org</field>
   </SoftwareApplication>
-  <SoftwareSourceCode>
+  <SoftwareSourceCode id="doctest">
     <summary>doctest</summary>
     <field name="license">MIT</field>
     <field name="url">http://hackage.haskell.org/package/doctest</field>
@@ -352,7 +352,7 @@ authors.
     <field name="programmingLanguage">haskell</field>
     <field name="isPartOf">http://hackage.haskell.org</field>
   </SoftwareSourceCode>
-  <SoftwareSourceCode>
+  <SoftwareSourceCode id="haskell-byte-order-library">
     <summary>byte-order</summary>
     <field name="license">BSD-3</field>
     <field name="author" type="Person">
@@ -362,7 +362,7 @@ authors.
     <field name="programmingLanguage">haskell</field>
     <field name="isPartOf">http://hackage.haskell.org</field>
   </SoftwareSourceCode>
-  <SoftwareSourceCode>
+  <SoftwareSourceCode id="haskell-base-library">
     <summary>base</summary>
     <field name="maintainer">mailto:libraries@haskell.org</field>
     <field name="license">BSD-3</field>
@@ -370,7 +370,7 @@ authors.
     <field name="programmingLanguage">haskell</field>
     <field name="isPartOf">http://hackage.haskell.org</field>
   </SoftwareSourceCode>
-  <SoftwareSourceCode>
+  <SoftwareSourceCode id="haskell-ghc-prim-library">
     <summary>ghc-prim</summary>
     <field name="maintainer">mailto:libraries@haskell.org</field>
     <field name="license">BSD-3</field>
@@ -379,7 +379,7 @@ authors.
     <field name="version">0.5.2</field>
     <field name="isPartOf">http://hackage.haskell.org</field>
   </SoftwareSourceCode>
-  <SoftwareSourceCode>
+  <SoftwareSourceCode id="haskell-random-library">
     <summary>random</summary>
     <field name="license">BSD-3</field>
     <field name="maintainer">mailto:carter.schonwald@googlemail.com</field>
@@ -389,7 +389,7 @@ authors.
     <field name="version">1.2</field>
     <field name="isPartOf">http://hackage.haskell.org</field>
   </SoftwareSourceCode>
-  <SoftwareSourceCode>
+  <SoftwareSourceCode id="haskell-mtl">
     <summary>mtl</summary>
     <field name="author" type="Person">
       <summary name="name">Andy Gill</summary>
@@ -400,24 +400,24 @@ authors.
     <field name="version">2.2</field>
     <field name="isPartOf">http://hackage.haskell.org</field>
   </SoftwareSourceCode>
-  <SoftwareSourceCode>
+  <SoftwareSourceCode id="haskell-adjunctions">
     <summary>adjunctions</summary>
     <field name="url">http://hackage.haskell.org/packages/archive/adjunctions</field>
     <field name="programmingLanguage">haskell</field>
     <field name="isPartOf">http://hackage.haskell.org</field>
     <field name="version">0.9.0.4</field>
   </SoftwareSourceCode>
-  <SoftwareSourceCode>
+  <SoftwareSourceCode id="haskell-opengl">
     <summary>OpenGL (haskell package)</summary>
     <field name="url">http://lambda.haskell.org/platform/doc/current/packages/OpenGL-2.8.0.0/doc/html/index.html</field>
     <field name="programmingLanguage">haskell</field>
     <field name="version">2.8.0.0</field>
   </SoftwareSourceCode>
-  <WebSite>
+  <WebSite id="nlab">
     <summary>nLab</summary>
     <field name="url">http://nlab.mathforge.org/nlab</field>
   </WebSite>
-  <Comment>
+  <Comment id="koen-classen-haskell-cafe-posting-2002">
     <summary>Haskell-Cafe mailing list post by Koen Classen</summary>
     <field name="url">https://mail.haskell.org/pipermail/haskell-cafe/2002-June/003122.html</field>
     <field name="author" type="Person">
@@ -425,7 +425,7 @@ authors.
     </field>
     <field name="headline">Generating the n! permutations in Haskell</field>
   </Comment>
-  <SoftwareSourceCode>
+  <SoftwareSourceCode id="haskell-array">
     <summary>array</summary>
     <field name="maintainer">mailto:libraries@haskell.org</field>
     <field name="license">BSD-3</field>
@@ -434,7 +434,7 @@ authors.
     <field name="version">0.5.1.0</field>
     <field name="isPartOf">http://hackage.haskell.org</field>
   </SoftwareSourceCode>
-  <Article>
+  <Article id="haskellwiki-zipper">
     <summary>The Zipper Pattern</summary>
     <field name="url">http://www.haskell.org/haskellwiki/Zipper</field>
     <field name="genre">wiki</field>
@@ -442,7 +442,7 @@ authors.
     <field name="isPartOf">http://wiki.haskell.org</field>
     <field name="retrieved">27 May 2020</field>
   </Article>
-  <SoftwareSourceCode>
+  <SoftwareSourceCode id="template-haskell">
     <summary>template-haskell</summary>
     <field name="maintainer">mailto:libraries@haskell.org</field>
     <field name="url">http://hackage.haskell.org/package/template-haskell</field>
@@ -450,7 +450,7 @@ authors.
     <field name="version">2.10.0.0</field>
     <field name="isPartOf">http://hackage.haskell.org</field>
   </SoftwareSourceCode>
-  <Article>
+  <Article id="stream-monad">
     <summary>The stream monad</summary>
     <field name="url">http://patternsinfp.wordpress.com/2010/12/31/stream-monad/</field>
     <field name="alternateType">article</field>
@@ -459,7 +459,7 @@ authors.
     <field name="genre">blog</field>
     <field name="copyrightYear">2010</field>
   </Article>
-  <SoftwareSourceCode>
+  <SoftwareSourceCode id="haskell-time-library">
     <summary>time</summary>
     <field name="author" type="Person">
       <summary name="name">Ashley Yakeley</summary>
@@ -470,7 +470,7 @@ authors.
     <field name="version">1.5.0.1</field>
     <field name="isPartOf">http://hackage.haskell.org</field>
   </SoftwareSourceCode>
-  <SoftwareSourceCode>
+  <SoftwareSourceCode id="haskell-pretty-library">
     <summary>pretty</summary>
     <field name="license">BSD-3</field>
     <field name="maintainer" type="Person">
@@ -481,7 +481,7 @@ authors.
     <field name="version">1.1.2.0</field>
     <field name="isPartOf">http://hackage.haskell.org</field>
   </SoftwareSourceCode>
-  <SoftwareSourceCode>
+  <SoftwareSourceCode id="haskell-syb-library">
     <summary>syb</summary>
     <field name="license">BSD-3</field>
     <field name="author" type="Person">
@@ -501,7 +501,7 @@ authors.
     <field name="version">0.5.1</field>
     <field name="isPartOf">http://hackage.haskell.org</field>
   </SoftwareSourceCode>
-  <SoftwareSourceCode>
+  <SoftwareSourceCode id="haskell-stm-library">
     <summary>stm</summary>
     <field name="maintainer">mailto:libraries@haskell.org</field>
     <field name="license">BSD-3</field>
@@ -510,7 +510,7 @@ authors.
     <field name="version">2.4.4.1</field>
     <field name="isPartOf">http://hackage.haskell.org</field>
   </SoftwareSourceCode>
-  <SoftwareSourceCode>
+  <SoftwareSourceCode id="haskell-paralllel-library">
     <summary>parallel</summary>
     <field name="maintainer">mailto:libraries@haskell.org</field>
     <field name="license">BSD-3</field>
@@ -519,7 +519,7 @@ authors.
     <field name="version">3.2.0.6</field>
     <field name="isPartOf">http://hackage.haskell.org</field>
   </SoftwareSourceCode>
-  <SoftwareSourceCode>
+  <SoftwareSourceCode id="haskell-unix-library">
     <summary>unix</summary>
     <field name="license">BSD-3</field>
     <field name="maintainer">mailto:libraries@haskell.org</field>
@@ -528,7 +528,7 @@ authors.
     <field name="version">2.7.1.0</field>
     <field name="isPartOf">http://hackage.haskell.org</field>
   </SoftwareSourceCode>
-  <SoftwareSourceCode>
+  <SoftwareSourceCode id="haskell-bytestring-library">
     <summary>bytestring</summary>
     <field name="author" type="Person">
       <summary name="name">Don Stewart</summary>
@@ -545,7 +545,7 @@ authors.
     <field name="version">0.10.6.0</field>
     <field name="isPartOf">http://hackage.haskell.org</field>
   </SoftwareSourceCode>
-  <SoftwareSourceCode>
+  <SoftwareSourceCode id="haskell-fgl-library">
     <summary>fgl</summary>
     <field name="author" type="Person">
       <summary name="name">Martin Erwig</summary>
@@ -559,7 +559,7 @@ authors.
     <field name="programmingLanguage">haskell</field>
     <field name="isPartOf">http://hackage.haskell.org</field>
   </SoftwareSourceCode>
-  <SoftwareSourceCode>
+  <SoftwareSourceCode id="haskell-temporary-library">
     <summary>temporary</summary>
     <field name="license">BSD-3</field>
     <field name="maintainer" type="Person">
@@ -572,7 +572,7 @@ authors.
     <field name="programmingLanguage">haskell</field>
     <field name="isPartOf">http://hackage.haskell.org</field>
   </SoftwareSourceCode>
-  <SoftwareSourceCode>
+  <SoftwareSourceCode id="graphviz">
     <summary>graphviz</summary>
     <field name="author" type="Person">
       <summary name="name">Matthew Sackman</summary>
@@ -586,7 +586,7 @@ authors.
     <field name="version">2999.18.1.2</field>
     <field name="isPartOf">http://hackage.haskell.org</field>
   </SoftwareSourceCode>
-  <SoftwareSourceCode>
+  <SoftwareSourceCode id="haskell-text-library">
     <summary>text</summary>
     <field name="license">BSD-3</field>
     <field name="author" type="Person">
@@ -600,7 +600,7 @@ authors.
     <field name="version">1.2.2.1</field>
     <field name="isPartOf">http://hackage.haskell.org</field>
   </SoftwareSourceCode>
-  <SoftwareSourceCode>
+  <SoftwareSourceCode id="haskell-json-library">
     <summary>json</summary>
     <field name="author">Galois Inc.</field>
     <field name="maintainer" type="Person">
@@ -613,7 +613,7 @@ authors.
     <field name="version">0.9.1</field>
     <field name="isPartOf">http://hackage.haskell.org</field>
   </SoftwareSourceCode>
-  <SoftwareSourceCode>
+  <SoftwareSourceCode id="haskell-binary-library">
     <summary>binary</summary>
     <field name="author" type="Person"><summary name="name">Lennert Kolmodin</summary></field>
     <field name="maintainer" type="Person">
@@ -625,7 +625,7 @@ authors.
     <field name="version">0.7.5.0</field>
     <field name="isPartOf">http://hackage.haskell.org</field>
   </SoftwareSourceCode>
-  <SoftwareSourceCode>
+  <SoftwareSourceCode id="haskell-erf-library">
     <summary>erf</summary>
     <field name="author" type="Person"><summary name="name">Lennart Augustsson</summary></field>
     <field name="license">BSD-3</field>
@@ -634,7 +634,7 @@ authors.
     <field name="version">2.0.0.0</field>
     <field name="isPartOf">http://hackage.haskell.org</field>
   </SoftwareSourceCode>
-  <Article>
+  <Article id="escardo-haskell-monad">
     <summary>A haskell monad for infinite search in finite time</summary>
     <field name="url">http://math.andrej.com/2008/11/21/a-haskell-monad-for-infinite-search-in-finite-time/</field>
     <field name="author" type="Person">
@@ -651,7 +651,7 @@ authors.
       </field>
     </field>
   </Article>
-  <Article>
+  <Article id="wadler-comprehending-monads">
     <summary>Wadler: Comprehending Monads</summary>
     <field name="author" type="Person"><summary name="name">Philip Wadler</summary></field>
     <field name="isPartOf">Mathematical Structures in Computer Science</field>
@@ -659,7 +659,7 @@ authors.
     <field name="url">https://homepages.inf.ed.ac.uk/wadler/papers/monads/monads.ps</field>
     <field name="copyrightYear">1992</field>
   </Article>
-  <Article>
+  <Article id="mazur-when-is-one-thing-equal">
     <summary>Mazur: When is one thing equal to some other thing?</summary>
     <field name="author" type="Person">
       <summary name="name">Barry Mazur</summary>
@@ -668,7 +668,7 @@ authors.
     <field name="url">http://www.math.harvard.edu/~mazur/preprints/when_is_one.pdf</field>
     <field name="copyrightYear">2007</field>
   </Article>
-  <Article>
+  <Article id="wadler-recursive-types-for-free">
     <summary>Wadler: Recursive types for free!</summary>
     <field name="author" type="Person"><summary name="name">Philip Wadler</summary></field>
     <field name="url">http://homepages.inf.ed.ac.uk/wadler/papers/free-rectypes/free-rectypes.txt</field>
@@ -676,7 +676,7 @@ authors.
     <field name="headline">Recursive types for free!</field>
     <field name="copyrightYear">1990</field>
   </Article>
-  <Book>
+  <Book id="knuth-TAOCP">
     <summary>Knuth: The Art of Computer Programming</summary>
     <field name="url">http://www-cs-faculty.stanford.edu/~knuth/taocp.html</field>
     <field name="author" type="Person"><summary name="name">Donald Knuth</summary></field>
@@ -693,7 +693,7 @@ authors.
       <summary name="name">Volume 4 Fascicle 1</summary>
     </field>
   </Book>
-  <BlogPosting>
+  <BlogPosting id="Laarhoven-isomorphism-lenses">
     <summary>Laarhoven: Isomorphism lenses</summary>
     <field name="author" type="Person"><summary name="name">Twan van Laarhoven</summary></field>
     <field name="url">http://twanvl.nl/blog/haskell/isomorphism-lenses</field>
@@ -701,7 +701,7 @@ authors.
     <field name="copyrightYear">2011</field>
     <field name="headline">Isomorphism lenses</field>
   </BlogPosting>
-  <SoftwareSourceCode>
+  <SoftwareSourceCode id="haskell-base-compat">
     <summary>base-compat</summary>
     <field name="author" type="Person"><summary name="name">Simon Hengel</summary></field>
     <field name="author" type="Person"><summary name="name">João Cristôvão</summary></field>
@@ -712,7 +712,7 @@ authors.
     <field name="version">0.10.4</field>
     <field name="isPartOf">http://hackage.haskell.org</field>
   </SoftwareSourceCode>
-  <SoftwareSourceCode>
+  <SoftwareSourceCode id="haskell-exceptions">
     <summary>exceptions</summary>
     <field name="author" type="Person"><summary name="name">Edward A. Kmett</summary></field>
     <field name="maintainer">Edward A. Kmett</field>
@@ -721,7 +721,7 @@ authors.
     <field name="programmingLanguage">haskell</field>
     <field name="isPartOf">http://hackage.haskell.org</field>
   </SoftwareSourceCode>
-  <SoftwareSourceCode>
+  <SoftwareSourceCode id="texlive">
     <summary>TeX live</summary>
     <field name="author" type="Organization">
       <summary name="name">Debian TeX Task Force</summary>
@@ -732,7 +732,7 @@ authors.
     <field name="headline">TeX Live</field>
     <field name="url">http://www.tug.org/texlive/</field>
   </SoftwareSourceCode>
-  <SoftwareSourceCode>
+  <SoftwareSourceCode id="haskell-arrows-library">
     <summary>arrows</summary>
     <field name="author" type="Person"><summary name="name">Ross Paterson</summary></field>
     <field name="maintainer">Ross Paterson</field>
@@ -741,7 +741,7 @@ authors.
     <field name="programmingLanguage">haskell</field>
     <field name="isPartOf">http://hackage.haskell.org</field>
   </SoftwareSourceCode>
-  <SoftwareSourceCode>
+  <SoftwareSourceCode id="haskell-stream-library">
     <summary>Stream</summary>
     <field name="author" type="Person"><summary name="name">Wouter Swierstra</summary></field>
     <field name="license">BSD-3</field>
@@ -749,7 +749,7 @@ authors.
     <field name="programmingLanguage">haskell</field>
     <field name="isPartOf">http://hackage.haskell.org</field>
   </SoftwareSourceCode>
-  <SoftwareSourceCode>
+  <SoftwareSourceCode id="haskell-lazysmallcheck-library">
     <summary>lazysmallcheck</summary>
     <field name="author" type="Person"><summary name="name">Matthew Naytor</summary></field>
     <field name="author" type="Person"><summary name="name">Fredrik Lindblad</summary></field>
@@ -758,7 +758,7 @@ authors.
     <field name="programmingLanguage">haskell</field>
     <field name="isPartOf">http://hackage.haskell.org</field>
   </SoftwareSourceCode>
-  <SoftwareSourceCode>
+  <SoftwareSourceCode id="haskell-directory-library">
     <summary>directory</summary>
     <field name="discussionUrl">mailto:libraries@haskell.org</field>
     <field name="license">BSD-3</field>
@@ -767,7 +767,7 @@ authors.
     <field name="programmingLanguage">haskell</field>
     <field name="isPartOf">http://hackage.haskell.org</field>
   </SoftwareSourceCode>
-  <SoftwareSourceCode>
+  <SoftwareSourceCode id="rdf4h">
     <summary>rdf4h</summary>
     <field name="author" type="Person"><summary name="name">Rob Stewart</summary></field>
     <field name="author" type="Person"><summary name="name">Pierre Le Marre</summary></field>
@@ -778,7 +778,7 @@ authors.
     <field name="programmingLanguage">haskell</field>
     <field name="isPartOf">http://hackage.haskell.org</field>
   </SoftwareSourceCode>
-  <Article>
+  <Article id="simpson-power-series">
     <summary>Simpson: Power Series</summary>
     <field name="author" type="Person"><summary name="name">David G. Simpson</summary></field>
     <field name="organization">NASA Goddard Space Flight Center</field>
@@ -788,14 +788,14 @@ authors.
     <field name="month">April</field>
     <field name="day">29</field>
   </Article>
-  <QAPage>
+  <QAPage id="dot-products-in-spherical-coordinates">
     <summary>General formula for dot and cross products in spherical coordinates</summary>
     <field name="url">https://math.stackexchange.com/questions/243142/what-is-the-general-formula-for-calculating-dot-and-cross-products-in-spherical</field>
     <field name="headline">What is the general formula for calculating dot and cross products in spherical coordinates</field>
     <field name="isPartOf">Mathematics Stack Exchange</field>
     <field name="genre">Questions and answers</field>
   </QAPage>
-  <BlogPosting>
+  <BlogPosting id="le-fixed-length-vector-types-2017">
     <summary>Fixed-Length Vector Types in Haskell</summary>
     <field name="author" type="Person">
       <summary name="name">Justin Le</summary>
@@ -809,7 +809,7 @@ authors.
       <summary name="name">Justin Le</summary>
     </field>
   </BlogPosting>
-  <BlogPosting>
+  <BlogPosting id="le-fixed-length-vector-types-2015">
     <summary>Justin Le: Fixed Length Vector Types in Haskell</summary>
     <field name="author" type="Person">
       <summary name="name">Justin Le</summary>
@@ -818,7 +818,7 @@ authors.
     <field name="url">http://blog.jle.im/entry/fixed-length-vector-types-in-haskell-2015.html</field>
     <field name="copyrightYear">2015</field>
   </BlogPosting>
-  <DigitalDocument>
+  <DigitalDocument id="ppm">
     <summary>PPM - Netpbm color image format specification</summary>
     <field name="url">http://netpbm.sourceforge.net/doc/ppm.html</field>
     <field name="isPartOf">http://netpbm.sourceforge.net</field>
@@ -826,14 +826,14 @@ authors.
     <field name="maintainer">Bryan Henderson</field>
     <field name="headline">Netpbm color image format specification</field>
   </DigitalDocument>
-  <Article>
+  <Article id="paterson-arrows">
     <summary>Paterson R.: A new notation for arrows</summary>
     <field name="author" type="Person"><summary name="name">Ross Paterson</summary></field>
     <field name="copyrightYear">2001</field>
     <field name="headline">A new notation for arrows</field>
     <field name="url">http://www.staff.city.ac.uk/~ross/papers/notation.html</field>
   </Article>
-  <WebSite>
+  <WebSite id="nCatLab">
     <summary>nCatLab</summary>
     <field name="url">https://ncatlab.org</field>
     <field name="genre">wiki</field>

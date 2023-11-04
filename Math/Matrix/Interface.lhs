@@ -28,7 +28,7 @@
 >import safe Data.Type.Equality
 >import safe qualified Control.Applicative as Applicative
 >import safe Control.Monad.Fix (fix)
->import safe Control.Monad (join)
+>import safe Control.Monad (join, MonadPlus(..))
 >import safe Math.Tools.PrettyP
 >import safe Math.Tools.Visitor
 >import safe Math.Tools.FixedPoint
@@ -84,6 +84,9 @@ cells_linear = cells . fromLinear
 >matrix f x = \y -> Matrix $ flip fmap x $ \a -> 
 >                            flip fmap y $ \b -> f a b
 
+>matrix_compose :: (Functor m, Functor n, Category cat)
+>               => m (cat b c) -> n (cat a b) -> (m :*: n) (cat a c)
+>matrix_compose = matrix (<<<)
 
 >tensor_product :: (Num a, Functor m, Functor n) => m a -> n a -> (m :*: n) a
 >tensor_product x = \y -> matrix (*) x y
@@ -149,12 +152,19 @@ bilinear f (x,y) = linear $ bilinear_impl f (fromLinear x) (fromLinear y)
 >type ComplexVectorSpace v a = VectorSpaceOver v (Complex a)
 >type Linear a b = (VectorSpace a, VectorSpace b, Scalar a ~ Scalar b)
 >type LinearInnerProductSpace a b = (Linear a b, InnerProductSpace a, InnerProductSpace b)
->type SupportsMatrixMultiplication f g h a =
->    (Diagonalizable h a, Diagonalizable g a, ConjugateSymmetric a, Num a,
->    LinearIso g h a, LinearIso g f a, LinearIso h f a,
->    Transposable h f a, Transposable g h a, Transposable g f a,
->     InnerProductSpace (h a), InnerProductSpace (f a),
->     a ~ (Scalar (h a)))
+
+>type SupportsMatrixMultiplication f g h a = (VectorSpace (f a), VectorSpace (h a), InnerProductSpace (g a),
+>                                             Scalar (f a) ~ a, Scalar (h a) ~ a, Scalar (g a) ~ a,
+>                                             Num a, ConjugateSymmetric a,
+>                                             Functor f,  Transposable g h a)
+
+type SupportsMatrixMultiplication f g h a =
+    (Diagonalizable h a, Diagonalizable g a, ConjugateSymmetric a, Num a,
+    LinearIso g h a, LinearIso g f a, LinearIso h f a,
+    Transposable h f a, Transposable g h a, Transposable g f a,
+     InnerProductSpace (h a), InnerProductSpace (f a),
+     a ~ (Scalar (h a)))
+
 >type LinearIso f g a = (LinearTransform f g a, LinearTransform g f a)
 
 >class (VectorSpace v) => BilinearVectorSpace v where
@@ -213,6 +223,20 @@ lie_compose m1 m2 = linmatrix (bilinear (%<>%)) (cells_linear m1, (cells_linear 
 >instance Transposable ((->) row) ((->) col) a where
 >  transpose_impl (Matrix f) = Matrix $ \a b -> f b a
 
+>instance (Transposable f h (g (k a)), Transposable g h (k a),
+>          Transposable g k a, Transposable f k (g a),
+>          Scalar ((f :*: g) a) ~ Scalar ((h :*: k) a))
+> => Transposable (f :*: g) (h :*: k) a where
+>  transpose_impl = Matrix . Matrix
+>                 . fmap (fmap Matrix)
+>                 . fmap trans
+>                 . fmap (fmap trans)
+>                 . trans
+>                 . fmap trans
+>                 . cells . fmap cells . cells
+>   where trans :: Transposable g' f' a' => g' (f' a') -> f' (g' a')
+>         trans = cells . transpose_impl . Matrix
+
 >-- | Oddly, scalars must match.
 >instance (Scalar a ~ Scalar b) => Transposable ((,) a) ((,) b) c where
 >   transpose_impl (Matrix (a,(b,c))) = Matrix (b,(a,c))
@@ -231,6 +255,24 @@ transpose :: (Diagonalizable n a, LinearTransform n m a, LinearTransform m n a, 
 >update_row :: (a -> f (g b) -> f' (g' b')) -> a -> (f :*: g) b -> (f' :*: g') b'
 >update_row f row (Matrix m) = Matrix $ f row m
 
+>-- | Example use:
+>-- > write_column (Vector3 3 4 5) `ycoord3` identity3 == [[1,3,0],[0,4,0],[0,5,1]]
+>class UpdateableMatrixDimension f where
+>  write_row    :: (Applicative h) => h a -> f ((f :*: h) a -> (f :*: h) a)
+>  write_column :: (Applicative h) => h a -> f ((h :*: f) a -> (h :*: f) a)
+
+>-- | Cramer's rule <https://en.wikipedia.org/wiki/Cramer%27s_rule>.
+>-- 
+>-- Solves \({\mathbf x}\) from matrix equation \(A{\mathbf x} = {\mathbf b}\), where \(A\) is first parameter and \({\mathbf b}\)
+>-- is second parameter. Returns vector \({\mathbf x}\). Satisfies requirements:
+>-- 
+>-- > a <<*> solve_matrix a b == b
+>--
+>-- \[{\mathbf x}_i = {{\det(A[A_{ki} := {\mathbf b}_k])} \over {\det(A)}}\]
+>solve_matrix :: (Traceable m b, Fractional b, UpdateableMatrixDimension m)
+>     => (m :*: m) b -> m b -> m b
+>solve_matrix m b = fmap (\f -> mdetinverse * determinant_impl (f m)) (write_column b)
+>  where mdetinverse = 1 / determinant_impl m
 
 >(<!-!>) :: (m a -> a) -> (a -> m a) -> Index m a
 >f <!-!> finv = (I . f) <-> (finv . unI)
@@ -588,13 +630,13 @@ index2 (row,col) (C e) = index col (index row e)
 >-- | generalized implementation of matrix multiplication
 >-- see <http://en.wikipedia.org/wiki/Matrix_multiplication>
 
->(%*%) :: (a ~ Scalar (g a), Functor f, InnerProductSpace (g a), Transposable g h a) => (f :*: g) a -> (g :*: h) a -> (f :*: h) a
+>(%*%) :: (SupportsMatrixMultiplication f g h a) => (f :*: g) a -> (g :*: h) a -> (f :*: h) (Scalar (g a))
 >(%*%) (Matrix m1) m2 = matrix (%.) m1 (cells $ transpose_impl m2)
 
 
->(%**%) :: (InnerProductSpace (g a), Transposable g h a,
+>(%**%) :: (SupportsMatrixMultiplication f g h a,
 >        Linearizable arr (:*:) f h a, Linearizable arr (:*:) f g a,
->        Linearizable arr (:*:) g h a, Functor f, Scalar (g a) ~ a)
+>        Linearizable arr (:*:) g h a)
 >    => arr (f a) (g a) -> arr (g a) (h a) -> arr (f a) (h a)
 >(%**%) a b = linear (fromLinear a %*% fromLinear b)
 
@@ -635,7 +677,7 @@ linear_power :: (Diagonalizable h (h b), Diagonalizable h b) => h b :-> h b -> I
 linear_power (LinearMap p f) 0 = LinearMap Refl $ identity_impl (vector_dimension $ cells f)
 linear_power f i = f . linear_power f (i-1)
 
->(%^%) :: (a ~ Scalar (f a), InnerProductSpace (f a), Transposable f f a, Diagonalizable f (f a), Diagonalizable f a) => (f :*: f) a -> Integer -> (f :*: f) a
+>(%^%) :: (SupportsMatrixMultiplication f f f a, Diagonalizable f (f a), Diagonalizable f a) => (f :*: f) a -> Integer -> (f :*: f) a
 >x %^% 0 = identity
 >x %^% i = x %*% (x %^% (i-1))
 

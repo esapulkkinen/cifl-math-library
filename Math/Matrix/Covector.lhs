@@ -153,7 +153,9 @@ directional_derivative :: (VectorDerivative v, InnerProductSpace v)
 >is_skew_hermitian a = a == (negate 1) %* (conjugate_transpose a)
 >
 >-- | <https://en.wikipedia.org/wiki/Conjugate_transpose>
->is_normal :: (Num a, Eq (m (m a)), SupportsMatrixMultiplication m m m a, Eq (Scalar (m a)), ConjugateSymmetric (m a), Foldable m, Applicative m, Transposable m m a, Linearizable LinearMap (:*:) m m a, InnerProductSpace (m a)) => m a :-> m a -> Bool
+>is_normal :: (Eq (m (m a)), Diagonalizable m a, LinearTransform m m a,
+>            Linearizable LinearMap (:*:) m m a,
+>            ConjugateSymmetric (m a)) => m a :-> m a -> Bool
 >is_normal a = (conjugate_transpose a) . a == a . (conjugate_transpose a)
 
 >-- | partial application of dot product on second argument @(- %. v)@.

@@ -31,6 +31,7 @@
 >import Math.Tools.CoMonad
 >import Data.Type.Equality
 >import Data.Kind
+>import Data.Functor.Contravariant
 >import GHC.TypeLits
 >import Prelude hiding (id, (.))
 
@@ -238,9 +239,8 @@ commute :: Complex (g a :-> g a) -> Complex (g a :-> g a) -> ((g :*: g) (Complex
 >cofunctor_inverse_image :: (Functor f, CoFunctor g) => (a -> b) -> (g :*: f) b -> (g :*: f) a
 >cofunctor_inverse_image f (Matrix x) = Matrix $ inverse_image (fmap f) x
 
->instance (CoFunctor f, Functor g) => CoFunctor (g :*: f) where
->  inverse_image f (Matrix x) = Matrix $ fmap (inverse_image f) x
-
+>instance (Contravariant f, Functor g) => Contravariant (g :*: f) where
+>  contramap f (Matrix x) = Matrix $ fmap (inverse_image f) x
 
 >cofunctor_map :: (CoFunctor f, CoFunctor g) => (a -> b) -> (g :*: f) a -> (g :*: f) b
 >cofunctor_map f (Matrix x) = Matrix (inverse_image (inverse_image f) x)

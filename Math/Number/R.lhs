@@ -1,4 +1,4 @@
->{-# OPTIONS_GHC -Wno-unrecognised-pragmas #-}
+>{-# OPTIONS_GHC -Wno-unrecognised-pragmas -O3 #-}
 >{-# HLINT ignore "Use camelCase" #-}
 >{-# LANGUAGE Safe, TypeFamilies, FlexibleInstances, ScopedTypeVariables #-}
 >{-# LANGUAGE TypeOperators, DataKinds, UndecidableInstances #-}
@@ -15,7 +15,9 @@
 > floor_r, ceiling_r, round_r, truncate_r, properFraction_r,
 > approximately_less_than_or_equal_r, approximately_less_than_r,
 > approximately_greater_than_or_equal_r, approximately_greater_than_r,
-> approximately_equal_to_r, max_r, min_r, real_to_float, real_to_double
+> approximately_equal_to_r, max_r, min_r, real_to_float, real_to_double,
+> Limited(..), supremum, infinum, bounded_approximations, upper_bounds,
+> lower_bounds
 > ) where
 >import safe Control.Applicative
 >import safe Control.Monad
@@ -33,10 +35,12 @@
 >import safe Math.Number.Stream
 >import safe qualified Control.Monad.Fix
 >import safe GHC.TypeLits
->
+>import safe Data.List.NonEmpty (NonEmpty)
+>import safe qualified Data.List.NonEmpty as NonEmpty
 >
 >-- | This real representation takes 'epsilon' as input as in epsilon-delta proof.
 >newtype R = Limit { approximate_endo :: Endo Rational }
+
 
 >-- | this real_to_rational operation sets precision \(\epsilon\) to 0 and produces
 >-- corresponding rational number.
@@ -151,7 +155,7 @@ instance RealFrac R where
 >      where f p = real $ \eps -> r `approximate` min p eps
 
 >instance Infinitesimal Stream R where
->  epsilon_stream = Pre 1.0 $ fmap (/10.0) epsilon_stream
+>  epsilon_stream = Pre 1.0 $ fmap (*0.1) epsilon_stream
 
 >instance Fractional (Closure Stream R) where
 >  (RClosure x) / (RClosure y) = RClosure (x/y)
@@ -185,16 +189,20 @@ instance RealFrac R where
 >  atanh = liftRClosure atanh
 
 >instance Num (Closure Stream R) where
->  (RClosure x) + (RClosure y) = RClosure (x + y)
->  (RClosure x) - (RClosure y) = RClosure (x - y)
->  (RClosure x) * (RClosure y) = RClosure (x * y)
->  abs (RClosure x) = RClosure (abs x)
->  signum (RClosure x) = RClosure (signum x)
->  negate (RClosure x) = RClosure (negate x)
->  fromInteger i = RClosure (fromInteger i)
+>  (+) = liftRClosure2 (+)
+>  (-) = liftRClosure2 (-)
+>  (*) = liftRClosure2 (*)
+>  abs = liftRClosure abs
+>  signum = liftRClosure signum
+>  negate = liftRClosure negate
+>  fromInteger = \i -> RClosure (fromInteger i)
 
 >instance Infinitary (Closure Stream R) where
 >   infinite = RClosure infinite
+
+>instance Bounded R where
+>   minBound = negate infinite
+>   maxBound = infinite
 
 >instance Closed R where
 >   accumulation_point = runRClosure
@@ -204,6 +212,10 @@ instance RealFrac R where
 
 >real :: (Rational -> Rational) -> R
 >real = Limit . Endo
+
+>{-# INLINEABLE lim #-}
+>{-# INLINEABLE real #-}
+>{-# INLINEABLE approximate #-}
 
 >-- |
 >-- approximate takes a real \(r\), and a rational \(q\)
@@ -234,11 +246,14 @@ instance RealFrac R where
 >floating_approximations_r :: R -> Stream Double
 >floating_approximations_r r = fmap fromRational $ rational_approximations r
 
+>display_precision :: Rational
+>display_precision = 1 % 10000000000
+
 >instance Show R where
->   show x = show $! (fromRational (x `approximate` (1 % 1000000000000000)) :: Double)
+>   show x = show $! (fromRational (x `approximate` display_precision ) :: Double)
 
 >instance PpShow R where
->   pp x = pp $! (fromRational (x `approximate` (1 % 1000000000000000)) :: Double)
+>   pp x = pp $! (fromRational (x `approximate` display_precision) :: Double)
 
 >instance CompleteSpace R
 
@@ -322,12 +337,17 @@ instance RealFrac R where
 >-- a real number constructed from "real (const 0)" behave
 >-- much worse (nontermination) than "epsilon"
 >-- (which just increases accuracy)
+>-- Using L'Hôpital's rule for 0/0
+>-- <https://en.wikipedia.org/wiki/L%27H%C3%B4pital%27s_rule>
 >instance Fractional R where
 >   (Limit f) / (Limit g) = real checker
 >     where divisor eps = g `appEndo` (eps/2)
 >           dividend eps = f `appEndo` (eps/2)
 >           checker eps
 >              | 0 /= divisor eps = dividend eps * recip (divisor eps)
+>              | 0 == dividend eps = 
+>                  (real (derivate_rational (eps/2) $ appEndo f)
+>                   / real (derivate_rational (eps/2) $ appEndo g)) `approximate` eps
 >              | otherwise = checker (eps/2)
 >   recip (Limit f) = real checker
 >     where divisor eps = (f `appEndo` recip eps)
@@ -352,12 +372,12 @@ instance RealFrac R where
 >-- This computes accuracy using the formula \(dx = df / f'(x)\).
 >-- The accuracy behaves badly when \(f'(x) = 0\) due to divide-by-zero.
 >differentialLiftR :: (Rational -> Rational) -> R -> R
->differentialLiftR f (Limit (Endo g)) = Limit $ Endo $ \df -> f $ g (1 / (derivate_rational df f (g df)))
+>differentialLiftR f = \(Limit (Endo g)) -> Limit $ Endo $ \df -> f $ g (1 / (derivate_rational df f (g df)))
 
 >-- | derivate for rational functions. The first argument is epsilon.
+>{-# INLINEABLE derivate_rational #-}
 >derivate_rational :: Rational -> (Rational -> Rational) -> Rational -> Rational
->derivate_rational eps f i = (f (i + eps) - fi) / eps
->   where fi = f i
+>derivate_rational eps f = \i -> (f (i + eps) - f i) / eps
 
 >derivate_generic_stream :: (Fractional a) => (a -> a) -> Stream a -> Stream a
 >derivate_generic_stream f (Pre i z@(Pre di r)) = let
@@ -365,6 +385,7 @@ instance RealFrac R where
 >  in Pre (f' di i) (derivate_generic_stream (\dd -> f' dd i) z)
 
 >-- | computes derivate. \[{{df}\over{dt}} = \lim_{\epsilon\rightarrow 0}{{f(t+\epsilon)-f(t)}\over{\epsilon}}\]
+>{-# INLINEABLE derivate_r #-}
 >derivate_r :: (R -> R) -> R -> R
 >derivate_r f = \ xx@(Limit x) -> let fx = f $! xx in real $ \eps ->
 >    ((f (real $ \eps' -> x `appEndo` eps' + eps) - fx)
@@ -387,11 +408,11 @@ instance RealFrac R where
 
 >-- | square root of a real number \(x\), computed with newton's method as root of \(t \mapsto t^2 - x\).
 >sqrt_r :: R -> R
->sqrt_r v = newtons_method (\x -> x*x - v) 1
+>sqrt_r = \v -> newtons_method (\x -> x*x - v) 1
 
 >-- | logarithm of a real number \(x\), computed with newton's method as root of \(t \mapsto e^t - x\).
 >log_by_newton :: R -> R
->log_by_newton v = newtons_method (\x -> exp x - v) 1
+>log_by_newton = \v -> newtons_method (\x -> exp x - v) 1
 
 >inverse_of_r :: (R -> R) -> R -> R
 >inverse_of_r f = \ v -> newtons_method (\x -> f x - v) 1
@@ -414,15 +435,17 @@ instance RealFrac R where
 
 >-- <http://en.wikipedia.org/wiki/Logarithm Logarithm>
 >log_r :: R -> R
->log_r a = let a' = (a-1)/(a+1) in
+>log_r = \a -> let a' = (a-1)/(a+1) in
 >  2* (lim $ sum_stream $ do   
 >     n <- naturals
 >     return $! (1 / (2 * fromIntegral n + 1))*a'^(2*n+1))
 
+>{-# NOINLINE integral_r #-}
 >integral_r :: (R,R) -> (R -> R) -> R
->integral_r (x,y) = \f -> let acc = map fromRational . integral_accuracy f x y
->                          in foldable_integral acc f
+>integral_r (x,y) = \f -> let acc = integral_accuracy f x y
+>                          in foldable_integral acc (f . fromRational)
 
+>{-# SPECIALIZE foldable_integral :: (Rational -> [Rational]) -> (Rational -> R) -> R #-}
 >foldable_integral :: (Foldable t, Functor t) => (Rational -> t b) -> (b -> R) -> R
 >foldable_integral border = \f -> real $ \eps ->
 >   foldable_simple_integral border ((`approximate` eps) . f) eps
@@ -431,46 +454,51 @@ instance RealFrac R where
 >  => (a -> t b) -> (b -> v a) -> a -> v a
 >foldable_vector_integral border f = \eps -> eps %* (vsum $! fmap f $! border eps)
 
+>{-# SPECIALIZE foldable_simple_integral :: (Rational -> [Rational]) -> (Rational -> Rational) -> Rational -> Rational #-}
 >foldable_simple_integral :: (Num a, Foldable t, Functor t) =>
 >  (a -> t b) -> (b -> a) -> a -> a
->foldable_simple_integral border f = \eps -> sum $ fmap ((eps*) . f) $ border eps
+>foldable_simple_integral border = \f eps -> sum $ fmap ((eps*) . f) $ border eps
 
+>{-# SPECIALIZE integral_accuracy :: (R -> R) -> R -> R -> Rational -> [Rational] #-}
 >integral_accuracy :: (Fractional t) => (t -> R) -> R -> R -> Rational -> [Rational]
->integral_accuracy f x y eps = [x',x'+eps..y']
->  where accuracy z = derivate_rational eps mf z
->        mf i = f (fromRational i) `approximate` eps
->        x' = x `approximate` (eps / accuracy (x `approximate` eps))
->        y' = y `approximate` (eps / accuracy (y `approximate` eps))
+>integral_accuracy f x y = res
+>  where res eps = let x'' = x' $! eps ; y'' = y' $! eps in [x'', x''+eps .. y'']
+>        accuracy eps z = derivate_rational eps (mf eps) z
+>        mf eps i = f (fromRational i) `approximate` eps
+>        x' eps = x `approximate` (eps / accuracy eps (x `approximate` eps))
+>        y' eps = y `approximate` (eps / accuracy eps (y `approximate` eps))
 
 >-- | <https://en.wikipedia.org/wiki/Inverse_trigonometric_functions>
 >asin_r :: R -> R
->asin_r x = integral (0,x) $ \z -> 1 / sqrt(1 - z*z)
+>asin_r = \x -> integral (0,x) $ \z -> 1 / sqrt(1 - z*z)
 >
 >-- | <https://en.wikipedia.org/wiki/Inverse_trigonometric_functions>
 >acos_r :: R -> R
->acos_r x = integral (x,1) $ \z -> 1 / sqrt(1 - z*z)
+>acos_r = \x -> integral (x,1) $ \z -> 1 / sqrt(1 - z*z)
 > -- (pi_r / 2) - asin_r x
 >
 >-- | <https://en.wikipedia.org/wiki/Inverse_trigonometric_functions>
 >atan_r :: R -> R
->atan_r x = integral (0,x) $ \z -> (1 / (z*z+1))
+>atan_r = \x -> integral (0,x) $ \z -> (1 / (z*z+1))
 
 >-- | <http://en.wikipedia.org/wiki/Trigonometric_functions trigonometric functions>
 >-- Computed using taylor series expansion of sin function.
 >-- \[\sin(x) = \sum_{k=0}^{\infty}{{{(-1)^n}\over{(2n+1)!}}{x^{2n+1}}}\]
 >sin_by_series :: R -> R
->sin_by_series x = lim $ fst $ uninterleave $ sum_stream $ liftA2 (*) (fmap fromIntegral filterStream)
+>sin_by_series = \x -> lim $ fst $ uninterleave $ sum_stream $ liftA2 (*) filterStream'
 >                  $ liftA2 (/) (index_powers $ constant x)
 >                  $ factorial
 >   where filterStream = Pre 0 $ Pre 1 $ Pre 0 $ Pre (negate 1) $ filterStream
+>         filterStream' = fmap fromIntegral filterStream
 >              
 >-- | <http://en.wikipedia.org/wiki/Trigonometric_functions trigonometric functions>
 >-- Computed using taylor series expansion of cos function.
 >-- \[\cos(x) = \sum_{k=0}^{\infty}{{{(-1)^n}\over{(2n)!}}{x^{2n}}}\]
 >cos_by_series :: R -> R
->cos_by_series x = lim $ fst $ uninterleave $ sum_stream $ liftA2 (*) (fmap fromIntegral filterStream)
+>cos_by_series = \x -> lim $ fst $ uninterleave $ sum_stream $ liftA2 (*) filterStream'
 >                  $ liftA2 (/) (index_powers $ constant x) factorial
 >   where filterStream = Pre 1 $ Pre 0 $ Pre (negate 1) $ Pre 0 $ filterStream
+>         filterStream' = fmap fromIntegral filterStream
 
 >-- | <http://en.wikipedia.org/wiki/Trigonometric_functions trigonometric functions>
 >-- <https://en.wikipedia.org/wiki/Inverse_trigonometric_functions inverse trigonometric functions>
@@ -493,3 +521,33 @@ instance RealFrac R where
 >   asinh x = log $ x + sqrt (x*x+1)
 >   acosh x = log $ x + sqrt (x*x-1)
 >   atanh x = log ((1+x)/(1-x)) / 2
+
+>data Limited a where
+>   LimitedRationalsAbove :: (Rational -> Rational) -> NonEmpty Rational -> R -> Limited Rational
+>   LimitedRationalsBelow :: (Rational -> Rational) -> NonEmpty Rational -> R -> Limited Rational
+>   LimitedRationalsAboveBelow :: (Rational -> Rational) -> NonEmpty Rational -> NonEmpty Rational -> R -> R -> Limited Rational
+
+>supremum :: Limited Rational -> Maybe R
+>supremum (LimitedRationalsAbove _ _ s) = Just s
+>supremum (LimitedRationalsAboveBelow _ _ _ _ s) = Just s
+>supremum _ = Nothing
+>
+>infinum :: Limited Rational -> Maybe R
+>infinum (LimitedRationalsBelow _ _ i) = Just i
+>infinum (LimitedRationalsAboveBelow _ _ _ i _) = Just i
+>infinum _ = Nothing
+
+>bounded_approximations :: Limited Rational -> Rational -> Rational
+>bounded_approximations (LimitedRationalsAbove f _ _) = f
+>bounded_approximations (LimitedRationalsBelow f _ _) = f
+>bounded_approximations (LimitedRationalsAboveBelow f _ _ _ _) = f
+
+>upper_bounds :: Limited Rational -> [Rational]
+>upper_bounds (LimitedRationalsAbove _ ub _ ) = NonEmpty.toList ub
+>upper_bounds (LimitedRationalsAboveBelow _ _ ub _ _) = NonEmpty.toList ub
+>upper_bounds _ = []
+
+>lower_bounds :: Limited Rational -> [Rational]
+>lower_bounds (LimitedRationalsBelow _ lb _) = NonEmpty.toList lb
+>lower_bounds (LimitedRationalsAboveBelow _ lb _ _ _) = NonEmpty.toList lb
+>lower_bounds _ = []

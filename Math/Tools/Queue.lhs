@@ -13,6 +13,7 @@
 >import Data.Monoid
 >import Math.Tools.Arrow
 >import Math.Tools.Functor
+>import Math.Tools.CoFunctor
 >import qualified Math.Tools.List as LL
 >import Math.Tools.Visitor
 >import qualified Text.PrettyPrint as Pretty

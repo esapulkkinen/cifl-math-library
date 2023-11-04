@@ -58,6 +58,20 @@
 >     = Matrix (Vector2 (Pre (xcoord2 v) (fmap xcoord2 vr))
 >                       (Pre (ycoord2 v) (fmap ycoord2 vr)))
 
+>setx2 :: s -> Vector2 s -> Vector2 s
+>setx2 x = \v -> v { xcoord2 = x }
+>sety2 :: s -> Vector2 s -> Vector2 s
+>sety2 x = \v -> v { ycoord2 = x }
+
+>update_row2 :: g a -> Vector2 ((Vector2 :*: g) a -> (Vector2 :*: g) a)
+>update_row2 x = Vector2 (update_row setx2 x) (update_row sety2 x)
+>
+>update_column2 :: (Applicative f) => f a -> Vector2 ((f :*: Vector2) a -> (f :*: Vector2) a)
+>update_column2 x = Vector2 (update_column setx2 x) (update_column sety2 x)
+
+>instance UpdateableMatrixDimension Vector2 where
+>  write_row = update_row2
+>  write_column = update_column2
 
 >type ComplexVector2 a = (Vector2 :*: Complex) a
 

@@ -243,7 +243,18 @@ instance Transposable ((->) row) ((->) col) a where
 >  => Dual (ind -> a) -> Dual (ind -> a)
 >laplace_index f = divergence_index (grad_index f)
 
+>set_index :: (Eq ind) => ind -> s -> (ind -> s) -> (ind -> s)
+>set_index col x = \v ind -> if ind == col then x else v ind
 
+>update_row_index :: (Eq ind) => g a -> (ind -> ((((->) ind) :*: g) a -> (((->) ind) :*: g) a))
+>update_row_index x = \ind -> update_row (set_index ind) x
+
+>update_column_index :: (Applicative f, Eq ind) => f a -> (ind -> ((f :*: (->) ind) a -> (f :*: (->) ind) a))
+>update_column_index x = \ind -> update_column (set_index ind) x
+
+>instance (Eq ind) => UpdateableMatrixDimension ((->) ind) where
+>  write_row = update_row_index
+>  write_column = update_column_index
 
 >instance (b ~ Scalar a, Scalar (a -> b) ~ b, Integral a, VectorSpace b, ConjugateSymmetric b, Closed b, Infinitesimal Stream b, Eq a, Universe a)
 > => VectorDerivative (a -> b) Dual LinearMap where
@@ -323,7 +334,7 @@ instance Transposable ((->) row) ((->) col) a where
 > => LieAlgebra ((row :&: row) a) where
 >   x %<>% y = x %***% y %- y %***% x
 >
->(%***%) :: (Integral row, Universe row, Universe col, Universe mid, SupportsMatrixMultiplication ((->) row) ((->) col) ((->) mid) a)
+>(%***%) :: (Integral row, Integral mid, Universe row, Universe col, Universe mid, SupportsMatrixMultiplication ((->) row) ((->) col) ((->) mid) a)
 > => (row :&: mid) a -> (mid :&: col) a -> (row :&: col) a
 >(%***%) = (%**%)
 

@@ -8,6 +8,7 @@
 >import safe Math.Number.StreamInterface
 >import safe Math.Matrix.Interface
 >import safe Math.Tools.CoFunctor
+>import qualified Data.Complex
 
 >nthroot :: (Floating a) => a -> a -> a
 >nthroot x k = exp (log x / k)
@@ -191,6 +192,9 @@
 
 >instance ShowPrecision Float where
 >  show_at_precision r _ = show r
+
+>instance (ShowPrecision a) => ShowPrecision (Data.Complex.Complex a) where
+>   show_at_precision (a Data.Complex.:+ b) p = show_at_precision a p ++ " :+ " ++ show_at_precision b p
 
 
 >-- | compare to a certain precision, appropriate for floating point

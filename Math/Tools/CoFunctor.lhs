@@ -1,14 +1,29 @@
->{-# LANGUAGE Safe,TypeOperators, MultiParamTypeClasses, FunctionalDependencies, TypeFamilies #-}
+>{-# LANGUAGE Safe,TypeOperators, MultiParamTypeClasses, FunctionalDependencies, TypeFamilies, ConstraintKinds #-}
 >module Math.Tools.CoFunctor where
 >import safe Math.Tools.I
 >import safe Math.Tools.Universe
+>import Data.Functor.Contravariant
 
 >-- | For exposition of classical logic used here,
 >-- see "Lawvere,Rosebrugh: Sets for mathematics".
->class CoFunctor p where
->   inverse_image :: (a -> b) -> p b -> p a
->   (|>>) :: p b -> (a -> b) -> p a
->   (|>>) = flip inverse_image
+>-- 
+>-- > (x |>> f) |>> g == x |>> (f . g)
+>-- > inverse_image g (inverse_image f x) == inverse_image (f . g) x
+>-- Notice, CoFunctor is nowadays in base, so
+>-- please use Data.Functor.Contravariant.Contravariant
+>type CoFunctor p = Contravariant p
+
+>inverse_image :: (CoFunctor p) => (a -> b) -> p b -> p a
+>inverse_image = contramap
+> 
+>(|>>) :: (CoFunctor p) => p b -> (a -> b) -> p a
+>(|>>) = flip contramap
+
+class (Contravariant p) => CoFunctor p where
+   inverse_image :: (a -> b) -> p b -> p a
+   (|>>) :: p b -> (a -> b) -> p a
+   (|>>) = flip inverse_image
+   inverse_image = contramap
 
 >class Representable p where
 >   type Representation p :: * -> *
@@ -109,9 +124,6 @@ direct_image(f) -| inverse_image(f) -| universal(f)
 >union_list :: (BooleanLogic p, PropositionalLogic p) => [p a] -> p a
 >union_list = foldr (-|-) false_prop
 
-
->infixl 1 |<<
-
 >characteristic :: (BooleanLogic p) => (a -> p ()) -> p a
 >characteristic f = inverse_image f true
 
@@ -134,9 +146,6 @@ so boundary p == p -&- invert p == false
 >boundary :: (PropositionalLogic p, BooleanLogic p, SubtractiveLogic p)
 >            => p a -> p a
 >boundary p = p -&- (true -\- p)
-
->(|<<) :: (CoFunctor p) => p b -> (a -> b) -> p a
->(|<<) = flip inverse_image
 
 >curry_subst :: (CoFunctor p) => ((a,b) -> c) -> p (b -> c) -> p a
 >curry_subst = inverse_image . curry
@@ -184,3 +193,36 @@ so boundary p == p -&- invert p == false
 >   represent = return . unI
 >   m !> f = m >>= (f . I)
 
+>data Assertion a = PrimAssert { asserted_condition :: a -> Bool }
+>                 | NotAssert { asserted_negations :: Assertion a }
+>                 | AndAssert { asserted_conjunctions :: [Assertion a] }
+>                 | OrAssert { asserted_disjunctions :: [Assertion a] }
+> 
+>instance ImplicativeLogic Assertion where
+>   f -=>- g = OrAssert [NotAssert f, g]
+
+>instance Contravariant Assertion where
+>  contramap f (PrimAssert p) = PrimAssert (p . f)
+>  contramap f (NotAssert x) = NotAssert (contramap f x)
+>  contramap f (AndAssert lst) = AndAssert $ map (contramap f) lst
+>  contramap f (OrAssert lst)  = OrAssert $  map (contramap f) lst
+
+>instance PropositionalLogic Assertion where
+>  p1 -&- p2 = AndAssert [p1,p2]
+>  p1 -|- p2 = OrAssert [p1,p2]
+>  invert = NotAssert
+
+>instance BooleanLogic Assertion where
+>   true = PrimAssert $ const True
+
+>instance Propositional Assertion where
+>  runProposition (PrimAssert p) x = PrimAssert $ const (p x)
+>  runProposition (NotAssert p) x = NotAssert (runProposition p x)
+>  runProposition (AndAssert lst) x = AndAssert $ map (`runProposition` x) lst
+>  runProposition (OrAssert lst) x = OrAssert $ map (`runProposition` x) lst
+
+>instance BinaryLogic Assertion where
+>  toBool (PrimAssert p) = p ()
+>  toBool (NotAssert p) = not (toBool p)
+>  toBool (AndAssert lst) = and $ map toBool lst
+>  toBool (OrAssert lst) = or $ map toBool lst

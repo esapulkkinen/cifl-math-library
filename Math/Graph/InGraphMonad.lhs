@@ -89,6 +89,14 @@
 >elementsM :: (Monad m, Ord e) => InGraphM mon e m (Set e)
 >elementsM = InGraphM $ do { g <- ask ; return (elements g) }
 
+>borderM :: (GraphMonoid mon Bool, Monad m) => e -> InGraphM mon e m (e,e)
+>borderM e = actM e gdom >>= \a -> actM e gcod >>= \b -> return $ (a,b)
+
+>-- reversibleBorderM returns domain and codomain of the element, but sorted. This ensures
+>-- comparing the border with another such border produces deterministic result.
+>reversibleBorderM :: (ReversibleGraphMonoid mon Bool, Monad m, Ord e) => e -> InGraphM mon e m (e,e)
+>reversibleBorderM e = actM e gdom >>= \a -> actM e gcod >>= \b -> return $ sortPair (a,b)
+
 >instance (GraphMonoid mon Bool, Monad m, Ord e) => GraphMonad (InGraphM mon e m) e where
 >  gelements = elementsM
 >  gvertices = verticesM
@@ -105,14 +113,10 @@
 >   greversibleLinks = reversibleLinksM
 
 >verticesM :: (Ord e, GraphMonoid mon Bool, Monad m) => InGraphM mon e m (Set e)
->verticesM = InGraphM $ do
->   g <- ask
->   return $ vertices g
+>verticesM = InGraphM $ ask >>= (return . vertices)
 
 >edgesM :: (Ord e, GraphMonoid mon Bool, Monad m) => InGraphM mon e m (Set e)
->edgesM = InGraphM $ do
->          g <- ask
->          return $ edges g
+>edgesM = InGraphM $ ask >>= (return . edges)
 
 >nodesLinkedFromM :: (Monad m, Ord e, GraphMonoid mon Bool)
 >                  => e -> InGraphM mon e m (Set e)
@@ -201,7 +205,6 @@
 >                       b <- hasPathM (d:cr)
 >                       return $ e && (t == s) && b
 >hasPathM []  = return False
-
 
 >isEdgeBetweenM :: (Monad m, GraphMonoid mon Bool, Eq e)
 >        => e -> e -> e -> InGraphM mon e m Bool

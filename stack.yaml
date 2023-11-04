@@ -47,6 +47,7 @@ extra-deps:
  - QuickCheck-2.12.6.1
  - byte-order-0.1.2.0
  - primitive-unaligned-0.1.1.1
+ - numeric-limits-0.1.0.0
  - fuzzy-0.1.0.0@sha256:123b9581c587ae5422b67bbad7e81186b1ecbf86941a8049f921ddf136f2234e,833
  - haddock-library-1.8.0@sha256:293544a80c3d817a021fec69c430e808914a9d86db0c6bd6e96a386607a66627,3850
  - haskell-lsp-0.19.0.0@sha256:03a1a05fbdea9376cb1edec358866dc5781925badc3f4b5029ccf4174e765efd,5271

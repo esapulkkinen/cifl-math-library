@@ -142,6 +142,10 @@
 >update_column3 :: (Applicative f) => f a -> Vector3 ((f :*: Vector3) a -> (f :*: Vector3) a)
 >update_column3 x = Vector3 (update_column setx3 x) (update_column sety3 x) (update_column setz3 x)
 
+>instance UpdateableMatrixDimension Vector3 where
+>  write_row = update_row3
+>  write_column = update_column3
+
 >removex3 :: Vector3 a -> Vector2 a
 >removex3 (Vector3 _ y z) = Vector2 y z
 

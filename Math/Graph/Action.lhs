@@ -8,10 +8,14 @@
 >module Math.Graph.Action where
 >import Prelude hiding ((.),id)
 >import Control.Category
+>import Control.Arrow
 >import Data.Monoid
+>import Data.Functor.Contravariant
 >import Math.Tools.CoFunctor
 >import Math.Tools.Universe
 >import Math.Tools.NaturalTransformation
+>import Math.Tools.Adjunction
+>import Math.Tools.I
 >import Math.Matrix.Interface
 >import Math.Tools.Prop
 
@@ -20,6 +24,72 @@
 
 >(=*=) :: x :<-: b -> (a -> b) -> x :<-: a
 >(Action e) =*= m = Action $ e . m
+
+>action_id :: x :<-: a -> x :<-: a
+>action_id act = act =*= id
+
+>monoid_act :: (Monoid a) => r :<-: a -> a -> r :<-: a
+>monoid_act act m = act =*= (mappend m)
+
+>semigroup_act :: (Semigroup a) => r :<-: a -> a -> r :<-: a
+>semigroup_act act m = act =*= (<> m)
+
+>cons_act :: x :<-: [a] -> a -> x :<-: [a]
+>cons_act act a = act =*= (a:)
+
+>category_act :: (Category cat) => x :<-: cat a c -> cat a b -> x :<-: cat b c
+>category_act act m = act =*= (. m)
+
+>cocategory_act :: (Category cat) => x :<-: cat a c -> cat b c -> x :<-: cat a b
+>cocategory_act act m = act =*= (>>> m)
+
+>functor_act :: (Functor f) => x :<-: f b -> (a -> b) -> x :<-: f a
+>functor_act act f = act =*= fmap f
+>
+>cofunctor_act :: (CoFunctor p) => x :<-: p a -> (a -> b) -> x :<-: p b
+>cofunctor_act act f = act =*= inverse_image f
+
+>pure_act :: (Applicative f) => x :<-: f a -> x :<-: a
+>pure_act act = act =*= pure
+>
+>applicative_act :: (Applicative f) => x :<-: f b -> f (a -> b) -> x :<-: f a
+>applicative_act act f = act =*= (f <*>)
+
+>pair_act :: (x :<-: (c,c')) -> (b -> c, b' -> c') -> x :<-: (b,b')
+>pair_act act (f,g) = act =*= (f *** g)
+
+>product_act :: (x :<-: (c,c')) -> (a -> c, a -> c') -> x :<-: a
+>product_act act (f,g) = act =*= (f &&& g)
+
+>either_act :: x :<-: b -> (a -> b, c -> b) -> x :<-: Either a c
+>either_act act (f,g) = act =*= either f g
+
+>maybe_act :: x :<-: b -> (b, a -> b) -> x :<-: Maybe a
+>maybe_act act (x,f) = act =*= maybe x f
+
+>just_act :: x :<-: Maybe a -> x :<-: a
+>just_act act = act =*= Just
+
+>nattrans_act :: x :<-: g a -> f :~> g -> x :<-: f a
+>nattrans_act act x = act =*= nattrans_component x
+
+>horiz_act :: (Functor h) => h :~> k -> f :~> g -> x :<-: (k :*: g) a -> x :<-: (h :*: f) a
+>horiz_act f g = (`nattrans_act` horiz f g)
+>
+>vert_act :: g :~> h -> f :~> g -> x :<-: h a -> x :<-: f a
+>vert_act f g = (`nattrans_act` vert f g)
+
+>counit_act :: (Adjunction f g) => x :<-: a -> x :<-: (f :*: g) a
+>counit_act x = ((x =*= unI) `nattrans_act` counit_trans)
+
+>unit_act :: (Adjunction f g) => x :<-: (g :*: f) a -> x :<-: a
+>unit_act x = (x `nattrans_act` unit_trans) =*= I
+
+>return_act :: (Monad m) => x :<-: m a -> x :<-: a
+>return_act act = act =*= return
+> 
+>monad_act :: (Monad m) => x :<-: m b -> (a -> m b) -> x :<-: m a
+>monad_act act f = act =*= (>>= f)
 
 >smooth :: (x -> y) -> (:<-:) x :~> (:<-:) y
 >smooth f = NatTrans $ \(Action x) -> Action $ f . x
@@ -31,8 +101,8 @@
 >   id = Action id
 >   (Action f) . (Action g) = Action (g . f)
 
->instance CoFunctor ((:<-:) x) where
->   inverse_image f (Action g) = Action (g . f)
+>instance Contravariant ((:<-:) x) where
+>   contramap f (Action g) = Action (g . f)
 
 >instance Propositional ((:<-:) soc) where
 >   runProposition (Action f) x = Action (\ () -> f x)

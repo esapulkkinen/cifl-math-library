@@ -1,6 +1,6 @@
 >{-# LANGUAGE Safe,FlexibleContexts, FlexibleInstances, MultiParamTypeClasses, FunctionalDependencies, TypeOperators, TypeFamilies, DeriveGeneric, DeriveDataTypeable #-}
 >{-# LANGUAGE OverloadedStrings, UndecidableInstances #-}
->{-# LANGUAGE GADTs, LambdaCase #-}
+>{-# LANGUAGE GADTs, LambdaCase, Arrows #-}
 >-- | Graph representation as a set with action of a monoid.
 >-- See Lawvere,Rosebrugh: Sets for Mathematics for details.
 >--
@@ -39,6 +39,8 @@
 >import Math.Tools.Isomorphism
 >import Math.Graph.GraphMonoid
 >import Math.Graph.Interface
+>import qualified Math.Graph.Action as Action
+>import Math.Graph.Action ((:<-:))
 
 >import Math.Number.Group
 
@@ -74,8 +76,8 @@
 >listAction :: (Ord a) => Graph m a -> [a] -> m Bool Bool -> [a]
 >listAction g s = \m -> map (\x -> action g x m) s
 
-action_rep :: Graph m a -> Endo (Set a) :<-: m a a
-action_rep = Action.Action . action_endomorphism 
+>action_rep :: Graph m a -> Endo a :<-: m Bool Bool
+>action_rep = Action.Action . action_endomorphism 
 
 >inverseImageG :: (m Bool Bool -> n Bool Bool) -> Graph n a -> Graph m a
 >inverseImageG f = \(Graph v e act) -> Graph v e (act . f)
@@ -150,19 +152,28 @@ outerG (Graph e act) (Graph e' act') = Graph ee ract
 >complementG (Graph v e act) = Graph v e ract
 >   where ract m = act (m `mappend` gnot)
 
->instance (Ord a, Show a) => Semigroup (Graph m a) where
+>instance (Ord a, Show a, Show (m Bool Bool)) => Semigroup (Graph m a) where
 >   (<>) = unionG
 
->instance (Ord a, Show a) => Monoid (Graph m a) where
+>instance (Ord a, Show a, Show (m Bool Bool)) => Monoid (Graph m a) where
 >   mempty = emptyG
 >   mappend = unionG
 
->instance (Ord a, Show a, ReversibleGraphMonoid m Bool) => SetLike (Graph m a) where
+>instance (Ord a, Show a, Show (m Bool Bool), ReversibleGraphMonoid m Bool) => SetLike (Graph m a) where
 >   sintersection = intersectionG
 >   sunion = unionG
 >   scomplement = complementG
 
->unionG :: (Ord a, Show a) => Graph m a -> Graph m a -> Graph m a
+>productG :: (Ord a, Ord b) => Graph m a -> Graph m b -> Graph m (a,b)
+>productG g1 g2 = Graph ev ee (Endo . act)
+>  where ev = joinSet (pairSet (vertices g1) (vertices g2))
+>        ee = joinSet (pairSet (edges g1) (edges g2))
+>        act m (a,b) = (action g1 a m, action g2 b m)
+
+>-- | union of two graphs.
+>-- Notice: calls 'error' if two edges with same name point to different vertices.
+>-- Notice: calls 'error' if action is called with input that is not in vertices or edges.
+>unionG :: (Ord a, Show a, Show (m Bool Bool)) => Graph m a -> Graph m a -> Graph m a
 >unionG g1 g2 = Graph ev ee (Endo . f)
 >  where ee = edges g1 `Set.union` edges g2
 >        ev = vertices g1 `Set.union` vertices g2
@@ -170,10 +181,12 @@ outerG (Graph e act) (Graph e' act') = Graph ee ract
 >                    let res1 = action g1 z m
 >                        res2 = action g2 z m
 >                     in if res1 == res2 then res1
->                            else error $ "unionG: cannot unify:" ++ show res1 ++ "with:" ++ show res2
+>                            else error $ "unionG: cannot unify: " ++ show res1
+>                                                                  ++ " with: " ++ show res2
+>                                                                  ++ " action: " ++ show m ++ "(" ++ show z ++ ")"
 >              | z `Set.member` elements g1 = action g1 z m
 >              | z `Set.member` elements g2 = action g2 z m
->              | otherwise   = error $ "unionG: element not in graph:" ++ show z
+>              | otherwise   = error $ "unionG: element not in graph: " ++ show z
 
 >-- | In a complete graph, every pair of vertices (x,y) has a single link.
 >--
@@ -215,7 +228,7 @@ outerG (Graph e act) (Graph e' act') = Graph ee ract
 >inverseGraphG = inverseImageG ginvert
 
 >-- | mapG uses an isomorphism of graph elements to permute a graph.
->mapG :: (Arrow m, Ord a, Ord b) => a :==: b -> (Graph m a) :==: (Graph m b)
+>mapG :: (Ord a, Ord b) => a :==: b -> (Graph m a) :==: (Graph m b)
 >mapG f =  (\ (Graph v e act) -> Graph (Set.map (f =<) v) (Set.map (f =<) e) $
 >                              \m -> Endo $ isomorphism_epimorphism f . appEndo (act m) . isomorphism_section f)
 >      <-> (\ (Graph v e act) -> Graph (Set.map ((invertA f) =<) v) (Set.map ((invertA f) =<) e) $

@@ -4,7 +4,7 @@
 >{-# LANGUAGE FlexibleContexts, TypeFamilies #-}
 >{-# LANGUAGE UndecidableInstances, Arrows #-}
 >{-# LANGUAGE DeriveGeneric, StandaloneDeriving, InstanceSigs #-}
->{-# LANGUAGE TypeApplications #-}
+>{-# LANGUAGE TypeApplications, QuantifiedConstraints, AllowAmbiguousTypes #-}
 >module Math.Matrix.Linear where
 >import safe Prelude hiding (id,(.))
 >import safe Control.Category
@@ -81,8 +81,6 @@
 >-- converts from matrix representation to linear map representation.
 >linear_map :: (Linearizable LinearMap (:*:) f g a) => (f :*: g) a -> f a :-> g a
 >linear_map = linear
-
-
 
 Tensoring :: (a -> b -> c) -> LinearMap (f a, g b) (f c ⮾ g c)
 Bilinear :: (a -> LinearMap b c) -> (b -> LinearMap a c) -> LinearMap (a ⮾ b) c
@@ -406,7 +404,7 @@ instance (forall b. VectorSpace (g b), forall b. VectorSpace (f b), Indexable f 
 >instance (ConjugateSymmetric a, Fractional a) => LinearInvertible LinearMap Vector2 a
 >instance (ConjugateSymmetric a, Num a) => LinearTraceable LinearMap Vector2 a
 
->linear_matrix_multiply :: (SupportsMatrixMultiplication f g h a,
+>linear_matrix_multiply :: (SupportsMatrixMultiplication g h f a,
 >    Linearizable LinearMap (:*:) h f a,
 >    Linearizable LinearMap (:*:) g h a,
 >    Linearizable LinearMap (:*:) g f a
@@ -626,7 +624,7 @@ linear_identity_indexable = linear $ identity_impl indexable_indices
 >matrix_equalizer :: (Eq (Scalar (h a)), Eq (g (f a)),
 >   Linearizable LinearMap (:*:) h f a,
 >   Linearizable LinearMap (:*:) g h a,
->  SupportsMatrixMultiplication f g h a,
+>  SupportsMatrixMultiplication g h f a,
 >                     Applicative g, Applicative f,
 >                     Foldable g, Foldable f  -- ,
 >                --     Scalar (f a) ~ Scalar (g (f a)),

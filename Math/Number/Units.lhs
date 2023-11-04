@@ -1,10 +1,10 @@
 >-- -*- coding: utf-8 -*-
->{-# LANGUAGE CPP, Trustworthy, TypeOperators #-}
+>{-# LANGUAGE CPP, Trustworthy, TypeOperators, DataKinds, KindSignatures, PolyKinds #-}
 >{-# LANGUAGE FlexibleInstances, TypeFamilyDependencies #-}
 >{-# LANGUAGE UndecidableInstances #-}
 >{-# LANGUAGE GeneralizedNewtypeDeriving, DerivingStrategies #-}
 >{-# LANGUAGE ExistentialQuantification, TypeFamilies,GADTs, RankNTypes, UnicodeSyntax #-}
->{-# LANGUAGE ScopedTypeVariables, StandaloneDeriving, FlexibleContexts, DeriveGeneric, DeriveDataTypeable #-}
+>{-# LANGUAGE ScopedTypeVariables, StandaloneDeriving, FlexibleContexts, DeriveGeneric, DeriveDataTypeable, DeriveAnyClass #-}
 
 #if __GLASGOW_HASKELL__ >= 806
 
@@ -68,6 +68,7 @@
 >import safe Text.ParserCombinators.ReadP (skipSpaces, string)
 >import Math.Tools.Isomorphism
 >import Math.Tools.Arrow
+>import qualified Data.Ratio
 
 >-- | Notice that 'Math.Number.DimensionalAnalysis.fromAmount' from Unit class
 >-- has type @(Unit u) => UnitName u@.
@@ -280,6 +281,9 @@
 >pi_angle :: Angle
 >pi_angle = Radians pi
 
+>fraction_of_circle :: Rational -> Angle
+>fraction_of_circle r = fromRational (2*r) %* pi_angle
+
 >asin_angle :: Double -> Angle
 >asin_angle = Radians . asin
 
@@ -311,7 +315,6 @@
 >toPolar (a :+ b) = (fromAmount $ sqrt (a'*a' %+ b'*b'), Radians $ atan2 b' a')
 >   where a' = amount a
 >         b' = amount b
-
 
 >newtype DegreesAngle = Degrees { degrees :: Double }
 >   deriving (Eq,Ord, Typeable, Data, Generic)
@@ -410,6 +413,10 @@
 >newtype SquareLength = SquareMeters { squaremeters :: Double }
 > deriving (Eq,Ord, Typeable, Data, Generic)
 > deriving newtype (Binary)
+
+>newtype CubicLength = CubicMeters { cubicmeters :: Double }
+>  deriving (Eq,Ord, Typeable, Data, Generic)
+>  deriving newtype (Binary)
 >
 >sqrt_length :: SquareLength -> Length
 >sqrt_length (SquareMeters m) = Meters (sqrt m)
@@ -420,6 +427,13 @@
 >times_length :: Length -> Length -> SquareLength
 >times_length (Meters m1) (Meters m2) = SquareMeters (m1 * m2)
 
+>instance Show CubicLength where { show = show_unit }
+>instance Unit CubicLength where
+>   amount = cubicmeters
+>   fromAmount = CubicMeters
+>   fromQuantity = fromQuantityDef cubicmeter_dimension CubicMeters
+>   dimension _ = 3 %* meter_dimension
+>   unitOf _ = "m^3"
 >instance Show SquareLength where { show = show_unit }
 >instance Unit SquareLength where
 >   amount = squaremeters
@@ -804,6 +818,7 @@
 >instance Read Length where { readPrec = read_unit fromAmount }
 >instance Read Mass where { readPrec = read_unit fromAmount }
 >instance Read SquareLength where { readPrec = read_unit fromAmount }
+>instance Read CubicLength where { readPrec = read_unit fromAmount }
 >instance Read Acceleration where { readPrec = read_unit fromAmount }
 >instance Read Velocity where { readPrec = read_unit fromAmount }
 >instance Read Torque where { readPrec = read_unit fromAmount }
@@ -847,6 +862,7 @@
 >deriving via Dimensionless instance VectorSpace (Length)
 >deriving via Dimensionless instance VectorSpace (Mass)
 >deriving via Dimensionless instance VectorSpace (SquareLength)
+>deriving via Dimensionless instance VectorSpace (CubicLength)
 >deriving via Dimensionless instance VectorSpace (Acceleration)
 >deriving via Dimensionless instance VectorSpace (Velocity)
 >deriving via Dimensionless instance VectorSpace (Torque)
@@ -905,11 +921,17 @@
 >   (MetersPerSquareSecond x) %+ (MetersPerSquareSecond y) = MetersPerSquareSecond (x + y)
 >   k %* (MetersPerSquareSecond x) = MetersPerSquareSecond (k %* x)
 >instance NormedSpace Acceleration where { norm = amount }
+>instance VectorSpace CubicLength where
+>   type Scalar CubicLength = Double
+>   vzero = CubicMeters 0
+>   vnegate (CubicMeters x) = CubicMeters $ negate x
+>   (CubicMeters x) %+ (CubicMeters y) = CubicMeters $ x + y
+>   k %* (CubicMeters x) = CubicMeters $ k * x
 >instance VectorSpace SquareLength where
 >   type Scalar SquareLength = Double
 >   vzero = SquareMeters 0
 >   vnegate (SquareMeters x) = SquareMeters $ negate x
->   (SquareMeters x) %+ (SquareMeters y) = SquareMeters $ negate x
+>   (SquareMeters x) %+ (SquareMeters y) = SquareMeters $ x + y
 >   k %* (SquareMeters x) = SquareMeters $ k * x
 >instance NormedSpace SquareLength where { norm = amount }
 

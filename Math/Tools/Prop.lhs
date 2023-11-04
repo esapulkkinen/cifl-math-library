@@ -1,10 +1,11 @@
->{-# LANGUAGE Safe,ExistentialQuantification, ScopedTypeVariables, FlexibleInstances, MultiParamTypeClasses, FlexibleContexts, TypeFamilies, TypeOperators, GADTs, LambdaCase #-}
+>{-# LANGUAGE Safe,ExistentialQuantification, ScopedTypeVariables, FlexibleInstances, MultiParamTypeClasses, FlexibleContexts, TypeFamilies, TypeOperators, GADTs, LambdaCase, ConstraintKinds #-}
 >module Math.Tools.Prop where
 >import Prelude
 >import qualified Control.Monad.Fix as Fix
 >import Data.Set (Set)
 >import qualified Data.Set as Set
 >import Data.Map (Map)
+>import Data.Functor.Contravariant
 >import qualified Data.Map as Map
 >import qualified Control.Category as Cat
 >import Math.Tools.CoFunctor
@@ -25,6 +26,9 @@
 >newtype Prop a = Characteristic { runCharacteristic :: a -> Bool }
 
 >instance (Universe a) => Ord (Prop a) where { (<=) = subseteq }
+
+prop_matrix :: (CoFunctor p, CoFunctor q) => p (q a) -> q b -> p (a -> b)
+prop_matrix f = (|>>) f Prelude.. (|>>)
 
 >subseteq :: (Universe a) => Prop a -> Prop a -> Bool
 >subseteq f (Characteristic g) = and $ map g (enumerate f)
@@ -50,8 +54,8 @@ A `intersects` B == (A `intersect` B != {})
 >fromBool :: Bool -> Prop a
 >fromBool = Characteristic Cat.. const
 
->instance CoFunctor Prop where
->   inverse_image f (Characteristic g) = Characteristic (g Cat.. f)
+>instance Contravariant Prop where
+>   contramap f (Characteristic g) = Characteristic (g Cat.. f)
 
 reflexive_and_transitive_frames = characteristic (uncurry system_S4)
 reflexive_frames  = characteristic (uncurry system_T)
@@ -503,7 +507,7 @@ existential_map f p = { b | p `intersect` f^-1({b}) }
 >pneg_func :: (a -> b) -> PProp (a :\: b)
 >pneg_func f = PNeg $ \a -> inverse_image f a
 
->instance CoFunctor PProp where
->   inverse_image f (PProp p) = PProp $ inverse_image f p
+>instance Contravariant PProp where
+>   contramap f (PProp p) = PProp $ inverse_image f p
 
    inverse_image f (PNeg g) = PNeg (g . inverse_image f)

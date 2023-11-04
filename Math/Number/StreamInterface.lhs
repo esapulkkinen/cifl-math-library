@@ -21,9 +21,20 @@
 
 >class (Fractional a,Limiting str a) => Infinitesimal str a where
 >  epsilon_closure :: Closure str a
+>  infinite_closure :: Closure str a
+>  minus_infinite_closure :: Closure str a
+>  nan_closure :: Closure str a
 >  epsilon_stream :: str a
+>  infinite_stream :: str a
+>  minus_infinite_stream :: str a
 >  epsilon_closure = limit epsilon_stream
 >  epsilon_stream = approximations epsilon_closure
+>  infinite_closure = limit $ fmap (1/) epsilon_stream
+>  infinite_stream = approximations infinite_closure
+>  minus_infinite_closure = limit $ fmap (negate . (1/)) epsilon_stream
+>  minus_infinite_stream = approximations minus_infinite_closure
+>  nan_closure = epsilon_closure
+>  {-# MINIMAL (epsilon_closure | epsilon_stream) #-}
 
 >class (Applicative str) => StreamBuilder str where
 >  pre :: a -> str a -> str a
@@ -85,6 +96,7 @@
 >newtons_method_real f = \x -> limit $ iterate_stream iteration x
 >   where iteration z' = z' - f z' / accumulation_point (derivate_closed f z')
 
+>{-# INLINEABLE iterate_stream #-}
 >iterate_stream :: (StreamBuilder str) => (a -> a) -> a -> str a
 >iterate_stream f = \x -> pre x $ iterate_stream f (f x)
 
@@ -145,14 +157,15 @@
 
 >instance Applicative Stream where
 >   pure = constant
->   ~(Pre f fr) <*> ~(Pre b br) = Pre (f b) (fr <*> br)
+>   (Pre f fr) <*> (Pre b br) = Pre (f b) (fr <*> br)
 
 >-- | stream consisting of the same element repeated.
+>{-# INLINE constant #-}
 >constant :: a -> Stream a
 >constant x = Pre x (constant x)
 
 >instance Functor Stream where
->   fmap f ~(Pre x xr) = Pre (f x) (fmap f xr)
+>   fmap f (Pre x xr) = Pre (f x) (fmap f xr)
 
 >stream_matrix_impl :: Stream a -> Stream (Stream a, Stream a) -> (Stream :*: Stream) a
 >stream_matrix_impl ~(Pre x xr) ~(Pre ~(y,yh) yr) = Matrix $ Pre (Pre x y)
@@ -160,11 +173,11 @@
 
 >-- Notice this older version doesn't need Closed or Num constraints
 >stream_diagonal_impl :: (Stream :*: Stream) a -> Stream a
->stream_diagonal_impl ~(Matrix ~(Pre ~(Pre x _) dr)) 
+>stream_diagonal_impl (Matrix (Pre (Pre x _) dr)) 
 >   = Pre x $ stream_diagonal_impl $ Matrix $ fmap stail dr
 
 >stream_codiagonal_impl :: (Stream :*: Stream) a -> Stream (Stream a, Stream a)
->stream_codiagonal_impl ~(Matrix ~(Pre ~(Pre _ x) yr))
+>stream_codiagonal_impl (Matrix (Pre (Pre _ x) yr))
 > = Pre (x,fmap shead yr) (stream_codiagonal_impl $ Matrix $ fmap stail yr)
 
 >instance (Num a) => CodiagonalMatrix Stream a where

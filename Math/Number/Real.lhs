@@ -391,6 +391,10 @@ infimum = negate_limit . supremum_gen . map negate_limit
 >infinity :: R
 >infinity = Limit $ Stream.power 10
 
+>instance Bounded R where
+>   minBound = negate infinity
+>   maxBound = infinity
+
 >infinity_gen :: (Fractional a, Limiting Stream a) => Closure Stream a
 >infinity_gen = limit $ Stream.power 10
 

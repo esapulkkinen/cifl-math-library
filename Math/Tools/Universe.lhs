@@ -6,6 +6,8 @@
 >import safe Data.Monoid
 >import safe Data.Int
 >import safe Data.Word
+>import safe qualified Data.Set as Set
+>import safe Data.Set (Set)
 
 >-- | The universe class describes a listing of elements of type a, not
 >-- including the 'undefined'.
@@ -116,3 +118,9 @@
 >instance (Universe a, Eq a) => Universe (Endo a) where
 >   all_elements = fmap Endo all_elements
 
+>all_sets :: (Ord a) => [a] -> [Set a]
+>all_sets [] = [Set.empty]
+>all_sets (c:cr) = Set.empty : map (Set.insert c) (all_sets cr)
+
+>instance (Universe a, Ord a) => Universe (Set a) where
+>   all_elements = all_sets all_elements

@@ -95,7 +95,6 @@ data Three = TId | TDom | TCod deriving (Eq,Show,Ord, Typeable, Data, Generic)
 >  TDom -> Endo b
 >  TCod -> Endo c
 
-
 >-- | intent is that g =~= F Bool, where F : 2^{op} -> Set. But opposite categories are difficult to represent.
 >three_action_arr :: (ArrowChoice arr) => arr g g -> arr g g -> arr g g -> Three Bool Bool -> arr g g
 >three_action_arr a b c f = proc i -> case f of { TId -> a -< i ; TDom -> b -< i ; TCod -> c -< i }
@@ -147,12 +146,10 @@ data Three = TId | TDom | TCod deriving (Eq,Show,Ord, Typeable, Data, Generic)
 >data Restricted (g :: * -> Constraint) a b where
 >  Restricted :: (g a) => a -> Restricted g a a
 
-data Four = FId | FDom | FCod | FNot deriving (Eq,Show, Ord, Typeable, Data, Generic)
-
 >three_to_four :: Three a b -> Four a b
 >three_to_four = \case { TId -> FId ;  TDom -> FDom ; TCod -> FCod }
 
->-- | intent is that g =~= F Bool, where F : 2^{op} -> Set. But opposite categories are difficult to represent.
+>-- | intent is that g =~= F2, where F : 2^{op} -> Set. But opposite categories are difficult to represent.
 >four_action_arr :: (ArrowChoice arr)
 >  => arr g g -> arr g g -> arr g g -> arr g g -> Four Bool Bool -> arr g g
 >four_action_arr aid adom acod anot f = proc v -> case f of
@@ -161,13 +158,17 @@ data Four = FId | FDom | FCod | FNot deriving (Eq,Show, Ord, Typeable, Data, Gen
 >   FCod -> acod -< v
 >   FNot -> anot -< v
 
->-- | intent is that g =~= F Bool, where F : 2^{op} -> Set. But opposite categories are difficult to represent.
+>-- | intent is that g =~= F2, where F : 2^{op} -> Set. But opposite categories are difficult to represent.
 >four_action :: (g -> g) -> (g -> g) -> (g -> g) -> (g -> g) -> Four Bool Bool -> Endo g
 >four_action aid adom acod anot = \case
 >  FId -> Endo aid
 >  FDom -> Endo adom
 >  FCod -> Endo acod
 >  FNot -> Endo anot
+
+>sortPair :: (Ord a) => (a,a) -> (a,a)
+>sortPair (x,y) | x <= y = (x,y)
+>               | otherwise = (y,x)
 
 >instance Universe (Four a a) where 
 >  all_elements = [FId,FDom, FCod,FNot]
@@ -183,7 +184,6 @@ data Four = FId | FDom | FCod | FNot deriving (Eq,Show, Ord, Typeable, Data, Gen
 >   monoidA FDom = arr (const False)
 >   monoidA FCod = arr (const True)
 >   monoidA FNot = arr not
-
 
 >instance Semigroup (Four Bool Bool) where
 >   (<>) = mappend_four
@@ -245,14 +245,14 @@ data Four = FId | FDom | FCod | FNot deriving (Eq,Show, Ord, Typeable, Data, Gen
 >    TCod -> Vertex y
 >    _ -> Edge a
 
->bidirectionalEdge :: (f a,f a) -> (f a,f a) -> Four a a -> f a
+>bidirectionalEdge :: (f a,f a) -> (f a,f a) -> Four Bool Bool -> f a
 >bidirectionalEdge (a,ra) (x,y) = \m -> case m of
 >  FDom -> x
 >  FCod -> y
 >  FId -> a
 >  FNot -> ra
 >
->bidirectionalEdgeE :: (e,e) -> (v,v) -> Four (GraphElem v e) (GraphElem v e) -> GraphElem v e
+>bidirectionalEdgeE :: (e,e) -> (v,v) -> Four Bool Bool -> GraphElem v e
 >bidirectionalEdgeE (a,ra) (x,y) = \m -> case m of
 > FDom -> Vertex x
 > FCod -> Vertex y
@@ -293,6 +293,12 @@ data Four = FId | FDom | FCod | FNot deriving (Eq,Show, Ord, Typeable, Data, Gen
 
 >loopEndoE :: (Ord v, Ord e) => [(v,e)] -> Three Bool Bool -> Endo (GraphElem v e)
 >loopEndoE lst = edgesEndoE $ map (\(v,e) -> (e,(v,v))) lst
+
+>reversibleOneLaneLoopEndoE :: (Ord v, Ord e) => [(v,e)] -> Four Bool Bool -> Endo (GraphElem v e)
+>reversibleOneLaneLoopEndoE lst = reversibleEdgesEndoE $ map (\ (v,e) -> ((e,e),(v,v))) lst
+
+>reversibleLoopEndoE :: (Ord v, Ord e) => [(v,e,e)] -> Four Bool Bool -> Endo (GraphElem v e)
+>reversibleLoopEndoE lst = reversibleEdgesEndoE $ map (\ (v,e,e') -> ((e,e'),(v,v))) lst
 
 >edgesArr :: (Eq a, ArrowChoice arr, FailureArrow arr String) => [(a,(a,a))] -> Three Bool Bool -> arr a a
 >edgesArr lst = \m -> proc a -> do

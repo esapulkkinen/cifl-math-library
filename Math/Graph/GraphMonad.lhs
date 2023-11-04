@@ -21,7 +21,9 @@
 
 >instance (Monoid g) => Monad (GraphM g) where
 >  return x = GraphM (mempty,x)
->  ~(GraphM ~(a,x)) >>= g = GraphM $ let ~(GraphM ~(b,y)) = g x in (mappend a b,y)
+>  ~(GraphM ~(a,x)) >>= g = let
+>       ~(GraphM ~(b,y)) = g x
+>     in GraphM (mappend a b,y)
 >  fail msg = GraphM (mempty,error msg)
 
 >-- <https://downloads.haskell.org/ghc/latest/docs/libraries/mtl-2.2.2/Control-Monad-Writer-Lazy.html#t:MonadWriter>

@@ -79,6 +79,9 @@
 >instance PpShowF Vector1 where
 >   ppf (Vector1 x) = pp '[' Mon.<> (Pretty.sep [pp x]) Mon.<> pp ']'
 
+>instance (PpShow a) => PpShow (Vector1 a) where
+>   pp (Vector1 x) = pp '[' <> pp x <> pp ']'
+
 
 >instance Transposable Stream Vector1 a where
 >   transpose_impl (Matrix (Pre v vr))

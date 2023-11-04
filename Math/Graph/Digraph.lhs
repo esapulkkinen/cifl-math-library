@@ -26,7 +26,26 @@
 >   edgesGraph = edgesGE
 >   loopGraph = loopGE
 
->vertexGE :: v -> Graph m (GraphElem v e)
+instance (Ord v, Ord e) => DigraphFactory (Graph Four (GraphElem v e)) v e where
+    vertexGraph = vertexGE
+    edgeGraph e v1 v2 = reversibleEdgeGE e e v1 v2
+    verticesFromSetGraph = verticesFromSetGE
+    verticesGraph = verticesGE
+    completeGraph lst f = reversibleCompleteGE lst (\v1 v2 -> let x = f v1 v2 in (x,x))
+    edgeGraphFromMap m = edgesGraph $ Map.toList m
+    edgesGraph lst = reversibleEdgesGE $ map (\ (e,(v1,v2)) -> ((e,e),(v1,v2))) lst
+    loopGraph = reversibleOneLaneLoopGE
+
+>instance (Ord v, Ord e) => ReversibleGraphFactory (Graph Four (GraphElem v e)) v e where
+>   reversibleVertexGraph = vertexGE
+>   reversibleVerticesGraph = verticesGE
+>   reversibleVerticesFromSetGraph = verticesFromSetGE
+>   reversibleEdgeGraph = reversibleEdgeGE
+>   reversibleCompleteGraph = reversibleCompleteGE
+>   reversibleEdgesGraph = reversibleEdgesGE
+>   reversibleLoopGraph = reversibleLoopGE
+
+>vertexGE :: v -> GenericGraph m v e
 >vertexGE x = Graph (Set.singleton (Vertex x)) Set.empty vertexEndo
 
 >verticesFromSetGE :: (Ord e, Ord v) => Set v -> GenericGraph m v e
@@ -55,7 +74,23 @@
 >                    (edgesEndoE lst)
 
 >loopGE :: (Ord v, Ord e) => [(v,e)] -> Digraph v e
->loopGE lst = Graph (Set.fromList (map (Vertex . fst) lst)) (Set.fromList $ map (Edge . snd) lst) (loopEndoE lst)
+>loopGE lst = Graph (Set.fromList $ map (Vertex . fst) lst)
+>                   (Set.fromList $ map (Edge . snd) lst)
+>                   (loopEndoE lst)
+
+>reversibleOneLaneLoopGE :: (Ord v, Ord e) => [(v,e)] -> ReversibleGraph v e
+>reversibleOneLaneLoopGE lst = Graph (Set.fromList $ map (Vertex . fst) lst)
+>                                    (Set.fromList $ map (Edge . snd) lst)
+>                                    (reversibleOneLaneLoopEndoE lst)
+
+>reversibleLoopGE :: (Ord v, Ord e) => [(v,e,e)] -> ReversibleGraph v e
+>reversibleLoopGE lst = Graph (Set.fromList $ map (Vertex . fst3) lst)
+>                             (Set.fromList $ map (Edge . snd3) lst ++ map (Edge . thr3) lst)
+>                             (reversibleLoopEndoE lst)
+>   where fst3 ~(a,_,_) = a
+>         snd3 ~(_,b,_) = b
+>         thr3 ~(_,_,c) = c
+
 
 >reversibleEdgeGE :: (Ord v, Ord e) => e -> e -> v -> v -> ReversibleGraph v e
 >reversibleEdgeGE e re x y = reversibleEdgesGE [((e,re),(x,y))]

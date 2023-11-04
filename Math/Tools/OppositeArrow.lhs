@@ -6,8 +6,11 @@
 >import Control.Arrow
 >import Math.Tools.Arrow
 >import Math.Tools.CoFunctor
+>import Data.Functor.Contravariant
 
 >data OpA arr a b = OpA { runOpA :: arr b a }
+
+
 
 >instance (Category c) => Category (OpA c) where
 >   id = OpA id
@@ -35,8 +38,8 @@
 >instance (Category arr, Arrow arr') => OpArrow (OpA arr a) arr arr' where
 >   inverse_imageA = inverseImageA
 
->instance (Arrow arr) => CoFunctor (OpA arr a) where
->   inverse_image f (OpA x) = OpA (x . arr f)
+>instance (Arrow arr) => Contravariant (OpA arr a) where
+>   contramap f (OpA x) = OpA (x . arr f)
 
 >data Empty 
 
