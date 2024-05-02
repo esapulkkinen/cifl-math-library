@@ -59,15 +59,16 @@
 >   fmap f (MakeQueue x y) = MakeQueue (map f x)  (map f y)
 
 >instance Monad Queue where
->   return x = MakeQueue [x] []
 >   q >>= f = join' $ fmap f q
+
+>instance MonadFail Queue where
 >   fail _ = MakeQueue [] []
 
 >instance Nondeterministic Queue where
 >   guess = fromList
 
 >instance Applicative Queue where
->   pure = return
+>   pure x = MakeQueue [x] []
 >   (<*>) = ap
 
 >instance Alternative Queue where
@@ -97,7 +98,7 @@
 
 cat (punctuate (pp ',') $ map pp (x ++ L.reverse y)) <> pp '}'
 
->instance (ArrowChoice ar) => FunctorArrow Queue ar where
+>instance (ArrowChoice ar) => FunctorArrow Queue ar ar where
 >   amap f = proc (MakeQueue x y) -> do
 >               x' <- amap f -< x
 >               y' <- amap f -< y
@@ -136,20 +137,20 @@ empty comes from Alternative
 >enqueue_back :: a -> Queue a -> Queue a
 >enqueue_back x (MakeQueue a b) = MakeQueue a (x:b) 
 
->dequeue :: (Monad m) => Queue a -> m (a,Queue a)
+>dequeue :: (MonadFail m) => Queue a -> m (a,Queue a)
 >dequeue (MakeQueue [] []) = fail "cannot dequeue from an empty queue"
 >dequeue (MakeQueue x (x':r')) = return (x',MakeQueue x r')
 >dequeue (MakeQueue x []) = dequeue (MakeQueue [] (L.reverse x))
 
->dequeue_back :: (Monad m) => Queue a -> m (Queue a,a)
+>dequeue_back :: (MonadFail m) => Queue a -> m (Queue a,a)
 >dequeue_back (MakeQueue [] []) = fail "cannot dequeue_back an empty queue"
 >dequeue_back (MakeQueue (x:xr) r) = return (MakeQueue xr r,x)
 >dequeue_back (MakeQueue [] r) = dequeue_back $ MakeQueue (L.reverse r) []
 
->dequeue_rotate :: (Monad m) => Queue a -> m (a,Queue a)
+>dequeue_rotate :: (MonadFail m) => Queue a -> m (a,Queue a)
 >dequeue_rotate q = do { (x,q') <- dequeue q ; return (x,enqueue x q') }
 
->dequeue_rotate_back :: (Monad m) => Queue a -> m (Queue a,a)
+>dequeue_rotate_back :: (MonadFail m) => Queue a -> m (Queue a,a)
 >dequeue_rotate_back q = do (q',x) <- dequeue_back q
 >                           return (enqueue_back x q',x)
 
@@ -200,7 +201,7 @@ empty comes from Alternative
 >append (MakeQueue x x') (MakeQueue y y') = MakeQueue (x ++ L.reverse x')
 >                                                     (L.reverse y ++ y')
 
->dequeue_current :: (Monad m) => Queue a -> m (a,Queue a)
+>dequeue_current :: (MonadFail m) => Queue a -> m (a,Queue a)
 >dequeue_current (MakeQueue x (c:cr)) = return (c,MakeQueue x cr)
 >dequeue_current (MakeQueue x []) = fail "At end of queue"
 

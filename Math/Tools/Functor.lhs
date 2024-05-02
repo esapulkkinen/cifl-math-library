@@ -1,4 +1,4 @@
->{-# LANGUAGE MultiParamTypeClasses, LambdaCase, Safe #-}
+>{-# LANGUAGE MultiParamTypeClasses, LambdaCase, PolyKinds, Safe #-}
 >module Math.Tools.Functor where
 >import Control.Applicative
 

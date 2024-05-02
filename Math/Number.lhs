@@ -40,4 +40,5 @@
 >import safe Math.Number.TypeRational
 >import safe Math.Number.TypeUnits
 >import safe Math.Number.Interface
+>import safe Math.Number.StreamInterface
 >import safe Math.Number.Transform2D

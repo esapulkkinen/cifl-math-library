@@ -4,7 +4,7 @@
 >{-# LANGUAGE TypeOperators, DataKinds, UndecidableInstances #-}
 >{-# LANGUAGE MultiParamTypeClasses, FlexibleContexts, GADTs #-}
 >module Math.Number.R (
-> R(Limit), lim, real, approximate, rational_approximations, 
+> R(Limit), lim, real, approximate, rational_approximations, average,
 > floating_approximations, epsilon, infinite_r, liftR, derivate_generic_stream,
 > liftR2, inverseImage, liftWithAccuracy, approximate_as, 
 > limit_compose, inverseImageEndo, differentialLiftR, derivate_rational,
@@ -82,19 +82,22 @@ instance RealFrac R where
    floor = floor_r
 
 >approximately_less_than_or_equal_r :: Rational -> R -> R -> Bool
->approximately_less_than_or_equal_r eps f g = f `approximate` eps <= g `approximate` eps
+>approximately_less_than_or_equal_r eps f g = (g - f) `approximate` (eps/2) > (-eps)
 
 >approximately_less_than_r :: Rational -> R -> R -> Bool
->approximately_less_than_r eps f g = f `approximate` eps < g `approximate` eps
+>approximately_less_than_r eps f g = (f - g) `approximate` (eps/2) < eps
 
 >approximately_greater_than_or_equal_r :: Rational -> R -> R -> Bool
->approximately_greater_than_or_equal_r eps f g = f `approximate` eps >= g `approximate` eps
+>approximately_greater_than_or_equal_r eps f g = (g - f) `approximate` (eps/2) < eps
 
 >approximately_greater_than_r :: Rational -> R -> R -> Bool
->approximately_greater_than_r eps f g = f `approximate` eps > g `approximate` eps
+>approximately_greater_than_r eps f g = (f - g) `approximate` (eps/2) > eps
 
 >approximately_equal_to_r :: Rational -> R -> R -> Bool
->approximately_equal_to_r eps f g = f `approximate` eps == g `approximate` eps
+>approximately_equal_to_r eps f g = abs (f - g) `approximate` (eps/2) < eps
+
+>average :: R -> R -> R
+>average = liftR2 (\x y -> (x+y)/2)
 
 >max_r :: R -> R -> R
 >max_r = liftR2 max
@@ -153,6 +156,10 @@ instance RealFrac R where
 >         else runRClosure (limit z) `approximate` eps
 >   approximations ~(RClosure r) = fmap f $ fmap (1 /) $ power 10
 >      where f p = real $ \eps -> r `approximate` min p eps
+
+>instance ConjugateSymmetric (Closure Stream R) where
+>   conj (RClosure r) = RClosure (conj r)
+
 
 >instance Infinitesimal Stream R where
 >  epsilon_stream = Pre 1.0 $ fmap (*0.1) epsilon_stream
@@ -440,6 +447,13 @@ instance RealFrac R where
 >     n <- naturals
 >     return $! (1 / (2 * fromIntegral n + 1))*a'^(2*n+1))
 
+
+<https://en.wikipedia.org/wiki/Fourier_series> <https://en.wikipedia.org/wiki/Fourier_transform>
+fourier_coefficient :: (Complex R -> Complex R) -> Integer -> Complex R
+fourier_coefficient f n = (1/(2*pi)) %* integral_r (-pi,pi) (\x -> f (x :+ 0) * exp ((- (0:+1)* fromRational (fromIntegral n)) * (x :+ 0)))
+
+
+
 >{-# NOINLINE integral_r #-}
 >integral_r :: (R,R) -> (R -> R) -> R
 >integral_r (x,y) = \f -> let acc = integral_accuracy f x y
@@ -483,7 +497,7 @@ instance RealFrac R where
 
 >-- | <http://en.wikipedia.org/wiki/Trigonometric_functions trigonometric functions>
 >-- Computed using taylor series expansion of sin function.
->-- \[\sin(x) = \sum_{k=0}^{\infty}{{{(-1)^n}\over{(2n+1)!}}{x^{2n+1}}}\]
+>-- \[\sin(x) = \sum_{k=0}^{\infty}{{{(-1)^k}\over{(2k+1)!}}{x^{2k+1}}}\]
 >sin_by_series :: R -> R
 >sin_by_series = \x -> lim $ fst $ uninterleave $ sum_stream $ liftA2 (*) filterStream'
 >                  $ liftA2 (/) (index_powers $ constant x)
@@ -493,7 +507,7 @@ instance RealFrac R where
 >              
 >-- | <http://en.wikipedia.org/wiki/Trigonometric_functions trigonometric functions>
 >-- Computed using taylor series expansion of cos function.
->-- \[\cos(x) = \sum_{k=0}^{\infty}{{{(-1)^n}\over{(2n)!}}{x^{2n}}}\]
+>-- \[\cos(x) = \sum_{k=0}^{\infty}{{{(-1)^k}\over{(2k)!}}{x^{2k}}}\]
 >cos_by_series :: R -> R
 >cos_by_series = \x -> lim $ fst $ uninterleave $ sum_stream $ liftA2 (*) filterStream'
 >                  $ liftA2 (/) (index_powers $ constant x) factorial

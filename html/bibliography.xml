@@ -625,6 +625,14 @@ authors.
     <field name="version">0.7.5.0</field>
     <field name="isPartOf">http://hackage.haskell.org</field>
   </SoftwareSourceCode>
+  <DigitalDocument id="edward-kmett-on-haskell">
+    <summary>Edward Kmett on Hask</summary>
+    <field name="author" type="Person"><summary name="name">Edward Kmett</summary></field>
+    <field name="url">https://www.youtube.com/watch?v=Klwkt9oJwg0&amp;ab_channel=EdwardKmett</field>
+    <field name="isPartOf">https://www.youtube.com</field>
+    <field name="datePublished">2014-07-19</field>
+    <field name="headline">Edward Kmett on Hask</field>
+  </DigitalDocument>
   <SoftwareSourceCode id="haskell-erf-library">
     <summary>erf</summary>
     <field name="author" type="Person"><summary name="name">Lennart Augustsson</summary></field>

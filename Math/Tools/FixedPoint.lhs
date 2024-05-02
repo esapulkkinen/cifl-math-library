@@ -1,6 +1,6 @@
 >{-# LANGUAGE Safe, TypeFamilies, ExistentialQuantification, MultiParamTypeClasses,
 >    FunctionalDependencies, FlexibleInstances, Rank2Types, FlexibleContexts, UndecidableInstances #-}
->{-# LANGUAGE StandaloneDeriving, QuantifiedConstraints #-}
+>{-# LANGUAGE StandaloneDeriving, QuantifiedConstraints, PolyKinds #-}
 >module Math.Tools.FixedPoint where
 >import Math.Tools.Visitor
 >import Math.Tools.Universe
@@ -23,7 +23,7 @@
 
 
 >-- | PRIMITIVES FOR RECURSIVE DATA STRUCTURES
->data Rec f = In ! (f (Rec f))     -- recursion (least fixed point)
+>data Rec f = In (f (Rec f))     -- recursion (least fixed point)
 >data CoRec f = CoIn (f (CoRec f)) -- corecursion (greatest fixed point)
 
 >unIn :: Rec f -> f (Rec f)

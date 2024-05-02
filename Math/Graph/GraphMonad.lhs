@@ -20,10 +20,12 @@
 >   ~(GraphM f) <*> ~(GraphM x) = GraphM $ f <*> x
 
 >instance (Monoid g) => Monad (GraphM g) where
->  return x = GraphM (mempty,x)
+>  return = pure
 >  ~(GraphM ~(a,x)) >>= g = let
 >       ~(GraphM ~(b,y)) = g x
 >     in GraphM (mappend a b,y)
+
+>instance (Monoid g) => MonadFail (GraphM g) where
 >  fail msg = GraphM (mempty,error msg)
 
 >-- <https://downloads.haskell.org/ghc/latest/docs/libraries/mtl-2.2.2/Control-Monad-Writer-Lazy.html#t:MonadWriter>
@@ -49,8 +51,9 @@
 >   ~(GraphMT f) <*> ~(GraphMT x) = GraphMT $ \act -> f act <*> x act
 
 >instance (Monoid g, Monad m) => Monad (GraphMT m g) where
->   return x = GraphMT $ \act -> act x mempty
 >   ~(GraphMT f) >>= g = GraphMT $ \act -> f act >>= \a -> runGraphMT (g a) act
+
+>instance (Monoid g, MonadFail m) => MonadFail (GraphMT m g) where
 >   fail msg = GraphMT $ \_ -> fail msg
 
 >actMT :: (Monad m) => g -> GraphMT m g a -> GraphMT m g a

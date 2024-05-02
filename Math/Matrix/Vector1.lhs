@@ -61,7 +61,7 @@
 >   integral (Vector1 x, Vector1 x') f = Vector1 $
 >     integral (x,x') $ \a -> vector_element $ f (Vector1 a)
 
->instance FunctorArrow Vector1 (->) where
+>instance FunctorArrow Vector1 (->) (->) where
 >   amap f = fmap f
 
 >instance (ConjugateSymmetric a) => ConjugateSymmetric (Vector1 a) where
@@ -155,9 +155,12 @@ http://en.wikipedia.org/wiki/Bra%E2%80%93ket_notation
 >(%<|>%) a b = vector_element $ vector_element $ cells $ bra a %*% ket b
 
 >instance (Limiting str a) => Limiting str (Vector1 a) where
->  data Closure str (Vector1 a) = Vector1Closure { unVector1Limit :: str (Vector1 a) }
->  limit str = Vector1Closure str
->  approximations (Vector1Closure a) = a 
+>  data Closure str (Vector1 a) = Vector1Closure {
+>     unVector1Limit :: Vector1 (Closure str a) }
+>  limit str = Vector1Closure (Vector1 (limit $ fmap vector_element str))
+>  approximations (Vector1Closure (Vector1 a)) = do
+>    a' <- approximations a
+>    return $ Vector1 a'
 
 >instance (Num a) => Indexable Vector1 a where
 >  diagonal_projections = Vector1 (vector_element <!-!> Vector1)
@@ -229,8 +232,9 @@ http://en.wikipedia.org/wiki/Bra%E2%80%93ket_notation
 >  x %* (Vector1 e) = Vector1 (x * e)
 >  (Vector1 a) %+ (Vector1 b) = Vector1 (a + b)
 
->instance (Num a) => NormedSpace (Vector1 a) where
->  norm (Vector1 x) = x
+>instance (Floating a, ConjugateSymmetric a) => NormedSpace (Vector1 a) where
+>  norm x = sqrt (x %. x)
+>  norm_squared x = x %. x
 
 >instance (Num a, ConjugateSymmetric a) => InnerProductSpace (Vector1 a) where
 >  (Vector1 x) %. (Vector1 y) = x * conj y

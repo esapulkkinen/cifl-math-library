@@ -359,7 +359,8 @@ instance FractionalSpace (Vector4 (Complex R))
 
 
 >instance (Floating a, ConjugateSymmetric a) => NormedSpace (Vector4 a) where
->  norm v = sqrt (v %. v)
+>  norm = innerproductspace_norm
+>  norm_squared = innerproductspace_norm_squared
 
 >instance {-# OVERLAPPABLE #-} (Num a, ConjugateSymmetric a) => InnerProductSpace (Vector4 a) where
 >  v %. w = sum_coordinates4 $ pure (*) <*> v <*> (conj <$> w)

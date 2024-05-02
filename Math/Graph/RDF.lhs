@@ -42,7 +42,7 @@
 >   triple lnk sourcePropURI v1',
 >   triple lnk targetPropURI v2',
 >   triple lnk inversePropURI lnk ]
->  where lnk = bnode n
+>  where lnk = bnodeUnsafe n
 >        v1' = unode v1
 >        v2' = unode v2
 >rdfReversibleLink n m v1 v2 =[
@@ -54,8 +54,8 @@
 >   triple lnk2 sourcePropURI v2',
 >   triple lnk2 targetPropURI v1',
 >   triple lnk2 inversePropURI lnk]
-> where lnk = bnode n
->       lnk2 = bnode m
+> where lnk = bnodeUnsafe n
+>       lnk2 = bnodeUnsafe m
 >       v1' = unode v1
 >       v2' = unode v2
 
@@ -63,10 +63,10 @@
 >rdfLink n v1 v2 = [triple lnk linkNameURI (lnode $ plainL n),
 >                   triple lnk sourcePropURI v1,
 >                   triple lnk targetPropURI v2]
-> where lnk = bnode n
+> where lnk = bnodeUnsafe n
 > 
 >rdfVertex :: Text -> Triples
->rdfVertex v = [triple (bnode v) vertexNameURI (lnode $ plainL v)]
+>rdfVertex v = [triple (bnodeUnsafe v) vertexNameURI (lnode $ plainL v)]
 
 
 >graphsToRDF :: (Monad m, ReversibleGraphMonoid mon Bool)
@@ -80,7 +80,7 @@
 >namedGraphToTriples :: (Monad m, ReversibleGraphMonoid mon Bool)
 >  => Text -> InGraphM mon Text m Triples
 >namedGraphToTriples graphname = do
->   let gnode = bnode graphname
+>   let gnode = bnodeUnsafe graphname
 >   triples <- graphToTriples
 >   vert <- gvertices
 >   let vertTriples = Set.map (\v -> triple gnode verticesURI (unode v)) vert
@@ -106,7 +106,7 @@
 >             (PrefixMappings $ Map.singleton "graph" baseURL)
 >   return $ rdf
 
->rdfToGraph :: (Monad m) => RDF TList -> Node -> m (Graph Four Node)
+>rdfToGraph :: (MonadFail m) => RDF TList -> Node -> m (Graph Four Node)
 >rdfToGraph rdf graph = do
 >      let vertices = query rdf (Just graph) (Just vertexURI) Nothing
 >      let links = query rdf (Just graph) (Just linkURI) Nothing
@@ -117,7 +117,7 @@
 
 >type Graphs = Map Node (Graph Four Node)
 
->rdfToGraphs :: (Monad m) => RDF TList -> m Graphs
+>rdfToGraphs :: (MonadFail m) => RDF TList -> m Graphs
 >rdfToGraphs rdf = do
 >       let graphs = query rdf Nothing (Just graphNameURI) Nothing
 >       graphlist <- mapM handleTriple graphs
@@ -134,11 +134,11 @@
 >     Right rdf -> rdfToGraphs rdf
 
 
->convertVertex :: (Monad m) => RDF TList -> Triple -> m Node
+>convertVertex :: (MonadFail m) => RDF TList -> Triple -> m Node
 >convertVertex rdf (Triple subj pred obj)
 > = getUniqueObject (query rdf (Just obj) (Just vertexNameURI) Nothing)
 
->convertLink :: (Monad m) => RDF TList -> Triple -> m ((Node,Node),(Node,Node))
+>convertLink :: (MonadFail m) => RDF TList -> Triple -> m ((Node,Node),(Node,Node))
 >convertLink rdf (Triple subj pred obj) = do
 >     linkname <- getUniqueObject $
 >               query rdf (Just obj) (Just linkNameURI) Nothing
@@ -152,7 +152,7 @@
 >               query rdf (Just inverse) (Just linkNameURI) Nothing
 >     return $ ((linkname,inversename),(source,target))
 
->getUniqueObject :: (Monad m) => [Triple] -> m Node
+>getUniqueObject :: (MonadFail m) => [Triple] -> m Node
 >getUniqueObject [t] = return $ objectOf t
 >getUniqueObject _ = fail "uniqueness constraint violated"
 

@@ -41,7 +41,7 @@
 >  => (v -> Scalar v -> v -> Scalar v) -> Transform2D v (Scalar v)
 >vector2D = Transform2D innerproductspace_norm (%.)
 
->functor2D :: (TArrow.FunctorArrow f arr, C.Category arr) =>
+>functor2D :: (TArrow.FunctorArrow f arr arr, C.Category arr) =>
 >   (arr a a -> arr a a -> arr (f a) (f a))
 >   -> Transform2D (arr a a) (arr (f a) (f a))
 >functor2D g = Transform2D TArrow.amap g (\x y z -> TArrow.amap x <<< y <<< TArrow.amap z)

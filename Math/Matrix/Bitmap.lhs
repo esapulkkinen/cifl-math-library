@@ -21,8 +21,8 @@
 >         bitmapString = [color (bm ! i ! j)
 >                        | i <- range bmbound,
 >                          j <- range (bounds (bm ! i))]
->         header lst = "P6 " ++ show (snd $ bounds (bm ! fst bmbound))
->                      ++ " " ++ show (snd bmbound) ++ " 255\n"
+>         header lst = "P6 " ++ show (A.rangeSize $ bounds (bm ! fst bmbound))
+>                      ++ " " ++ show (A.rangeSize bmbound) ++ " 255\n"
 >         packedHeader = ByteString.pack $!
 >                map (toEnum . fromEnum) (header bitmapString)
 >         color i = colortable ! i

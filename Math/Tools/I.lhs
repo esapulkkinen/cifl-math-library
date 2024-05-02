@@ -1,4 +1,4 @@
->{-# LANGUAGE Safe #-}
+>{-# LANGUAGE Safe, RankNTypes #-}
 >module Math.Tools.I where
 >newtype I a = I { unI :: a }
 
@@ -45,6 +45,7 @@
 >instance Monad I where
 >   return x = I x
 >   (I x) >>= f = f x
+>instance MonadFail I where
 >   fail _ = error "I failure"
 
 >instance (Show a) => Show (I a) where

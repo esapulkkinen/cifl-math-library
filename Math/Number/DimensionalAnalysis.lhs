@@ -58,7 +58,7 @@
 >import Math.Number.StreamInterface (Stream(..), Limiting(..), Closed(..), Infinitesimal(..))
 >import qualified Math.Number.StreamInterface as Stream
 >import qualified Math.Number.Stream
->import Math.Number.Interface ( ShowPrecision(..))
+>import Math.Number.Interface ( ShowPrecision(..), RationalRoots(..))
 >import Math.Number.Group
 >import Math.Number.Interface
 >import Math.Tools.Isomorphism
@@ -210,25 +210,25 @@
 
 >-- | the Unit class should be defined by any newtype based
 >-- types that should interact well with the dimensional analysis mechanism.
->-- 
->--  The fromAmount method must check that compile-time information about dimensions
->-- is sufficient to determine dimension of the given input
->-- e.g. @(fromAmount 3 :: Mass)@ is ok, but @(fromAmount 3 :: Quantity Double)@ is not.
 >class (VectorSpace u) => Unit u where
 >   amount :: u -> Scalar u
->   fromAmount :: Scalar u -> u
->   fromQuantity :: (Alternative m, Monad m) => Quantity (Scalar u) -> m u
+>   fromQuantity :: (Alternative m, MonadFail m) => Quantity (Scalar u) -> m u
 >   unitOf :: u -> String
 >   dimension :: u -> Dimension
+
+>-- | The fromAmount method must check that compile-time information about dimensions
+>-- is sufficient to determine dimension of the given input
+>-- e.g. @(fromAmount 3 :: Mass)@ is ok, but @(fromAmount 3 :: Quantity Double)@ is not.
+>class (Unit u) => LiteralUnit u where
+>   fromAmount :: Scalar u -> u
 >   zeroAmount :: (Scalar u -> u) -> Scalar u
 >   conversionFactor :: (Scalar u -> u) -> Scalar u
 >   zeroAmount _ = 0
 >   conversionFactor _ = 1
 
->fromQuantityDef :: (Monad m, Alternative m, Show a) => Dimension -> (a -> b) -> Quantity a -> m b
+>fromQuantityDef :: (MonadFail m, Alternative m, Show a) => Dimension -> (a -> b) -> Quantity a -> m b
 >fromQuantityDef dim ctr = \ (x `As` d) -> do { guard (d == dim) ; return $! ctr x }
 >                                <|> invalidDimensionsM "fromQuantityDef" d dim x x
-
 
 >instance (Closed a, Show a) => Closed (Quantity a) where
 >   accumulation_point s
@@ -368,7 +368,7 @@
 >fromAlternatives count = scale (count `As` dimensionless) bit_scale
 
 >-- | Note that the number of alternatives grows quickly.
->toAlternatives :: (Floating a, Ord a, ShowPrecision a, Monad m) => Quantity a -> m a
+>toAlternatives :: (Floating a, Ord a, ShowPrecision a, MonadFail m) => Quantity a -> m a
 >toAlternatives x
 >   | isDimensionless (value_dimension x) = return $! 2.0 ** value_amount x
 >   | otherwise = invalidDimensionsM "toAlternatives" (value_dimension x) dimensionless x x
@@ -376,7 +376,7 @@
 >(@@) :: r -> Dimension -> Quantity r
 >x @@ y = x `As` y
 
->convertTo :: (Monad m, Floating a, ShowPrecision a,Ord a, VectorSpace a)
+>convertTo :: (MonadFail m, Floating a, ShowPrecision a,Ord a, VectorSpace a)
 >  => Quantity a -> (String, Quantity a) -> m String
 >convertTo value (qname,base) = do
 >   val <- convert value base
@@ -388,7 +388,6 @@
 >  fromQuantity q = return $! q
 >  dimension (_ `As` r) = r
 >  -- | fromAmount is not implemented, as the dimension is not known.
->  fromAmount x = error "Ambiguous units while constructing run-time Quantity."
 
 >(=/) :: (Fractional (Scalar a), Unit a, Show a) => a -> a -> Scalar a
 >(=/) x y
@@ -396,7 +395,7 @@
 >   | otherwise = invalidDimensions "(=/)" (dimension x) (dimension y) x y
 
 >-- | conversions between units. Dimensions have to match.
->convert :: (Scalar u ~ Scalar v, Unit v, Unit u, Show v, Show u, Monad m, Fractional (Scalar u))
+>convert :: (Scalar u ~ Scalar v, Unit v, Unit u, Show v, Show u, MonadFail m, Fractional (Scalar u))
 >        => v -> u -> m (Scalar u)
 >convert x d
 >   | dimension x == dimension d = return $! (amount x / amount d)
@@ -454,7 +453,7 @@
 
 >instance Monoid Dimension where
 >   mempty = dimensionless
->   mappend = (%+)
+>   mappend = (<>)
 
 >instance Group Dimension where
 >   ginvert = vnegate
@@ -664,7 +663,50 @@
 >  acosh = lift_quantity_closure acosh
 >  atanh = lift_quantity_closure atanh
 
->instance (Show r,Floating r, Real r) => Floating (Quantity r) where
+>pi_complex_quantity :: (RealFloat a) => Quantity (Complex a)
+>pi_complex_quantity = pi `As` radian_dimension
+
+>sqrt_complex_quantity :: (RealFloat a) => Quantity (Complex a) -> Quantity (Complex a)
+>sqrt_complex_quantity (c `As` q) = sqrt c `As` (q/2)
+
+>power_complex_quantity :: (RealFloat a) => Quantity (Complex a) -> Rational -> Quantity (Complex a)
+>power_complex_quantity (x `As` r) q = (x ** fromRational q) `As` (q %* r)
+
+>exp_complex_quantity :: (RealFloat a, Show a) => Quantity (Complex a) -> Quantity (Complex a)
+>exp_complex_quantity = require_dimensionless "exp" exp
+
+>log_complex_quantity :: (RealFloat a, Show a) => Quantity (Complex a) -> Quantity (Complex a)
+>log_complex_quantity = require_dimensionless "log" log
+
+>sin_complex_quantity :: (RealFloat a, Show a) => Quantity (Complex a) -> Quantity (Complex a)
+>sin_complex_quantity = require_dimensionless "sin" sin
+>cos_complex_quantity :: (RealFloat a, Show a) => Quantity (Complex a) -> Quantity (Complex a)
+>cos_complex_quantity = require_dimensionless "cos" cos
+>tan_complex_quantity :: (RealFloat a, Show a) => Quantity (Complex a) -> Quantity (Complex a)
+>tan_complex_quantity = require_dimensionless "tan" tan
+>asin_complex_quantity :: (RealFloat a, Show a) => Quantity (Complex a) -> Quantity (Complex a)
+>asin_complex_quantity = require_dimensionless "asin" asin
+>acos_complex_quantity :: (RealFloat a, Show a) => Quantity (Complex a) -> Quantity (Complex a)
+>acos_complex_quantity = require_dimensionless "acos" acos
+>atan_complex_quantity :: (RealFloat a, Show a) => Quantity (Complex a) -> Quantity (Complex a)
+>atan_complex_quantity = require_dimensionless "atan" atan
+>sinh_complex_quantity :: (RealFloat a, Show a) => Quantity (Complex a) -> Quantity (Complex a)
+>sinh_complex_quantity = require_dimensionless "sinh" sinh
+>cosh_complex_quantity :: (RealFloat a, Show a) => Quantity (Complex a) -> Quantity (Complex a)
+>cosh_complex_quantity = require_dimensionless "cosh" cosh
+>tanh_complex_quantity :: (RealFloat a, Show a) => Quantity (Complex a) -> Quantity (Complex a)
+>tanh_complex_quantity = require_dimensionless "tanh" tanh
+>asinh_complex_quantity :: (RealFloat a, Show a) => Quantity (Complex a) -> Quantity (Complex a)
+>asinh_complex_quantity = require_dimensionless "asinh" asinh
+>acosh_complex_quantity :: (RealFloat a, Show a) => Quantity (Complex a) -> Quantity (Complex a)
+>acosh_complex_quantity = require_dimensionless "acosh" acosh
+>atanh_complex_quantity :: (RealFloat a, Show a) => Quantity (Complex a) -> Quantity (Complex a)
+>atanh_complex_quantity = require_dimensionless "atanh" atanh
+
+>instance (RationalRoots a) => RationalRoots (Quantity a) where
+>   rational_power (x `As` r) q = rational_power x q `As` (q %* r)
+
+>instance (Real a, Floating a, Show a) => Floating (Quantity a) where
 >   pi = pi `As` radian_dimension
 >   sqrt (x `As` r) = sqrt x `As` (r / 2)
 >   (x `As` r) ** (y `As` q)
@@ -684,6 +726,7 @@
 >   asinh = require_dimensionless "asinh" asinh
 >   acosh = require_dimensionless "acosh" acosh
 >   atanh = require_dimensionless "atanh" atanh
+
 
 >instance (Ord r, Num r, Show r) => Ord (Quantity r) where
 >   compare (x `As` r) (y `As` r')
@@ -761,7 +804,7 @@
 >invalidDimensions :: (Show b, Show c) => String -> Dimension -> Dimension -> b -> c -> a
 >invalidDimensions op r r' a b= throw $ InvalidDimensionsException r r' $
 >     op ++ ":Invalid dimensions: " ++ show r ++ " != " ++ show r' ++ "; " ++ show a ++ "<>" ++ show b
->invalidDimensionsM :: (Monad m, Show b, Show c) => String -> Dimension -> Dimension -> b -> c -> m a
+>invalidDimensionsM :: (MonadFail m, Show b, Show c) => String -> Dimension -> Dimension -> b -> c -> m a
 >invalidDimensionsM op r r' a b = fail $
 >     op ++ ":Invalid dimensions: " ++ show r ++ " != " ++ show r' ++ "; " ++ show a ++ "<>" ++ show b
 
@@ -799,12 +842,12 @@
 >     | isDimensionless d = toInteger a
 >     | otherwise = invalidDimensions "toInteger" d dimensionless a a
 
->plusQ :: (Monad m, Num r, Show r) => Quantity r -> Quantity r -> m (Quantity r)
+>plusQ :: (MonadFail m, Num r, Show r) => Quantity r -> Quantity r -> m (Quantity r)
 >plusQ (x `As` r) (y `As` r')
 >   | r /= r' = invalidDimensionsM "plusQ" r r' x y
 >   | otherwise = return $! (x+y) `As` r
 >
->minusQ :: (Monad m, Num r, Show r) => Quantity r -> Quantity r -> m (Quantity r)
+>minusQ :: (MonadFail m, Num r, Show r) => Quantity r -> Quantity r -> m (Quantity r)
 >minusQ (x `As` r) (y `As` r')
 >   | r /= r' = invalidDimensionsM "minusQ" r r' x y
 >   | otherwise = return $! (x - y) `As` r
@@ -1142,7 +1185,7 @@ order in the table is significant
 >fromFahrenheit :: (Fractional a, Show a) => a -> Quantity a
 >fromFahrenheit x = ((x + 459.67) * (5/9)) @@ kelvin_dimension
 
->toFahrenheit :: (Monad m, Fractional a,VectorSpace a)
+>toFahrenheit :: (MonadFail m, Fractional a,VectorSpace a)
 > => Quantity a -> m a
 >toFahrenheit x
 >   | dimension x == kelvin_dimension = return $! (amount x * (9/5)) - 459.67

@@ -109,7 +109,7 @@ instance Comonad ((,) a :*: (->) a) where
 >applyRow :: ((->) a :*: g) b -> a -> g b
 >applyRow (Matrix m) x = m x
 
->matrixA :: (ArrowApply arr,FunctorArrow f arr, FunctorArrow g arr) 
+>matrixA :: (ArrowApply arr,FunctorArrow f arr arr, FunctorArrow g arr arr) 
 >        => arr (a,b) c -> arr (f a, g b) ((f :*: g) c)
 >matrixA f = proc z -> do
 >              res <- outerA f -< z
@@ -126,7 +126,7 @@ instance Comonad ((,) a :*: (->) a) where
 >                          Linearizable LinearMap (:*:) f f a,
 >                          Linearizable LinearMap (:*:) f f b,
 >                          Diagonalizable f b, LinearTransform f f b,
->                          FunctorArrow f LinearMap,
+>                          FunctorArrow f LinearMap LinearMap,
 >                          Integral b) => f a :-> f a -> Integer -> b -> f a :-> f a
 >modular_exponentiation m b c 
 >   | b == 0         = MatIdentity

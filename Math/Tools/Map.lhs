@@ -16,12 +16,14 @@
 import Maybe (fromJust, isJust)
 
 >instance Applicative (Map String) where
->   pure x = return x
+>   pure x = Map.singleton "_" x
 >   f <*> x = f >>= \f' -> x >>= \x' -> return (f' x')
 
 >instance Monad (Map String) where
->   return x = Map.singleton "_" x
+>   return = pure
 >   m >>= f = joinMap (fmap f m)
+
+>instance MonadFail (Map String) where
 >   fail msg = Map.empty
 
 >instance (Ord a, Eq b, Universe a, Universe b) => Universe (Map a b) where
@@ -39,7 +41,7 @@ set.
 >                              e <- el
 >                              return (Map.insert c e r)
 
->lookupMapM :: (Monad m, Show i, Ord i) => Map i a -> i -> m a
+>lookupMapM :: (MonadFail m, Show i, Ord i) => Map i a -> i -> m a
 >lookupMapM m i | Just v <- Map.lookup i m = return v
 >               | otherwise = fail $ "Cannot find item:" ++ show i ++ "\n"
 >                                 ++ "Alternatives are:" ++ show (Map.keys m)
@@ -118,7 +120,7 @@ zipWithMapM zips the maps together in such way that if the indices
 match, it combines using the given function. The indices and values
 that do not match in the maps are returned separately.
 
->zipWithMapM :: (Monad m, Ord i) => (a -> b -> m c) -> Map i a -> Map i b -> m (Map i c, Map i a, Map i b)
+>zipWithMapM :: (MonadFail m, Ord i) => (a -> b -> m c) -> Map i a -> Map i b -> m (Map i c, Map i a, Map i b)
 >zipWithMapM f x y = do ulst <- zipWithM mapper blst clst
 >                       return (Map.fromAscList ulst,brest,crest)
 >   where mapper (i,e) (j,e') | i == j = f e e' >>= (return . ((,) i))
@@ -137,7 +139,7 @@ that do not match in the maps are returned separately.
 >             unifiedLst <- amap f -< zip k1 (zip (map (m1 Map.!) k1) (map (m2 Map.!) k1))
 >             returnA -< Map.fromAscList $ zip k1 unifiedLst
 
->instance (ArrowChoice arr, Ord i) => FunctorArrow (Map.Map i) arr where
+>instance (Ord i, ArrowChoice arr) => FunctorArrow (Map.Map i) arr arr where
 >   amap f = proc m1 -> do
 >            let alst = Map.toAscList m1
 >            alst' <- amap (second f) -< alst

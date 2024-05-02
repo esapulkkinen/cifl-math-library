@@ -214,6 +214,7 @@ instance (Universe row, Universe col, Universe dep, Universe tim, PpShow elem) =
 >
 >instance (Floating b, Universe a) => NormedSpace (a -> b) where
 >   norm f = sqrt (f %. f)
+>   norm_squared f = f %. f
 
 instance Transposable ((->) row) ((->) col) a where
    transpose_impl (Matrix f) = Matrix $ \i j -> f j i
@@ -316,9 +317,11 @@ instance Transposable ((->) row) ((->) col) a where
 >instance (Integral row, Integral col, Floating a, Universe row, Universe col, ConjugateSymmetric a)
 > => NormedSpace (((->) row :*: (->) col) a) where
 >   norm m = sqrt (m %. m)
+>   norm_squared m = m %. m
 
 >instance (VectorSpace a, Integral col, Integral row, Universe row, ConjugateSymmetric a, Universe col, Floating a, Integral row, Scalar (col -> a) ~ a) => NormedSpace ((row :&: col) a) where
 >   norm m = norm (fromLinear m)
+>   norm_squared m = norm_squared (fromLinear m)
 
 >-- | <https://en.wikipedia.org/wiki/Kronecker_delta>
 >kronecker_delta :: (Eq a, Num b) => a -> a -> b

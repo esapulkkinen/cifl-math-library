@@ -88,7 +88,7 @@
 >-- dimension of the result is. This can produce excessively complicated types, because
 >-- the type represents the structure of the expression rather than structure of
 >-- the result.
->(*%) :: (Unit u, Unit w, Num (Scalar u), Scalar u ~ Scalar w)
+>(*%) :: (LiteralUnit u, LiteralUnit w, Num (Scalar u), Scalar u ~ Scalar w)
 >     => u -> w -> u :* w
 >a *% b = QProduct (amount a * amount b) fromAmount fromAmount
 
@@ -101,17 +101,17 @@
 >-- dimension of the result is. This can produce excessively complicated types, because
 >-- the type represents the structure of the expression rather than the structure of
 >-- the result.
->(/%) :: (Fractional (Scalar u), Unit u, Unit w, Scalar u ~ Scalar w)
+>(/%) :: (Fractional (Scalar u), LiteralUnit u, LiteralUnit w, Scalar u ~ Scalar w)
 >     => u -> w -> u :/ w
 >a /% b = QDivide (amount a / amount b) fromAmount fromAmount
 
 >unitNameToDimension :: (Num (Scalar u), Unit u) => UnitName u -> Dimension
 >unitNameToDimension f = dimension (f 0)
 
->mapAmount :: (Unit a) => (Scalar a -> Scalar a) -> a -> a
+>mapAmount :: (LiteralUnit a) => (Scalar a -> Scalar a) -> a -> a
 >mapAmount f = fromAmount . f . amount
 
->mapAmount2 :: (Unit a) => (Scalar a -> Scalar a -> Scalar a) -> a -> a -> a
+>mapAmount2 :: (LiteralUnit a) => (Scalar a -> Scalar a -> Scalar a) -> a -> a -> a
 >mapAmount2 f x y = fromAmount (f (amount x) (amount y))
 >
 
@@ -122,15 +122,15 @@
 >--           @0.3 `asUnit` Radians == return (Radians 0.3)@
 >--  
 >-- If the dimensions don't match, this raises an exception.
->asUnit :: (Monad m, Show (Scalar u), Show u, Unit u, Fractional (Scalar u))
+>asUnit :: (MonadFail m, Show (Scalar u), Show u, LiteralUnit u, Fractional (Scalar u))
 >       => Quantity (Scalar u) -> UnitName u -> m u
 >asUnit (x `As` d) f = let v = f (x / conversionFactor f - zeroAmount f)
 > in if d == dimension v then return v
->                        else invalidDimensionsM "toUnit" d (dimension v) x (amount v)
+>                        else invalidDimensionsM "asUnit" d (dimension v) x (amount v)
 
 >-- | Converts a compile-time checked dimensional unit to run-time checked version
 >-- This often has the effect of reducing the complexity in types.
->quantity :: (Unit u) => u -> Quantity (Scalar u)
+>quantity :: (LiteralUnit u) => u -> Quantity (Scalar u)
 >quantity (x :: u) = (conversionFactor (fromAmount :: Scalar u -> u) * (amount x
 >                    + zeroAmount (fromAmount :: Scalar u -> u))) @@ dimension x
 
@@ -145,24 +145,23 @@
 >                       }
 >   deriving (Typeable, Generic)
 >
->instance (Unit a, Unit b, Scalar a ~ Scalar b) => VectorSpace (a :* b) where
+>instance (LiteralUnit a, LiteralUnit b, Scalar a ~ Scalar b) => VectorSpace (a :* b) where
 >   type Scalar (a :* b) = Scalar a
 >   vzero = QProduct 0 fromAmount fromAmount
 >   vnegate (QProduct x s t) = QProduct (negate x) s t
 >   (QProduct d s t) %+ (QProduct d' _ _) = QProduct (d + d') s t
 >   k %* (QProduct d s t) = QProduct (k * d) s t
 
->instance (Unit a, Unit b, Scalar a ~ Scalar b) => VectorSpace (a :/ b) where
+>instance (LiteralUnit a, LiteralUnit b, Scalar a ~ Scalar b) => VectorSpace (a :/ b) where
 >   type Scalar (a :/ b) = Scalar a
 >   vzero = QDivide 0 fromAmount fromAmount
 >   vnegate (QDivide x a b) = QDivide (negate x) a b
 >   (QDivide x a b) %+ (QDivide x' _ _) = QDivide (x + x') a b
 >   k %* (QDivide d s t) = QDivide (k * d) s t
 
->instance (Unit a, Unit b, Show (Scalar a), Scalar a ~ Scalar b) => Unit (a :* b) where
+>instance (LiteralUnit a, LiteralUnit b, Show (Scalar a), Scalar a ~ Scalar b) => Unit (a :* b) where
 >   amount = qproduct_amount
 >   unitOf z@(QProduct x _ _) = show (dimension z)
->   fromAmount d = QProduct d fromAmount fromAmount
 >   fromQuantity q = do
 >     let res = QProduct (value_amount q) fromAmount fromAmount
 >     guard (value_dimension q == dimension res)
@@ -171,10 +170,12 @@
 >     return res
 >   dimension (QProduct x s t) = unitNameToDimension s + unitNameToDimension t
 
->instance (Unit a, Unit b, Show (Scalar a), Scalar a ~ Scalar b) => Unit (a :/ b) where
+>instance (Scalar a ~ Scalar b, Show (Scalar a), LiteralUnit a, LiteralUnit b) => LiteralUnit (a :* b) where
+>   fromAmount d = QProduct d fromAmount fromAmount 
+
+>instance (LiteralUnit a, LiteralUnit b, Show (Scalar a), Scalar a ~ Scalar b) => Unit (a :/ b) where
 >   amount = qdivide_amount
 >   unitOf z@(QDivide x _ _) = show (dimension z)
->   fromAmount d = QDivide d fromAmount fromAmount
 >   fromQuantity q = do
 >      let res = QDivide (value_amount q) fromAmount fromAmount 
 >      guard (value_dimension q == dimension res)
@@ -183,10 +184,13 @@
 >      return $ res
 >   dimension (QDivide x a b) = unitNameToDimension a - unitNameToDimension b
 
->instance (Scalar a ~ Scalar b, Unit a, Unit b, Show (Scalar a)) => Show (a :* b) where
+>instance (Scalar a ~ Scalar b, Show (Scalar a), LiteralUnit a, LiteralUnit b) => LiteralUnit (a :/ b) where
+>   fromAmount d = QDivide d fromAmount fromAmount
+
+>instance (Scalar a ~ Scalar b, LiteralUnit a, LiteralUnit b, Show (Scalar a)) => Show (a :* b) where
 >   show z@(QProduct d s t) = show d ++ " " ++ show (dimension z)
 
->instance (Scalar a ~ Scalar b, Unit a, Unit b, Show (Scalar a)) => Show (a :/ b) where
+>instance (Scalar a ~ Scalar b, LiteralUnit a, LiteralUnit b, Show (Scalar a)) => Show (a :/ b) where
 >   show z@(QDivide d s t) = show d ++ " " ++ show (dimension z)
 >    -- show (unitNameToDimension s)
 >      --                             ++ "/(" ++ show (unitNameToDimension t) ++ ")"
@@ -196,6 +200,8 @@
 >   unitOf _ = ""
 >   fromQuantity (x `As` d) = guard (isDimensionless d) >> return x
 >   dimension _ = dimensionless
+
+>instance LiteralUnit Float where
 >   fromAmount x = x
 
 >instance Unit Double where
@@ -203,6 +209,8 @@
 >   unitOf _ = ""
 >   dimension _ = dimensionless
 >   fromQuantity (x `As` d) = guard (isDimensionless d) >> return x
+
+>instance LiteralUnit Double where
 >   fromAmount x = x
 
 >instance Unit R where
@@ -210,6 +218,8 @@
 >   unitOf _ = ""
 >   dimension _ = dimensionless
 >   fromQuantity (x `As` d) = guard (isDimensionless d) >> return x
+
+>instance LiteralUnit R where
 >   fromAmount x = x
 
 >newtype Dimensionless = Dimensionless { dimensionless_value :: Double }
@@ -232,11 +242,13 @@
 >instance Unit Dimensionless where
 >   amount = dimensionless_value
 >   unitOf _ = ""
->   fromAmount = Dimensionless
 >   dimension _ = dimensionless
 >   fromQuantity (x `As` d) = do
 >     guard (isDimensionless d)
 >     return $ Dimensionless x
+
+>instance LiteralUnit Dimensionless where
+>   fromAmount = Dimensionless
 
 >newtype Information = Bits { number_of_bits :: Double }
 >  deriving (Eq,Ord, Data,Generic, Typeable)
@@ -245,11 +257,11 @@
 
 >instance Unit Information where
 >   amount = number_of_bits
->   fromAmount = Bits
 >   dimension _ = dimensionless
 >   fromQuantity = fromQuantityDef dimensionless Bits
 >   unitOf _ = "b"
-
+>instance LiteralUnit Information where { fromAmount = Bits }
+> 
 >newtype SoundLevel = SoundAmplitude { sound_amplitude :: Double }
 >  deriving (Eq, Ord, Typeable, Data, Generic)
 >  deriving newtype (Binary)
@@ -267,10 +279,11 @@
 
 >instance Unit SoundLevel where
 >   amount x = log (sound_amplitude x) / log 10
->   fromAmount = SoundAmplitude . (10.0 **)
 >   dimension _ = dimensionless
 >   fromQuantity = fromQuantityDef dimensionless fromAmount
 >   unitOf _ = "dB"
+>instance LiteralUnit SoundLevel where { fromAmount = SoundAmplitude . (10.0 **) }
+
 
 >newtype Angle = Radians { radians :: Double }
 >   deriving (Eq,Ord, Typeable, Data, Generic)
@@ -308,11 +321,11 @@
 >exp_angle :: Angle -> Complex Double
 >exp_angle (Radians x) = (cos x :+ sin x)
 >
->fromPolar :: Length -> Angle -> Complex Length
+>fromPolar :: (Unit u, Scalar u ~ Double) => u -> Angle -> Complex u
 >fromPolar r (Radians alfa) = (cos alfa %* r :+ sin alfa %* r)
 
->toPolar :: (Unit u, Scalar u ~ Double) => Complex u -> (u, Angle)
->toPolar (a :+ b) = (fromAmount $ sqrt (a'*a' %+ b'*b'), Radians $ atan2 b' a')
+>toPolar :: (LiteralUnit u, Scalar u ~ Double) => Complex u -> (u, Angle)
+>toPolar z@((a :: u) :+ b) = (fromAmount (sqrt (a'*a' %+ b'*b')) :: u , Radians $ atan2 b' a')
 >   where a' = amount a
 >         b' = amount b
 
@@ -335,19 +348,21 @@
 
 >instance Unit DegreesAngle where
 >   amount = degrees
->   fromAmount = Degrees
 >   dimension _ = dimensionless
 >   fromQuantity = fromQuantityDef dimensionless Degrees
 >   unitOf _ = "°"
+>instance LiteralUnit DegreesAngle where
+>   fromAmount = Degrees
 >   zeroAmount _ = 0
 >   conversionFactor _ = pi/180.0
 
+
 >instance Unit Angle where
 >   amount = radians
->   fromAmount = Radians
 >   dimension _ = dimensionless
 >   fromQuantity = fromQuantityDef dimensionless Radians
 >   unitOf _ = "rad"
+>instance LiteralUnit Angle where { fromAmount = Radians }
 
 >-- | <https://en.wikipedia.org/wiki/Steradian>
 >newtype SolidAngle = Steradians { steradians :: Double }
@@ -358,10 +373,10 @@
 
 >instance Unit SolidAngle where
 >   amount = steradians
->   fromAmount = Steradians
 >   dimension _ = dimensionless
 >   fromQuantity = fromQuantityDef dimensionless Steradians
 >   unitOf _ = "sr"
+>instance LiteralUnit SolidAngle where { fromAmount = Steradians }
 
 >show_unit :: (Unit u, Show (Scalar u)) => u -> String
 >show_unit i = show (amount i) ++ " " ++ unitOf i
@@ -379,12 +394,13 @@
 >
 >instance Unit Percentage where
 >  amount = percentages
->  fromAmount = Percentages
 >  fromQuantity = fromQuantityDef dimensionless (Percentages . (100.0*))
 >  dimension _ = dimensionless
 >  unitOf _ = "%"
->  conversionFactor _ = 0.01
-
+>instance LiteralUnit Percentage where
+>   fromAmount = Percentages
+>   conversionFactor _ = 0.01
+>
 >newtype Acceleration = MetersPerSquareSecond { metersPerSquareSecond :: Double }
 >   deriving (Eq,Ord, Typeable, Data, Generic)
 >   deriving newtype (Binary)
@@ -393,11 +409,10 @@
 
 >instance Unit Acceleration where
 >   amount = metersPerSquareSecond
->   fromAmount = MetersPerSquareSecond
 >   fromQuantity = fromQuantityDef (meter_dimension %- (second_dimension %+ second_dimension)) MetersPerSquareSecond
 >   dimension _ = meter_dimension %- (second_dimension %+ second_dimension)
 >   unitOf _ = "m/s^2"
-
+>instance LiteralUnit Acceleration where { fromAmount = MetersPerSquareSecond }
 >newtype Velocity = MetersPerSecond { metersPerSecond :: Double }
 >   deriving (Eq,Ord, Typeable, Data, Generic)
 >   deriving newtype (Binary)
@@ -405,11 +420,10 @@
 >
 >instance Unit Velocity where
 >   amount = metersPerSecond
->   fromAmount = MetersPerSecond
 >   fromQuantity = fromQuantityDef (meter_dimension %- second_dimension) MetersPerSecond
 >   dimension _ = meter_dimension %- second_dimension
 >   unitOf _ = "m/s"
-
+>instance LiteralUnit Velocity where { fromAmount = MetersPerSecond }
 >newtype SquareLength = SquareMeters { squaremeters :: Double }
 > deriving (Eq,Ord, Typeable, Data, Generic)
 > deriving newtype (Binary)
@@ -430,18 +444,17 @@
 >instance Show CubicLength where { show = show_unit }
 >instance Unit CubicLength where
 >   amount = cubicmeters
->   fromAmount = CubicMeters
 >   fromQuantity = fromQuantityDef cubicmeter_dimension CubicMeters
 >   dimension _ = 3 %* meter_dimension
 >   unitOf _ = "m^3"
+>instance LiteralUnit CubicLength where { fromAmount = CubicMeters }
 >instance Show SquareLength where { show = show_unit }
 >instance Unit SquareLength where
 >   amount = squaremeters
->   fromAmount = SquareMeters
 >   fromQuantity = fromQuantityDef squaremeter_dimension SquareMeters
 >   dimension _ = meter_dimension %+ meter_dimension
 >   unitOf _ = "m^2"
-
+>instance LiteralUnit SquareLength where { fromAmount = SquareMeters }
 >-- types for basic units <https://en.wikipedia.org/wiki/International_System_of_Units>
 >newtype Length = Meters { meters :: Double }
 > deriving (Eq,Ord, Typeable, Data, Generic)
@@ -469,16 +482,17 @@
 >instance Show DegreesFahrenheit where { show = show_unit }
 >instance Unit DegreesFahrenheit where
 >   amount = fahrenheits
->   fromAmount = DegreesFahrenheit
 >   dimension _ = kelvin_dimension
 >   unitOf _ = "°F"
 >   fromQuantity x
 >     | dimension x == kelvin_dimension = return $ DegreesFahrenheit $
 >                            (amount x * (9/5) - 459.67)
 >     | otherwise = invalidDimensions "fromQuantity:DegreesFahrenheit" (dimension x) kelvin_dimension (amount x) (amount x)
->   zeroAmount _ = 459.67
->   conversionFactor _ = 5/9
-
+>instance LiteralUnit DegreesFahrenheit where
+>  fromAmount = DegreesFahrenheit
+>  conversionFactor _ = 5/9
+>  zeroAmount _ = 459.67
+> 
 >newtype DegreesTemperature = DegreesCelcius { celciuses :: Double }
 > deriving (Eq,Ord, Typeable, Data, Generic)
 > deriving newtype (Binary)
@@ -486,12 +500,14 @@
 >
 >instance Unit DegreesTemperature where
 >   amount = celciuses
->   fromAmount = DegreesCelcius
 >   dimension _ = kelvin_dimension
 >   unitOf _ = "°C"
 >   fromQuantity x
 >     | dimension x == kelvin_dimension = return $ DegreesCelcius $ amount (x - (273.15 @@ kelvin_dimension))
 >     | otherwise = invalidDimensions "fromQuantity:DegreesTemperature" (dimension x) kelvin_dimension (amount x) (amount x)
+
+>instance LiteralUnit DegreesTemperature where
+>   fromAmount = DegreesCelcius
 >   zeroAmount _ = 273.15
 
 >newtype Temperature = DegreesKelvin { kelvins :: Double }
@@ -617,173 +633,170 @@
 
 >instance Unit CatalyticActivity where
 >   amount = katals
->   fromAmount = Katals
 >   dimension _ = katal_dimension
 >   fromQuantity = fromQuantityDef katal_dimension Katals
 >   unitOf _ = "kat"
+>instance LiteralUnit CatalyticActivity where { fromAmount = Katals }
 >instance Unit EquivalentDose where
 >   amount = sieverts
->   fromAmount = Sieverts
 >   dimension _ = sievert_dimension
 >   fromQuantity = fromQuantityDef sievert_dimension Sieverts
 >   unitOf _ = "Sv"
+>instance LiteralUnit EquivalentDose where { fromAmount = Sieverts }
 >   
 >                                     
 >instance Unit AbsorbedDose where
 >   amount = grays
->   fromAmount = Grays
 >   dimension _ = gray_dimension
 >   fromQuantity = fromQuantityDef gray_dimension Grays
 >   unitOf _ = "Gy"
->   
+>instance LiteralUnit AbsorbedDose where { fromAmount = Grays }   
 >instance Unit Radioactivity where
 >   amount = becquerels
->   fromAmount = Becquerels
 >   dimension _ = becquerel_dimension
 >   fromQuantity = fromQuantityDef becquerel_dimension Becquerels
 >   unitOf _ = "Bq"
+>instance LiteralUnit Radioactivity where { fromAmount = Becquerels }
 >instance Unit Illuminance where
 >   amount = luxes
->   fromAmount = Luxes
 >   dimension _ = lux_dimension
 >   fromQuantity = fromQuantityDef lux_dimension Luxes
 >   unitOf _ = "lx"
+>instance LiteralUnit Illuminance where { fromAmount = Luxes }
 >instance Unit LuminousFlux where
 >   amount = lumens
->   fromAmount = Lumens
 >   dimension _ = lumen_dimension
 >   fromQuantity = fromQuantityDef lumen_dimension Lumens
 >   unitOf _ = "lm"
+>instance LiteralUnit LuminousFlux where { fromAmount = Lumens }
 >instance Unit Inductance where
 >   amount = henrys
->   fromAmount = Henrys
 >   dimension _ = henry_dimension
 >   fromQuantity = fromQuantityDef henry_dimension Henrys
 >   unitOf _ = "H"
+>instance LiteralUnit Inductance where { fromAmount = Henrys }
 >instance Unit FluxDensity where
 >   amount = teslas
->   fromAmount = Teslas
 >   dimension _ = tesla_dimension
 >   fromQuantity = fromQuantityDef tesla_dimension Teslas
 >   unitOf _ = "T"
+>instance LiteralUnit FluxDensity where { fromAmount = Teslas }
 >instance Unit Flux where
 >   amount = webers
->   fromAmount = Webers
 >   dimension _ = weber_dimension
 >   fromQuantity = fromQuantityDef weber_dimension Webers
 >   unitOf _ = "W"
+>instance LiteralUnit Flux where { fromAmount = Webers }
 >instance Unit Conductance where
 >   amount = siemenses
->   fromAmount = Siemenses
 >   dimension _ = siemens_dimension
 >   fromQuantity = fromQuantityDef siemens_dimension Siemenses
 >   unitOf _ = "S"
+>instance LiteralUnit Conductance where { fromAmount = Siemenses }
 >instance Unit Resistance where
 >   amount = ohms
->   fromAmount = Ohms
 >   dimension _ = ohm_dimension
 >   fromQuantity = fromQuantityDef ohm_dimension Ohms
 >   unitOf _ = "Ω"
+>instance LiteralUnit Resistance where { fromAmount = Ohms }
 >instance Unit Capacitance where
 >   amount = farads
->   fromAmount = Farads
 >   dimension _ = farad_dimension
 >   fromQuantity = fromQuantityDef farad_dimension Farads
 >   unitOf _ = "F"
+>instance LiteralUnit Capacitance where { fromAmount = Farads }
 >instance Unit Voltage where
 >   amount = volts
->   fromAmount = Volts
 >   dimension _ = volt_dimension
 >   fromQuantity = fromQuantityDef volt_dimension Volts
 >   unitOf _ = "V"
+>instance LiteralUnit Voltage where { fromAmount = Volts }
 >instance Unit Charge where
 >   amount = coulombs
->   fromAmount = Coulombs
 >   dimension _ = coulomb_dimension
 >   fromQuantity = fromQuantityDef coulomb_dimension Coulombs
 >   unitOf _ = "C"
+>instance LiteralUnit Charge where { fromAmount = Coulombs }
 >instance Unit Power where
 >   amount = watts
->   fromAmount = Watts
 >   dimension _ = watt_dimension
 >   fromQuantity = fromQuantityDef watt_dimension Watts
 >   unitOf _ = "W"
+>instance LiteralUnit Power where { fromAmount = Watts }
 >instance Unit Energy where
 >   amount = joules
->   fromAmount = Joules
 >   dimension _ = joule_dimension
 >   fromQuantity = fromQuantityDef joule_dimension Joules
 >   unitOf _ = "J"
+>instance LiteralUnit Energy where { fromAmount = Joules }
 >instance Unit Pressure where
 >   amount = pascals
->   fromAmount = Pascals
 >   dimension _ = pascal_dimension
 >   fromQuantity = fromQuantityDef pascal_dimension Pascals
 >   unitOf _ = "Pa"
+>instance LiteralUnit Pressure where { fromAmount = Pascals }
 >instance Unit Force where
 >   amount = newtons
->   fromAmount = Newtons
 >   dimension _ = newton_dimension
 >   fromQuantity = fromQuantityDef newton_dimension Newtons
 >   unitOf _ = "N"
+>instance LiteralUnit Force where { fromAmount = Newtons }
 >instance Unit Torque where
 >   amount = newtonmeters
->   fromAmount = NewtonMeters
 >   dimension _ = joule_dimension %- radian_dimension
 >   fromQuantity = fromQuantityDef (joule_dimension %- radian_dimension) NewtonMeters
 >   unitOf _ = "N m" -- notice not displayed similarly than joule.
+>instance LiteralUnit Torque where { fromAmount = NewtonMeters }
 
 >instance Unit Frequency where
 >   amount = hertzes
->   fromAmount = Hertzes
 >   dimension _ = hertz_dimension
 >   fromQuantity = fromQuantityDef hertz_dimension Hertzes
 >   unitOf _ = "Hz"
+>instance LiteralUnit Frequency where { fromAmount = Hertzes }
 >instance Unit Length where
 >   amount = meters
->   fromAmount = Meters
 >   dimension _ = meter_dimension
 >   fromQuantity = fromQuantityDef meter_dimension Meters
 >   unitOf _ = "m"
+>instance LiteralUnit Length where { fromAmount = Meters }
 >instance Unit Mass where
 >   amount = kilograms
->   fromAmount = Kilograms
 >   dimension _ = kilogram_dimension
 >   fromQuantity = fromQuantityDef kilogram_dimension Kilograms
 >   unitOf _ = "kg"
+>instance LiteralUnit Mass where { fromAmount = Kilograms }
 >instance Unit Time where
 >   amount = seconds
->   fromAmount = Seconds
 >   dimension _ = second_dimension
 >   fromQuantity = fromQuantityDef second_dimension Seconds
 >   unitOf _ = "s"
+>instance LiteralUnit Time where { fromAmount = Seconds }
 >instance Unit Current where
 >   amount = amperes
->   fromAmount = Amperes
 >   dimension _ = ampere_dimension
 >   fromQuantity = fromQuantityDef ampere_dimension Amperes
 >   unitOf _ = "A"
+>instance LiteralUnit Current where { fromAmount = Amperes }
 >instance Unit Temperature where
 >   amount = kelvins
->   fromAmount = DegreesKelvin
 >   dimension _ = kelvin_dimension
 >   fromQuantity = fromQuantityDef kelvin_dimension DegreesKelvin
 >   unitOf _ = "K"
->
+>instance LiteralUnit Temperature where { fromAmount = DegreesKelvin }
 > 
 >instance Unit Substance where
 >   amount = moles
->   fromAmount = Moles
 >   dimension _ = mol_dimension
 >   fromQuantity = fromQuantityDef mol_dimension Moles
 >   unitOf _ = "mol"
+>instance LiteralUnit Substance where { fromAmount = Moles }
 >instance Unit Intensity where
 >   amount = candelas
->   fromAmount = Candelas
 >   dimension _ = candela_dimension
 >   fromQuantity = fromQuantityDef candela_dimension Candelas
 >   unitOf _ = "cd"
-
+>instance LiteralUnit Intensity where { fromAmount = Candelas }
 >instance Read Angle where { readPrec = read_unit fromAmount }
 >instance Read Resistance where { readPrec = read_unit fromAmount }
 >instance Read DegreesAngle where { readPrec = read_unit fromAmount }
@@ -823,8 +836,8 @@
 >instance Read Velocity where { readPrec = read_unit fromAmount }
 >instance Read Torque where { readPrec = read_unit fromAmount }
 >instance Read SoundLevel where { readPrec = read_unit fromAmount }
->instance (Unit a, Unit b, Read (Scalar a), Show (Scalar a), Scalar a ~ Scalar b) => Read (a :* b) where { readPrec = read_unit (fromAmount *%% fromAmount) }
->instance (Unit a, Unit b, Read (Scalar a), Show (Scalar a), Scalar a ~ Scalar b) => Read (a :/ b) where { readPrec = read_unit (fromAmount /%% fromAmount) }
+>instance (LiteralUnit a, LiteralUnit b, Read (Scalar a), Show (Scalar a), Scalar a ~ Scalar b) => Read (a :* b) where { readPrec = read_unit (fromAmount *%% fromAmount) }
+>instance (LiteralUnit a, LiteralUnit b, Read (Scalar a), Show (Scalar a), Scalar a ~ Scalar b) => Read (a :/ b) where { readPrec = read_unit (fromAmount /%% fromAmount) }
 
 #if __GLASGOW_HASKELL__ >= 806
 

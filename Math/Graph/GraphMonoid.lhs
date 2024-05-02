@@ -1,7 +1,7 @@
 >{-# LANGUAGE Safe,FlexibleInstances, MultiParamTypeClasses, TypeOperators, DeriveGeneric, DeriveDataTypeable, LambdaCase #-}
 >{-# LANGUAGE OverloadedStrings, StandaloneDeriving, GADTs #-}
 >{-# LANGUAGE UndecidableInstances, KindSignatures, ConstraintKinds #-}
->{-# LANGUAGE Arrows, FlexibleContexts #-}
+>{-# LANGUAGE Arrows, FlexibleContexts, PolyKinds #-}
 >module Math.Graph.GraphMonoid where
 >import Control.Arrow
 >import qualified Control.Category as Cat
@@ -32,6 +32,12 @@
 >data GraphElem v e = Vertex v | Edge e
 >  deriving (Eq, Ord, Show, Read)
 
+>data ReversibleGraphProp v e = VertexProp v
+>                   | EdgeProp e
+>                   | LoopProp e
+>                   | OneLaneLoopProp e
+>                   | BandProp e
+
 >deriving instance (Typeable v, Typeable e) => Typeable (GraphElem v e)
 >deriving instance (Data v, Data e) => Data (GraphElem v e)
 
@@ -50,7 +56,8 @@
 instance (Universe v, Universe e) => Universe (GraphElem v e) where
    all_elements = (map Vertex all_elements) ++ (map Edge all_elements)
 
->class (Eq (arr a a), Monoid.Monoid (arr a a)) => GraphMonoid arr a where
+>class (Cat.Category arr, Eq (arr a a), Monoid.Monoid (arr a a))
+> => GraphMonoid arr a where
 >   gdom :: arr a a
 >   gcod :: arr a a
 
@@ -97,7 +104,10 @@ data Three = TId | TDom | TCod deriving (Eq,Show,Ord, Typeable, Data, Generic)
 
 >-- | intent is that g =~= F Bool, where F : 2^{op} -> Set. But opposite categories are difficult to represent.
 >three_action_arr :: (ArrowChoice arr) => arr g g -> arr g g -> arr g g -> Three Bool Bool -> arr g g
->three_action_arr a b c f = proc i -> case f of { TId -> a -< i ; TDom -> b -< i ; TCod -> c -< i }
+>three_action_arr a b c TId = proc i -> a -< i
+>three_action_arr a b c TDom = proc i -> b -< i
+>three_action_arr a b c TCod = proc i -> c -< i
+
 
 >instance (Arrow arr) => MonoidArrow arr (Three Bool Bool) Bool where
 >   monoidA TId = arr id
@@ -152,11 +162,10 @@ data Three = TId | TDom | TCod deriving (Eq,Show,Ord, Typeable, Data, Generic)
 >-- | intent is that g =~= F2, where F : 2^{op} -> Set. But opposite categories are difficult to represent.
 >four_action_arr :: (ArrowChoice arr)
 >  => arr g g -> arr g g -> arr g g -> arr g g -> Four Bool Bool -> arr g g
->four_action_arr aid adom acod anot f = proc v -> case f of
->   FId -> aid -< v
->   FDom -> adom -< v
->   FCod -> acod -< v
->   FNot -> anot -< v
+>four_action_arr aid adom acod anot FId = proc v -> aid -< v
+>four_action_arr aid adom acod anot FDom = proc v -> adom -< v
+>four_action_arr aid adom acod anot FCod = proc v -> acod -< v
+>four_action_arr aid adom acod anot FNot = proc v -> anot -< v
 
 >-- | intent is that g =~= F2, where F : 2^{op} -> Set. But opposite categories are difficult to represent.
 >four_action :: (g -> g) -> (g -> g) -> (g -> g) -> (g -> g) -> Four Bool Bool -> Endo g
@@ -347,5 +356,5 @@ data Three = TId | TDom | TCod deriving (Eq,Show,Ord, Typeable, Data, Generic)
 >mapEndo f =   (\ (Endo g) -> Endo (runIso f . g . runIsoInverse f))
 >          <-> (\ (Endo h) -> Endo (runIsoInverse f . h . runIso f))
 
->instance FunctorArrow Endo (:==:) where
+>instance FunctorArrow Endo (:==:) (:==:) where
 >   amap = mapEndo

@@ -61,6 +61,7 @@
 >   eps <- epsilon_stream
 >   return $! (f (delta eps v) - fv) / eps
 
+
 >-- | \[ {\rm{partial\_derive}}(\Delta, f, x) = \lim_{\epsilon \rightarrow 0}{{f(\Delta_{\epsilon}(x)) - f(x)}\over{\Delta_{\epsilon}(x) - x}} \]
 >partial_derive :: (Closed a, Infinitesimal Stream a, Fractional a) => (a -> a -> a) -> (a -> a) -> a -> a
 >partial_derive delta f = \v -> accumulation_point $ limit $ do

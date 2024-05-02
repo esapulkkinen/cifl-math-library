@@ -41,7 +41,7 @@ linear_outer_product a b = LinearMap Refl $
 > => Dual (v a) -> v a -> a
 >dual_apply (Covector v) x = vector_element (v -!< x)
 
->(*><) :: Dual (v a) -> v a :-> Vector1 a
+>(*><) :: (a ~ Scalar (v a)) => Dual (v a) -> v a :-> Vector1 a
 >(*><) = bracketMap
 
 >x2_op :: (Num s, ConjugateSymmetric s) => Dual (Vector2 s)
@@ -207,7 +207,7 @@ instance CoFunctorArrow Dual LinearMap where
 
 scalar_map :: Vector1 (Scalar a) :-> Vector1 (Scalar a) -> Dual a -> Dual a
 
->scalar_map :: Vector1 a :-> Vector1 a -> Dual (f a) -> Dual (f a)
+>scalar_map :: (a ~ Scalar (f a)) => Vector1 a :-> Vector1 a -> Dual (f a) -> Dual (f a)
 >scalar_map f (Covector g) = Covector (f . g)
 
 >operator_map :: (Scalar (w a) ~ a, Dualizable (w a) Dual, Dualizable (v a) Dual, Diagonalizable w a, LinearTransform v Vector1 a, Linearizable LinearMap (:*:) w Vector1 a)

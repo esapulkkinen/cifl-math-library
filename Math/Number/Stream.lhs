@@ -528,6 +528,8 @@ instance (Num a) => Matrix.VectorSpace ((Stream :*: Stream) a) where
 >instance Monad Stream where
 >   return = constant
 >   m >>= f = stream_diagonal_impl $ Matrix (fmap f m)
+
+>instance MonadFail Stream where
 >   fail str = Pre (error ("Stream.fail:" ++ str)) (fail str)
 
 >-- | sum of a stream elements.
@@ -942,7 +944,7 @@ matrix_inverse :: (InnerProductSpace (f a), InnerProductSpace (h a),
 
 >matrix_inverse :: (       ConjugateSymmetric (g2 a),
 >                         LinearTransform (f2 :*: g1) (f2 :*: g1) (g2 a),
->                         TArrow.FunctorArrow (f2 :*: g1) LinearMap,
+>                         TArrow.FunctorArrow (f2 :*: g1) LinearMap LinearMap,
 >                         InnerProductSpace (f2 (g2 a)), InnerProductSpace (g1 (g2 a)),
 >                         Transposable f2 g1 (g2 a), Transposable g1 f2 (g2 a),
 >                         Linearizable LinearMap (:*:) g1 f2 (g2 a),
@@ -1995,10 +1997,9 @@ generating_sqrt xplus1 = (`subst` x) $ fmap (binomial (1%2)) naturals
 
 >-- | Square root algorithm is from
 >-- Simpson: Power Series, <http://caps.gsfc.nasa.gov/simpson/ref/series.pdf>
-
 >sqrt_stream :: (Floating a, Closed a) => Stream a -> Stream a
 >sqrt_stream ~z'@(Pre x xr) = Pre (sqrt x) $ mprod xr (sqrt_stream z')
-> where pprod (a,i) (b,j) = ((i+j)-3*j)*a*b/(2*(i+j)*sqrt x)
+> where pprod (a,i) (b,j) = ((i+j)-3*j)*a*b/(2*(i+j)*x)
 >       mprod a b = fmap sum $ codiagonals
 >              $ matrix pprod (a <&> nonzero_naturals) (b <&> naturals)
 
@@ -2180,3 +2181,23 @@ instance (Closed a) => Closed (Complex a) where
 
 >bernoulli_polynomial_coefficients :: (Fractional a) => Stream [a]
 >bernoulli_polynomial_coefficients = codiagonals (lower_triangle_impl bernoulli_polynomials)
+
+>-- | <https://en.wikipedia.org/wiki/Legendre_polynomials>
+>legendre_polynomials :: (Closed a, Eq a, ConjugateSymmetric a, Floating a) => (Stream :*: Stream) a
+>legendre_polynomials = Matrix $ 1 / sqrt (1 - 2*s_z2*s_z + s_z*s_z)
+
+>legendre_polynomial_lists :: (Closed a, Num a, Eq a, ConjugateSymmetric a, Floating a) => Stream [a]
+>legendre_polynomial_lists = codiagonals $
+>   lower_triangle_impl legendre_polynomials
+
+>evaluate_polynomial :: (Fractional a) => [a] -> a -> a
+>evaluate_polynomial poly x = res
+>  where mult = take (fromIntegral $ length poly) $ power_uniform_fractional x
+>        res = P.sum $ P.zipWith (*) poly mult
+
+>evaluate_legendre_polynomial :: (Fractional a, Closed a, Eq a, ConjugateSymmetric a, Floating a) => Integer -> a -> a
+>evaluate_legendre_polynomial i =
+>   evaluate_polynomial (i `streamindex` legendre_polynomial_lists)
+
+>evaluate_legendre_at :: (Fractional a, Closed a, Eq a, ConjugateSymmetric a, Floating a) => a -> Stream a
+>evaluate_legendre_at x = fmap (`evaluate_legendre_polynomial` x) naturals

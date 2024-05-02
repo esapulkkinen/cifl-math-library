@@ -8,6 +8,7 @@
 >import Math.Tools.PrettyP
 >import Debug.Trace
 >import Control.Applicative
+>import Control.Monad
 >import Control.Monad.Except
 >import Control.Monad.Reader
 >import Control.Monad.Writer hiding ((<>))
@@ -19,7 +20,7 @@
 >		    | FailParse LineInfo Doc
 >                   | SyntaxError LineInfo Doc
 
->parseResultToMonad :: (Monad m) => ParseResult a -> m a
+>parseResultToMonad :: (MonadFail m) => ParseResult a -> m a
 >parseResultToMonad (OkParse _ _ a) = return a
 >parseResultToMonad (FailParse li d) = fail $ render $ pp li <> pp ':' <> d
 >parseResultToMonad (SyntaxError li d) = fail $ render $ pp li <> pp ':' <> d
@@ -189,15 +190,17 @@ instance MonadError (LineInfo,Doc) ParseResult where
          catchError (SyntaxError li msg) f = f (li,msg)
 
 >instance Applicative ParseM where
->   pure x = return x
+>   pure x = ParseM (\s li -> OkParse s li x)
 >   f <*> x = f >>= \f' -> x >>= \x' -> return (f' x')
 
 >instance Monad ParseM where
->	  return x = ParseM (\s li -> OkParse s li x)
+>	  return = pure
 >	  ~(ParseM x) >>= f = ParseM (\s li -> case x s li of
 >                               (OkParse s' li' v) -> runParseM (f v) s' li'
 >                               (FailParse li2 e) -> FailParse li2 e
 >                               (SyntaxError li3 e) -> SyntaxError li3 e)
+
+>instance MonadFail ParseM where
 >         fail str = ParseM (\_ li -> FailParse li (pp str))
 
 >instance Alternative ParseM where

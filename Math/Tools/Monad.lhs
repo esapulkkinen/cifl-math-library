@@ -37,7 +37,7 @@ import Control.Monad.Trans.List
 
 >instance (Adjunction f g, Applicative f, Applicative g)
 > => Monad (AdjM f g) where
->   return x = AdjM $ unit x
+>   return = pure
 >   (AdjM m) >>= f = AdjM $ fmap (counit . fmap (runAdjM . f)) m
 
 >instance (Adjunction g f) => Comonad (AdjM f g) where
@@ -54,7 +54,7 @@ import Control.Monad.Trans.List
 >(<=<) :: (Monad m) => (b -> m c) -> (a -> m b) -> a -> m c
 >f <=< g = runKleisli (Kleisli f <<< Kleisli g)
 
->fromMaybeM :: (Monad m) => Maybe a -> m a
+>fromMaybeM :: (MonadFail m) => Maybe a -> m a
 >fromMaybeM = maybe (fail "fromMaybeM: Nothing") return
 
 >bind2 :: (Monad m) => m (m a) -> (a -> m b) -> m b

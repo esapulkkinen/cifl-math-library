@@ -80,6 +80,8 @@
 >   (Interval a b) >>= f = Interval a' b''
 >     where Interval a' _   = f a
 >           Interval _  b'' = f b
+
+>instance MonadFail Interval where
 >   fail msg = Interval (error msg) (error msg)
 
 >instance (Num a) => VectorSpace (Interval a) where

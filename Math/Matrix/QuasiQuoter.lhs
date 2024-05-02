@@ -160,20 +160,20 @@
 
 
 >   
->parseStringMatrix :: (Monad m) => Text -> m (([] :*: []) Text) 
+>parseStringMatrix :: (MonadFail m) => Text -> m (([] :*: []) Text) 
 >parseStringMatrix = parseToMatrix stringLitP
 >
 >stringLitP (StringLit tok) = return tok
 >stringLitP _ = fail "Matrix element is not a string"
 
->parseDoubleMatrix :: (Monad m) => Text -> m (([] :*: []) Double) 
+>parseDoubleMatrix :: (MonadFail m) => Text -> m (([] :*: []) Double) 
 >parseDoubleMatrix = parseToMatrix floatLitP
 
 >floatLitP (FloatNumber v) = return v
 >floatLitP (Number v) = return (fromInteger v)
 >floatLitP _ = fail "Matrix element is not a floating point number"
 
->parseNumberMatrix :: (Monad m) => Text -> m (([] :*: []) Integer)
+>parseNumberMatrix :: (MonadFail m) => Text -> m (([] :*: []) Integer)
 >parseNumberMatrix = parseToMatrix numberP 
 
 >instance Syntax.Lift ((Vector3 :*: Vector3) Integer) where
@@ -201,7 +201,7 @@
 >numberP (Number tok) = return tok
 >numberP _ = fail "Matrix element is not a number"
 
->parseToMatrix :: (Monad m) => (Token -> ParseM a) -> Text -> m (([] :*: []) a)
+>parseToMatrix :: (MonadFail m) => (Token -> ParseM a) -> Text -> m (([] :*: []) a)
 >parseToMatrix f s = parseResultToMonad pr
 >   where pr = runParseM (parseMatrix f) s emptyLineInfo
 

@@ -44,16 +44,18 @@
 
 >instance (Monoid a) => Monoid (LeafTree a) where
 >  mempty  = SubTree empty
->  mappend = zipWith mappend
+>  mappend = (<>)
 
 >instance (Show a) => Show (LeafTree a) where
 >   show (Leaf x) = show x
 >   show (SubTree lst) = "[" ++ concat (intersperse "," (map show lst)) ++ "]"
 
 >instance Monad LeafTree where
->  return = Leaf
+>  return = pure
 >  (Leaf x) >>= f = f x
 >  (SubTree lst) >>= f = SubTree (map (>>= f) lst)
+
+>instance MonadFail LeafTree where
 >  fail msg = Leaf (error msg)
 
 >in_subtree :: Int -> LeafTree a -> LeafTree a

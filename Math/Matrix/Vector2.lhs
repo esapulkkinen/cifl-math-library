@@ -105,7 +105,7 @@
 >matrix_root = vector_element . project_first . diagonal_impl
 
 
->instance FunctorArrow Vector2 (:==:) where
+>instance FunctorArrow Vector2 (:==:) (:==:) where
 >  amap f = (\ (Vector2 a b) -> Vector2 (runIso f a) (runIso f b))
 >        <-> (\ (Vector2 a b) -> Vector2 (runIsoInverse f a) (runIsoInverse f b))
 
@@ -471,7 +471,7 @@ instance (Num a, ConjugateSymmetric a) => LieAlgebra ((Vector2 :*: Vector2) a) w
 >   conj (Vector2 x y) = Vector2 (conj x) (conj y)
 
 >instance (Floating a, ConjugateSymmetric a) => NormedSpace (Vector2 a) where
->  norm v = sqrt (v %. v)
+>  norm_squared v = v %. v
 
 >instance {-# OVERLAPPABLE #-} (Num a, ConjugateSymmetric a) => InnerProductSpace (Vector2 a) where
 >  (Vector2 x y) %. (Vector2 x' y') = x*conj x' + y*conj y'

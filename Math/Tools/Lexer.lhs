@@ -92,7 +92,7 @@
 >                 , null s'' -> tokenLexer (Number d) (length tok) cont `runParseM` s'
 >               | isSpace c, (tok,s') <- span isSpace (cons c r) ->
 >                   tokenLexer (WhiteSpace tok) (length tok) cont `runParseM` s'
->               | otherwise -> fail $ "cannot classify character: '" ++ show c ++ "'"
+>               | otherwise -> (fail $ "cannot classify character: '" ++ show c ++ "'") `runParseM` r
 
 >isOperatorChar :: Char -> Bool
 >isOperatorChar ch = ch `elem` ("!@#$%&/=?+^~*-" :: String)

@@ -1,7 +1,7 @@
->{-# LANGUAGE Safe,Rank2Types, KindSignatures, MultiParamTypeClasses,
+>{-# LANGUAGE Trustworthy,Rank2Types, KindSignatures, MultiParamTypeClasses,
 >             FunctionalDependencies, FlexibleInstances, TypeSynonymInstances,
 >             TupleSections,  TypeOperators, AllowAmbiguousTypes, Arrows,TypeFamilies,
->             LambdaCase, IncoherentInstances, FlexibleContexts
+>             LambdaCase, IncoherentInstances, FlexibleContexts, PolyKinds
 > #-}
 >-- |
 >-- Module: Math.Tools.Arrow
@@ -29,9 +29,9 @@
 >   monoidA :: m -> arr a a
 
 >-- | <https://en.wikipedia.org/wiki/Monoidal_category>
->class (Category arr) => MonoidalCategory arr where
->   type Prod arr a b
->   type MUnit arr
+>class (Category arr) => MonoidalCategory (arr :: k -> k -> *) where
+>   type Prod (arr :: k -> k -> *) (a :: k) (b :: k) :: k
+>   type MUnit (arr :: k -> k -> *) :: k
 >   (-*-)   :: arr a b -> arr a' b' -> arr (Prod arr a a') (Prod arr b b')
 >   monoidal_assoc   :: arr (Prod arr (Prod arr a b) c) (Prod arr a (Prod arr b c))
 >   monoidal_deassoc :: arr (Prod arr a (Prod arr b c)) (Prod arr (Prod arr a b) c)
@@ -41,7 +41,7 @@
 >   unrightunitor :: arr a (Prod arr a (MUnit arr))
 
 >-- <https://en.wikipedia.org/wiki/Braided_monoidal_category>
->class (MonoidalCategory arr) => BraidedCategory arr where
+>class (MonoidalCategory arr) => BraidedCategory (arr :: k -> k -> *) where
 >   braiding :: arr (Prod arr a b) (Prod arr b a)
 
 >class (Category c) => OverCategory c y where
@@ -57,7 +57,7 @@
 >class (Category arr) => Groupoid arr where
 >     invertA :: arr a b -> arr b a
 
->class OpArrow p arr arr' where
+>class (Category arr, Category arr') => OpArrow p arr arr' where
 >   inverse_imageA :: arr a b -> arr' (p b) (p a)
 
 >class (Category arr) => CoArrow arr where
@@ -68,22 +68,24 @@
 >class (Category arr) => BiArrow arr where
 >   (<->) :: (a -> b) -> (b -> a) -> arr a b
 
->class (BiArrow arr, FunctorArrow f arr) => ApplicativeBiArrow arr f where
+>class (Category arr, Category m) => MonoidCategory arr m f | f -> m arr where
+>   monoidArr :: m a a -> arr (f a) (f a)
+
+>class (BiArrow arr, FunctorArrow f arr arr) => ApplicativeBiArrow arr f where
 >   bipure :: arr a (f a)
 >   bimap :: arr (f (arr a b), f a) (f b)
 >   biliftA2 :: arr a (arr b c) -> arr (f a, f b) (f c)
 >   bimap = biliftA2 Control.Category.id
 
-
 >class (Category arr) => CPSArrow arr where
 >   callcc :: (forall bot. arr c bot -> arr b c) -> arr b c
 
 >-- | Arrow version of Functor from Haskell Prelude
->class FunctorArrow (f :: * -> *) (arr :: * -> * -> *) where
->      amap :: arr c d -> arr (f c) (f d)
+>class (Category arr, Category arr') => FunctorArrow f arr arr' | f arr' -> arr, f arr -> arr' where
+>      amap :: arr c d -> arr' (f c) (f d)
 
 >-- | Arrow version of Applicative from Haskell Prelude
->class (FunctorArrow f arr) => ApplicativeArrow (f :: * -> *) (arr :: * -> * -> *) where
+>class (FunctorArrow f arr arr, Category arr) => ApplicativeArrow f arr where
 >   apure :: arr a (f a)
 >   aapply :: f (arr a b) -> arr (f a) (f b)
 
@@ -93,10 +95,10 @@
 >   fx <- aapply f -< x
 >   aapply fx -<< y
 
->class CoFunctorArrow (f :: * -> *) (arr :: * -> * -> *) where
->      inverseImage :: arr c d -> arr (f d) (f c)
+>class (Category arr, Category arr') => CoFunctorArrow f arr arr' where
+>      inverseImage :: arr c d -> arr' (f d) (f c)
 
->(|>) :: (CoFunctorArrow f (->)) => f d -> (c -> d) -> f c
+>(|>) :: (CoFunctorArrow f (->) (->)) => f d -> (c -> d) -> f c
 >x |> f = inverseImage f x
 
 >class (Category arr, Category arr')
@@ -109,16 +111,18 @@
 >   unitA = ladA id
 >   counitA = radA id
 
->outerA :: (FunctorArrow f arr, FunctorArrow g arr, ArrowApply arr)
->   => arr (a,b) c -> arr (f a,g b) (f (g c))
->outerA f = proc (x,y) -> amap (proc a -> amap (proc b -> f -< (a,b)) -<< y) -<< x 
+>outerA :: (Arrow arr2, FunctorArrow f arr arr', FunctorArrow g arr2 arr, ArrowApply arr, ArrowApply arr')
+>   => arr2 (a,b) c -> arr' (f a,g b) (f (g c))
+>outerA f = proc (x,y) -> amap (mapper y) -<< x 
+>   where inner a = proc b -> f -< (a,b)
+>         mapper y = proc a -> amap (inner a) -<< y
 
->class (FunctorArrow f arr) => InitialAlgebraA arr a f | a -> f where
+>class (FunctorArrow f arr arr) => InitialAlgebraA arr a f | a -> f where
 >   deconstructA :: arr a (f a)
 
->class LoopArrow a where 
->      loop_secondSA  :: a (b,d) (c,d) -> a b c
->      loop_firstSA :: a (d,b) (d,c) -> a b c
+>class (Category a) => LoopArrow a prod where 
+>      loop_secondSA  :: a (prod b d) (prod c d) -> a b c
+>      loop_firstSA :: a (prod d b) (prod d c) -> a b c
 
 >class (Category a) => MessagingArrow a where 
 >      splitA :: a (Either b c) (Either d e) -> (a b d, a c e)
@@ -138,13 +142,13 @@
 >class (Category a) => ArrowUnit a where
 >      aunit :: a b ()
 
->class (Category a) => ArrowFix a where
->      fixArrow :: a (b,c) c -> a b c
+>class (Category a) => ArrowFix a prod where
+>      fixArrow :: a (prod b c) c -> a b c
 
 >class (Category a) => ArrowCircuit a where
 >      delay :: b -> a b b
 
->class ArrowDual a d where
+>class (Category a) => ArrowDual a d where
 >      collapseArrow :: (d (d a)) b c -> a b c
 
 >class ArrowDual a d => RecArrow a d where
@@ -169,16 +173,16 @@
 >   catchA (Kleisli f) (Kleisli h) = Kleisli (\i -> f i `catch` \err -> if isUserError err then h (pp (ioeGetErrorString err)) else throwIO err)
 
 
->instance {-# INCOHERENT #-} (ArrowChoice arr) => FunctorArrow (Either b) arr where
+>instance (ArrowChoice arr) => FunctorArrow (Either b) arr arr where
 >    amap f = id +++ f
 
->instance {-# INCOHERENT #-} (ArrowChoice a) => FunctorArrow Maybe a where
+>instance (ArrowChoice arr) => FunctorArrow Maybe arr arr where
 >    amap f = proc ma -> case ma of
 >             Nothing -> returnA -< Nothing
 >             (Just x) -> do x' <- f -< x
 >                            returnA -< (Just x')
 
->instance {-# INCOHERENT #-} (ArrowChoice arr) => FunctorArrow [] arr where
+>instance (ArrowChoice arr) => FunctorArrow [] arr arr where
 >   amap f = proc lst -> case lst of
 >            [] -> returnA -< []
 >            (c:cr) -> do c' <- f -< c
@@ -200,5 +204,5 @@
 >instance BraidedCategory (->) where
 >   braiding (a,b) = (b,a)
 
->instance FunctorArrow I (->) where
->  amap f = I . f . unI
+>instance FunctorArrow I (->) (->) where
+>  amap f = arr I . f . arr unI

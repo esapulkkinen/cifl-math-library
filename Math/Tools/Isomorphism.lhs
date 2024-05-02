@@ -1,5 +1,5 @@
 >{-# LANGUAGE Trustworthy,FlexibleInstances, MultiParamTypeClasses, RankNTypes, ImpredicativeTypes, Arrows, TypeOperators, LambdaCase, ScopedTypeVariables, TypeFamilies #-}
->{-# LANGUAGE GADTs #-}
+>{-# LANGUAGE GADTs, PolyKinds, ConstraintKinds #-}
 >module Math.Tools.Isomorphism where
 >import Prelude hiding ((.),id)
 >import Data.Map (Map)
@@ -22,6 +22,7 @@
 >import qualified Data.Binary as Bin
 >import Data.ByteString.Lazy (ByteString)
 >import qualified Data.ByteString.Lazy as Bytes
+>import Data.Kind
 
 >-- | See <http://twanvl.nl/blog/haskell/isomorphism-lenses> I also saw
 >-- somewhere (can't remember where) a blog post for an idea for
@@ -44,17 +45,25 @@
 >leftIdempotent :: a :==: b -> Endo a
 >leftIdempotent i = Endo $ isomorphism_section i . isomorphism_epimorphism i
 
->instance FunctorArrow I (:==:) where
+>instance FunctorArrow I (:==:) (:==:) where
 >   amap f = (I <-> unI) . f . (unI <-> I)
 
 instance FunctorArrow Data.Set.Set (OrderedCat (:==:)) where
    amap (OrderedCat f) = (OrderedCat . amap (isomorphism_epimorphism f)) <-> (OrderedCat . amap (isomorphism_section f))
 
->data OrderedCat arr a b where
->   OrderedCat :: (Ord a, Ord b) => arr a b -> OrderedCat arr a b
+data OrdT a = OrdT (Ord a => (a -> ()))
 
->instance FunctorArrow Data.Set.Set (OrderedCat (->)) where
->   amap (OrderedCat f) = OrderedCat (Data.Set.map f)
+
+data OrderedCat arr a b where
+   OrderedCat :: OrdT a -> OrdT b -> arr a b -> OrderedCat arr a b
+
+instance (Category arr) => Category (OrderedCat arr) where
+   id = OrderedCat (OrdT (const ())) (OrdT (const ())) id
+   (OrderedCat ob oc f) . (OrderedCat oa ob' g) = OrderedCat oa oc (f . g)
+
+
+instance FunctorArrow Data.Set.Set (OrderedCat (->)) where
+   amap (OrderedCat oa ob f) = OrderedCat oa ob (Data.Set.map f)
 
 >-- | <https://en.wikipedia.org/Galois_Connection>
 >-- Note that since we don't check the equations for isomorphisms,
@@ -157,7 +166,7 @@ instance FunctorArrow Data.Set.Set (OrderedCat (:==:)) where
 >bimapIso f g = mapIso f . inverseImageIso g
 
 >-- | constraint: all elements of the map must be present in both maps.
->orderedMapIso :: (Monad m, Ord i, Ord a) => Map i a -> Map a i -> m (i :==: a)
+>orderedMapIso :: (MonadFail m, Ord i, Ord a) => Map i a -> Map a i -> m (i :==: a)
 >orderedMapIso n m
 >   | Map.keys n == Map.elems m && Map.keys m == Map.elems n = do
 >         return $ (n Map.!) <-> (m Map.!)
@@ -243,7 +252,7 @@ TODO: negative integers?
 >terminalIso =  (\ () -> (proc _ -> returnA -< ()))
 >           <-> const ()
 
->productIso :: (Isomorphic arr, ArrowApply arr')
+>productIso :: (BiArrow arr, Isomorphic arr, ArrowApply arr')
 >           => arr (arr' c (a,b)) (arr' c a, arr' c b)
 >productIso = (proc f -> returnA -< (proc c -> do f >>> arr fst -<< c,
 >                                    proc c -> do f >>> arr snd -<< c))
@@ -252,7 +261,7 @@ TODO: negative integers?
 >                                   r2 <- g -<< c
 >                                   returnA -< (r1,r2)))
 
->coproductIso :: (Isomorphic arr, ArrowChoice arr', ArrowApply arr')
+>coproductIso :: (BiArrow arr, Isomorphic arr, ArrowChoice arr', ArrowApply arr')
 >              => arr (arr' (Either a b) c)
 >                     (arr' a c,  arr' b c)
 >coproductIso = (proc f -> returnA -< (proc x -> f -<< (Left x),

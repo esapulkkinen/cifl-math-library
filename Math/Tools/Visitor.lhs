@@ -1,5 +1,5 @@
 >{-# LANGUAGE Safe, TypeFamilies,ExistentialQuantification, MultiParamTypeClasses,
->             FlexibleInstances, GADTs, LambdaCase
+>             FlexibleInstances, GADTs, LambdaCase, PolyKinds
 >  #-}
 >module Math.Tools.Visitor where
 >import Math.Tools.I
@@ -11,6 +11,8 @@
 >import Data.Set (Set)
 >import qualified Data.Set as Set
 >import Control.Monad.Trans.State.Lazy
+>import Control.Category
+>import Prelude hiding (id,(.))
 
 >-- | loosely based on "Gamma et al: Design Patterns" visitor pattern, and also on
 >-- Haskell 'foldr' function and common variations of it.
@@ -21,6 +23,14 @@
 >class Builder v where
 >   data Unfold v :: * -> *
 >   build :: Unfold v a -> a -> v
+
+>class (Category arr) => VisitorArrow (arr :: k -> k -> *) (v :: k) where
+>   data ArrFold arr v :: k -> *
+>   arr_visit :: ArrFold arr v a -> arr v a
+
+>class VisitorMonad (m :: k -> *) (v :: k) where
+>   data MonadFold m v :: k -> *
+>   monad_visit :: MonadFold m v a -> m v -> m a
 
 
 >-- | <http://blog.jle.im/entry/fixed-length-vector-types-in-haskell-2015.html>

@@ -1,7 +1,7 @@
 >{-# LANGUAGE CPP #-}
 >{-# LANGUAGE DataKinds, TypeOperators, KindSignatures, GADTs, TypeFamilies #-}
 >{-# LANGUAGE UndecidableInstances, MultiParamTypeClasses, PolyKinds #-}
->{-# LANGUAGE FlexibleInstances, TypeFamilyDependencies #-}
+>{-# LANGUAGE FlexibleInstances, TypeFamilyDependencies, FlexibleContexts #-}
 >module Math.Number.TypeRational where
 >import Data.Kind
 >import Math.Number.Stream

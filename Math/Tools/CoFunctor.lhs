@@ -1,4 +1,4 @@
->{-# LANGUAGE Safe,TypeOperators, MultiParamTypeClasses, FunctionalDependencies, TypeFamilies, ConstraintKinds #-}
+>{-# LANGUAGE Safe,TypeOperators, MultiParamTypeClasses, FunctionalDependencies, TypeFamilies, ConstraintKinds, PolyKinds #-}
 >module Math.Tools.CoFunctor where
 >import safe Math.Tools.I
 >import safe Math.Tools.Universe

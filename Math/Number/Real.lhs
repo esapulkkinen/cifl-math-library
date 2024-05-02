@@ -249,18 +249,6 @@ max_convergence_ratio = fmap (foldl1 max) . cauchy
 >   eps <- approximations dx
 >   return $! (f (delta eps `appEndo` v) - fv) / eps
 
-
->-- | <https://en.wikipedia.org/wiki/Wirtinger_derivatives>
-
->complex_derivate :: (RealFloat r, Closed r)
->                 => (Complex r -> Complex r) -> Complex r -> Complex r
->complex_derivate f z =
->                   (partial_derivate (\eps z' -> z' + (eps :+ 0))
->                                     (realPart . f) z)/2
->                :+ (negate $ (partial_derivate
->                                     (\eps z' -> z' + (0 :+ eps))
->                                     (imagPart . f) z) / 2)
-
 already defined in Math.Number.Stream:
 
 instance (RealFloat a, Infinitesimal str a) => Infinitesimal str (Complex a) where

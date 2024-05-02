@@ -1,10 +1,12 @@
 >{-# LANGUAGE Trustworthy,MultiParamTypeClasses,FunctionalDependencies #-}
+>{-# LANGUAGE TypeOperators, PolyKinds #-}
 >module Math.Tools.Adjunction where
 
 import Control.Monad.Reader hiding (fix) -- instances of Functor ((->) a) and Monad ((->) a)
 
 >import Control.Arrow ((&&&),(|||))
 >import Control.Applicative
+>import Data.Functor.Contravariant
 
 >-- | The problem with this type class is that categories are not represented
 >-- at all. This assumes all functors are F : C -> C.
@@ -22,6 +24,8 @@ import Control.Monad.Reader hiding (fix) -- instances of Functor ((->) a) and Mo
 >      rightAdjunct g = counit . fmap g
 
 >      -- rule : fmap (counit x) o unit (fmap f) == id
+
+
 
 >embed_adjunction :: (Adjunction f g, Adjunction g f) => (f a -> f b) -> a -> b
 >embed_adjunction f x = rightAdjunct f (unit x)

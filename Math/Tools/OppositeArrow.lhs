@@ -1,4 +1,4 @@
->{-# LANGUAGE MultiParamTypeClasses, FlexibleInstances, Arrows, TypeFamilies, RankNTypes, Safe #-}
+>{-# LANGUAGE MultiParamTypeClasses, FlexibleInstances, Arrows, TypeFamilies, RankNTypes, PolyKinds, Safe #-}
 >{-# OPTIONS_HADDOCK hide, prune #-}
 >module Math.Tools.OppositeArrow where
 >import Prelude hiding (id,(.))
@@ -9,8 +9,6 @@
 >import Data.Functor.Contravariant
 
 >data OpA arr a b = OpA { runOpA :: arr b a }
-
-
 
 >instance (Category c) => Category (OpA c) where
 >   id = OpA id

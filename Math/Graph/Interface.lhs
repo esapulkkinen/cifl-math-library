@@ -1,12 +1,14 @@
 >{-# LANGUAGE Safe, MultiParamTypeClasses, FunctionalDependencies #-}
 >{-# LANGUAGE DefaultSignatures #-}
 >module Math.Graph.Interface where
+>import Prelude hiding (id, (.))
 >import Control.Arrow
 >import qualified Data.Set as Set
 >import Data.Set (Set)
 >import qualified Data.Map as Map
 >import Data.Map (Map)
 >import Math.Tools.Set
+>import Control.Category
 > 
 >class DigraphFactory g v e | g -> v, g -> e, v e -> g where
 >   vertexGraph :: v -> g
@@ -109,3 +111,4 @@
 >   e' <- ginverse e
 >   yx <- gisEdgeBetween e' x y
 >   return (xy || yx)
+

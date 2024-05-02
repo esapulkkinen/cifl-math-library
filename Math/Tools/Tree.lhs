@@ -44,7 +44,7 @@
 >type Path e = [e]
 >type Forest n e = [Tree e n]
 
->tlookup :: (Show e, Eq e, Monad m) => Tree e n -> Path e -> m (Tree e n)
+>tlookup :: (Show e, Eq e, MonadFail m) => Tree e n -> Path e -> m (Tree e n)
 >tlookup z (c:cr) | Just e <- lookup c (children z) = tlookup e cr
 >                 | otherwise = fail $ "cannot find:" ++ show c
 >tlookup z [] = return z
@@ -92,8 +92,10 @@
 
 >instance (Monoid n, Monoid e) => Monoid (Tree e n) where
 >   mempty = Node mempty []
->   mappend (Node x lst) (Node y lst') = Node (mappend x y) $
->      liftA2 (\ (e,t) (e',t') -> (mappend e e', mappend t t')) lst lst'
+>   mappend = (<>)
+
+ (Node x lst) (Node y lst') = Node (mappend x y) $
+      liftA2 (\ (e,t) (e',t') -> (mappend e e', mappend t t')) lst lst'
 
 >leaf :: n -> Tree e n
 >leaf x = Node x []
@@ -163,11 +165,11 @@
 >child_forest :: Tree e n -> Forest n e
 >child_forest (Node _ lst) = map snd lst
 
->find_child :: (Monad m, Eq e, Show e) => e -> Tree e n -> m (Tree e n)
+>find_child :: (MonadFail m, Eq e, Show e) => e -> Tree e n -> m (Tree e n)
 >find_child e (Node _ lst) | Just s <- lookup e lst = return s
 >                          | otherwise = fail $ "child not found:" ++ show e
 
->tree_find_subtree :: (Monad m, Show e, Eq e) => Path e -> Tree e n -> m (Tree e n)
+>tree_find_subtree :: (MonadFail m, Show e, Eq e) => Path e -> Tree e n -> m (Tree e n)
 >tree_find_subtree = flip $ foldM (flip find_child)
 
 

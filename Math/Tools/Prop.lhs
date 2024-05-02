@@ -10,7 +10,7 @@
 >import qualified Control.Category as Cat
 >import Math.Tools.CoFunctor
 >import Math.Tools.Universe
->import Math.Tools.Adjunction (swap)
+>import Math.Tools.Adjunction (swap, Adjunction(..))
 >import Math.Tools.Visitor
 >import Math.Tools.Show
 >import Math.Tools.Median
@@ -56,6 +56,21 @@ A `intersects` B == (A `intersect` B != {})
 
 >instance Contravariant Prop where
 >   contramap f (Characteristic g) = Characteristic (g Cat.. f)
+
+>prop_substitute :: (Contravariant p) => p a -> p (a,b)
+>prop_substitute = contramap fst
+
+>prop_exists :: (Adjunction f p, Contravariant p) => f (p a) -> (a,b)
+>prop_exists = rightAdjunct (contramap fst)
+>
+>prop_exists_snd :: (Adjunction f p, Contravariant p) => f (p b) -> (a,b)
+>prop_exists_snd = rightAdjunct (contramap snd)
+
+>prop_always :: (Adjunction p g, Contravariant p) => a -> g (p (a,b))
+>prop_always = leftAdjunct (contramap fst)
+
+>prop_always_snd :: (Adjunction p g, Contravariant p) => b -> g (p (a,b))
+>prop_always_snd = leftAdjunct (contramap snd)
 
 reflexive_and_transitive_frames = characteristic (uncurry system_S4)
 reflexive_frames  = characteristic (uncurry system_T)

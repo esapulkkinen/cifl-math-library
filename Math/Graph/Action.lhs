@@ -1,5 +1,6 @@
 >{-# OPTIONS_HADDOCK prune #-}
 >{-# LANGUAGE Safe,FlexibleInstances, MultiParamTypeClasses, TypeOperators #-}
+>{-# LANGUAGE FunctionalDependencies #-}
 >-- | Module: Math.Graph.Action
 >--   Copyright: Esa Pulkkinen, 2018
 >--   License: LGPL
@@ -21,6 +22,16 @@
 
 >-- | See Lawvere,Rosebrugh: Sets for mathematics
 >newtype x :<-: a = Action { runAction :: a -> x }
+
+>class (Contravariant f, Contravariant g) => ContraAdjunction f g | f -> g, g -> f where
+>   contraLeftAdjunct :: (f a :<-: b) -> a :<-: g b
+>   contraRightAdjunct :: (a :<-: g b) -> f a :<-: b
+>   contraUnit :: a :<-: g (f a)
+>   contraCounit :: f (g b) :<-: b
+>   contraUnit = contraLeftAdjunct (Action id)
+>   contraCounit = contraRightAdjunct (Action id)
+
+>infixr 8 =*=
 
 >(=*=) :: x :<-: b -> (a -> b) -> x :<-: a
 >(Action e) =*= m = Action $ e . m

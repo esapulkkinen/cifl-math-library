@@ -5,7 +5,7 @@
 >{-# LANGUAGE UnicodeSyntax, DeriveGeneric, DeriveDataTypeable #-}
 >{-# LANGUAGE ConstraintKinds, UndecidableInstances, OverloadedStrings #-}
 >{-# LANGUAGE QuantifiedConstraints #-}
->{-# LANGUAGE GADTs, AllowAmbiguousTypes #-}
+>{-# LANGUAGE GADTs, AllowAmbiguousTypes, PolyKinds #-}
 >-- | These should match standard definitions of vector spaces.
 >-- Used for reference: K. Chandrasekhara Rao: Functional Analysis.
 >-- also see Warner: Modern algebra.
@@ -29,6 +29,7 @@
 >import safe qualified Control.Applicative as Applicative
 >import safe Control.Monad.Fix (fix)
 >import safe Control.Monad (join, MonadPlus(..))
+>import safe Data.Functor.Contravariant
 >import safe Math.Tools.PrettyP
 >import safe Math.Tools.Visitor
 >import safe Math.Tools.FixedPoint
@@ -83,6 +84,29 @@ cells_linear = cells . fromLinear
 >matrix :: (Functor m, Functor n) => (a -> b -> c) -> m a -> n b -> (m :*: n) c
 >matrix f x = \y -> Matrix $ flip fmap x $ \a -> 
 >                            flip fmap y $ \b -> f a b
+
+>inverse_matrix :: (Contravariant m, Contravariant n)
+> => (g a -> c -> b) -> m (n c) -> n b -> (m :*: g) a
+>inverse_matrix f x y = Matrix $ flip inverse_image x $ \a ->
+>                                flip inverse_image y $ \b -> f a b
+
+>left_inverse_matrix :: (Contravariant m, Functor n)
+>  => (g a -> c -> b) -> m (n b) -> n c -> (m :*: g) a
+>left_inverse_matrix f x y = Matrix $ flip inverse_image x $ \a ->
+>                                     flip fmap y $ \b -> f a b
+
+>right_inverse_matrix :: (Functor m, Contravariant n)
+>  => (t -> a -> b) -> m t -> n b -> (m :*: n) a
+>right_inverse_matrix f x y = Matrix $ flip fmap x $ \a ->
+>                                      flip inverse_image y $ \b -> f a b
+
+>inverse_fix :: (Contravariant p) => (a -> a) -> p a
+>inverse_fix f = let x = x |>> f in x
+
+>inverse_fix2 :: (Contravariant p) => (a -> b) -> (b -> a) -> p a
+>inverse_fix2 f g = let x = y |>> f
+>                       y = x |>> g
+>                    in x
 
 >matrix_compose :: (Functor m, Functor n, Category cat)
 >               => m (cat b c) -> n (cat a b) -> (m :*: n) (cat a c)
@@ -197,8 +221,14 @@ lie_compose :: (Indexable m, Indexable n, LinearTransform m g a, Diagonalizable 
 lie_compose m1 m2 = linmatrix (bilinear (%<>%)) (cells_linear m1, (cells_linear $ transpose m2))
   
 
+>-- | norm_squared is an optimization that often avoids computing square root
 >class (VectorSpace m) => NormedSpace m where
 >  norm :: m -> Scalar m
+>  norm_squared :: m -> Scalar m
+>  norm_squared x = let x2 = norm x in x2*x2
+>  default norm :: (Floating (Scalar m)) => m -> Scalar m
+>  norm x = sqrt (norm_squared x)
+>  {-# MINIMAL norm | norm_squared #-}
 
 >-- | This computes norm of each row, then computes the norm of the resulting column vector.
 >matrix_norm :: (Functor f, NormedSpace (g a), NormedSpace (f (Scalar (g a))))
@@ -213,6 +243,7 @@ lie_compose m1 m2 = linmatrix (bilinear (%<>%)) (cells_linear m1, (cells_linear 
 >class (Scalar (m a) ~ Scalar (n a), Functor m, Functor n) => LinearTransform m n a where
 >  (<*>>) :: n a -> (m :*: n) a -> m a -- ^ vector times matrix
 >  (<<*>) :: (m :*: n) a -> m a -> n a -- ^ matrix times vector
+
 
 >data Lin b c where
 >  Lin :: (f :*: g) a -> Lin (f a) (g a)
@@ -256,7 +287,9 @@ transpose :: (Diagonalizable n a, LinearTransform n m a, LinearTransform m n a, 
 >update_row f row (Matrix m) = Matrix $ f row m
 
 >-- | Example use:
+>-- 
 >-- > write_column (Vector3 3 4 5) `ycoord3` identity3 == [[1,3,0],[0,4,0],[0,5,1]]
+>-- 
 >class UpdateableMatrixDimension f where
 >  write_row    :: (Applicative h) => h a -> f ((f :*: h) a -> (f :*: h) a)
 >  write_column :: (Applicative h) => h a -> f ((h :*: f) a -> (h :*: f) a)
@@ -361,7 +394,7 @@ codiagonal :: (Num a, Diagonalizable m a, LinearTransform m m a, CodiagonalMatri
 codiagonal = codiagonal_impl . fromLinear
 
 >-- | NOTICE: Linearizable instances for matrices that have similar dimensions are special.
->class Linearizable arr prod f g a | arr -> prod where
+>class (Category arr) => Linearizable arr prod f g a | arr -> prod where
 >   fromLinear :: arr (f a) (g a) -> (prod f g) a
 >   linear :: (prod f g) a -> arr (f a) (g a)
 
@@ -372,7 +405,7 @@ codiagonal = codiagonal_impl . fromLinear
 >  vector_dimension :: m a -> a
 >  vector_dimension (f :: m a) = trace_impl (identity :: (m :*: m) a)
 
->class (Traceable m a) => LinearTraceable arr m a where
+>class (Category arr,Traceable m a) => LinearTraceable arr m a where
 >  determinant :: arr (m a) (m a) -> a
 >  trace       :: arr (m a) (m a) -> a
 >  default determinant :: (Linearizable arr (:*:) m m a) => arr (m a) (m a) -> a
@@ -381,7 +414,7 @@ codiagonal = codiagonal_impl . fromLinear
 >  trace = trace_impl . fromLinear
 
 >-- | <http://en.wikipedia.org/wiki/Adjugate>
->-- \(cofactor(A) = |A|(A^{-1})^T\) <https://en.wikipedia.org/wiki/Cross_product>
+>-- \({\mathsf{cofactor}}(A) = |A|(A^{-1})^{\top}\) <https://en.wikipedia.org/wiki/Cross_product>
 >class (Traceable m a) => Invertible m a where
 >   cofactor_impl :: (m :*: m) a -> (m :*: m) a
 >   adjucate_impl :: (m :*: m) a -> (m :*: m) a
@@ -398,7 +431,7 @@ codiagonal = codiagonal_impl . fromLinear
 >   adjucate = linear . adjucate_impl . fromLinear
 >   inverse  = linear . inverse_impl . fromLinear
 
->-- | this computes \(f(A) = A^{-1}^T\)
+>-- | this computes \[f(A) = (A^{-1})^{\top}\]
 >-- it's used to compute dual basis for a set of basis vectors.
 >dual_basis_impl :: (Invertible m a) => (m :*: m) a -> (m :*: m) a
 >dual_basis_impl a = transpose_impl (inverse_impl a)
@@ -464,7 +497,7 @@ is_unitary m = conj -!< m == inverse m
 >--   <https://en.wikipedia.org/wiki/Directional_derivative>
 >-- Notice: for directional derivative,
 >-- the direction is not automatically normalized, since that needs NormedSpace
->class (VectorSpace v) => VectorDerivative v d arr | d -> arr where
+>class (VectorSpace v) => VectorDerivative v d arr | d -> arr, v arr -> d where
 >  divergence :: arr v v -> d v  -- (Del %. f)(v)
 >  grad       :: d v -> arr v v    -- (Del f)(v)
 >  directional_derivative :: v -> d v -> d v -- (v %. Del f)(x)
@@ -478,7 +511,6 @@ is_unitary m = conj -!< m == inverse m
 >   => v -> d v -> d v
 >normalized_directional_derivative v d =
 >   directional_derivative ((1/norm v) %* v) d
-> 
 
 >-- | <https://en.wikipedia.org/wiki/Curl_(mathematics)>
 >class VectorCrossProduct v arr where
@@ -489,7 +521,7 @@ is_unitary m = conj -!< m == inverse m
 >  vector_laplace :: arr v v -> arr v v -- (Del^2 A)(v)
 
   default vector_laplace :: (VectorCrossProduct v arr) => arr v v -> arr v v
-  vector_laplace a = grad (divergence a) %- curl (curl a)
+
 
 >class (Functor f) => ProjectionDual f d a where
 >   projection_dual :: f (d (f a))
@@ -555,6 +587,10 @@ cross_product_matrix a = linear $ Matrix $ fmap (%<>% a) $ cells (identity $ vec
 >innerproductspace_norm :: (Floating (Scalar m), InnerProductSpace m)
 >                       => m -> Scalar m
 >innerproductspace_norm v = sqrt (v %. v)
+
+>innerproductspace_norm_squared :: (Floating (Scalar m), InnerProductSpace m)
+>         => m -> Scalar m
+>innerproductspace_norm_squared v = v %. v
 
 >vsum :: (Foldable t, VectorSpace a) => t a -> a
 >vsum = foldr (%+) vzero
@@ -852,16 +888,16 @@ instance Diagonalizable Stream Integer where
 >instance (Num a) => StandardBasis (Complex a) where
 >   unit_vectors = [(1 :+ 0), (0 :+ 1)]
 
->instance (Num a) => VectorSpace (Maybe a) where
->   type Scalar (Maybe a) = a
->   vzero = Nothing
->   vnegate = maybe Nothing (Just . negate)
->   x %+ y = liftA2 (+) x y
->   a %* x = fmap (a *) x
+>instance (VectorSpace a) => VectorSpace (Maybe a) where
+>   type Scalar (Maybe a) = Scalar a
+>   vzero = Just vzero
+>   vnegate = maybe Nothing (Just . vnegate)
+>   x %+ y = liftA2 (%+) x y
+>   a %* x = fmap (a %*) x
 
->instance (Num a) => NormedSpace (Maybe a) where
+>instance (Num (Scalar a), NormedSpace a) => NormedSpace (Maybe a) where
 >   norm Nothing = 0
->   norm (Just x) = abs x
+>   norm (Just x) = norm x
 
 >instance NormedSpace Integer where { norm = abs }
 >instance NormedSpace Int where { norm = abs }
@@ -1142,6 +1178,8 @@ example use: m <!> (xcoord3,ycoord3)
 >instance (Monad f, Monad g, forall b. Transposable g f b) => Monad (f :*: g) where
 >   return = Matrix . return . return
 >   v >>= f = join_matrix $ fmap f v
+
+>instance (forall b. Transposable g f b, MonadFail f, MonadFail g) => MonadFail (f :*: g) where
 >   fail msg = Matrix $ fmap (const $ fail msg) (fail msg)
 
 >join_matrix :: (Monad g, Monad f, forall b. Transposable g f b)

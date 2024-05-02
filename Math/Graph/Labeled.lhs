@@ -15,7 +15,7 @@
 >data LGraph lbl mon a = LGraph { lgraph_basegraph :: Graph mon a,
 >                                 lgraph_labels :: a :==: lbl }
 >
->labelsFromMaps :: (Ord a, Ord lbl, Monad m) => Map lbl a -> Map a lbl
+>labelsFromMaps :: (Ord a, Ord lbl, MonadFail m) => Map lbl a -> Map a lbl
 >              -> Graph mon a -> m (LGraph lbl mon a)
 >labelsFromMaps m n g = orderedMapIso n m >>= (return . LGraph g)
 
@@ -72,7 +72,6 @@
 >   (InLGraphM f) <*> (InLGraphM x) = InLGraphM (f <*> x)
 
 >instance (Monad m) => Monad (InLGraphM mon lbl e m) where
->   return = InLGraphM . return
 >   (InLGraphM f) >>= g = InLGraphM (f >>= (runInLGraphM . g))
 
 >instance MonadTrans (InLGraphM mon lbl e) where

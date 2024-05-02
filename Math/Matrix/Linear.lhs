@@ -1,7 +1,7 @@
 >-- -*- coding: utf-8 -*-
 >{-# LANGUAGE Safe, GADTs, RankNTypes, TypeOperators, ScopedTypeVariables #-}
 >{-# LANGUAGE FlexibleInstances, MultiParamTypeClasses #-}
->{-# LANGUAGE FlexibleContexts, TypeFamilies #-}
+>{-# LANGUAGE FlexibleContexts, TypeFamilies, PolyKinds #-}
 >{-# LANGUAGE UndecidableInstances, Arrows #-}
 >{-# LANGUAGE DeriveGeneric, StandaloneDeriving, InstanceSigs #-}
 >{-# LANGUAGE TypeApplications, QuantifiedConstraints, AllowAmbiguousTypes #-}
@@ -62,11 +62,11 @@
 >   Mat2D :: (Num a, ConjugateSymmetric a) => (Vector2 :*: Dual) (f a) -> LinearMap (Vector2 (f a)) (Dual (f a))
 >   Mat3D :: (Num a, ConjugateSymmetric a) => (Vector3 :*: Dual) (f a) -> LinearMap (Vector3 (f a)) (Dual (f a))
 >   Mat4D :: (Num a, ConjugateSymmetric a) => (Vector4 :*: Dual) (f a) -> LinearMap (Vector4 (f a)) (Dual (f a))
->   MatD1 :: (Num a, ConjugateSymmetric a) => (Dual :*: Vector1) a -> LinearMap (Dual a) (Vector1 a)
->   MatD2 :: (Num a, ConjugateSymmetric a) => (Dual :*: Vector2) a -> LinearMap (Dual a) (Vector2 a)
->   MatD3 :: (Num a, ConjugateSymmetric a) => (Dual :*: Vector3) a -> LinearMap (Dual a) (Vector3 a)
->   MatD4 :: (Num a, ConjugateSymmetric a) => (Dual :*: Vector4) a -> LinearMap (Dual a) (Vector4 a)
->   MatDD :: (Num a, ConjugateSymmetric a) => (Dual :*: Dual) (f a) -> LinearMap (Dual (f a)) (Dual (f a))
+>   MatD1 :: (Scalar a ~ a, Num a, ConjugateSymmetric a) => (Dual :*: Vector1) a -> LinearMap (Dual a) (Vector1 a)
+>   MatD2 :: (Scalar a ~ a, Num a, ConjugateSymmetric a) => (Dual :*: Vector2) a -> LinearMap (Dual a) (Vector2 a)
+>   MatD3 :: (Scalar a ~ a, Num a, ConjugateSymmetric a) => (Dual :*: Vector3) a -> LinearMap (Dual a) (Vector3 a)
+>   MatD4 :: (Scalar a ~ a, Num a, ConjugateSymmetric a) => (Dual :*: Vector4) a -> LinearMap (Dual a) (Vector4 a)
+>   MatDD :: (Scalar (f a) ~ f a,Num a, ConjugateSymmetric a) => (Dual :*: Dual) (f a) -> LinearMap (Dual (f a)) (Dual (f a))
 >   MatSS :: (Num a, ConjugateSymmetric a, InnerProductSpace (Stream a)) =>(Stream :*: Stream) a -> LinearMap (Stream a) (Stream a) -- Schauder basis
 >   MatS1 :: (Num a, ConjugateSymmetric a, InnerProductSpace (Stream a)) =>(Stream :*: Vector1) a -> LinearMap (Stream a) (Vector1 a)
 >   MatS2 :: (Num a, ConjugateSymmetric a, InnerProductSpace (Stream a)) =>(Stream :*: Vector2) a -> LinearMap (Stream a) (Vector2 a)
@@ -96,6 +96,18 @@ type (a ⮾ b) = Tensor a b
 
 tensor :: (Functor f, Functor g) => (f a, g b) -> f a ⮾ g b
 tensor (a,b) = Tensor $ matrix (,) a b
+
+>tensor :: (Functor f, Functor g,
+>          Linearizable arr (:*:) f g c)
+>        => ((a,b) -> c) -> (f a, g b) -> arr (f c) (g c)
+>tensor f (a,b) = linear $ matrix (\a' b' -> f (a', b')) a b
+
+>lin_tensor :: (Linearizable arr (:*:) f g (h b),
+>  LinearTransform ((,) a) h c,
+>  Functor f, Functor g)
+> => ((a,c) :-> h b) -> (f a, g c) -> arr (f (h b)) (g (h b))
+>lin_tensor f (a,b) = linear $ matrix (\a' b' -> appLinear f (a', b')) a b
+
 
 >instance (PpShowVerticalF f, LinearTransform f g a, Linearizable LinearMap (:*:) f g a, PpShowF g, PpShow a, Diagonalizable f a) => PpShow (LinearMap (f a) (g a)) where
 >  pp x = pp $ fromLinear x
@@ -157,15 +169,15 @@ tensor (a,b) = Tensor $ matrix (,) a b
 >instance (Num a, ConjugateSymmetric a, Universe row) => Linearizable LinearMap (:*:) ((->) row) Vector2 a where { fromLinear (MatInd2 x) = x ; linear = MatInd2 }
 >instance (Num a, ConjugateSymmetric a, Universe row) => Linearizable LinearMap (:*:) ((->) row) Vector3 a where { fromLinear (MatInd3 x) = x ; linear = MatInd3 }
 >instance (Num a, ConjugateSymmetric a, Universe row) => Linearizable LinearMap (:*:) ((->) row) Vector4 a where { fromLinear (MatInd4 x) = x ; linear = MatInd4 }
->instance (Num a, ConjugateSymmetric a) => Linearizable LinearMap (:*:) Dual Vector1 a where { fromLinear (MatD1 x) = x ; linear = MatD1 }
->instance (Num a, ConjugateSymmetric a) => Linearizable LinearMap (:*:) Dual Vector2 a where { fromLinear (MatD2 x) = x ; linear = MatD2 }
->instance (Num a, ConjugateSymmetric a) => Linearizable LinearMap (:*:) Dual Vector3 a where { fromLinear (MatD3 x) = x ; linear = MatD3 }
->instance (Num a, ConjugateSymmetric a) => Linearizable LinearMap (:*:) Dual Vector4 a where { fromLinear (MatD4 x) = x ; linear = MatD4 }
->instance (Num a, ConjugateSymmetric a, Scalar (f a) ~ a) => Linearizable LinearMap (:*:) Vector1 Dual (f a) where { fromLinear (Mat1D x) = x ; linear = Mat1D }
->instance (Num a, ConjugateSymmetric a, Scalar (f a) ~ a) => Linearizable LinearMap (:*:) Vector2 Dual (f a) where { fromLinear (Mat2D x) = x ; linear = Mat2D }
->instance (Num a, ConjugateSymmetric a, Scalar (f a) ~ a) => Linearizable LinearMap (:*:) Vector3 Dual (f a) where { fromLinear (Mat3D x) = x ; linear = Mat3D }
->instance (Num a, ConjugateSymmetric a, Scalar (f a) ~ a) => Linearizable LinearMap (:*:) Vector4 Dual (f a) where { fromLinear (Mat4D x) = x ; linear = Mat4D }
->instance (Num a, ConjugateSymmetric a, Diagonalizable Dual (f a)) => Linearizable LinearMap (:*:) Dual Dual (f a) where { fromLinear (MatDD x) = x ; fromLinear MatIdentity = identity ; linear = MatDD }
+>instance (Scalar a ~ a, Num a, ConjugateSymmetric a) => Linearizable LinearMap (:*:) Dual Vector1 a where { fromLinear (MatD1 x) = x ; linear = MatD1 }
+>instance (Scalar a ~ a, Num a, ConjugateSymmetric a) => Linearizable LinearMap (:*:) Dual Vector2 a where { fromLinear (MatD2 x) = x ; linear = MatD2 }
+>instance (Scalar a ~ a, Num a, ConjugateSymmetric a) => Linearizable LinearMap (:*:) Dual Vector3 a where { fromLinear (MatD3 x) = x ; linear = MatD3 }
+>instance (Scalar a ~ a, Num a, ConjugateSymmetric a) => Linearizable LinearMap (:*:) Dual Vector4 a where { fromLinear (MatD4 x) = x ; linear = MatD4 }
+>instance (Num a, ConjugateSymmetric a) => Linearizable LinearMap (:*:) Vector1 Dual (f a) where { fromLinear (Mat1D x) = x ; linear = Mat1D }
+>instance (Num a, ConjugateSymmetric a) => Linearizable LinearMap (:*:) Vector2 Dual (f a) where { fromLinear (Mat2D x) = x ; linear = Mat2D }
+>instance (Num a, ConjugateSymmetric a) => Linearizable LinearMap (:*:) Vector3 Dual (f a) where { fromLinear (Mat3D x) = x ; linear = Mat3D }
+>instance (Num a, ConjugateSymmetric a) => Linearizable LinearMap (:*:) Vector4 Dual (f a) where { fromLinear (Mat4D x) = x ; linear = Mat4D }
+>instance (Scalar (f a) ~ f a, Num a, ConjugateSymmetric a, Diagonalizable Dual (f a)) => Linearizable LinearMap (:*:) Dual Dual (f a) where { fromLinear (MatDD x) = x ; fromLinear MatIdentity = identity ; linear = MatDD }
 >instance (Num a, ConjugateSymmetric a, Diagonalizable Stream a, InnerProductSpace (Stream a)) => Linearizable LinearMap (:*:) Stream Stream a where { fromLinear (MatSS x) = x ; fromLinear MatIdentity = identity ; linear = MatSS }
 >instance (Num a, ConjugateSymmetric a,InnerProductSpace (Stream a)) => Linearizable LinearMap (:*:) Stream Vector1 a where { fromLinear (MatS1 x) = x ; linear = MatS1 }
 >instance (Num a, ConjugateSymmetric a,InnerProductSpace (Stream a)) => Linearizable LinearMap (:*:) Stream Vector2 a where { fromLinear (MatS2 x) = x ; linear = MatS2 }
@@ -178,8 +190,9 @@ tensor (a,b) = Tensor $ matrix (,) a b
 
 >-- | Data type for dual vectors. <https://en.wikipedia.org/wiki/Dual_space>
 >data Dual v where
->     Covector :: (f a :-> Vector1 a) -> Dual (f a)
+>     Covector :: (f a :-> Vector1 (Scalar (f a))) -> Dual (f a)
 >  deriving (Typeable)
+
 
 >instance (Num a, ConjugateSymmetric a, Linearizable LinearMap (:*:) f Vector1 a,
 > Diagonalizable f a,
@@ -448,7 +461,7 @@ instance (forall b. VectorSpace (g b), forall b. VectorSpace (f b), Indexable f 
 >   flip fmap ma $ \a ->
 >   flip fmap nb $ \b -> f -!< (a, b)
 
->arrmatrix :: (FunctorArrow f arr, FunctorArrow g arr, ArrowApply arr)
+>arrmatrix :: (FunctorArrow f arr arr, FunctorArrow g arr arr, ArrowApply arr)
 >          => arr (a,b) c -> arr (f a, g b) ((f :*: g) c)
 >arrmatrix f = proc (ma, nb) -> do
 >    res <- amap (proc a -> amap (proc b -> f -< (a,b)) -<< nb) -<< ma
@@ -459,6 +472,10 @@ instance (forall b. VectorSpace (g b), forall b. VectorSpace (f b), Indexable f 
 >  Linearizable LinearMap (:*:) f g a)
 >   => (f a -> f a -> g a) -> f a -> f a -> f a :-> g a
 >bilinear f a b = linear (bilinear_impl f a b)
+
+>dual_map :: (Transposable g f a, Linearizable arr1 (:*:) f g a, Linearizable arr2 (:*:) g f a)
+> => arr2 (g a) (f a) -> arr1 (f a) (g a)
+>dual_map f = linear $ transpose_impl $ fromLinear f
 
 dual_map :: (LinearTransform f I a, Diagonalizable f Integer, a ~ Scalar (f a), a ~ Scalar (g a), VectorSpace (g a), VectorSpace (f a), Diagonalizable f a, LinearTransform f g a)
   => Dual (f a) -> g a -> LinearMap (f a) (g a)
@@ -658,13 +675,29 @@ instance (Num a, a ~ Scalar a) => FiniteDimensional (Vector1 a) Dual I LinearMap
 
 >-- | <https://en.wikipedia.org/wiki/Directional_derivative>
 >-- Note: the direction v is not guaranteed to be normalized.
->directional_derivative_prim :: (Infinitesimal str a, Scalar (v a) ~ a, VectorSpace (v a))
->  => v a -> (v a -> a) -> v a -> Closure str a
+>directional_derivative_prim :: (Infinitesimal str (Scalar (v a)),
+> Fractional (Scalar (v a)), VectorSpace (v a))
+>  => v a -> (v a -> Scalar (v a)) -> v a -> Closure str (Scalar (v a))
 >directional_derivative_prim v f x = let
 >  fx = f x
 > in limit $ do
 >   h <- epsilon_stream
 >   return $ (1/h) * (f (x %+ h %* v) - fx)
+>
+>data Tangent str p where
+> Tangent :: { tangent_base_point :: t, tangent_vector :: Closure str a }
+>         -> Tangent str (t,a)
+
+>vector_directional_derivative_prim ::
+>    (Infinitesimal str (Scalar v), VectorSpace a, VectorSpace v,
+>     Limiting str a, Scalar a ~ Scalar v)
+> =>  v -> (v -> a) -> v -> Tangent str (v, a)
+>vector_directional_derivative_prim v f x = Tangent {
+>  tangent_base_point = x,
+>  tangent_vector = limit $ do
+>               h <- epsilon_stream
+>               return $ (1/h) %* (f (x %+ h %* v) %- fx) }
+> where fx = f x
 
 >-- | <https://en.wikipedia.org/wiki/Directional_derivative>
 >-- Note: the direction v is not guaranteed to be normalized.
@@ -673,6 +706,16 @@ instance (Num a, a ~ Scalar a) => FiniteDimensional (Vector1 a) Dual I LinearMap
 >directional_derivative_impl v (Covector f) = Covector $ arr_linear $
 >   Vector1 . accumulation_point
 >           . directional_derivative_prim v (vector_element . appLinear f)
+
+>vector_directional_derivative ::
+>  (Linearizable LinearMap (:*:) f g a, LinearTransform f g a, 
+>   Diagonalizable f a, Closed (g a),
+>   VectorSpace (g a), VectorSpace (f a),
+>   Infinitesimal Stream (Scalar (f a)))
+>   => f a -> f a :-> g a -> f a :-> g a
+>vector_directional_derivative v g = arr_linear $ 
+>   accumulation_point . tangent_vector .
+>   vector_directional_derivative_prim v (appLinear g) 
 
 >directional_derivative_impl_ ::
 >  (a ~ Scalar (v a), LinearTransform v v a, InnerProductSpace (v a),
@@ -798,6 +841,10 @@ instance (Num a, LinearTransform Dual Vector1 (Vector3 a), ConjugateSymmetric a)
 
 >instance (Closed a, Num a, ConjugateSymmetric a) => VectorLaplacian (Vector3 a) LinearMap where
 >  vector_laplace = vector_laplace3
+
+>default_vector_laplace :: (VectorDerivative v Dual arr, VectorCrossProduct v arr,
+>                  VectorSpace (arr v v)) => arr v v -> arr v v
+>default_vector_laplace a = grad (divergence a) %- curl (curl a)
 
 >vector_laplace3 :: (a ~ Scalar (f a), VectorDerivative (f a) Dual LinearMap,
 > LinearTransform f Vector3 a,
@@ -964,7 +1011,7 @@ instance (Num a, LinearTransform Dual Vector1 (Vector3 a), ConjugateSymmetric a)
 >  => f a :-> g a -> (g a -> f b :-> h b) -> f b :-> h b
 >lin_bind m f = linear $ mat_bind (fromLinear m) (fromLinear . f)
 
->covector_impl :: (Linearizable LinearMap (:*:) f Vector1 b, Diagonalizable f b) => (f b -> b) -> Dual (f b)
+>covector_impl :: (Linearizable LinearMap (:*:) f Vector1 b, Scalar (f b) ~ b, Diagonalizable f b) => (f b -> b) -> Dual (f b)
 >covector_impl f = Covector (arr_linear (Vector1 . f))
 
 >linear_outer_product_ a b = arr_linear (Math.Matrix.Interface.outer a b)
@@ -976,7 +1023,7 @@ instance (Num a, LinearTransform Dual Vector1 (Vector3 a), ConjugateSymmetric a)
 >arr_natural :: (Linearizable arr (:*:) f g a, Diagonalizable f a) => f :~> g -> arr (f a) (g a)
 >arr_natural (NatTrans m) = arr_linear m
 
->bracketMap :: Dual (f a) -> f a :-> Vector1 a
+>bracketMap :: Dual (f a) -> f a :-> Vector1 (Scalar (f a))
 >bracketMap (Covector f) = f
 
 >bracket_impl :: (LinearTransform f Vector1 a) => Dual (f a) -> f a -> a

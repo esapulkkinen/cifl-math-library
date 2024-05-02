@@ -192,7 +192,7 @@
 >isTargetVertexM element = targetM element >>= \s -> return (s == element)
 
 >isVertexM :: (GraphMonoid mon Bool, Monad m, Eq e) => e -> InGraphM mon e m Bool
->isVertexM e = liftM2 (&&) (isSourceVertexM e) (isTargetVertexM e)
+>isVertexM e = liftA2 (&&) (isSourceVertexM e) (isTargetVertexM e)
 
 >isEdgeM :: (GraphMonoid mon Bool, Monad m, Eq e) => e -> InGraphM mon e m Bool
 >isEdgeM element = isVertexM element >>= (return . not)
@@ -218,6 +218,10 @@
 >isOneLaneLoopM :: (Eq e, Monad m, ReversibleGraphMonoid mon Bool)
 >               => e -> InGraphM mon e m Bool
 >isOneLaneLoopM edge = inverseM edge >>= \ie -> return (ie == edge)
+
+>isBandM :: (Eq e, Monad m, ReversibleGraphMonoid mon Bool)
+>        => e -> InGraphM mon e m Bool
+>isBandM edge = inverseM edge >>= \ie -> return (ie /= edge)
 
 >instance (Ord a, GraphMonoid m Bool) => Visitor (Graph m a) where
 >   data Fold (Graph m a) b = GraphFold {

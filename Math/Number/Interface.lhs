@@ -9,6 +9,7 @@
 >import safe Math.Matrix.Interface
 >import safe Math.Tools.CoFunctor
 >import qualified Data.Complex
+>import Data.Complex (Complex( (:+) ), realPart, imagPart)
 
 >nthroot :: (Floating a) => a -> a -> a
 >nthroot x k = exp (log x / k)
@@ -58,6 +59,9 @@
 >instance RationalRoots Double where
 >   rational_power x r = x ** (fromRational r)
 
+>instance RationalRoots (Complex Double) where
+>   rational_power x r = x ** (fromRational r)
+
 >class (Num r) => DifferentiallyClosed r where
 >   derivate :: (r -> r) -> r -> r
 >   integral :: (r,r) -> (r -> r) -> r
@@ -68,6 +72,16 @@
 
 >derivate_vector :: (Applicative t, DifferentiallyClosed r) => t (r -> r) -> t r -> t r
 >derivate_vector = liftA2 derivate
+
+>-- | <https://en.wikipedia.org/wiki/Wirtinger_derivatives>
+>complex_derivate :: (RealFloat r, Closed r)
+>                 => (Complex r -> Complex r) -> Complex r -> Complex r
+>complex_derivate f z =
+>                   (partial_derivate (\eps z' -> z' + (eps :+ 0))
+>                                     (realPart . f) z)/2
+>                :+ (negate $ (partial_derivate
+>                                     (\eps z' -> z' + (0 :+ eps))
+>                                     (imagPart . f) z) / 2)
 
 >class DifferentialOperator t where
 >   partial :: (DifferentiallyClosed a) => (t a -> a) -> t a -> t a
@@ -269,3 +283,17 @@
 >   x %< y = x < y
 >   x <% y = x < y
 
+>instance Infinitary Double where
+>  infinite = 1/(0 :: Double)
+
+>instance Infinitary Float where
+>  infinite = 1/(0 :: Float)
+
+>instance PotentiallyInfinite Double where
+>  is_infinite = isInfinite
+
+>instance PotentiallyInfinite Float where
+>  is_infinite = isInfinite
+
+>liftInverse :: (Fractional a, Fractional b) => (a -> b) -> a -> b
+>liftInverse f x = 1 / (f (1 / x))

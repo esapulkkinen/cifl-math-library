@@ -2,6 +2,7 @@
 >{-# LANGUAGE TypeFamilies, TypeFamilyDependencies, GADTs, DataKinds, PolyKinds, StandaloneDeriving #-}
 >{-# LANGUAGE FlexibleContexts, DerivingStrategies, GeneralizedNewtypeDeriving, TypeFamilyDependencies #-}
 >{-# LANGUAGE FlexibleInstances, DeriveGeneric, DeriveDataTypeable #-}
+>{-# LANGUAGE UndecidableInstances #-}
 >module Math.Number.TypeUnits where
 >import Data.Kind
 >import Math.Matrix.Interface
@@ -11,6 +12,8 @@
 >import Data.Typeable
 >import Data.Data
 >import GHC.Generics
+>import GHC.Types
+>import GHC.TypeLits hiding (SNat)
 
 >data DDimension = DDimension {
 >   dlength_power :: SNat, -- meters
@@ -22,6 +25,9 @@
 >   dsubstance_power :: SNat, -- moles
 >   dcircular_power :: SNat -- radians
 > }
+>
+>
+> 
 >type DDimensionless = 'DDimension 'Ze 'Ze 'Ze 'Ze 'Ze 'Ze 'Ze 'Ze
 >type DLength = 'DDimension SOne 'Ze 'Ze 'Ze 'Ze 'Ze 'Ze 'Ze
 >type DWeight = 'DDimension 'Ze SOne 'Ze 'Ze 'Ze 'Ze 'Ze 'Ze
@@ -66,6 +72,22 @@
 >type DEquivalentDose = 'DDimension ('SNegate STwo) ('SNegate SOne) SThree STwo 'Ze 'Ze 'Ze 'Ze
 >type DCatalyticActivity = 'DDimension 'Ze ('SNegate SOne) 'Ze 'Ze 'Ze 'Ze SOne 'Ze
 
+>type family DimensionPower (a :: DDimension) (n :: Nat) :: DDimension
+>type instance DimensionPower a 0 = DDimensionless
+>type instance DimensionPower a 1 = a
+>type instance DimensionPower a 2 = DimensionPlus a a
+>type instance DimensionPower a 3 = DimensionPlus a (DimensionPower a 2)
+>type instance DimensionPower a 4 = DimensionPlus a (DimensionPower a 3)
+>type instance DimensionPower a 5 = DimensionPlus a (DimensionPower a 4)
+>type instance DimensionPower a 6 = DimensionPlus a (DimensionPower a 5)
+>type instance DimensionPower a 7 = DimensionPlus a (DimensionPower a 6)
+
+>type family DimensionNegativePower (a :: DDimension) (n :: Nat) :: DDimension
+>type instance DimensionNegativePower a n = DimensionInverse (DimensionPower a n)
+
+>type family DimensionInverse (a :: DDimension) :: DDimension
+>type instance DimensionInverse a = DimensionMinus DDimensionless a
+
 >type family DimensionPlus (a :: DDimension) (b :: DDimension) :: DDimension
 >type instance DimensionPlus ('DDimension a1 a2 a3 a4 a5 a6 a7 a8) ('DDimension b1 b2 b3 b4 b5 b6 b7 b8) =
 >       'DDimension (SPlus a1 b1) (SPlus a2 b2) (SPlus a3 b3) (SPlus a4 b4) (SPlus a5 b5) (SPlus a6 b6) (SPlus a7 b7) (SPlus a8 b8)
@@ -76,14 +98,14 @@
 >unit_multiply :: (Scalar (DUnit (DimensionPlus u u')) ~ Double,
 >     Scalar (DUnit u) ~ Double,
 >     Scalar (DUnit u') ~ Double,
->     Unit (DUnit u), Unit (DUnit u'), Unit (DUnit (DimensionPlus u u')))
+>     Unit (DUnit u), Unit (DUnit u'), LiteralUnit (DUnit (DimensionPlus u u')))
 >  => DUnit u -> DUnit u' -> DUnit (DimensionPlus u u')
 >unit_multiply a b = fromAmount (amount a * amount b) 
 
 >unit_divide :: (Scalar (DUnit (DimensionMinus u u')) ~ Double,
 >     Scalar (DUnit u) ~ Double,
 >     Scalar (DUnit u') ~ Double,
->     Unit (DUnit u), Unit (DUnit u'), Unit (DUnit (DimensionMinus u u')))
+>     Unit (DUnit u), Unit (DUnit u'), LiteralUnit (DUnit (DimensionMinus u u')))
 >  => DUnit u -> DUnit u' -> DUnit (DimensionMinus u u')
 >unit_divide a b = fromAmount (amount a / amount b)
 
@@ -92,9 +114,31 @@
 
 >full_circle_angle :: DUnit DAngle
 >full_circle_angle = DAngle $ Radians (2 * pi)
-> 
+>
+>type family (:#:) a (dim :: [DDimension])
+>type instance (:#:) Double '[] = DUnit DDimensionless
+>type instance (:#:) Double (a ': '[]) = DUnit a
+>type instance (:#:) d (a ': b ': cr) = d :#: (DimensionPlus a b ': cr)
+>
+>type family (:/:) a (dim :: [DDimension])
+>type instance (:/:) a '[] = a
+>type instance (:/:) (DUnit a) (b ': '[]) = DUnit (DimensionMinus a b)
+>type instance (:/:) a (b ': c ': cr) = a :/: (DimensionPlus b c ': cr)
+>
+>type family (:++) (a :: [k]) (b :: [k]) :: [k]
+>type instance (:++) '[] b = b
+>type instance (:++) (a ': ar) b = a ': (ar :++ b)
+
+(*%%%) :: (Scalar (Double :#: lst) ~ Scalar (Double :#: lst')
+       , Scalar (Double :#: lst) ~ Scalar (Double :#: (lst :++ lst'))
+       , Unit (Double :#: lst), Unit (Double :#: lst')
+       , Unit (Double :#: (lst :++ lst'))
+       , LiteralUnit (Double :#: (lst :++ lst'))
+ )
+  => Double :#: lst -> Double :#: lst' -> Double :#: (lst :++ lst')
+a *%%% b = fromAmount (amount a * amount b)
+ 
 >data family DUnit (u :: DDimension)
->-- | DDimensionlessZero is needed to avoid type error in vzero.
 >data instance DUnit DAngle = DAngle Angle
 >                           | DDegreesAngle DegreesAngle
 >                           | DAngleZero
@@ -103,6 +147,8 @@
 >newtype instance DUnit DSolidAngle = DSolidAngle SolidAngle
 >   deriving (Show, Read,Eq)
 >   deriving newtype (VectorSpace)
+
+>-- | DDimensionlessZero is needed to avoid type error in vzero.
 >data instance DUnit DDimensionless = DDimensionless Dimensionless
 >                                   | DInformation Information
 >                                   | DSoundLevel SoundLevel
@@ -160,6 +206,12 @@
 >newtype instance DUnit DCurrent = DCurrent Current
 >   deriving (Show, Read,Eq)
 >   deriving newtype (VectorSpace)
+>newtype instance DUnit DVelocity = DVelocity Velocity
+>   deriving (Show, Read, Eq)
+>   deriving newtype (VectorSpace)
+>newtype instance DUnit DAcceleration = DAcceleration Acceleration
+>   deriving (Show, Read, Eq)
+>   deriving newtype (VectorSpace, LiteralUnit)
 >data instance DUnit DTemperature = DDegreesFahrenheit DegreesFahrenheit
 >                                 | DDegreesCelcius DegreesTemperature
 >                                 | DDegreesKelvin Temperature
@@ -266,7 +318,7 @@
 >   k %* DZeroConductance = DZeroConductance
 >newtype instance DUnit DFlux = DFlux Flux
 >   deriving (Show, Read,Eq)
->   deriving newtype (VectorSpace)
+>   deriving newtype (VectorSpace, LiteralUnit)
 >newtype instance DUnit DFluxDensity = DFluxDensity FluxDensity
 >   deriving (Show, Read,Eq)
 >   deriving newtype (VectorSpace)
@@ -288,155 +340,184 @@
 
 >instance Unit (DUnit DLength) where
 >  amount (DLength x) = amount x
->  fromAmount s = DLength (fromAmount s)
 >  fromQuantity q = fromQuantity q >>= (return . DLength)
 >  unitOf (DLength x) = unitOf x
 >  dimension (DLength x) = dimension x
+>instance LiteralUnit (DUnit DLength) where
+>  fromAmount s = DLength (fromAmount s)
 
 >instance Unit (DUnit DTime) where
 >  amount (DTime x) = amount x
->  fromAmount s = DTime (fromAmount s)
 >  fromQuantity q = fromQuantity q >>= (return . DTime)
 >  unitOf (DTime x) = unitOf x
 >  dimension (DTime x) = dimension x
-
+>instance LiteralUnit (DUnit DTime) where
+>  fromAmount s = DTime (fromAmount s)
+> 
 >instance Unit (DUnit DSquareLength) where
 >   amount (DSquareLength a) = amount a
->   fromAmount s = DSquareLength (fromAmount s)
 >   fromQuantity q = fromQuantity q >>= (return . DSquareLength)
 >   unitOf (DSquareLength x) = unitOf x
 >   dimension (DSquareLength x) = dimension x
+>instance LiteralUnit (DUnit DSquareLength) where
+>   fromAmount s = DSquareLength (fromAmount s)
 
 >instance Unit (DUnit DCubicLength) where
 >   amount (DCubicLength a) = amount a
->   fromAmount s = DCubicLength (fromAmount s)
 >   fromQuantity q = fromQuantity q >>= (return . DCubicLength)
 >   unitOf (DCubicLength x) = unitOf x
 >   dimension (DCubicLength x) = dimension x
+>instance LiteralUnit (DUnit DCubicLength) where
+>   fromAmount s = DCubicLength (fromAmount s)
 
 >instance Unit (DUnit DMass) where
 >   amount (DMass a) = amount a
->   fromAmount s = DMass (fromAmount s)
 >   fromQuantity q = fromQuantity q >>= (return . DMass)
 >   unitOf (DMass x) = unitOf x
 >   dimension (DMass x) = dimension x
-
+>instance LiteralUnit (DUnit DMass) where
+>   fromAmount s = DMass (fromAmount s)
+> 
 >instance Unit (DUnit DCurrent) where
 >   amount (DCurrent a) = amount a
->   fromAmount s = DCurrent (fromAmount s)
 >   fromQuantity q = fromQuantity q >>= (return . DCurrent)
 >   unitOf (DCurrent x) = unitOf x
 >   dimension (DCurrent x) = dimension x
+>instance LiteralUnit (DUnit DCurrent) where
+>   fromAmount s = DCurrent (fromAmount s)
+
+>instance Unit (DUnit DVelocity) where
+>   amount (DVelocity x) = amount x
+>   fromQuantity q = fromQuantity q >>= (return . DVelocity)
+>   unitOf (DVelocity x) = unitOf x
+>   dimension (DVelocity x) = dimension x
+>instance LiteralUnit (DUnit DVelocity) where
+>   fromAmount s = DVelocity (fromAmount s)
+>
+>instance Unit (DUnit DAcceleration) where
+>   amount (DAcceleration x) = amount x
+>   fromQuantity q = fromQuantity q >>= (return . DAcceleration)
+>   unitOf (DAcceleration x) = unitOf x
+>   dimension (DAcceleration x) = dimension x
+
+instance LiteralUnit (DUnit DAcceleration) where
+   fromAmount s = DAcceleration (fromAmount s)
 
 >instance Unit (DUnit DSubstance) where
 >   amount (DSubstance a) = amount a
->   fromAmount s = DSubstance (fromAmount s)
 >   fromQuantity q = fromQuantity q >>= (return . DSubstance)
 >   unitOf (DSubstance x) = unitOf x
 >   dimension (DSubstance x) = dimension x
-
+>instance LiteralUnit (DUnit DSubstance) where
+>   fromAmount s = DSubstance (fromAmount s)
+> 
 >instance Unit (DUnit DFrequency) where
 >   amount (DFrequency a) = amount a
->   fromAmount s = DFrequency (fromAmount s)
 >   fromQuantity q = fromQuantity q >>= (return . DFrequency)
 >   unitOf (DFrequency x) = unitOf x
 >   dimension (DFrequency x) = dimension x
+>instance LiteralUnit (DUnit DFrequency) where
+>   fromAmount s = DFrequency (fromAmount s)
 
 >instance Unit (DUnit DForce) where
 >   amount (DForce a) = amount a
->   fromAmount s = DForce (fromAmount s)
 >   fromQuantity q = fromQuantity q >>= (return . DForce)
 >   unitOf (DForce x) = unitOf x
 >   dimension (DForce x) = dimension x
-
+>instance LiteralUnit (DUnit DForce) where
+>   fromAmount s = DForce (fromAmount s)
 >instance Unit (DUnit DPressure) where
 >   amount (DPressure a) = amount a
->   fromAmount s = DPressure (fromAmount s)
 >   fromQuantity q = fromQuantity q >>= (return . DPressure)
 >   unitOf (DPressure x) = unitOf x
 >   dimension (DPressure x) = dimension x
-
+>instance LiteralUnit (DUnit DPressure) where
+>   fromAmount s = DPressure (fromAmount s)
 >instance Unit (DUnit DPower) where
 >   amount (DPower a) = amount a
->   fromAmount s = DPower (fromAmount s)
 >   fromQuantity q = fromQuantity q >>= (return . DPower)
 >   unitOf (DPower x) = unitOf x
 >   dimension (DPower x) = dimension x
-
+>instance LiteralUnit (DUnit DPower) where
+>   fromAmount s = DPower (fromAmount s)
 >instance Unit (DUnit DCharge) where
 >   amount (DCharge a) = amount a
->   fromAmount s = DCharge (fromAmount s)
 >   fromQuantity q = fromQuantity q >>= (return . DCharge)
 >   unitOf (DCharge x) = unitOf x
 >   dimension (DCharge x) = dimension x
-
+>instance LiteralUnit (DUnit DCharge) where
+>   fromAmount s = DCharge (fromAmount s)
 >instance Unit (DUnit DVoltage) where
 >   amount (DVoltage a) = amount a
->   fromAmount s = DVoltage (fromAmount s)
 >   fromQuantity q = fromQuantity q >>= (return . DVoltage)
 >   unitOf (DVoltage x) = unitOf x
 >   dimension (DVoltage x) = dimension x
-
+>instance LiteralUnit (DUnit DVoltage) where
+>   fromAmount s = DVoltage (fromAmount s)
 >instance Unit (DUnit DCapacitance) where
 >   amount (DCapacitance a) = amount a
->   fromAmount s = DCapacitance (fromAmount s)
 >   fromQuantity q = fromQuantity q >>= (return . DCapacitance)
 >   unitOf (DCapacitance x) = unitOf x
 >   dimension (DCapacitance x) = dimension x
-
+>instance LiteralUnit (DUnit DCapacitance) where
+>   fromAmount s = DCapacitance (fromAmount s)
 >instance Unit (DUnit DResistance) where
 >   amount (DResistance a) = amount a
->   fromAmount s = DResistance (fromAmount s)
 >   fromQuantity q = fromQuantity q >>= (return . DResistance)
 >   unitOf (DResistance x) = unitOf x
 >   dimension (DResistance x) = dimension x
-
+>instance LiteralUnit (DUnit DResistance) where
+>   fromAmount s = DResistance (fromAmount s)
 >instance Unit (DUnit DFlux) where
 >   amount (DFlux a) = amount a
->   fromAmount s = DFlux (fromAmount s)
 >   fromQuantity q = fromQuantity q >>= (return . DFlux)
 >   unitOf (DFlux x) = unitOf x
 >   dimension (DFlux x) = dimension x
 
+instance LiteralUnit (DUnit DFlux) where
+   fromAmount s = DFlux (fromAmount s)
+
 >instance Unit (DUnit DFluxDensity) where
 >   amount (DFluxDensity a) = amount a
->   fromAmount s = DFluxDensity (fromAmount s)
 >   fromQuantity q = fromQuantity q >>= (return . DFluxDensity)
 >   unitOf (DFluxDensity x) = unitOf x
 >   dimension (DFluxDensity x) = dimension x
-
+>instance LiteralUnit (DUnit DFluxDensity) where
+>   fromAmount s = DFluxDensity (fromAmount s)
 >instance Unit (DUnit DInductance) where
 >   amount (DInductance a) = amount a
->   fromAmount s = DInductance (fromAmount s)
 >   fromQuantity q = fromQuantity q >>= (return . DInductance)
 >   unitOf (DInductance x) = unitOf x
 >   dimension (DInductance x) = dimension x
-
+>instance LiteralUnit (DUnit DInductance) where
+>   fromAmount s = DInductance (fromAmount s)
 >instance Unit (DUnit DIlluminance) where
 >   amount (DIlluminance a) = amount a
->   fromAmount s = DIlluminance (fromAmount s)
 >   fromQuantity q = fromQuantity q >>= (return . DIlluminance)
 >   unitOf (DIlluminance x) = unitOf x
 >   dimension (DIlluminance x) = dimension x
-
+>instance LiteralUnit (DUnit DIlluminance) where
+>   fromAmount s = DIlluminance (fromAmount s)
 >instance Unit (DUnit DRadioactivity) where
 >   amount (DRadioactivity a) = amount a
->   fromAmount s = DRadioactivity (fromAmount s)
 >   fromQuantity q = fromQuantity q >>= (return . DRadioactivity)
 >   unitOf (DRadioactivity x) = unitOf x
 >   dimension (DRadioactivity x) = dimension x
+>instance LiteralUnit (DUnit DRadioactivity) where
+>   fromAmount s = DRadioactivity (fromAmount s)
 
 >instance Unit (DUnit DAbsorbedDose) where
 >   amount (DAbsorbedDose a) = amount a
->   fromAmount s = DAbsorbedDose (fromAmount s)
 >   fromQuantity q = fromQuantity q >>= (return . DAbsorbedDose)
 >   unitOf (DAbsorbedDose x) = unitOf x
 >   dimension (DAbsorbedDose x) = dimension x
+>instance LiteralUnit (DUnit DAbsorbedDose) where
+>   fromAmount s = DAbsorbedDose (fromAmount s)
 
 >instance Unit (DUnit DCatalyticActivity) where
 >   amount (DCatalyticActivity a) = amount a
->   fromAmount s = DCatalyticActivity (fromAmount s)
 >   fromQuantity q = fromQuantity q >>= (return . DCatalyticActivity)
 >   unitOf (DCatalyticActivity x) = unitOf x
 >   dimension (DCatalyticActivity x) = dimension x
-
+>instance LiteralUnit (DUnit DCatalyticActivity) where
+>   fromAmount s = DCatalyticActivity (fromAmount s)

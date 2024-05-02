@@ -33,6 +33,8 @@
 >   return x = ParserM (\f _ -> f x)
 >   (ParserM f) >>= g = ParserM (\res err -> 
 >                        f (\res2 -> runParseM (g res2) res err) err)
+
+>instance MonadFail (ParserM i) where
 >   fail msg = ParserM (\_ err _ li -> err (pp msg) li)
 
 >instance MonadPlus (ParserM i) where

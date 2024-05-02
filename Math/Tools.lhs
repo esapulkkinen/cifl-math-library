@@ -1,6 +1,7 @@
 >{-# LANGUAGE Safe #-}
 >{-# OPTIONS_HADDOCK not-home #-}
 >module Math.Tools (
+>   module Math.Tools.Arrow,
 >   module Math.Tools.Adjunction,
 >   module Math.Tools.CoFunctor,
 >   module Math.Tools.CoMonad,
@@ -35,13 +36,14 @@
 >   module Math.Tools.Visitor
 > ) where
 
+>import safe Math.Tools.Arrow
 >import safe Math.Tools.Adjunction
 >import safe Math.Tools.Category
 >import safe Math.Tools.CoFunctor
 >import safe Math.Tools.CoMonad
 >import safe Math.Tools.Complex
 >import safe qualified Math.Tools.Expression
->import safe Math.Tools.Functor
+>import safe Math.Tools.Functor hiding (bimap)
 >import safe Math.Tools.Group
 >import safe qualified Math.Tools.Identity
 >import safe qualified Math.Tools.Id

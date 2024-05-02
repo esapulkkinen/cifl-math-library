@@ -1,4 +1,4 @@
->{-# LANGUAGE RankNTypes, PolyKinds, GADTs, MultiParamTypeClasses, TypeOperators, Arrows, Safe #-}
+>{-# LANGUAGE RankNTypes, PolyKinds, GADTs, MultiParamTypeClasses, TypeOperators, Arrows, Safe, ConstraintKinds #-}
 >module Math.Tools.NaturalTransformation where
 >
 >-- Basic support for natural transformations.
@@ -26,9 +26,13 @@
 
 === NATURAL TRANSFORMATION ============
 
->newtype (f :: k -> Type) :~> (g :: k -> Type) = NatTrans {
+>newtype (f :: k -> *) :~> (g :: k -> *) = NatTrans {
 >   nattrans_component :: forall (a :: k). f a -> g a
 > }
+
+>instance Category (:~>) where
+>   id = NatTrans id
+>   (NatTrans f) . (NatTrans g) = NatTrans (f . g)
 
 >type MaybeNT m = Maybe :~> m
 >type EitherNT a m = (Either a) :~> m
@@ -62,7 +66,6 @@
 >joinMT :: (Monad m) => (m :*: m) :~> m
 >joinMT = NatTrans (join . cells)
 
-
 >id_trans :: f :~> f
 >id_trans = NatTrans id
 
@@ -80,13 +83,23 @@
 
 >map_natural_matrix :: (Functor f, Functor h) 
 >           => f :~> g -> h :~> i -> (a -> b) -> (f :*: h) a -> (g :*: i) b
->map_natural_matrix f g t = map_columns f . map_rows g . fmap t
+>map_natural_matrix f g t = nattrans_component (map_columns f)
+>                         . nattrans_component (map_rows g)
+>                         . fmap t
 
->map_rows :: (Functor h) => f :~> g -> (h :*: f) a -> (h :*: g) a
->map_rows (NatTrans f) = Matrix . fmap f . cells
+>data Day f g c = forall a b. Day ((a,b) -> c) (f a) (g b)
 
->map_columns :: f :~> g -> (f :*: h) a -> (g :*: h) a
->map_columns (NatTrans f) = Matrix . f . cells
+>convolve :: (Functor f, Functor g) => Day f g c -> (f :*: g) c
+>convolve (Day f x y) = matrix (curry f) x y
+
+>convolve_trans :: (Functor f, Functor g) => Day f g :~> (f :*: g)
+>convolve_trans = NatTrans convolve
+
+>map_rows :: (Functor h) => f :~> g -> (h :*: f) :~> (h :*: g)
+>map_rows (NatTrans f) = NatTrans (Matrix . fmap f . cells)
+
+>map_columns :: f :~> g -> (f :*: h) :~> (g :*: h)
+>map_columns (NatTrans f) = NatTrans (Matrix . f . cells)
 
 >mapMatrix :: (Functor f, Functor g)
 > => f :~> f' -> g :~> g' -> (a -> b) -> (f :*: g) a -> (f' :*: g') b
@@ -135,6 +148,10 @@
 
 >data f :<~>: g = NaturalIso { fwdNaturalIso :: f :~> g,
 >                              bckNaturalIso :: g :~> f }
+
+>instance Category (:<~>:) where
+>  id = NaturalIso id id
+>  (NaturalIso f g) . (NaturalIso f' g') = NaturalIso (f . f') (g' . g)
 >
 >id_iso :: f :<~>: f
 >id_iso = NaturalIso id_trans id_trans
@@ -181,6 +198,7 @@
 
 >newtype (f :~~> g) a = NaturalTrans { unNatTrans :: f a -> g a }
 
+
 matrix_map :: (f :*: h) (a -> b)
            -> (f :*: h) a -> (g :*: i) b
 matrix_map (Matrix f) (Matrix x) = unNatTrans f x
@@ -204,13 +222,17 @@ mapmatrix :: (Applicative f) => ((f :~~> i) :*: h) a
 >                             -> (f' :*: g') a
 >transform_matrix (Matrix u) (Matrix t)  (Matrix x) = Matrix $ pure unNatTrans <*> t <*> unNatTrans u x
 
->newtype NaturalTransA arr f g a = NaturalTransA { unNatTransA :: arr (f a) (g a) }
->newtype NatTransA arr f g = NatTransA { nattrans_componentA :: forall a. arr (f a) (g a) }
+>newtype NaturalTransA (arr :: k -> k -> *) f g a = NaturalTransA { unNatTransA :: arr (f a) (g a) }
+>newtype NatTransA (arr :: k -> k -> *) f g = NatTransA { nattrans_componentA :: forall a. arr (f a) (g a) }
+
+>instance (Category arr) => Category (NatTransA arr) where
+>  id = NatTransA id
+>  (NatTransA f) . (NatTransA g) = NatTransA (f . g)
 
 >id_transA :: (Arrow arr) => NatTransA arr f f
 >id_transA = NatTransA returnA
 
->horizA :: (Arrow arr,FunctorArrow k arr) => NatTransA arr h k -> NatTransA arr f g -> NatTransA arr (h :*: f) (k :*: g)
+>horizA :: (Arrow arr,FunctorArrow k arr arr) => NatTransA arr h k -> NatTransA arr f g -> NatTransA arr (h :*: f) (k :*: g)
 >horizA s t = NatTransA (arr Matrix <<< amap (nattrans_componentA t) <<< nattrans_componentA s <<< arr cells)
 
 >vertA :: (Arrow arr) => NatTransA arr g h -> NatTransA arr f g -> NatTransA arr f h
@@ -231,7 +253,7 @@ uncoyoneda f = NatTransA $ proc x -> inverseImageA x -<< f
 >unyonedaA :: (Category cat, ArrowApply arr) => arr (NatTransA arr (cat a) f) (f a)
 >unyonedaA = proc (NatTransA f) -> f -<< id
 
->yonedaA :: (FunctorArrow f arr, ArrowApply arr) => f c -> NatTransA arr (arr c) f
+>yonedaA :: (FunctorArrow f arr arr, ArrowApply arr) => f c -> NatTransA arr (arr c) f
 >yonedaA f = NatTransA (proc g -> amap g -<< f)
 
 >natTransToA :: f :~> g -> NatTransA (->) f g

@@ -358,6 +358,9 @@ approximations_vector3 (Vector3 x y z) = do
 >   pure x = Vector3 x x x
 >   (Vector3 f g h) <*> (Vector3 x y z) = Vector3 (f x) (g y) (h z)
 
+>applicative_matrix :: (Num b) => Vector3 (b -> b) -> (Vector3 :*: Vector3) b
+>applicative_matrix v = functionMatrix (v <*>)
+
 >instance (Num a) => VectorSpace (Vector3 a) where
 >  type Scalar (Vector3 a) = a
 >  vzero = pure 0
@@ -373,7 +376,8 @@ approximations_vector3 (Vector3 x y z) = do
 >   conj = fmap conj . transpose_impl
 
 >instance (Floating a, ConjugateSymmetric a) => NormedSpace (Vector3 a) where
->  norm = innerproductspace_norm 
+>  norm = innerproductspace_norm
+>  norm_squared = innerproductspace_norm_squared
 
 >instance {-# OVERLAPPABLE #-} (ConjugateSymmetric a, Num a) => InnerProductSpace (Vector3 a) where
 >  (Vector3 x y z) %. (Vector3 x' y' z') = x * conj x' + y * conj y' + z * conj z'
