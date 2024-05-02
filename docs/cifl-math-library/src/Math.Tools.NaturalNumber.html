@@ -1,13 +1,21 @@
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"><html xmlns="http://www.w3.org/1999/xhtml"><head><link rel="stylesheet" type="text/css" href="style.css" /><script type="text/javascript" src="highlight.js"></script></head><body><pre><span> </span><span class="hs-pragma">{-# LANGUAGE FlexibleInstances #-}</span><span>
-</span><a name="line-2"></a><span> </span><span class="hs-keyword">module</span><span> </span><span class="hs-identifier">Math.Tools.NaturalNumber</span><span> </span><span class="hs-keyword">where</span><span>
-</span><a name="line-3"></a><span> </span><span class="hs-keyword">import</span><span> </span><a href="Math.Tools.FixedPoint.html"><span class="hs-identifier">Math.Tools.FixedPoint</span></a><span>
-</span><a name="line-4"></a><span> </span><span class="hs-keyword">import</span><span> </span><a href="Math.Tools.Orthogonal.html"><span class="hs-identifier">Math.Tools.Orthogonal</span></a><span>
-</span><a name="line-5"></a><span>
-</span><a name="line-6"></a><span> </span><span class="hs-keyword">class</span><span> </span><a name="HasNaturals"><a href="Math.Tools.NaturalNumber.html#HasNaturals"><span class="hs-identifier">HasNaturals</span></a></a><span> </span><a name="local-6989586621679319386"><a href="#local-6989586621679319386"><span class="hs-identifier">o</span></a></a><span> </span><span class="hs-keyword">where</span><span>
-</span><a name="line-7"></a><span>    </span><a name="successor"><a href="Math.Tools.NaturalNumber.html#successor"><span class="hs-identifier">successor</span></a></a><span> </span><span class="hs-glyph">::</span><span> </span><a href="#local-6989586621679319386"><span class="hs-identifier hs-type">o</span></a><span> </span><span class="hs-glyph">-&gt;</span><span> </span><a href="#local-6989586621679319386"><span class="hs-identifier hs-type">o</span></a><span>
-</span><a name="line-8"></a><span>
-</span><a name="line-9"></a><span> </span><span class="hs-keyword">instance</span><span> </span><a href="Math.Tools.NaturalNumber.html#HasNaturals"><span class="hs-identifier hs-type">HasNaturals</span></a><span> </span><span class="hs-special">(</span><a href="Math.Tools.FixedPoint.html#Rec"><span class="hs-identifier hs-type">Rec</span></a><span> </span><span class="hs-identifier hs-type">Maybe</span><span class="hs-special">)</span><span> </span><span class="hs-keyword">where</span><span>
-</span><a name="line-10"></a><span>    </span><a name="local-8214565720324094296"><a href="Math.Tools.NaturalNumber.html#successor"><span class="hs-identifier">successor</span></a></a><span> </span><span class="hs-glyph">=</span><span> </span><a href="Math.Tools.FixedPoint.html#In"><span class="hs-identifier hs-var">In</span></a><span> </span><span class="hs-operator hs-var">.</span><span> </span><span class="hs-identifier hs-var">Just</span><span>
-</span><a name="line-11"></a><span>
-</span><a name="line-12"></a><span>
-</span><a name="line-13"></a></pre></body></html>
+</span><span id="line-2"></span><span> </span><span class="hs-keyword">module</span><span> </span><span class="hs-identifier">Math.Tools.NaturalNumber</span><span> </span><span class="hs-keyword">where</span><span>
+</span><span id="line-3"></span><span> </span><span class="hs-keyword">import</span><span> </span><span class="annot"><a href="Math.Tools.FixedPoint.html"><span class="hs-identifier">Math.Tools.FixedPoint</span></a></span><span>
+</span><span id="line-4"></span><span> </span><span class="hs-keyword">import</span><span> </span><span class="annot"><a href="Math.Tools.Orthogonal.html"><span class="hs-identifier">Math.Tools.Orthogonal</span></a></span><span>
+</span><span id="line-5"></span><span>
+</span><span id="line-6"></span><span> </span><span class="hs-keyword">class</span><span> </span><span id="HasNaturals"><span class="annot"><a href="Math.Tools.NaturalNumber.html#HasNaturals"><span class="hs-identifier hs-var">HasNaturals</span></a></span></span><span> </span><span id="local-6989586621681323193"><span class="annot"><a href="#local-6989586621681323193"><span class="hs-identifier hs-type">o</span></a></span></span><span> </span><span class="hs-keyword">where</span><span>
+</span><span id="line-7"></span><span>    </span><span id="successor"><span class="annot"><a href="Math.Tools.NaturalNumber.html#successor"><span class="hs-identifier hs-type">successor</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="#local-6989586621681323193"><span class="hs-identifier hs-type">o</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="#local-6989586621681323193"><span class="hs-identifier hs-type">o</span></a></span><span>
+</span><span id="line-8"></span><span>
+</span><span id="line-9"></span><span> </span><span class="hs-keyword">instance</span><span> </span><span class="annot"><a href="Math.Tools.NaturalNumber.html#HasNaturals"><span class="hs-identifier hs-type">HasNaturals</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="Math.Tools.FixedPoint.html#Rec"><span class="hs-identifier hs-type">Rec</span></a></span><span> </span><span class="annot"><span class="hs-identifier hs-type">Maybe</span></span><span class="hs-special">)</span><span> </span><span class="hs-keyword">where</span><span>
+</span><span id="line-10"></span><span>    </span><span id="local-6989586621681323203"><span class="annot"><span class="annottext">successor :: Rec Maybe -&gt; Rec Maybe
+</span><a href="Math.Tools.NaturalNumber.html#successor"><span class="hs-identifier hs-var hs-var hs-var hs-var">successor</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Maybe (Rec Maybe) -&gt; Rec Maybe
+forall (f :: * -&gt; *). f (Rec f) -&gt; Rec f
+</span><a href="Math.Tools.FixedPoint.html#In"><span class="hs-identifier hs-var">In</span></a></span><span> </span><span class="annot"><span class="annottext">(Maybe (Rec Maybe) -&gt; Rec Maybe)
+-&gt; (Rec Maybe -&gt; Maybe (Rec Maybe)) -&gt; Rec Maybe -&gt; Rec Maybe
+forall b c a. (b -&gt; c) -&gt; (a -&gt; b) -&gt; a -&gt; c
+</span><span class="hs-operator hs-var">.</span></span><span> </span><span class="annot"><span class="annottext">Rec Maybe -&gt; Maybe (Rec Maybe)
+forall a. a -&gt; Maybe a
+</span><span class="hs-identifier hs-var">Just</span></span><span>
+</span><span id="line-11"></span><span>
+</span><span id="line-12"></span><span>
+</span><span id="line-13"></span></pre></body></html>

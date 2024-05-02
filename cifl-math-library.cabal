@@ -96,14 +96,14 @@ common testdepends
   build-depends: aeson
      
 common builddepends
-  build-depends: base, ghc-prim >= 0.5.2, random >=1.1 && <1.2
+  build-depends: base, ghc-prim >= 0.5.2, random
   build-depends: mtl >=2.2 && <2.4
   build-depends: array >= 0.5.1.0, template-haskell >= 2.10.0.0
   build-depends: time >= 1.5.0.1, containers >= 0.5.6.2
   build-depends: transformers >= 0.4.2.0, pretty >= 1.1.2.0
   build-depends: syb >= 0.5.1, stm >= 2.4.4.1
   build-depends: parallel >= 3.2.0.6, unix >= 2.7.1.0
-  build-depends: bytestring >= 0.10.6.0, fgl, temporary, random
+  build-depends: bytestring >= 0.10.6.0, fgl, temporary
   build-depends: graphviz >= 2999.18.1.2, text >= 1.2.2.1
   build-depends: json >= 0.9.1, parallel >= 3.2.0.6
   build-depends: binary >= 0.7.5.0, template-haskell, ghc-prim

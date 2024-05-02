@@ -1,46 +1,46 @@
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"><html xmlns="http://www.w3.org/1999/xhtml"><head><link rel="stylesheet" type="text/css" href="style.css" /><script type="text/javascript" src="highlight.js"></script></head><body><pre><span> </span><span class="hs-pragma">{-# LANGUAGE Safe #-}</span><span>
-</span><a name="line-2"></a><span> </span><span class="hs-pragma">{-# OPTIONS_HADDOCK not-home #-}</span><span>
-</span><a name="line-3"></a><span> </span><span class="hs-comment">-- | </span><span>
-</span><a name="line-4"></a><span> </span><span class="hs-comment">-- Module: Math</span><span>
-</span><a name="line-5"></a><span> </span><span class="hs-comment">-- Description: CIFL math libraries</span><span>
-</span><a name="line-6"></a><span> </span><span class="hs-comment">-- Copyright: (c) Esa Pulkkinen, 2018</span><span>
-</span><a name="line-7"></a><span> </span><span class="hs-comment">-- Maintainer: esa.pulkkinen@iki.fi</span><span>
-</span><a name="line-8"></a><span> </span><span class="hs-comment">-- Stability: experimental</span><span>
-</span><a name="line-9"></a><span> </span><span class="hs-comment">-- Portability: POSIX</span><span>
-</span><a name="line-10"></a><span> </span><span class="hs-comment">--</span><span>
-</span><a name="line-11"></a><span> </span><span class="hs-comment">-- ![CIFL math libraries](https://esapulkkinen.github.io/cifl-math-library/logo2.svg)</span><span>
-</span><a name="line-12"></a><span> </span><span class="hs-comment">-- </span><span>
-</span><a name="line-13"></a><span> </span><span class="hs-comment">-- Haskell libraries containing graphs, vector spaces, matrices,               </span><span>
-</span><a name="line-14"></a><span> </span><span class="hs-comment">--           real numbers.</span><span>
-</span><a name="line-15"></a><span> </span><span class="hs-comment">--               </span><span>
-</span><a name="line-16"></a><span> </span><span class="hs-comment">--           Haskell libraries for conversion of graphs to XML and DOT format</span><span>
-</span><a name="line-17"></a><span> </span><span class="hs-comment">--              </span><span>
-</span><a name="line-18"></a><span> </span><span class="hs-comment">--          See Github page at &lt;https://github.com/esapulkkinen/cifl-math-library&gt;.</span><span>
-</span><a name="line-19"></a><span> </span><span class="hs-comment">--             See documentation at &lt;https://esapulkkinen.github.io/cifl-math-library/&gt;.</span><span>
-</span><a name="line-20"></a><span> </span><span class="hs-comment">--               </span><span>
-</span><a name="line-21"></a><span> </span><span class="hs-comment">--          &lt;https://esapulkkinen.github.io/cifl-math-library/dependencies-Tools.pdf Tools dependencies&gt;</span><span>
-</span><a name="line-22"></a><span> </span><span class="hs-comment">--              </span><span>
-</span><a name="line-23"></a><span> </span><span class="hs-comment">--          &lt;https://esapulkkinen.github.io/cifl-math-library/dependencies-Matrix.pdf Matrix dependencies&gt;</span><span>
-</span><a name="line-24"></a><span> </span><span class="hs-comment">--</span><span>
-</span><a name="line-25"></a><span> </span><span class="hs-comment">--  &lt;https://esapulkkinen.github.io/cifl-math-library/dependencies-Graph.pdf Graph dependencies&gt;</span><span>
-</span><a name="line-26"></a><span> </span><span class="hs-comment">-- </span><span>
-</span><a name="line-27"></a><span> </span><span class="hs-comment">--          &lt;https://esapulkkinen.github.io/cifl-math-library/dependencies-Number.pdf Number dependencies&gt;</span><span>
-</span><a name="line-28"></a><span> </span><span class="hs-comment">-- </span><span>
-</span><a name="line-29"></a><span> </span><span class="hs-comment">--              &lt;https://esapulkkinen.github.io/cifl-math-library/external-deps.pdf External dependencies&gt;</span><span>
-</span><a name="line-30"></a><span> </span><span class="hs-comment">-- </span><span>
-</span><a name="line-31"></a><span> </span><span class="hs-comment">--               &lt;https://github.com/esapulkkinen/cifl-math-library/blob/master/COPYRIGHT COPYRIGHT&gt;.</span><span>
-</span><a name="line-32"></a><span> </span><span class="hs-comment">--               &lt;https://esapulkkinen.github.io/cifl-math-library/bibliography.html Bibliography&gt;</span><span>
-</span><a name="line-33"></a><span> </span><span class="hs-comment">-- </span><span>
-</span><a name="line-34"></a><span> </span><span class="hs-keyword">module</span><span> </span><span class="hs-identifier">Math</span><span> </span><span class="hs-special">(</span><span>
-</span><a name="line-35"></a><span>    </span><span class="hs-keyword">module</span><span> </span><a href="Math.Graph.html"><span class="hs-identifier">Math.Graph</span></a><span class="hs-special">,</span><span>
-</span><a name="line-36"></a><span>    </span><span class="hs-keyword">module</span><span> </span><a href="Math.Matrix.html"><span class="hs-identifier">Math.Matrix</span></a><span class="hs-special">,</span><span>
-</span><a name="line-37"></a><span>    </span><span class="hs-keyword">module</span><span> </span><a href="Math.Number.html"><span class="hs-identifier">Math.Number</span></a><span class="hs-special">,</span><span>
-</span><a name="line-38"></a><span>    </span><span class="hs-keyword">module</span><span> </span><a href="Math.Tools.html"><span class="hs-identifier">Math.Tools</span></a><span>
-</span><a name="line-39"></a><span>    </span><span class="hs-special">)</span><span> </span><span class="hs-keyword">where</span><span>
-</span><a name="line-40"></a><span> </span><span class="hs-keyword">import</span><span> </span><span class="hs-keyword">safe</span><span> </span><a href="Math.Graph.html"><span class="hs-identifier">Math.Graph</span></a><span>
-</span><a name="line-41"></a><span> </span><span class="hs-keyword">import</span><span> </span><span class="hs-keyword">safe</span><span> </span><a href="Math.Matrix.html"><span class="hs-identifier">Math.Matrix</span></a><span>
-</span><a name="line-42"></a><span> </span><span class="hs-keyword">import</span><span> </span><span class="hs-keyword">safe</span><span> </span><a href="Math.Number.html"><span class="hs-identifier">Math.Number</span></a><span>
-</span><a name="line-43"></a><span> </span><span class="hs-keyword">import</span><span> </span><span class="hs-keyword">safe</span><span> </span><a href="Math.Tools.html"><span class="hs-identifier">Math.Tools</span></a><span>
-</span><a name="line-44"></a><span>
-</span><a name="line-45"></a><span>
-</span><a name="line-46"></a></pre></body></html>
+</span><span id="line-2"></span><span> </span><span class="hs-pragma">{-# OPTIONS_HADDOCK not-home #-}</span><span>
+</span><span id="line-3"></span><span> </span><span class="hs-comment">-- | </span><span>
+</span><span id="line-4"></span><span> </span><span class="hs-comment">-- Module: Math</span><span>
+</span><span id="line-5"></span><span> </span><span class="hs-comment">-- Description: CIFL math libraries</span><span>
+</span><span id="line-6"></span><span> </span><span class="hs-comment">-- Copyright: (c) Esa Pulkkinen, 2018</span><span>
+</span><span id="line-7"></span><span> </span><span class="hs-comment">-- Maintainer: esa.pulkkinen@iki.fi</span><span>
+</span><span id="line-8"></span><span> </span><span class="hs-comment">-- Stability: experimental</span><span>
+</span><span id="line-9"></span><span> </span><span class="hs-comment">-- Portability: POSIX</span><span>
+</span><span id="line-10"></span><span> </span><span class="hs-comment">--</span><span>
+</span><span id="line-11"></span><span> </span><span class="hs-comment">-- ![CIFL math libraries](https://esapulkkinen.github.io/cifl-math-library/logo2.svg)</span><span>
+</span><span id="line-12"></span><span> </span><span class="hs-comment">-- </span><span>
+</span><span id="line-13"></span><span> </span><span class="hs-comment">-- Haskell libraries containing graphs, vector spaces, matrices,               </span><span>
+</span><span id="line-14"></span><span> </span><span class="hs-comment">--           real numbers.</span><span>
+</span><span id="line-15"></span><span> </span><span class="hs-comment">--               </span><span>
+</span><span id="line-16"></span><span> </span><span class="hs-comment">--           Haskell libraries for conversion of graphs to XML and DOT format</span><span>
+</span><span id="line-17"></span><span> </span><span class="hs-comment">--              </span><span>
+</span><span id="line-18"></span><span> </span><span class="hs-comment">--          See Github page at &lt;https://github.com/esapulkkinen/cifl-math-library&gt;.</span><span>
+</span><span id="line-19"></span><span> </span><span class="hs-comment">--             See documentation at &lt;https://esapulkkinen.github.io/cifl-math-library/&gt;.</span><span>
+</span><span id="line-20"></span><span> </span><span class="hs-comment">--               </span><span>
+</span><span id="line-21"></span><span> </span><span class="hs-comment">--          &lt;https://esapulkkinen.github.io/cifl-math-library/dependencies-Tools.pdf Tools dependencies&gt;</span><span>
+</span><span id="line-22"></span><span> </span><span class="hs-comment">--              </span><span>
+</span><span id="line-23"></span><span> </span><span class="hs-comment">--          &lt;https://esapulkkinen.github.io/cifl-math-library/dependencies-Matrix.pdf Matrix dependencies&gt;</span><span>
+</span><span id="line-24"></span><span> </span><span class="hs-comment">--</span><span>
+</span><span id="line-25"></span><span> </span><span class="hs-comment">--  &lt;https://esapulkkinen.github.io/cifl-math-library/dependencies-Graph.pdf Graph dependencies&gt;</span><span>
+</span><span id="line-26"></span><span> </span><span class="hs-comment">-- </span><span>
+</span><span id="line-27"></span><span> </span><span class="hs-comment">--          &lt;https://esapulkkinen.github.io/cifl-math-library/dependencies-Number.pdf Number dependencies&gt;</span><span>
+</span><span id="line-28"></span><span> </span><span class="hs-comment">-- </span><span>
+</span><span id="line-29"></span><span> </span><span class="hs-comment">--              &lt;https://esapulkkinen.github.io/cifl-math-library/external-deps.pdf External dependencies&gt;</span><span>
+</span><span id="line-30"></span><span> </span><span class="hs-comment">-- </span><span>
+</span><span id="line-31"></span><span> </span><span class="hs-comment">--               &lt;https://github.com/esapulkkinen/cifl-math-library/blob/master/COPYRIGHT COPYRIGHT&gt;.</span><span>
+</span><span id="line-32"></span><span> </span><span class="hs-comment">--               &lt;https://esapulkkinen.github.io/cifl-math-library/bibliography.html Bibliography&gt;</span><span>
+</span><span id="line-33"></span><span> </span><span class="hs-comment">-- </span><span>
+</span><span id="line-34"></span><span> </span><span class="hs-keyword">module</span><span> </span><span class="hs-identifier">Math</span><span> </span><span class="hs-special">(</span><span>
+</span><span id="line-35"></span><span>    </span><span class="hs-keyword">module</span><span> </span><span class="annot"><a href="Math.Graph.html"><span class="hs-identifier">Math.Graph</span></a></span><span class="hs-special">,</span><span>
+</span><span id="line-36"></span><span>    </span><span class="hs-keyword">module</span><span> </span><span class="annot"><a href="Math.Matrix.html"><span class="hs-identifier">Math.Matrix</span></a></span><span class="hs-special">,</span><span>
+</span><span id="line-37"></span><span>    </span><span class="hs-keyword">module</span><span> </span><span class="annot"><a href="Math.Number.html"><span class="hs-identifier">Math.Number</span></a></span><span class="hs-special">,</span><span>
+</span><span id="line-38"></span><span>    </span><span class="hs-keyword">module</span><span> </span><span class="annot"><a href="Math.Tools.html"><span class="hs-identifier">Math.Tools</span></a></span><span>
+</span><span id="line-39"></span><span>    </span><span class="hs-special">)</span><span> </span><span class="hs-keyword">where</span><span>
+</span><span id="line-40"></span><span> </span><span class="hs-keyword">import</span><span> </span><span class="hs-keyword">safe</span><span> </span><span class="annot"><a href="Math.Graph.html"><span class="hs-identifier">Math.Graph</span></a></span><span>
+</span><span id="line-41"></span><span> </span><span class="hs-keyword">import</span><span> </span><span class="hs-keyword">safe</span><span> </span><span class="annot"><a href="Math.Matrix.html"><span class="hs-identifier">Math.Matrix</span></a></span><span>
+</span><span id="line-42"></span><span> </span><span class="hs-keyword">import</span><span> </span><span class="hs-keyword">safe</span><span> </span><span class="annot"><a href="Math.Number.html"><span class="hs-identifier">Math.Number</span></a></span><span>
+</span><span id="line-43"></span><span> </span><span class="hs-keyword">import</span><span> </span><span class="hs-keyword">safe</span><span> </span><span class="annot"><a href="Math.Tools.html"><span class="hs-identifier">Math.Tools</span></a></span><span>
+</span><span id="line-44"></span><span>
+</span><span id="line-45"></span><span>
+</span><span id="line-46"></span></pre></body></html>
