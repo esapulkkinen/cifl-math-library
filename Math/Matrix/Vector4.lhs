@@ -1,4 +1,4 @@
->{-# LANGUAGE Safe,FlexibleInstances, MultiParamTypeClasses,FlexibleContexts, TypeOperators, TypeFamilies, NoMonomorphismRestriction, StandaloneDeriving, DeriveGeneric, DeriveDataTypeable, LambdaCase #-}
+>{-# LANGUAGE Safe,FlexibleInstances, MultiParamTypeClasses,FlexibleContexts, TypeOperators, TypeFamilies, NoMonomorphismRestriction, StandaloneDeriving, DeriveGeneric, DeriveDataTypeable, LambdaCase, RankNTypes #-}
 >module Math.Matrix.Vector4 where
 >import safe qualified Data.Monoid as Mon
 >import safe qualified Text.PrettyPrint as Pretty
@@ -301,6 +301,7 @@ instance FractionalSpace (Vector4 (Complex R))
 >     (a',b',c',t') <- fzip4 (approximations a) (approximations b) (approximations c) (approximations t)
 >     return $! Vector4 a' b' c' t'
 
+>{-# INLINABLE sum_coordinates4 #-}
 >sum_coordinates4 :: (Num a) => Vector4 a -> a
 >sum_coordinates4 (Vector4 a b c d) = a + b + c + d
 
@@ -324,10 +325,11 @@ instance FractionalSpace (Vector4 (Complex R))
 >matrix_multiply4 :: (Num a, ConjugateSymmetric a) => Matrix4 a -> Matrix4 a -> Matrix4 a
 >matrix_multiply4 (Matrix v) w | Matrix wt <- transpose4_impl w = Matrix $ functor_outer dot4 v wt
 
+>{-# INLINABLE dot4 #-}
 >dot4 :: (Num a, ConjugateSymmetric a) => Vector4 a -> Vector4 a -> a
 >dot4 x y = sum_coordinates4 $ pure (*) <*> x <*> conj y
 
->instance {-# OVERLAPPABLE #-} (Num a, ConjugateSymmetric a) => LinearTransform Vector4 Vector4 a where
+>instance {-# INCOHERENT #-} (Num a, ConjugateSymmetric a) => LinearTransform Vector4 Vector4 a where
 >   (<*>>) = left_multiply4_gen
 >   (<<*>) = right_multiply4_gen
 
@@ -580,19 +582,22 @@ instance FractionalSpace (Vector4 (Complex R))
 >trace4 m | Vector4 t x y z <- diagonal4x m = x + y + z + t
 
 >removet4 :: Vector4 a -> Vector3 a
->removet4 (Vector4 t x y z) = Vector3 x y z
+>removet4 (Vector4 _ x y z) = Vector3 x y z
 
 >removex4 :: Vector4 a -> Vector3 a
->removex4 (Vector4 t x y z) = Vector3 t y z
+>removex4 (Vector4 t _ y z) = Vector3 t y z
 
 >removey4 :: Vector4 a -> Vector3 a
->removey4 (Vector4 t x y z) = Vector3 t x z
+>removey4 (Vector4 t x _ z) = Vector3 t x z
 
 >removez4 :: Vector4 a -> Vector3 a
->removez4 (Vector4 t x y z) = Vector3 t x y
+>removez4 (Vector4 t x y _) = Vector3 t x y
 
 >removes4 :: Vector4 (Vector4 a -> Vector3 a)
 >removes4 = Vector4 removet4 removex4 removey4 removez4
+
+>project4 :: Vector4 (Vector4 a -> a)
+>project4 = Vector4 tcoord4 xcoord4 ycoord4 zcoord4
 
 >remove_index4 :: Matrix4 a -> Matrix4 (Matrix3 a)
 >remove_index4 (Matrix m) = matrix app removes4 removes4
@@ -641,6 +646,19 @@ instance FractionalSpace (Vector4 (Complex R))
 >determinant4 (Matrix m) = combine $ pure (*) <*> tcoord4 m <*> amv  
 >   where amv = fmap (determinant_impl . Matrix . removet4 . (`fmap` m)) removes4
 >         combine (Vector4 a b c d) = a - b + c - d
+
+>determinancett4 :: (Num a) => Determinance Vector4 Vector4 Vector3 Vector3 Vector3 a a a
+>determinancett4 = Determinance removes4 removes4 tcoord4 tcoord4 combine4 determinant_impl
+>  where combine4 (Vector4 a b c d) = a - b + c - d
+
+>coord_determinance4 ::
+>  (Num a) => 
+> (forall c. Vector4 c -> c) -> (forall d. Vector4 d -> d)
+>  -> Determinance Vector4 Vector4 Vector3 Vector3 Vector3 a a a
+>coord_determinance4 proj1 proj2 =
+>  Determinance removes4 removes4 proj1 proj2 (neg . combine4) determinant_impl
+>    where combine4 (Vector4 a b c d) = a - b + c - d
+>          neg x = x * fromIntegral (proj1 (proj2 (cells signs4)))
 
 >instance (Fractional a) => Invertible Vector4 a where
 >   inverse_impl = inverse4

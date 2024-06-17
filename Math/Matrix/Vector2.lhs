@@ -1,4 +1,4 @@
->{-# LANGUAGE Safe,FlexibleInstances, MultiParamTypeClasses, FlexibleContexts, TypeOperators, TypeFamilies, PatternGuards, ScopedTypeVariables, StandaloneDeriving, DeriveGeneric, DeriveDataTypeable #-}
+>{-# LANGUAGE Safe, FlexibleInstances, MultiParamTypeClasses, FlexibleContexts, TypeOperators, TypeFamilies, PatternGuards, ScopedTypeVariables, StandaloneDeriving, DeriveGeneric, DeriveDataTypeable, IncoherentInstances #-}
 >module Math.Matrix.Vector2 where
 >import safe qualified Text.PrettyPrint as Pretty
 >import safe Text.PrettyPrint (vcat,nest,(<+>))
@@ -200,7 +200,7 @@ deriving instance (Show a) => Show (Codiagonal Vector2 a)
 
 >su2_matrix :: (Eq a, RealFloat a) => Complex a -> Complex a -> Matrix2 (Complex a)
 >su2_matrix a b 
->   | norm a * norm a + norm b * norm b == 1 = Matrix $ 
+>   | norm_squared a + norm_squared b == 1 = Matrix $ 
 >       Vector2 (Vector2 a (negate $ conj b)) 
 >               (Vector2 b (conj a))
 
@@ -470,10 +470,10 @@ instance (Num a, ConjugateSymmetric a) => LieAlgebra ((Vector2 :*: Vector2) a) w
 >instance (ConjugateSymmetric a) => ConjugateSymmetric (Vector2 a) where
 >   conj (Vector2 x y) = Vector2 (conj x) (conj y)
 
->instance (Floating a, ConjugateSymmetric a) => NormedSpace (Vector2 a) where
+>instance {-# INCOHERENT #-}  (Floating a, ConjugateSymmetric a) => NormedSpace (Vector2 a) where
 >  norm_squared v = v %. v
 
->instance {-# OVERLAPPABLE #-} (Num a, ConjugateSymmetric a) => InnerProductSpace (Vector2 a) where
+>instance {-# INCOHERENT #-} (Num a, ConjugateSymmetric a) => InnerProductSpace (Vector2 a) where
 >  (Vector2 x y) %. (Vector2 x' y') = x*conj x' + y*conj y'
 
 >instance (Num a) => Diagonalizable Vector2 a where
@@ -506,7 +506,7 @@ instance (Num a, ConjugateSymmetric a) => LieAlgebra ((Vector2 :*: Vector2) a) w
 >  transpose_impl (Matrix (Vector1 (Vector2 x y)))
 >    = Matrix (Vector2 (Vector1 x) (Vector1 y))
 
->instance {-# OVERLAPPABLE #-} (ConjugateSymmetric a, Num a) => LinearTransform Vector2 Vector2 a where
+>instance {-# INCOHERENT #-} (ConjugateSymmetric a, Num a) => LinearTransform Vector2 Vector2 a where
 >  (<*>>) = left_multiply2
 >  (<<*>) = right_multiply2
 

@@ -280,3 +280,16 @@ http://en.wikipedia.org/wiki/Bra%E2%80%93ket_notation
 >  dimension_size _ = 1
 >  coordinates _ = [0]
 
+>cofactor1 :: (Num a) => Matrix1 a -> Matrix1 a
+>cofactor1 = id
+
+>adjucate1 :: (Num a) => Matrix1 a -> Matrix1 a
+>adjucate1 = id
+
+>inverse1 :: (Fractional a) => Matrix1 a -> Matrix1 a
+>inverse1 m = (1/determinant_impl m) %* adjucate1 m
+
+>instance (Fractional a) => Invertible Vector1 a where
+>   cofactor_impl = cofactor1
+>   adjucate_impl = adjucate1
+>   inverse_impl = inverse1

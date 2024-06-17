@@ -22,6 +22,7 @@
 >import safe Math.Matrix.Vector4
 >import safe Math.Matrix.FiniteVector
 >import safe Math.Matrix.Points
+>import safe Math.Matrix.SIMD
 >import safe Math.Tools.Isomorphism
 >import safe Math.Tools.NaturalTransformation
 >import safe Math.Tools.Prop
@@ -415,7 +416,12 @@ instance (forall b. VectorSpace (g b), forall b. VectorSpace (f b), Indexable f 
 >   fromRational = diagonal_matrix_impl . constant2 . fromRational
 
 >instance (ConjugateSymmetric a, Fractional a) => LinearInvertible LinearMap Vector2 a
+>instance (ConjugateSymmetric a, Fractional a) => LinearInvertible LinearMap Vector3 a
+>instance (ConjugateSymmetric a, Fractional a) => LinearInvertible LinearMap Vector4 a
+>instance (ConjugateSymmetric a, Num a) => LinearTraceable LinearMap Vector1 a
 >instance (ConjugateSymmetric a, Num a) => LinearTraceable LinearMap Vector2 a
+>instance (ConjugateSymmetric a, Num a) => LinearTraceable LinearMap Vector3 a
+>instance (ConjugateSymmetric a, Num a) => LinearTraceable LinearMap Vector4 a
 
 >linear_matrix_multiply :: (SupportsMatrixMultiplication g h f a,
 >    Linearizable LinearMap (:*:) h f a,

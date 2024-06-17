@@ -148,6 +148,22 @@ instance RealFrac R where
 >  r %< x = (fromIntegral r :: Rational) %< x
 >  x <% r = x <% (fromIntegral r :: Rational)
 
+>instance Limiting ((->) Rational) R where
+>   data Closure ((->) Rational) R = RQClosure { runRQClosure :: !R }
+>   limit f = RQClosure $ real $ \eps ->
+>      let eps' = eps/2
+>      in if abs (f eps `approximate` eps - f eps' `approximate` eps') < eps
+>       then f eps' `approximate` eps'
+>       else runRQClosure (limit f) `approximate` eps'
+>   approximations (RQClosure r) = \eps -> real $ \eps' -> r `approximate` min eps eps'
+
+>instance StreamBuilder ((->) Rational) where
+>   pre x f = \eps -> if eps >= 1 then x else f (eps*2)
+
+>instance StreamObserver ((->) Rational) where
+>   shead f = f (1%2)
+>   stail f = \eps -> f (eps*2)
+
 >instance Limiting Stream R where
 >   data Closure Stream R = RClosure { runRClosure :: !R }
 >   limit ~(Pre x ~z@(Pre y _)) = RClosure $ real $ \eps ->

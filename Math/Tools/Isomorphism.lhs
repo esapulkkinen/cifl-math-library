@@ -79,7 +79,7 @@ instance FunctorArrow Data.Set.Set (OrderedCat (->)) where
 
 >adjoint_iso :: (Adjunction f g) => (f a -> b) :==: (a -> g b)
 >adjoint_iso = leftAdjunct <-> rightAdjunct
->
+
 
 >packTextIso :: String :==: Text.Text
 >packTextIso = Text.pack <-> Text.unpack

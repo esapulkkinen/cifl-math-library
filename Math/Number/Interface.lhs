@@ -5,7 +5,7 @@
 >import safe Control.Applicative
 >import safe Data.Monoid
 >import safe Data.Ratio
->import safe Math.Number.StreamInterface
+>import Math.Number.StreamInterface
 >import safe Math.Matrix.Interface
 >import safe Math.Tools.CoFunctor
 >import qualified Data.Complex

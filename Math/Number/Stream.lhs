@@ -372,10 +372,14 @@ instance (Num a) => FiniteDimensional a Math.Matrix.Linear.Dual Stream LinearMap
 >instance Foldable Stream where
 >   foldMap f ~(Pre x xr) = f x <> foldMap f xr
 
+
+stream_dot_product a b = limit $ ssum $
+      zipWith (*) a (conj b)
+
 >instance Traversable Stream where
 >   traverse f ~(Pre x xr) = Pre <$> f x <*> traverse f xr
 
->instance (Num a, Limiting Stream a) => Limiting Stream (Stream a) where
+>instance (Limiting Stream a) => Limiting Stream (Stream a) where
 >   data Closure Stream (Stream a) = SClosure {
 >     runSClosure :: Stream (Closure Stream a),
 >     stream_limit :: Closure Stream a }
@@ -514,7 +518,7 @@ instance (Num a) => Matrix.VectorSpace ((Stream :*: Stream) a) where
 
 >instance (Closed a, Matrix.ConjugateSymmetric a, Floating a)
 >    => Matrix.NormedSpace (Stream a) where
->  norm x = sqrt (x Matrix.%. x)
+>  norm_squared x = x Matrix.%. x
 
 >instance (Closed a, ConjugateSymmetric a, Num a) => Matrix.LinearTransform Stream Stream a where
 >  s <*>> m = fmap (%. s) $ cells $ transpose_impl m

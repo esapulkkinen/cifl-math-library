@@ -43,7 +43,7 @@
 >   x %* (Quaternion v) = Quaternion (x %* v)
 
 >instance (ConjugateSymmetric a, Floating a) => NormedSpace (Quaternion a) where
->   norm (Quaternion v) = sqrt(v %. v)
+>   norm_squared (Quaternion v) = v %. v
 
 >instance (Num a) => LieAlgebra (Quaternion a) where
 >   q %<>% p = p * q - q * p
@@ -74,7 +74,7 @@
 
 >-- | <https://en.wikipedia.org/wiki/Quaternion>
 >quarternion_inverse :: (ConjugateSymmetric a, Floating a) => Quaternion a -> Quaternion a
->quarternion_inverse q = (norm q * norm q) %* qconjugate q
+>quarternion_inverse q = (norm_squared q) %* qconjugate q
 >
 >-- | <https://en.wikipedia.org/wiki/Quaternion>
 >left_divide :: (ConjugateSymmetric a, Floating a) => Quaternion a -> Quaternion a -> Quaternion a

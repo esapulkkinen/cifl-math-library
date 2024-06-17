@@ -382,6 +382,7 @@ approximations_vector3 (Vector3 x y z) = do
 >instance {-# OVERLAPPABLE #-} (ConjugateSymmetric a, Num a) => InnerProductSpace (Vector3 a) where
 >  (Vector3 x y z) %. (Vector3 x' y' z') = x * conj x' + y * conj y' + z * conj z'
 
+>{-# INLINABLE sum_coordinates3 #-}
 >sum_coordinates3 :: (Num a) => Vector3 a -> a
 >sum_coordinates3 (Vector3 x y z) = x + y + z
 
@@ -429,7 +430,7 @@ approximations_vector3 (Vector3 x y z) = do
 >                        (\a -> ycoord3 (f a))
 >                        (\a -> zcoord3 (f a))
 
->instance {-# OVERLAPPABLE #-} (Num a, ConjugateSymmetric a) => LinearTransform Vector3 Vector3 a where
+>instance {-# INCOHERENT #-} (Num a, ConjugateSymmetric a) => LinearTransform Vector3 Vector3 a where
 >  (<*>>) = left_multiply3
 >  (<<*>) = right_multiply3
 
@@ -531,6 +532,7 @@ approximations_vector3 (Vector3 x y z) = do
 >matrix_multiply3 (Matrix m1) m2 
 >   | Matrix m2t <- transpose3 m2 = matrix (%.) m1 m2t
 
+>{-# INLINABLE dot3 #-}
 >dot3 :: (Num a, ConjugateSymmetric a) => Vector3 a -> Vector3 a -> a
 >dot3 x y = sum_coordinates3 $ liftA2 (*) x (fmap conj y)
 
@@ -549,6 +551,7 @@ approximations_vector3 (Vector3 x y z) = do
 >transpose3 :: (Num a) => Matrix3 a -> Matrix3 a
 >transpose3 (Matrix m) = matrix runIndex diagonal_projections3 m
 
+>{-# INLINABLE transpose3_impl #-}
 >transpose3_impl :: Matrix3 a -> Matrix3 a
 >transpose3_impl ~(Matrix ~(Vector3 ~(Vector3 x1 y1 z1)
 >                                   ~(Vector3 x2 y2 z2)
@@ -711,6 +714,7 @@ deriving instance (Show a) => Show (Codiagonal Vector3 a)
 >   where amv = fmap (determinant_impl . Matrix . removex3 . (`fmap` m)) remove3
 >         combine (Vector3 a b c) = a - b + c         
 
+
 >instance (Num a, ConjugateSymmetric a) => LinearTransform Vector1 Vector3 a where
 >  x <*>> (Matrix (Vector1 m)) = Vector1 $ x %. m
 >  (Matrix (Vector1 m)) <<*> (Vector1 x) = conj x %* m
@@ -802,10 +806,10 @@ instance FractionalSpace (Vector3 (Complex R)) where
 >         pv = Vector3 (m <!> (xcoord3,ycoord3))
 >                      (m <!> (xcoord3,zcoord3))
 >                      (m <!> (ycoord3,zcoord3))
->         p1 = pv %. pv
+>         p1 = norm_squared pv
 >         q = trace_impl m / 3
 >         mdq = diagonal_impl m - return q
->         p2 = mdq %. mdq + 2 * p1
+>         p2 = norm_squared mdq + 2 * p1
 >         p = sqrt (p2 / 6)
 >         b = (1 / p) %* (m %- q %* identity_impl dim3)
 >         r = determinant_impl b / 2

@@ -43,8 +43,9 @@
 >   (I f) <*> (I x) = I (f x)
 
 >instance Monad I where
->   return x = I x
+>   return = pure 
 >   (I x) >>= f = f x
+
 >instance MonadFail I where
 >   fail _ = error "I failure"
 

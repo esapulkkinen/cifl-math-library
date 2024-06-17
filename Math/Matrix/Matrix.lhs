@@ -28,6 +28,7 @@
 >import Math.Tools.I
 >import Math.Matrix.Interface
 >import Math.Matrix.Linear
+>import Math.Matrix.SIMD
 >import Math.Tools.CoMonad
 >import Data.Type.Equality
 >import Data.Kind

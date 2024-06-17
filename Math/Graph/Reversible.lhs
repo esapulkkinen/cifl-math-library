@@ -28,6 +28,7 @@
 >import GHC.Generics hiding ((:*:), (:+:))
 >import Data.Map (Map)
 >import qualified Data.Map as Map
+>import qualified Data.Text as T
 >import Data.Monoid
 >import Math.Tools.Set
 >import Math.Tools.CoFunctor
@@ -252,6 +253,15 @@ outerG (Graph e act) (Graph e' act') = Graph ee ract
 >        reversedEdges = map (snd . fst) lst
 >        sources = map (fst . snd) lst
 >        targets = map (snd . snd) lst         
+
+>-- | For a list of (v,e), this produces a reversible graph of e : v -> v
+>oneLaneLoopG :: (Ord a) => [(a,a)] -> Graph Four a
+>oneLaneLoopG lst = reversibleEdgesG $ map (\ (v,e) -> ((e,e),(v,v))) lst
+>
+>-- | For a list of (v, (e1,e2)), this produces a reversible graph of (e1,e2) : v -> v
+>--  where e2 is the inverse edge of e1.
+>twoLaneLoopG :: (Ord a) => [(a,(a,a))] -> Graph Four a
+>twoLaneLoopG lst = reversibleEdgesG $ map (\ (v,(e1,e2)) -> ((e1,e2),(v,v))) lst
 
 
 >subobjectClassifierGraphG :: Graph Four Text

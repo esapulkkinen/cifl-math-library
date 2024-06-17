@@ -5,7 +5,7 @@
 >{-# LANGUAGE UnicodeSyntax, DeriveGeneric, DeriveDataTypeable #-}
 >{-# LANGUAGE ConstraintKinds, UndecidableInstances, OverloadedStrings #-}
 >{-# LANGUAGE QuantifiedConstraints #-}
->{-# LANGUAGE GADTs, AllowAmbiguousTypes, PolyKinds #-}
+>{-# LANGUAGE GADTs, AllowAmbiguousTypes, PolyKinds, RankNTypes #-}
 >-- | These should match standard definitions of vector spaces.
 >-- Used for reference: K. Chandrasekhara Rao: Functional Analysis.
 >-- also see Warner: Modern algebra.
@@ -81,18 +81,19 @@ cells_linear = cells . fromLinear
 >-- | This method of matrix construction is especially nice.
 >-- This is the functoriality of the tensor product.
 
+>{-# INLINE matrix #-}
 >matrix :: (Functor m, Functor n) => (a -> b -> c) -> m a -> n b -> (m :*: n) c
 >matrix f x = \y -> Matrix $ flip fmap x $ \a -> 
 >                            flip fmap y $ \b -> f a b
 
 >inverse_matrix :: (Contravariant m, Contravariant n)
-> => (g a -> c -> b) -> m (n c) -> n b -> (m :*: g) a
->inverse_matrix f x y = Matrix $ flip inverse_image x $ \a ->
+> => (g a -> c -> b) -> (m :*: n) c -> n b -> (m :*: g) a
+>inverse_matrix f (Matrix x) y = Matrix $ flip inverse_image x $ \a ->
 >                                flip inverse_image y $ \b -> f a b
 
 >left_inverse_matrix :: (Contravariant m, Functor n)
->  => (g a -> c -> b) -> m (n b) -> n c -> (m :*: g) a
->left_inverse_matrix f x y = Matrix $ flip inverse_image x $ \a ->
+>  => (g a -> c -> b) -> (m :*: n) b -> n c -> (m :*: g) a
+>left_inverse_matrix f (Matrix x) y = Matrix $ flip inverse_image x $ \a ->
 >                                     flip fmap y $ \b -> f a b
 
 >right_inverse_matrix :: (Functor m, Contravariant n)
@@ -405,7 +406,7 @@ codiagonal = codiagonal_impl . fromLinear
 >  vector_dimension :: m a -> a
 >  vector_dimension (f :: m a) = trace_impl (identity :: (m :*: m) a)
 
->class (Category arr,Traceable m a) => LinearTraceable arr m a where
+>class (Category arr,Traceable m a) => LinearTraceable arr m a | m a -> arr where
 >  determinant :: arr (m a) (m a) -> a
 >  trace       :: arr (m a) (m a) -> a
 >  default determinant :: (Linearizable arr (:*:) m m a) => arr (m a) (m a) -> a
@@ -584,10 +585,12 @@ cross_product_matrix a = linear $ Matrix $ fmap (%<>% a) $ cells (identity $ vec
 >k_vec = unit_vectors !! 2
 >l_vec = unit_vectors !! 3
 
+>{-# INLINABLE innerproductspace_norm #-}
 >innerproductspace_norm :: (Floating (Scalar m), InnerProductSpace m)
 >                       => m -> Scalar m
 >innerproductspace_norm v = sqrt (v %. v)
 
+>{-# INLINABLE innerproductspace_norm_squared #-}
 >innerproductspace_norm_squared :: (Floating (Scalar m), InnerProductSpace m)
 >         => m -> Scalar m
 >innerproductspace_norm_squared v = v %. v
@@ -666,9 +669,9 @@ index2 (row,col) (C e) = index col (index row e)
 >-- | generalized implementation of matrix multiplication
 >-- see <http://en.wikipedia.org/wiki/Matrix_multiplication>
 
+>{-# INLINABLE (%*%) #-}
 >(%*%) :: (SupportsMatrixMultiplication f g h a) => (f :*: g) a -> (g :*: h) a -> (f :*: h) (Scalar (g a))
 >(%*%) (Matrix m1) m2 = matrix (%.) m1 (cells $ transpose_impl m2)
-
 
 >(%**%) :: (SupportsMatrixMultiplication f g h a,
 >        Linearizable arr (:*:) f h a, Linearizable arr (:*:) f g a,
@@ -881,6 +884,7 @@ instance Diagonalizable Stream Integer where
 
 >instance {-# OVERLAPPABLE #-} (RealFloat a) => NormedSpace (Complex a) where
 >   norm x = sqrt (x %. x)
+>   norm_squared x = x %. x
 
 >instance (RealFloat a) => MetricSpace (Complex a) where
 >   distance a b = norm (b - a)
@@ -964,7 +968,7 @@ instance (Floating a) => NormedSpace [a] where
 
 
 >instance (Floating a, ConjugateSymmetric a) => NormedSpace (Sum a) where
->   norm x = sqrt (x %. x)
+>   norm_squared x = x %. x
 
 >instance (ConjugateSymmetric a,Num a) => InnerProductSpace (Sum a) where
 >   (Sum x) %. (Sum y) = x * conj y
@@ -979,7 +983,7 @@ instance (Floating a) => NormedSpace [a] where
 >   (First m) %+ (First Nothing) = First m
 
 >instance (Floating a) => NormedSpace (First a) where
->   norm x = sqrt(x %. x)
+>   norm_squared x = x %. x
 
 >instance (Num a) => InnerProductSpace (First a) where
 >   (First (Just x)) %. (First (Just y)) = x * y
@@ -1030,7 +1034,7 @@ instance (Floating a) => NormedSpace [a] where
 this function is identically zero for hilbert spaces.
 
 >hilbertSpace :: (Num m, NormedSpace m) => m -> m -> Scalar m
->hilbertSpace x y = norm(x+y)+norm(x-y) - 2*(norm x*norm x+norm y*norm y)
+>hilbertSpace x y = norm(x+y)+norm(x-y) - 2*(norm_squared x+norm_squared y)
 
 >lie_adjoint :: (LieAlgebra v) => v -> Endo v
 >lie_adjoint x = Endo $ \y -> x %<>% y
@@ -1063,11 +1067,11 @@ instance (Functor m) => Unital (:*:) m where
 
 >-- | <https://en.wikipedia.org/wiki/Norm_(mathematics)>
 >is_on_unit_circle :: (NormedSpace v, Eq (Scalar v)) => v -> Bool
->is_on_unit_circle v = norm v == 1
+>is_on_unit_circle v = norm_squared v == 1
 
 >-- | <https://en.wikipedia.org/wiki/Norm_(mathematics)>
 >is_inside_unit_circle :: (NormedSpace v, Ord (Scalar v)) => v -> Bool
->is_inside_unit_circle v = norm v <= 1
+>is_inside_unit_circle v = norm_squared v <= 1
 
 instance VectorSpace (f (Complex a)) => VectorSpace ((f :*: Complex) a) where
   type Scalar ((f :*: Complex) a) = Scalar (f (Complex a))
@@ -1188,3 +1192,22 @@ example use: m <!> (xcoord3,ycoord3)
 
 >instance Transposable IO IO a where
 >  transpose_impl = id
+
+>type Projection f = forall a. f a -> a
+>type ElementRemovals f g g' = forall a. f (g a -> g' a)
+
+>data Determinance f g f' g' gg a' a res = Determinance {
+>  determinance_removes1 :: g (g a -> gg a),
+>  determinance_removes2 :: g (f (gg a) -> f' (g' a')),
+>  determinance_coord_proj1 :: Projection f,
+>  determinance_coord_proj2 :: Projection g,
+>  determinance_combine :: g a -> res,
+>  determinance_nested_determinant :: (f' :*: g') a' -> a
+> }
+
+>genericDeterminant :: (Functor f, Applicative g, Num a) =>
+>    Determinance f g f' g' gg a' a res -> (f :*: g) a -> res
+>genericDeterminant (Determinance removes1 removes2 coord_proj1 coord_proj2 combine det) (Matrix m)
+>     = combine $ (*) <$> coord_proj1 m <*> amv  
+>   where amv = fmap (det . Matrix . coord_proj2 removes2 . (`fmap` m)) removes1
+

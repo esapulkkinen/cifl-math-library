@@ -93,6 +93,7 @@
 
 >instance (Num a) => NormedSpace (Interval a) where
 >  norm (Interval a b) = abs (b - a)
+>  norm_squared (Interval a b) = let d = b - a in d*d
 
 >instance (Num a) => InnerProductSpace (Interval a) where
 >  (Interval a b) %. (Interval a' b') = (b-a)*(b'-a')

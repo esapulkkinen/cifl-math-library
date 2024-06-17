@@ -7,7 +7,7 @@
 >{-# LANGUAGE AllowAmbiguousTypes #-}
 >{-# LANGUAGE MultiParamTypeClasses #-}
 >{-# LANGUAGE RoleAnnotations #-}
->{-# LANGUAGE DataKinds #-}
+>{-# LANGUAGE DataKinds, IncoherentInstances #-}
 >{-# OPTIONS_HADDOCK ignore-exports #-}
 >-- | This modules provides SIMD optimized versions of vectors.
 >-- Relies heavily on GHC SIMD support. SIMD works only when using LLVM and
@@ -52,7 +52,7 @@
 
 #if __GLASGOW_HASKELL__ >= 800 && defined(WITH_LLVM)
 
->{-# OPTIONS_GHC -fllvm #-}
+{-# OPTIONS_GHC -fllvm #-}
 
 >import GHC.Exts
 >import GHC.Int
@@ -82,76 +82,88 @@
 >         bneg = negateDouble# b
 >         x' = packDoubleX2# (# a,bneg #)
 
+>{-# INLINABLE sum_coordinates2Complex #-}
 >sum_coordinates2Complex :: SIMDVec 2 (Complex Float) -> Complex Float
 >sum_coordinates2Complex (ComplexVec2 x) = F# (plusFloat# a c) :+ F# (plusFloat# b d)
 >   where (# a,b,c,d #) = unpackFloatX4# x
 
+>{-# INLINABLE sum_coordinates1Complex #-}
 >sum_coordinates1Complex :: SIMDVec 1 (Complex Double) -> Complex Double
 >sum_coordinates1Complex (ComplexVec1 x) = D# a :+ D# b
 >   where (# a,b #) = unpackDoubleX2# x
 
+>{-# INLINABLE sum_coordinates1Complex_components #-}
 >sum_coordinates1Complex_components :: SIMDVec 1 (Complex Double) -> Double
 >sum_coordinates1Complex_components (ComplexVec1 x) = D# (a +## b)
 >   where (# a,b #) = unpackDoubleX2# x
 
+>{-# INLINABLE sum_coordinates2Int #-}
 >sum_coordinates2Int :: SIMDVec 2 Int64 -> Int64
->sum_coordinates2Int (Int64SVec2 x) = I64# (a +# b)
+>sum_coordinates2Int (Int64SVec2 x) = I64# (a `plusInt64#` b)
 >   where (# a,b #) = unpackInt64X2# x
->sum_coordinates4Int :: SIMDVec 4 Int32 -> Int32
->sum_coordinates4Int (Int32SVec4 x) = I32# ((a +# b) +# (c +# d))
->   where (# a,b,c,d #) = unpackInt32X4# x
->sum_coordinates8Int :: SIMDVec 8 Int16 -> Int16
->sum_coordinates8Int (Int16SVec8 x) = I16# (abcd +# efgh)
->   where (# a,b,c,d,e,f,g,h #) = unpackInt16X8# x
->         ab = a +# b
->         cd = c +# d
->         ef = e +# f
->         gh = g +# h
->         abcd = ab +# cd
->         efgh = ef +# gh
-> 
->sum_coordinates16Int :: SIMDVec 16 Int8 -> Int8
->sum_coordinates16Int (Int8SVec16 x) = I8# (abcdefgh +# abcdefgh2)
->   where (# a,b,c,d,e,f,g,h,a2,b2,c2,d2,e2,f2,g2,h2 #) = unpackInt8X16# x
->         ab = a +# b
->         cd = c +# d
->         ef = e +# f
->         gh = g +# h
->         abcd = ab +# cd
->         efgh = ef +# gh
->         abcdefgh = abcd +# efgh
->         ab2 = a2 +# b2
->         cd2 = c2 +# d2
->         ef2 = e2 +# f2
->         gh2 = g2 +# h2
->         abcd2 = ab2 +# cd2
->         efgh2 = ef2 +# gh2
->         abcdefgh2 = abcd2 +# efgh2
 
+>{-# INLINABLE sum_coordinates4Int #-}
+>sum_coordinates4Int :: SIMDVec 4 Int32 -> Int32
+>sum_coordinates4Int (Int32SVec4 x) = I32# ((a `plusInt32#` b) `plusInt32#` (c `plusInt32#` d))
+>   where (# a,b,c,d #) = unpackInt32X4# x
+
+>{-# INLINABLE sum_coordinates8Int #-}
+>sum_coordinates8Int :: SIMDVec 8 Int16 -> Int16
+>sum_coordinates8Int (Int16SVec8 x) = I16# (abcd `plusInt16#` efgh)
+>   where (# a,b,c,d,e,f,g,h #) = unpackInt16X8# x
+>         ab = a `plusInt16#` b
+>         cd = c `plusInt16#` d
+>         ef = e `plusInt16#` f
+>         gh = g `plusInt16#` h
+>         abcd = ab `plusInt16#` cd
+>         efgh = ef `plusInt16#` gh
+> 
+>{-# INLINABLE sum_coordinates16Int #-}
+>sum_coordinates16Int :: SIMDVec 16 Int8 -> Int8
+>sum_coordinates16Int (Int8SVec16 x) = I8# (abcdefgh `plusInt8#` abcdefgh2)
+>   where (# a,b,c,d,e,f,g,h,a2,b2,c2,d2,e2,f2,g2,h2 #) = unpackInt8X16# x
+>         ab = a `plusInt8#` b
+>         cd = c `plusInt8#` d
+>         ef = e `plusInt8#` f
+>         gh = g `plusInt8#` h
+>         abcd = ab `plusInt8#` cd
+>         efgh = ef `plusInt8#` gh
+>         abcdefgh = abcd `plusInt8#` efgh
+>         ab2 = a2 `plusInt8#` b2
+>         cd2 = c2 `plusInt8#` d2
+>         ef2 = e2 `plusInt8#` f2
+>         gh2 = g2 `plusInt8#` h2
+>         abcd2 = ab2 `plusInt8#` cd2
+>         efgh2 = ef2 `plusInt8#` gh2
+>         abcdefgh2 = abcd2 `plusInt8#` efgh2
+
+>{-# INLINABLE sum_coordinatesSIMD2 #-}
 >sum_coordinatesSIMD2 :: SIMDVec 2 Double -> Double
 >sum_coordinatesSIMD2 (DoubleFVec2 x) = D# (a +## b)
 >  where (# a,b #) = unpackDoubleX2# x
 
+>{-# INLINABLE sum_coordinatesSIMD4 #-}
 >sum_coordinatesSIMD4 :: SIMDVec 4 Float -> Float
 >sum_coordinatesSIMD4 (FloatFVec4 x) = F# (plusFloat# (plusFloat# a b) (plusFloat# c d))
 >  where (# a,b,c,d #) = unpackFloatX4# x
 
+>{-# INLINABLE sum_coordinatesSIMD3 #-}
 >sum_coordinatesSIMD3 :: SIMDVec 4 Float -> Float
 >sum_coordinatesSIMD3 (FloatFVec4 x) = F# (plusFloat# (plusFloat# a b) c)
 >  where (# a,b,c,d #) = unpackFloatX4# x
 
 >fromIntegralSIMD4 :: SIMDVec 4 Int32 -> SIMDVec 4 Float
 >fromIntegralSIMD4 (Int32SVec4 x) = FloatFVec4 (packFloatX4# (# a',b',c',d' #))
->   where a' = int2Float# a
->         b' = int2Float# b
->         c' = int2Float# c
->         d' = int2Float# d
+>   where a' = int2Float# (int32ToInt# a)
+>         b' = int2Float# (int32ToInt# b)
+>         c' = int2Float# (int32ToInt# c)
+>         d' = int2Float# (int32ToInt# d)
 >         (# a,b,c,d #) = unpackInt32X4# x
 
 >fromIntegralSIMD2 :: SIMDVec 2 Int64 -> SIMDVec 2 Double
 >fromIntegralSIMD2 (Int64SVec2 x) = DoubleFVec2 (packDoubleX2# (# a',b' #))
->   where a' = int2Double# a
->         b' = int2Double# b
+>   where a' = int2Double# (int64ToInt# a)
+>         b' = int2Double# (int64ToInt# b)
 >         (# a,b #) = unpackInt64X2# x
 
 >instance Num (SIMDVec 4 Float) where
@@ -744,6 +756,8 @@
 >           (I8# e') (I8# f') (I8# g') (I8# h')
 >   = Int8SVec16 (packInt8X16# (# a,b,c,d,e,f,g,h,a',b',c',d',e',f',g',h' #))
 
+#if defined(WITH_LLVM)
+
 >instance VectorSpace (SIMDVec 4 Float) where
 >   type Scalar (SIMDVec 4 Float) = Float
 >   vzero = FloatFVec4 (broadcastFloatX4# 0.0#)
@@ -760,7 +774,7 @@
 
 >instance VectorSpace (SIMDVec 2 Int64) where
 >   type Scalar (SIMDVec 2 Int64) = Int64
->   vzero = Int64SVec2 (broadcastInt64X2# 0#)
+>   vzero = Int64SVec2 (broadcastInt64X2# (intToInt64# 0#))
 >   vnegate (Int64SVec2 i) = Int64SVec2 (negateInt64X2# i)
 >   (Int64SVec2 x) %+ (Int64SVec2 y) = Int64SVec2 (plusInt64X2# x y)
 >   (I64# x) %* (Int64SVec2 v) = Int64SVec2 (timesInt64X2# (broadcastInt64X2# x) v)
@@ -768,21 +782,21 @@
 
 >instance VectorSpace (SIMDVec 4 Int32) where
 >   type Scalar (SIMDVec 4 Int32) = Int32
->   vzero = Int32SVec4 (broadcastInt32X4# 0#)
+>   vzero = Int32SVec4 (broadcastInt32X4# (intToInt32# 0#))
 >   vnegate (Int32SVec4 i) = Int32SVec4 (negateInt32X4# i)
 >   (Int32SVec4 x) %+ (Int32SVec4 y) = Int32SVec4 (plusInt32X4# x y)
 >   (I32# x) %* (Int32SVec4 v) = Int32SVec4 (timesInt32X4# (broadcastInt32X4# x) v)
 
 >instance VectorSpace (SIMDVec 8 Int16) where
 >   type Scalar (SIMDVec 8 Int16) = Int16
->   vzero = Int16SVec8 (broadcastInt16X8# 0#)
+>   vzero = Int16SVec8 (broadcastInt16X8# (intToInt16# 0#))
 >   vnegate (Int16SVec8 i) = Int16SVec8 (negateInt16X8# i)
 >   (Int16SVec8 x) %+ (Int16SVec8 y) = Int16SVec8 (plusInt16X8# x y)
 >   (I16# x) %* (Int16SVec8 v) = Int16SVec8 (timesInt16X8# (broadcastInt16X8# x) v)
 
 >instance VectorSpace (SIMDVec 16 Int8) where
 >   type Scalar (SIMDVec 16 Int8) = Int8
->   vzero = Int8SVec16 (broadcastInt8X16# 0#)
+>   vzero = Int8SVec16 (broadcastInt8X16# (intToInt8# 0#))
 >   vnegate (Int8SVec16 i) = Int8SVec16 (negateInt8X16# i)
 >   (Int8SVec16 x) %+ (Int8SVec16 y) = Int8SVec16 (plusInt8X16# x y)
 >   (I8# x) %* (Int8SVec16 v) = Int8SVec16 (timesInt8X16# (broadcastInt8X16# x) v)
@@ -800,6 +814,8 @@
 >   vnegate (ComplexVec1 x) = ComplexVec1 (negateDoubleX2# x)
 >   (ComplexVec1 x) %+ (ComplexVec1 y) = ComplexVec1 (plusDoubleX2# x y)
 >   (D# x :+ D# y) %* (ComplexVec1 v) = ComplexVec1 (timesDoubleX2# (packDoubleX2# (# x,y #) ) v)
+
+#endif
 
 #else
 
@@ -1361,9 +1377,11 @@
 
 >instance NormedSpace (SIMDVec 2 (Complex Float)) where
 >   norm a = sqrt (a %. a)
+>   norm_squared a = a %. a
 >
 >instance NormedSpace (SIMDVec 1 (Complex Double)) where
 >   norm a = sqrt (a %. a)
+>   norm_squared a = a %. a
 
 >class (VectorSpace a) => Optimal a where
 >   type Optimized a
@@ -1491,16 +1509,19 @@
 >   sumCoordinatesO = sum_coordinatesSIMD3
 >   constantO = constantFVec4
 
+>{-# INLINABLE fast_multiply4_float #-}
 >fast_multiply4_float :: Matrix4 Float -> Vector4 Float -> Vector4 Float
 >fast_multiply4_float (Matrix (Vector4 a b c d)) v = Vector4
 >   ((toO a) %. v') ((toO b) %. v') ((toO c) %. v') ((toO d) %. v')
 >  where v' = toO v
 
+>{-# INLINABLE fast_multiply3_float #-}
 >fast_multiply3_float :: Matrix3 Float -> Vector3 Float -> Vector3 Float
 >fast_multiply3_float (Matrix (Vector3 a b c)) v = Vector3
 >   ((toO a) %. v') ((toO b) %. v') ((toO c) %. v')
 >  where v' = toO v
 
+>{-# INLINABLE fast_multiply2_double #-}
 >fast_multiply2_double :: (Scalar (SIMDVec 2 Double) ~ Double) => Matrix2 Double -> Vector2 Double -> Vector2 Double
 >fast_multiply2_double (Matrix (Vector2 a b)) v = Vector2
 >   ((toO a) %. v') ((toO b) %. v')
@@ -1528,5 +1549,12 @@
 
 >instance {-# OVERLAPS #-} NormedSpace (Vector2 (Complex Float)) where
 >   norm x = norm (toO x)
+>   norm_squared x = norm_squared (toO x)
+
 >instance {-# OVERLAPS #-} NormedSpace (Complex Double) where
 >   norm x = norm (toO x)
+>   norm_squared x = norm_squared (toO x)
+
+>{-# SPECIALISE (%*%) :: (Vector4 :*: Vector4) Float -> (Vector4 :*: Vector4) Float -> (Vector4 :*: Vector4) Float #-}
+>{-# SPECIALISE (%*%) :: (Vector3 :*: Vector3) Float -> (Vector3 :*: Vector3) Float -> (Vector3 :*: Vector3) Float #-}
+>{-# SPECIALISE (%*%) :: (Vector2 :*: Vector2) Double -> (Vector2 :*: Vector2) Double -> (Vector2 :*: Vector2) Double #-}

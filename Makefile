@@ -53,7 +53,7 @@ build-gui-prof :
 	$(STACK) build --fast cifl-math-library:mathgui --executable-profiling 
 
 build-stack-llvm :
-	$(STACK) build --ghc-options="-fllvm -Wno-error=unsupported-llvm-version" --flag '*:LLVM'
+	$(STACK) build --ghc-options="-fllvm -O3 -Wno-error=unsupported-llvm-version" --flag '*:LLVM'
 
 build-llvm:
 	$(CABAL) $(CABALOPTS) $(CABALFLAGS) new-build -j4 --ghc-options="-fllvm -Wno-error=unsupported-llvm-version"
