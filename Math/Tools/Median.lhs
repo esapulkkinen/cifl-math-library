@@ -93,19 +93,19 @@
 
 >instance (Num a) => NormedSpace (Interval a) where
 >  norm (Interval a b) = abs (b - a)
->  norm_squared (Interval a b) = let d = b - a in d*d
+>  normSquared (Interval a b) = let d = b - a in d*d
 
 >instance (Num a) => InnerProductSpace (Interval a) where
 >  (Interval a b) %. (Interval a' b') = (b-a)*(b'-a')
 
->in_interval :: (Eq a, MedianAlgebra a) => a -> Interval a -> Bool
->in_interval x (Interval u v) = x == med x u v
-
+>inInterval :: (Eq a, MedianAlgebra a) => a -> Interval a -> Bool
+>inInterval x (Interval u v) = x == med x u v
+> 
 >interval :: (Monad m, MedianAlgebra a) => Interval a -> m a -> m a
 >interval (Interval u v) m = m >>= \x -> return (med x u v)
 
->median_homomorphism :: (MedianAlgebra a) => Interval a -> a -> a
->median_homomorphism (Interval u v) x = med x u v
+>medianHomomorphism :: (MedianAlgebra a) => Interval a -> a -> a
+>medianHomomorphism (Interval u v) x = med x u v
 
 >instance (Num a, Ord a) => Num (Interval a) where
 >  (Interval a b) + (Interval a' b') = Interval (a+a') (b+b')

@@ -36,7 +36,7 @@
 >triangular_order_bitmap = Matrix $ 
 >  A.listArray (0,299) $ Stream.take 300 $
 >   fmap (A.listArray (0,299) . Stream.take 300) $
->   cells (fmap (fromInteger . (`mod` 256)) Stream.triangular_order_matrix)
+>   cells (fmap (fromInteger . (`mod` 256)) Stream.triangularOrderMatrix)
 
 >default_colortable :: Colortable
 >default_colortable = array (0,255) $!
@@ -45,7 +45,7 @@
 >           ++ [(255,ByteString.pack $! [0,0,0])]
 >
 >instance (Ix i, Ix j) => Transposable (Array i) (Array j) a where
->   transpose_impl (Matrix m) = Matrix $ array yr $
+>   transposeImpl (Matrix m) = Matrix $ array yr $
 >        [(j,array xr [(i, (m ! i) ! j) | i <- range xr]) | j <- range yr]
 >     where xr@(x,_) = bounds m
 >           yr = bounds (m ! x)

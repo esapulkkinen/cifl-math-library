@@ -5,116 +5,116 @@
 </span><span id="line-5"></span><span> </span><span class="hs-keyword">import</span><span> </span><span class="annot"><span class="hs-identifier">Text.ParserCombinators.ReadPrec</span></span><span>
 </span><span id="line-6"></span><span> </span><span class="hs-keyword">import</span><span> </span><span class="annot"><span class="hs-identifier">Text.Read</span></span><span>
 </span><span id="line-7"></span><span>  </span><span>
-</span><span id="line-8"></span><span> </span><span id="local-6989586621681314641"><span class="annot"><a href="Math.Tools.Show.html#showsBinaryOp"><span class="hs-identifier hs-type">showsBinaryOp</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="hs-special">(</span><span class="annot"><span class="hs-identifier hs-type">Show</span></span><span> </span><span class="annot"><a href="#local-6989586621681314641"><span class="hs-identifier hs-type">a</span></a></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">=&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Int</span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">String</span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Int</span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="#local-6989586621681314641"><span class="hs-identifier hs-type">a</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="#local-6989586621681314641"><span class="hs-identifier hs-type">a</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">ShowS</span></span></span><span>
+</span><span id="line-8"></span><span> </span><span id="local-6989586621681192771"><span class="annot"><a href="Math.Tools.Show.html#showsBinaryOp"><span class="hs-identifier hs-type">showsBinaryOp</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="hs-special">(</span><span class="annot"><span class="hs-identifier hs-type">Show</span></span><span> </span><span class="annot"><a href="#local-6989586621681192771"><span class="hs-identifier hs-type">a</span></a></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">=&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Int</span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">String</span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Int</span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="#local-6989586621681192771"><span class="hs-identifier hs-type">a</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="#local-6989586621681192771"><span class="hs-identifier hs-type">a</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">ShowS</span></span></span><span>
 </span><span id="line-9"></span><span> </span><span id="showsBinaryOp"><span class="annot"><span class="annottext">showsBinaryOp :: forall a. Show a =&gt; Int -&gt; String -&gt; Int -&gt; a -&gt; a -&gt; ShowS
-</span><a href="Math.Tools.Show.html#showsBinaryOp"><span class="hs-identifier hs-var hs-var">showsBinaryOp</span></a></span></span><span> </span><span id="local-6989586621681314705"><span class="annot"><span class="annottext">Int
-</span><a href="#local-6989586621681314705"><span class="hs-identifier hs-var">i</span></a></span></span><span> </span><span id="local-6989586621681314706"><span class="annot"><span class="annottext">String
-</span><a href="#local-6989586621681314706"><span class="hs-identifier hs-var">op</span></a></span></span><span> </span><span id="local-6989586621681314707"><span class="annot"><span class="annottext">Int
-</span><a href="#local-6989586621681314707"><span class="hs-identifier hs-var">p</span></a></span></span><span> </span><span id="local-6989586621681314708"><span class="annot"><span class="annottext">a
-</span><a href="#local-6989586621681314708"><span class="hs-identifier hs-var">x</span></a></span></span><span> </span><span id="local-6989586621681314709"><span class="annot"><span class="annottext">a
-</span><a href="#local-6989586621681314709"><span class="hs-identifier hs-var">y</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Bool -&gt; ShowS -&gt; ShowS
+</span><a href="Math.Tools.Show.html#showsBinaryOp"><span class="hs-identifier hs-var hs-var">showsBinaryOp</span></a></span></span><span> </span><span id="local-6989586621681192835"><span class="annot"><span class="annottext">Int
+</span><a href="#local-6989586621681192835"><span class="hs-identifier hs-var">i</span></a></span></span><span> </span><span id="local-6989586621681192836"><span class="annot"><span class="annottext">String
+</span><a href="#local-6989586621681192836"><span class="hs-identifier hs-var">op</span></a></span></span><span> </span><span id="local-6989586621681192837"><span class="annot"><span class="annottext">Int
+</span><a href="#local-6989586621681192837"><span class="hs-identifier hs-var">p</span></a></span></span><span> </span><span id="local-6989586621681192838"><span class="annot"><span class="annottext">a
+</span><a href="#local-6989586621681192838"><span class="hs-identifier hs-var">x</span></a></span></span><span> </span><span id="local-6989586621681192839"><span class="annot"><span class="annottext">a
+</span><a href="#local-6989586621681192839"><span class="hs-identifier hs-var">y</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Bool -&gt; ShowS -&gt; ShowS
 </span><span class="hs-identifier hs-var">showParen</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">Int
-</span><a href="#local-6989586621681314707"><span class="hs-identifier hs-var">p</span></a></span><span> </span><span class="annot"><span class="annottext">Int -&gt; Int -&gt; Bool
+</span><a href="#local-6989586621681192837"><span class="hs-identifier hs-var">p</span></a></span><span> </span><span class="annot"><span class="annottext">Int -&gt; Int -&gt; Bool
 forall a. Ord a =&gt; a -&gt; a -&gt; Bool
 </span><span class="hs-operator hs-var">&gt;</span></span><span> </span><span class="annot"><span class="annottext">Int
-</span><a href="#local-6989586621681314705"><span class="hs-identifier hs-var">i</span></a></span><span class="hs-special">)</span><span> </span><span class="annot"><span class="annottext">(ShowS -&gt; ShowS) -&gt; ShowS -&gt; ShowS
+</span><a href="#local-6989586621681192835"><span class="hs-identifier hs-var">i</span></a></span><span class="hs-special">)</span><span> </span><span class="annot"><span class="annottext">(ShowS -&gt; ShowS) -&gt; ShowS -&gt; ShowS
 forall a b. (a -&gt; b) -&gt; a -&gt; b
 </span><span class="hs-operator hs-var">$</span></span><span>
 </span><span id="line-10"></span><span>                              </span><span class="annot"><span class="annottext">Int -&gt; a -&gt; ShowS
 forall a. Show a =&gt; Int -&gt; a -&gt; ShowS
 </span><span class="hs-identifier hs-var">showsPrec</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">Int
-</span><a href="#local-6989586621681314705"><span class="hs-identifier hs-var">i</span></a></span><span class="annot"><span class="annottext">Int -&gt; Int -&gt; Int
+</span><a href="#local-6989586621681192835"><span class="hs-identifier hs-var">i</span></a></span><span class="annot"><span class="annottext">Int -&gt; Int -&gt; Int
 forall a. Num a =&gt; a -&gt; a -&gt; a
 </span><span class="hs-operator hs-var">+</span></span><span class="annot"><span class="annottext">Int
 </span><span class="hs-number">1</span></span><span class="hs-special">)</span><span> </span><span class="annot"><span class="annottext">a
-</span><a href="#local-6989586621681314708"><span class="hs-identifier hs-var">x</span></a></span><span> </span><span class="annot"><span class="annottext">ShowS -&gt; ShowS -&gt; ShowS
+</span><a href="#local-6989586621681192838"><span class="hs-identifier hs-var">x</span></a></span><span> </span><span class="annot"><span class="annottext">ShowS -&gt; ShowS -&gt; ShowS
 forall b c a. (b -&gt; c) -&gt; (a -&gt; b) -&gt; a -&gt; c
 </span><span class="hs-operator hs-var">.</span></span><span> </span><span class="annot"><span class="annottext">String -&gt; ShowS
 </span><span class="hs-identifier hs-var">showString</span></span><span> </span><span class="annot"><span class="annottext">String
-</span><a href="#local-6989586621681314706"><span class="hs-identifier hs-var">op</span></a></span><span> </span><span class="annot"><span class="annottext">ShowS -&gt; ShowS -&gt; ShowS
+</span><a href="#local-6989586621681192836"><span class="hs-identifier hs-var">op</span></a></span><span> </span><span class="annot"><span class="annottext">ShowS -&gt; ShowS -&gt; ShowS
 forall b c a. (b -&gt; c) -&gt; (a -&gt; b) -&gt; a -&gt; c
 </span><span class="hs-operator hs-var">.</span></span><span> </span><span class="annot"><span class="annottext">Int -&gt; a -&gt; ShowS
 forall a. Show a =&gt; Int -&gt; a -&gt; ShowS
 </span><span class="hs-identifier hs-var">showsPrec</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">Int
-</span><a href="#local-6989586621681314705"><span class="hs-identifier hs-var">i</span></a></span><span class="annot"><span class="annottext">Int -&gt; Int -&gt; Int
+</span><a href="#local-6989586621681192835"><span class="hs-identifier hs-var">i</span></a></span><span class="annot"><span class="annottext">Int -&gt; Int -&gt; Int
 forall a. Num a =&gt; a -&gt; a -&gt; a
 </span><span class="hs-operator hs-var">+</span></span><span class="annot"><span class="annottext">Int
 </span><span class="hs-number">1</span></span><span class="hs-special">)</span><span> </span><span class="annot"><span class="annottext">a
-</span><a href="#local-6989586621681314709"><span class="hs-identifier hs-var">y</span></a></span><span>
+</span><a href="#local-6989586621681192839"><span class="hs-identifier hs-var">y</span></a></span><span>
 </span><span id="line-11"></span><span>
-</span><span id="line-12"></span><span> </span><span id="local-6989586621681314653"><span class="annot"><a href="Math.Tools.Show.html#punctuate_list"><span class="hs-identifier hs-type">punctuate_list</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="hs-special">(</span><span class="annot"><span class="hs-identifier hs-type">Show</span></span><span> </span><span class="annot"><a href="#local-6989586621681314653"><span class="hs-identifier hs-type">a</span></a></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">=&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">String</span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="hs-special">[</span><span class="annot"><a href="#local-6989586621681314653"><span class="hs-identifier hs-type">a</span></a></span><span class="hs-special">]</span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">ShowS</span></span></span><span>
+</span><span id="line-12"></span><span> </span><span id="local-6989586621681192783"><span class="annot"><a href="Math.Tools.Show.html#punctuate_list"><span class="hs-identifier hs-type">punctuate_list</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="hs-special">(</span><span class="annot"><span class="hs-identifier hs-type">Show</span></span><span> </span><span class="annot"><a href="#local-6989586621681192783"><span class="hs-identifier hs-type">a</span></a></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">=&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">String</span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="hs-special">[</span><span class="annot"><a href="#local-6989586621681192783"><span class="hs-identifier hs-type">a</span></a></span><span class="hs-special">]</span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">ShowS</span></span></span><span>
 </span><span id="line-13"></span><span> </span><span id="punctuate_list"><span class="annot"><span class="annottext">punctuate_list :: forall a. Show a =&gt; String -&gt; [a] -&gt; ShowS
 </span><a href="Math.Tools.Show.html#punctuate_list"><span class="hs-identifier hs-var hs-var">punctuate_list</span></a></span></span><span> </span><span class="annot"><span class="annottext">String
 </span><span class="hs-identifier">_</span></span><span> </span><span class="hs-special">[</span><span class="hs-special">]</span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">String -&gt; ShowS
 </span><span class="hs-identifier hs-var">showString</span></span><span> </span><span class="annot"><span class="annottext">String
 </span><span class="hs-string">&quot;&quot;</span></span><span>
 </span><span id="line-14"></span><span> </span><span class="annot"><a href="Math.Tools.Show.html#punctuate_list"><span class="hs-identifier hs-var">punctuate_list</span></a></span><span> </span><span class="annot"><span class="annottext">String
-</span><span class="hs-identifier">_</span></span><span> </span><span class="hs-special">[</span><span id="local-6989586621681314721"><span class="annot"><span class="annottext">a
-</span><a href="#local-6989586621681314721"><span class="hs-identifier hs-var">c</span></a></span></span><span class="hs-special">]</span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">a -&gt; ShowS
+</span><span class="hs-identifier">_</span></span><span> </span><span class="hs-special">[</span><span id="local-6989586621681192851"><span class="annot"><span class="annottext">a
+</span><a href="#local-6989586621681192851"><span class="hs-identifier hs-var">c</span></a></span></span><span class="hs-special">]</span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">a -&gt; ShowS
 forall a. Show a =&gt; a -&gt; ShowS
 </span><span class="hs-identifier hs-var">shows</span></span><span> </span><span class="annot"><span class="annottext">a
-</span><a href="#local-6989586621681314721"><span class="hs-identifier hs-var">c</span></a></span><span>
-</span><span id="line-15"></span><span> </span><span class="annot"><a href="Math.Tools.Show.html#punctuate_list"><span class="hs-identifier hs-var">punctuate_list</span></a></span><span> </span><span id="local-6989586621681314723"><span class="annot"><span class="annottext">String
-</span><a href="#local-6989586621681314723"><span class="hs-identifier hs-var">s</span></a></span></span><span> </span><span class="hs-special">(</span><span id="local-6989586621681314724"><span class="annot"><span class="annottext">a
-</span><a href="#local-6989586621681314724"><span class="hs-identifier hs-var">c</span></a></span></span><span class="annot"><span class="hs-glyph hs-type">:</span></span><span id="local-6989586621681314725"><span class="annot"><span class="annottext">[a]
-</span><a href="#local-6989586621681314725"><span class="hs-identifier hs-var">r</span></a></span></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">a -&gt; ShowS
+</span><a href="#local-6989586621681192851"><span class="hs-identifier hs-var">c</span></a></span><span>
+</span><span id="line-15"></span><span> </span><span class="annot"><a href="Math.Tools.Show.html#punctuate_list"><span class="hs-identifier hs-var">punctuate_list</span></a></span><span> </span><span id="local-6989586621681192853"><span class="annot"><span class="annottext">String
+</span><a href="#local-6989586621681192853"><span class="hs-identifier hs-var">s</span></a></span></span><span> </span><span class="hs-special">(</span><span id="local-6989586621681192854"><span class="annot"><span class="annottext">a
+</span><a href="#local-6989586621681192854"><span class="hs-identifier hs-var">c</span></a></span></span><span class="annot"><span class="hs-glyph hs-type">:</span></span><span id="local-6989586621681192855"><span class="annot"><span class="annottext">[a]
+</span><a href="#local-6989586621681192855"><span class="hs-identifier hs-var">r</span></a></span></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">a -&gt; ShowS
 forall a. Show a =&gt; a -&gt; ShowS
 </span><span class="hs-identifier hs-var">shows</span></span><span> </span><span class="annot"><span class="annottext">a
-</span><a href="#local-6989586621681314724"><span class="hs-identifier hs-var">c</span></a></span><span> </span><span class="annot"><span class="annottext">ShowS -&gt; ShowS -&gt; ShowS
+</span><a href="#local-6989586621681192854"><span class="hs-identifier hs-var">c</span></a></span><span> </span><span class="annot"><span class="annottext">ShowS -&gt; ShowS -&gt; ShowS
 forall b c a. (b -&gt; c) -&gt; (a -&gt; b) -&gt; a -&gt; c
 </span><span class="hs-operator hs-var">.</span></span><span> </span><span class="annot"><span class="annottext">String -&gt; ShowS
 </span><span class="hs-identifier hs-var">showString</span></span><span> </span><span class="annot"><span class="annottext">String
-</span><a href="#local-6989586621681314723"><span class="hs-identifier hs-var">s</span></a></span><span> </span><span class="annot"><span class="annottext">ShowS -&gt; ShowS -&gt; ShowS
+</span><a href="#local-6989586621681192853"><span class="hs-identifier hs-var">s</span></a></span><span> </span><span class="annot"><span class="annottext">ShowS -&gt; ShowS -&gt; ShowS
 forall b c a. (b -&gt; c) -&gt; (a -&gt; b) -&gt; a -&gt; c
 </span><span class="hs-operator hs-var">.</span></span><span> </span><span class="annot"><span class="annottext">String -&gt; [a] -&gt; ShowS
 forall a. Show a =&gt; String -&gt; [a] -&gt; ShowS
 </span><a href="Math.Tools.Show.html#punctuate_list"><span class="hs-identifier hs-var">punctuate_list</span></a></span><span> </span><span class="annot"><span class="annottext">String
-</span><a href="#local-6989586621681314723"><span class="hs-identifier hs-var">s</span></a></span><span> </span><span class="annot"><span class="annottext">[a]
-</span><a href="#local-6989586621681314725"><span class="hs-identifier hs-var">r</span></a></span><span>
+</span><a href="#local-6989586621681192853"><span class="hs-identifier hs-var">s</span></a></span><span> </span><span class="annot"><span class="annottext">[a]
+</span><a href="#local-6989586621681192855"><span class="hs-identifier hs-var">r</span></a></span><span>
 </span><span id="line-16"></span><span>
-</span><span id="line-17"></span><span> </span><span id="local-6989586621681314656"><span class="annot"><a href="Math.Tools.Show.html#choose"><span class="hs-identifier hs-type">choose</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="hs-special">[</span><span class="hs-special">(</span><span class="annot"><span class="hs-identifier hs-type">String</span></span><span class="hs-special">,</span><span class="annot"><span class="hs-identifier hs-type">ReadPrec</span></span><span> </span><span class="annot"><a href="#local-6989586621681314656"><span class="hs-identifier hs-type">a</span></a></span><span class="hs-special">)</span><span class="hs-special">]</span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">ReadPrec</span></span><span> </span><span class="annot"><a href="#local-6989586621681314656"><span class="hs-identifier hs-type">a</span></a></span></span><span>
+</span><span id="line-17"></span><span> </span><span id="local-6989586621681192786"><span class="annot"><a href="Math.Tools.Show.html#choose"><span class="hs-identifier hs-type">choose</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="hs-special">[</span><span class="hs-special">(</span><span class="annot"><span class="hs-identifier hs-type">String</span></span><span class="hs-special">,</span><span class="annot"><span class="hs-identifier hs-type">ReadPrec</span></span><span> </span><span class="annot"><a href="#local-6989586621681192786"><span class="hs-identifier hs-type">a</span></a></span><span class="hs-special">)</span><span class="hs-special">]</span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">ReadPrec</span></span><span> </span><span class="annot"><a href="#local-6989586621681192786"><span class="hs-identifier hs-type">a</span></a></span></span><span>
 </span><span id="line-18"></span><span> </span><span id="choose"><span class="annot"><span class="annottext">choose :: forall a. [(String, ReadPrec a)] -&gt; ReadPrec a
-</span><a href="Math.Tools.Show.html#choose"><span class="hs-identifier hs-var hs-var">choose</span></a></span></span><span> </span><span id="local-6989586621681314728"><span class="annot"><span class="annottext">[(String, ReadPrec a)]
-</span><a href="#local-6989586621681314728"><span class="hs-identifier hs-var">m</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">[ReadPrec a] -&gt; ReadPrec a
+</span><a href="Math.Tools.Show.html#choose"><span class="hs-identifier hs-var hs-var">choose</span></a></span></span><span> </span><span id="local-6989586621681192858"><span class="annot"><span class="annottext">[(String, ReadPrec a)]
+</span><a href="#local-6989586621681192858"><span class="hs-identifier hs-var">m</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">[ReadPrec a] -&gt; ReadPrec a
 forall a. [ReadPrec a] -&gt; ReadPrec a
 </span><span class="hs-identifier hs-var">choice</span></span><span> </span><span class="annot"><span class="annottext">([ReadPrec a] -&gt; ReadPrec a) -&gt; [ReadPrec a] -&gt; ReadPrec a
 forall a b. (a -&gt; b) -&gt; a -&gt; b
 </span><span class="hs-operator hs-var">$</span></span><span> </span><span class="annot"><span class="annottext">((String, ReadPrec a) -&gt; ReadPrec a)
 -&gt; [(String, ReadPrec a)] -&gt; [ReadPrec a]
 forall a b. (a -&gt; b) -&gt; [a] -&gt; [b]
-</span><span class="hs-identifier hs-var">map</span></span><span> </span><span class="hs-special">(</span><span class="hs-glyph">\</span><span class="hs-special">(</span><span id="local-6989586621681314730"><span class="annot"><span class="annottext">String
-</span><a href="#local-6989586621681314730"><span class="hs-identifier hs-var">a</span></a></span></span><span class="hs-special">,</span><span id="local-6989586621681314731"><span class="annot"><span class="annottext">ReadPrec a
-</span><a href="#local-6989586621681314731"><span class="hs-identifier hs-var">b</span></a></span></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="annottext">String -&gt; ReadPrec ()
+</span><span class="hs-identifier hs-var">map</span></span><span> </span><span class="hs-special">(</span><span class="hs-glyph">\</span><span class="hs-special">(</span><span id="local-6989586621681192860"><span class="annot"><span class="annottext">String
+</span><a href="#local-6989586621681192860"><span class="hs-identifier hs-var">a</span></a></span></span><span class="hs-special">,</span><span id="local-6989586621681192861"><span class="annot"><span class="annottext">ReadPrec a
+</span><a href="#local-6989586621681192861"><span class="hs-identifier hs-var">b</span></a></span></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="annottext">String -&gt; ReadPrec ()
 </span><a href="Math.Tools.Show.html#string"><span class="hs-identifier hs-var">string</span></a></span><span> </span><span class="annot"><span class="annottext">String
-</span><a href="#local-6989586621681314730"><span class="hs-identifier hs-var">a</span></a></span><span> </span><span class="annot"><span class="annottext">ReadPrec () -&gt; ReadPrec a -&gt; ReadPrec a
+</span><a href="#local-6989586621681192860"><span class="hs-identifier hs-var">a</span></a></span><span> </span><span class="annot"><span class="annottext">ReadPrec () -&gt; ReadPrec a -&gt; ReadPrec a
 forall a b. ReadPrec a -&gt; ReadPrec b -&gt; ReadPrec b
 forall (m :: * -&gt; *) a b. Monad m =&gt; m a -&gt; m b -&gt; m b
 </span><span class="hs-operator hs-var">&gt;&gt;</span></span><span> </span><span class="annot"><span class="annottext">ReadPrec a
-</span><a href="#local-6989586621681314731"><span class="hs-identifier hs-var">b</span></a></span><span class="hs-special">)</span><span> </span><span class="annot"><span class="annottext">[(String, ReadPrec a)]
-</span><a href="#local-6989586621681314728"><span class="hs-identifier hs-var">m</span></a></span><span>
+</span><a href="#local-6989586621681192861"><span class="hs-identifier hs-var">b</span></a></span><span class="hs-special">)</span><span> </span><span class="annot"><span class="annottext">[(String, ReadPrec a)]
+</span><a href="#local-6989586621681192858"><span class="hs-identifier hs-var">m</span></a></span><span>
 </span><span id="line-19"></span><span>
 </span><span id="line-20"></span><span> </span><span class="annot"><a href="Math.Tools.Show.html#string"><span class="hs-identifier hs-type">string</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">String</span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">ReadPrec</span></span><span> </span><span class="hs-special">(</span><span class="hs-special">)</span><span>
 </span><span id="line-21"></span><span> </span><span id="string"><span class="annot"><span class="annottext">string :: String -&gt; ReadPrec ()
-</span><a href="Math.Tools.Show.html#string"><span class="hs-identifier hs-var hs-var">string</span></a></span></span><span> </span><span id="local-6989586621681314733"><span class="annot"><span class="annottext">String
-</span><a href="#local-6989586621681314733"><span class="hs-identifier hs-var">lst</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">(Char -&gt; ReadPrec ()) -&gt; String -&gt; ReadPrec [()]
+</span><a href="Math.Tools.Show.html#string"><span class="hs-identifier hs-var hs-var">string</span></a></span></span><span> </span><span id="local-6989586621681192863"><span class="annot"><span class="annottext">String
+</span><a href="#local-6989586621681192863"><span class="hs-identifier hs-var">lst</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">(Char -&gt; ReadPrec ()) -&gt; String -&gt; ReadPrec [()]
 forall (t :: * -&gt; *) (m :: * -&gt; *) a b.
 (Traversable t, Monad m) =&gt;
 (a -&gt; m b) -&gt; t a -&gt; m (t b)
 forall (m :: * -&gt; *) a b. Monad m =&gt; (a -&gt; m b) -&gt; [a] -&gt; m [b]
-</span><span class="hs-identifier hs-var">mapM</span></span><span> </span><span class="hs-special">(</span><span class="hs-glyph">\</span><span id="local-6989586621681314735"><span class="annot"><span class="annottext">Char
-</span><a href="#local-6989586621681314735"><span class="hs-identifier hs-var">ch</span></a></span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="annottext">ReadPrec Char
+</span><span class="hs-identifier hs-var">mapM</span></span><span> </span><span class="hs-special">(</span><span class="hs-glyph">\</span><span id="local-6989586621681192865"><span class="annot"><span class="annottext">Char
+</span><a href="#local-6989586621681192865"><span class="hs-identifier hs-var">ch</span></a></span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="annottext">ReadPrec Char
 </span><span class="hs-identifier hs-var">get</span></span><span> </span><span class="annot"><span class="annottext">ReadPrec Char -&gt; (Char -&gt; ReadPrec ()) -&gt; ReadPrec ()
 forall a b. ReadPrec a -&gt; (a -&gt; ReadPrec b) -&gt; ReadPrec b
 forall (m :: * -&gt; *) a b. Monad m =&gt; m a -&gt; (a -&gt; m b) -&gt; m b
-</span><span class="hs-operator hs-var">&gt;&gt;=</span></span><span> </span><span class="hs-glyph">\</span><span id="local-6989586621681314737"><span class="annot"><span class="annottext">Char
-</span><a href="#local-6989586621681314737"><span class="hs-identifier hs-var">v</span></a></span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="annottext">Bool -&gt; ReadPrec ()
+</span><span class="hs-operator hs-var">&gt;&gt;=</span></span><span> </span><span class="hs-glyph">\</span><span id="local-6989586621681192867"><span class="annot"><span class="annottext">Char
+</span><a href="#local-6989586621681192867"><span class="hs-identifier hs-var">v</span></a></span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="annottext">Bool -&gt; ReadPrec ()
 forall (f :: * -&gt; *). Alternative f =&gt; Bool -&gt; f ()
 </span><span class="hs-identifier hs-var">guard</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">Char
-</span><a href="#local-6989586621681314737"><span class="hs-identifier hs-var">v</span></a></span><span class="annot"><span class="annottext">Char -&gt; Char -&gt; Bool
+</span><a href="#local-6989586621681192867"><span class="hs-identifier hs-var">v</span></a></span><span class="annot"><span class="annottext">Char -&gt; Char -&gt; Bool
 forall a. Eq a =&gt; a -&gt; a -&gt; Bool
 </span><span class="hs-operator hs-var">==</span></span><span class="annot"><span class="annottext">Char
-</span><a href="#local-6989586621681314735"><span class="hs-identifier hs-var">ch</span></a></span><span class="hs-special">)</span><span class="hs-special">)</span><span> </span><span class="annot"><span class="annottext">String
-</span><a href="#local-6989586621681314733"><span class="hs-identifier hs-var">lst</span></a></span><span> </span><span class="annot"><span class="annottext">ReadPrec [()] -&gt; ReadPrec () -&gt; ReadPrec ()
+</span><a href="#local-6989586621681192865"><span class="hs-identifier hs-var">ch</span></a></span><span class="hs-special">)</span><span class="hs-special">)</span><span> </span><span class="annot"><span class="annottext">String
+</span><a href="#local-6989586621681192863"><span class="hs-identifier hs-var">lst</span></a></span><span> </span><span class="annot"><span class="annottext">ReadPrec [()] -&gt; ReadPrec () -&gt; ReadPrec ()
 forall a b. ReadPrec a -&gt; ReadPrec b -&gt; ReadPrec b
 forall (m :: * -&gt; *) a b. Monad m =&gt; m a -&gt; m b -&gt; m b
 </span><span class="hs-operator hs-var">&gt;&gt;</span></span><span> </span><span class="annot"><span class="annottext">() -&gt; ReadPrec ()
@@ -124,15 +124,15 @@ forall (m :: * -&gt; *) a. Monad m =&gt; a -&gt; m a
 </span><span id="line-22"></span><span>
 </span><span id="line-23"></span><span> </span><span class="annot"><a href="Math.Tools.Show.html#whitespace"><span class="hs-identifier hs-type">whitespace</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">ReadPrec</span></span><span> </span><span class="hs-special">(</span><span class="hs-special">)</span><span>
 </span><span id="line-24"></span><span> </span><span id="whitespace"><span class="annot"><span class="annottext">whitespace :: ReadPrec ()
-</span><a href="Math.Tools.Show.html#whitespace"><span class="hs-identifier hs-var hs-var">whitespace</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="hs-keyword">do</span><span> </span><span id="local-6989586621681314739"><span class="annot"><span class="annottext">String
-</span><a href="#local-6989586621681314739"><span class="hs-identifier hs-var">str</span></a></span></span><span> </span><span class="hs-glyph">&lt;-</span><span> </span><span class="annot"><span class="annottext">ReadPrec String
+</span><a href="Math.Tools.Show.html#whitespace"><span class="hs-identifier hs-var hs-var">whitespace</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="hs-keyword">do</span><span> </span><span id="local-6989586621681192869"><span class="annot"><span class="annottext">String
+</span><a href="#local-6989586621681192869"><span class="hs-identifier hs-var">str</span></a></span></span><span> </span><span class="hs-glyph">&lt;-</span><span> </span><span class="annot"><span class="annottext">ReadPrec String
 </span><span class="hs-identifier hs-var">look</span></span><span>
-</span><span id="line-25"></span><span>                 </span><span class="hs-keyword">let</span><span> </span><span id="local-6989586621681314741"><span class="annot"><span class="annottext">lst :: String
-</span><a href="#local-6989586621681314741"><span class="hs-identifier hs-var hs-var">lst</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">(Char -&gt; Bool) -&gt; ShowS
+</span><span id="line-25"></span><span>                 </span><span class="hs-keyword">let</span><span> </span><span id="local-6989586621681192871"><span class="annot"><span class="annottext">lst :: String
+</span><a href="#local-6989586621681192871"><span class="hs-identifier hs-var hs-var">lst</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">(Char -&gt; Bool) -&gt; ShowS
 forall a. (a -&gt; Bool) -&gt; [a] -&gt; [a]
 </span><span class="hs-identifier hs-var">takeWhile</span></span><span> </span><span class="annot"><span class="annottext">Char -&gt; Bool
 </span><span class="hs-identifier hs-var">isSpace</span></span><span> </span><span class="annot"><span class="annottext">String
-</span><a href="#local-6989586621681314739"><span class="hs-identifier hs-var">str</span></a></span><span>
+</span><a href="#local-6989586621681192869"><span class="hs-identifier hs-var">str</span></a></span><span>
 </span><span id="line-26"></span><span>                 </span><span class="annot"><span class="annottext">(Char -&gt; ReadPrec Char) -&gt; String -&gt; ReadPrec String
 forall (t :: * -&gt; *) (m :: * -&gt; *) a b.
 (Traversable t, Monad m) =&gt;
@@ -142,7 +142,7 @@ forall (m :: * -&gt; *) a b. Monad m =&gt; (a -&gt; m b) -&gt; [a] -&gt; m [b]
 forall a b. a -&gt; b -&gt; a
 </span><span class="hs-identifier hs-var">const</span></span><span> </span><span class="annot"><span class="annottext">ReadPrec Char
 </span><span class="hs-identifier hs-var">get</span></span><span class="hs-special">)</span><span> </span><span class="annot"><span class="annottext">String
-</span><a href="#local-6989586621681314741"><span class="hs-identifier hs-var">lst</span></a></span><span>
+</span><a href="#local-6989586621681192871"><span class="hs-identifier hs-var">lst</span></a></span><span>
 </span><span id="line-27"></span><span>                 </span><span class="annot"><span class="annottext">() -&gt; ReadPrec ()
 forall a. a -&gt; ReadPrec a
 forall (m :: * -&gt; *) a. Monad m =&gt; a -&gt; m a

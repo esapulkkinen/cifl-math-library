@@ -147,8 +147,8 @@
 > LinearTransform (Vec n) (Vec n) a,
 > Transposable (Vec n) (Vec n) a, Num a) => Diagonalizable (Vec n) a where
 >   identity = Matrix videntity
->   diagonal_matrix_impl x = Matrix (vdiagonal_matrix x)
->   diagonal_impl (Matrix x) = vdiagonal x
+>   diagonalMatrixImpl x = Matrix (vdiagonal_matrix x)
+>   diagonalImpl (Matrix x) = vdiagonal x
 
 >class DiagonalizableVector n where
 >   vnull :: (Num a) => Vec n a
@@ -167,8 +167,8 @@
 >   vlist _ = []
 
 >instance PpShowVerticalF (Vec n) where
->   ppf_vertical Empty = ""
->   ppf_vertical (Cons x xr) = Pretty.nest 4 (pp x) Pretty.$$ (ppf xr)
+>   ppfVertical Empty = ""
+>   ppfVertical (Cons x xr) = Pretty.nest 4 (pp x) Pretty.$$ (ppf xr)
 
 >instance PpShowF (Vec n) where
 >   ppf Empty = ""

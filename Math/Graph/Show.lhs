@@ -52,7 +52,7 @@
 
 >veprint :: (PpShow a, PpShow b) => ([a], [b]) -> Doc
 >veprint (v,e) = pp ("(" :: T.Text)
->             <> (PrettyP.pp_list v <+> pp ';' <+> PrettyP.pp_list e)
+>             <> (PrettyP.ppList v <+> pp ';' <+> PrettyP.ppList e)
 >             <> pp ')'
 
 >instance (Ord a, PpShow a) => PpShow (Graph Four a) where

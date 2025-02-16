@@ -1,9 +1,15 @@
 >{-# LANGUAGE FlexibleInstances, Trustworthy #-}
+>{-# LANGUAGE GeneralizedNewtypeDeriving, PatternSynonyms, LambdaCase #-}
 >{-# OPTIONS_HADDOCK hide #-}
 >module Math.Tools.Endomorphism where
->import Data.Monoid
+>import qualified Data.Monoid as Mon
 >import Math.Tools.Isomorphism
 >import Math.Tools.Universe
+
+>newtype Endo a = EndoI { unEndo :: Mon.Endo a }
+>  deriving (Semigroup, Monoid)
+
+>pattern Endo f = EndoI (Mon.Endo f)
 
 >class (Monoid x) => GraphAction x where
 >   source   :: x
@@ -42,22 +48,22 @@
 >   isInvert = isNotE
 
 >instance (Universe a, Eq a) => Eq (Endo a) where
->  (Endo f) == (Endo g) = and [f x == g x | x <- all_elements]
+>  (Endo f) == (Endo g) = and [f x == g x | x <- allElements]
 
 >instance (Show a, Universe a) => Show (Endo a) where
->   show (Endo f) = show [(x,f x) | x <- all_elements]
+>   show (Endo f) = show [(x,f x) | x <- allElements]
 
 >inverse_image_endo :: (a -> a) -> Endo a -> Endo a
 >inverse_image_endo f (Endo g) = Endo (g . f)
 
->iso_map_endo :: Iso a b -> Endo a -> Endo b
->iso_map_endo i (Endo f) = Endo (isomorphism_epimorphism i . f . isomorphism_section i)
+>isoMapEndo :: Iso a b -> Endo a -> Endo b
+>isoMapEndo i (Endo f) = Endo (isomorphismEpimorphism i . f . isomorphismSection i)
 
 >identityE :: Endo a
 >identityE = Endo id -- == mempty
 
 >isIdentityE :: (Universe a, Eq a) => Endo a -> Bool
->isIdentityE (Endo f) = and [f x == x | x <- all_elements]
+>isIdentityE (Endo f) = and [f x == x | x <- allElements]
 
 >notE :: Endo Bool
 >notE = Endo not
@@ -78,5 +84,8 @@
 >isFalseE (Endo f) = f True == False && f False == False
 
 >threeT :: (Ordering,Ordering,Ordering) -> Endo Ordering
->threeT (f,g,h) = Endo $ \act -> case act of { LT -> f ; EQ   -> g ; GT   -> h }
+>threeT (f,g,h) = Endo $ \case
+>   LT -> f
+>   EQ -> g
+>   GT -> h
 

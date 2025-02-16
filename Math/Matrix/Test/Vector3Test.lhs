@@ -31,7 +31,7 @@ https://en.wikipedia.org/wiki/Eigenvalues_and_eigenvectors
 >checkEigenValue a v l = (a <<*> v) ~=? (1 %* v)
 
 >checkEigenValueTrace :: (Vector3 :*: Vector3) Float -> Test
->checkEigenValueTrace a = trace_impl a ~=? sum_coordinates (eigenvalues a)
+>checkEigenValueTrace a = traceImpl a ~=? sumCoordinates (eigenvalues a)
 
 >testEigenValue3_identity = checkEigenValue identity (Vector3 1 2 3) 1
 >testEigenValue3_trace_identity    = checkEigenValueTrace identity

@@ -2,7 +2,7 @@
 </span><span id="line-2"></span><span> </span><span class="hs-pragma">{-# LANGUAGE OverloadedStrings #-}</span><span>
 </span><span id="line-3"></span><span> </span><span class="annot"><span class="hs-comment">-- | The module contains only Show and PpShow instances for graphs.</span></span><span>
 </span><span id="line-4"></span><span> </span><span class="hs-keyword">module</span><span> </span><span class="hs-identifier">Math.Graph.Show</span><span> </span><span class="hs-keyword">where</span><span>
-</span><span id="line-5"></span><span> </span><span class="hs-keyword">import</span><span> </span><span class="annot"><span class="hs-identifier">Text.PrettyPrint</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="hs-identifier">empty</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="hs-operator">(&lt;+&gt;)</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="hs-identifier">punctuate</span></span><span class="hs-special">)</span><span>
+</span><span id="line-5"></span><span> </span><span class="hs-keyword">import</span><span> </span><span class="annot"><span class="hs-identifier">Text.PrettyPrint</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="hs-identifier">Doc</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="hs-identifier">empty</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="hs-operator">(&lt;+&gt;)</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="hs-identifier">punctuate</span></span><span class="hs-special">)</span><span>
 </span><span id="line-6"></span><span> </span><span class="hs-keyword">import</span><span> </span><span class="hs-keyword">qualified</span><span> </span><span class="annot"><span class="hs-identifier">Data.Text</span></span><span> </span><span class="hs-keyword">as</span><span> </span><span class="annot"><span class="hs-identifier">T</span></span><span>
 </span><span id="line-7"></span><span> </span><span class="hs-keyword">import</span><span> </span><span class="annot"><span class="hs-identifier">Data.Monoid</span></span><span> </span><span class="hs-keyword">hiding</span><span> </span><span class="hs-special">(</span><span class="annot"><span class="hs-operator">(&lt;&gt;)</span></span><span class="hs-special">)</span><span>
 </span><span id="line-8"></span><span> </span><span class="hs-keyword">import</span><span> </span><span class="hs-keyword">qualified</span><span> </span><span class="annot"><span class="hs-identifier">Data.Set</span></span><span> </span><span class="hs-keyword">as</span><span> </span><span class="annot"><span class="hs-identifier">Set</span></span><span>
@@ -12,44 +12,36 @@
 </span><span id="line-12"></span><span> </span><span class="hs-keyword">import</span><span> </span><span class="annot"><span class="hs-identifier">Data.Set</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="hs-identifier">Set</span></span><span class="hs-special">)</span><span>
 </span><span id="line-13"></span><span> </span><span class="hs-keyword">import</span><span> </span><span class="annot"><span class="hs-identifier">Data.Binary</span></span><span>
 </span><span id="line-14"></span><span> </span><span class="hs-keyword">import</span><span> </span><span class="annot"><span class="hs-identifier">Control.Monad.Trans.Class</span></span><span>
-</span><span id="line-15"></span><span> </span><span class="hs-keyword">import</span><span> </span><span class="annot"><a href="Math.Graph.Reversible.html"><span class="hs-identifier">Math.Graph.Reversible</span></a></span><span>
-</span><span id="line-16"></span><span> </span><span class="hs-keyword">import</span><span> </span><span class="annot"><a href="Math.Graph.InGraphMonad.html"><span class="hs-identifier">Math.Graph.InGraphMonad</span></a></span><span>
-</span><span id="line-17"></span><span> </span><span class="hs-keyword">import</span><span> </span><span class="annot"><a href="Math.Graph.TransformationMonoid.html"><span class="hs-identifier">Math.Graph.TransformationMonoid</span></a></span><span>
-</span><span id="line-18"></span><span> </span><span class="hs-keyword">import</span><span> </span><span class="annot"><a href="Math.Graph.GraphMonoid.html"><span class="hs-identifier">Math.Graph.GraphMonoid</span></a></span><span>
-</span><span id="line-19"></span><span>
-</span><span id="line-20"></span><span> </span><span class="hs-keyword">instance</span><span> </span><span id="local-6989586621681415371"><span id="local-6989586621681415441"><span id="local-6989586621681415446"><span class="hs-special">(</span><span class="annot"><span class="hs-identifier hs-type">Ord</span></span><span> </span><span class="annot"><a href="#local-6989586621681415371"><span class="hs-identifier hs-type">a</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><a href="Math.Tools.PrettyP.html#PpShow"><span class="hs-identifier hs-type">PpShow</span></a></span><span> </span><span class="annot"><a href="#local-6989586621681415371"><span class="hs-identifier hs-type">a</span></a></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">=&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Show</span></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="Math.Graph.Reversible.html#Graph"><span class="hs-identifier hs-type">Graph</span></a></span><span> </span><span class="annot"><a href="Math.Graph.GraphMonoid.html#Three"><span class="hs-identifier hs-type">Three</span></a></span><span> </span><span class="annot"><a href="#local-6989586621681415371"><span class="hs-identifier hs-type">a</span></a></span><span class="hs-special">)</span></span></span></span><span> </span><span class="hs-keyword">where</span><span> </span><span class="hs-special">{</span><span> </span><span id="local-6989586621681415451"><span class="annot"><span class="annottext">show :: Graph Three a -&gt; String
-</span><a href="#local-6989586621681415451"><span class="hs-identifier hs-var hs-var hs-var hs-var">show</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Graph Three a -&gt; String
-forall a. PpShow a =&gt; a -&gt; String
-</span><a href="Math.Tools.PrettyP.html#pPrint"><span class="hs-identifier hs-var">pPrint</span></a></span><span> </span><span class="hs-special">}</span><span>
-</span><span id="line-21"></span><span> </span><span class="hs-keyword">instance</span><span> </span><span id="local-6989586621681415376"><span id="local-6989586621681415457"><span id="local-6989586621681415462"><span class="hs-special">(</span><span class="annot"><span class="hs-identifier hs-type">Ord</span></span><span> </span><span class="annot"><a href="#local-6989586621681415376"><span class="hs-identifier hs-type">a</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><a href="Math.Tools.PrettyP.html#PpShow"><span class="hs-identifier hs-type">PpShow</span></a></span><span> </span><span class="annot"><a href="#local-6989586621681415376"><span class="hs-identifier hs-type">a</span></a></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">=&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Show</span></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="Math.Graph.Reversible.html#Graph"><span class="hs-identifier hs-type">Graph</span></a></span><span> </span><span class="annot"><a href="Math.Graph.GraphMonoid.html#Four"><span class="hs-identifier hs-type">Four</span></a></span><span> </span><span class="annot"><a href="#local-6989586621681415376"><span class="hs-identifier hs-type">a</span></a></span><span class="hs-special">)</span></span></span></span><span> </span><span class="hs-keyword">where</span><span> </span><span class="hs-special">{</span><span> </span><span id="local-6989586621681415466"><span class="annot"><span class="annottext">show :: Graph Four a -&gt; String
-</span><span class="hs-identifier hs-var hs-var hs-var hs-var">show</span></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Graph Four a -&gt; String
-forall a. PpShow a =&gt; a -&gt; String
-</span><a href="Math.Tools.PrettyP.html#pPrint"><span class="hs-identifier hs-var">pPrint</span></a></span><span> </span><span class="hs-special">}</span><span>
-</span><span id="line-22"></span><span>
-</span><span id="line-23"></span><span> </span><span class="hs-keyword">instance</span><span> </span><span id="local-6989586621681415383"><span id="local-6989586621681415472"><span class="hs-special">(</span><span class="annot"><span class="hs-identifier hs-type">Binary</span></span><span> </span><span class="annot"><a href="#local-6989586621681415383"><span class="hs-identifier hs-type">a</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Ord</span></span><span> </span><span class="annot"><a href="#local-6989586621681415383"><span class="hs-identifier hs-type">a</span></a></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">=&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Binary</span></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="Math.Graph.Reversible.html#Graph"><span class="hs-identifier hs-type">Graph</span></a></span><span> </span><span class="annot"><a href="Math.Graph.GraphMonoid.html#Three"><span class="hs-identifier hs-type">Three</span></a></span><span> </span><span class="annot"><a href="#local-6989586621681415383"><span class="hs-identifier hs-type">a</span></a></span><span class="hs-special">)</span></span></span><span> </span><span class="hs-keyword">where</span><span>
-</span><span id="line-24"></span><span>   </span><span id="local-6989586621681415499"><span class="annot"><span class="annottext">put :: Graph Three a -&gt; Put
-</span><a href="#local-6989586621681415499"><span class="hs-identifier hs-var hs-var hs-var hs-var">put</span></a></span></span><span> </span><span id="local-6989586621681415501"><span class="annot"><span class="annottext">Graph Three a
-</span><a href="#local-6989586621681415501"><span class="hs-identifier hs-var">g</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Graph Three a -&gt; InGraphM Three a PutM () -&gt; Put
+</span><span id="line-15"></span><span> </span><span class="hs-keyword">import</span><span> </span><span class="annot"><a href="Math.Graph.Interface.html"><span class="hs-identifier">Math.Graph.Interface</span></a></span><span>
+</span><span id="line-16"></span><span> </span><span class="hs-keyword">import</span><span> </span><span class="annot"><a href="Math.Graph.Reversible.html"><span class="hs-identifier">Math.Graph.Reversible</span></a></span><span>
+</span><span id="line-17"></span><span> </span><span class="hs-keyword">import</span><span> </span><span class="annot"><a href="Math.Graph.InGraphMonad.html"><span class="hs-identifier">Math.Graph.InGraphMonad</span></a></span><span>
+</span><span id="line-18"></span><span> </span><span class="hs-keyword">import</span><span> </span><span class="annot"><a href="Math.Graph.TransformationMonoid.html"><span class="hs-identifier">Math.Graph.TransformationMonoid</span></a></span><span>
+</span><span id="line-19"></span><span> </span><span class="hs-keyword">import</span><span> </span><span class="annot"><a href="Math.Graph.GraphMonoid.html"><span class="hs-identifier">Math.Graph.GraphMonoid</span></a></span><span>
+</span><span id="line-20"></span><span>
+</span><span id="line-21"></span><span> </span><span class="hs-keyword">instance</span><span> </span><span id="local-6989586621681297968"><span id="local-6989586621681298058"><span class="hs-special">(</span><span class="annot"><span class="hs-identifier hs-type">Binary</span></span><span> </span><span class="annot"><a href="#local-6989586621681297968"><span class="hs-identifier hs-type">a</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Ord</span></span><span> </span><span class="annot"><a href="#local-6989586621681297968"><span class="hs-identifier hs-type">a</span></a></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">=&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Binary</span></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="Math.Graph.Reversible.html#Graph"><span class="hs-identifier hs-type">Graph</span></a></span><span> </span><span class="annot"><a href="Math.Graph.GraphMonoid.html#Three"><span class="hs-identifier hs-type">Three</span></a></span><span> </span><span class="annot"><a href="#local-6989586621681297968"><span class="hs-identifier hs-type">a</span></a></span><span class="hs-special">)</span></span></span><span> </span><span class="hs-keyword">where</span><span>
+</span><span id="line-22"></span><span>   </span><span id="local-6989586621681298085"><span class="annot"><span class="annottext">put :: Graph Three a -&gt; Put
+</span><a href="#local-6989586621681298085"><span class="hs-identifier hs-var hs-var hs-var hs-var">put</span></a></span></span><span> </span><span id="local-6989586621681298087"><span class="annot"><span class="annottext">Graph Three a
+</span><a href="#local-6989586621681298087"><span class="hs-identifier hs-var">g</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Graph Three a -&gt; InGraphM Three a PutM () -&gt; Put
 forall (mon :: * -&gt; * -&gt; *) e (m :: * -&gt; *) a.
 Graph mon e -&gt; InGraphM mon e m a -&gt; m a
 </span><a href="Math.Graph.InGraphMonad.html#inGraphM"><span class="hs-identifier hs-var">inGraphM</span></a></span><span> </span><span class="annot"><span class="annottext">Graph Three a
-</span><a href="#local-6989586621681415501"><span class="hs-identifier hs-var">g</span></a></span><span> </span><span class="annot"><span class="annottext">(InGraphM Three a PutM () -&gt; Put)
+</span><a href="#local-6989586621681298087"><span class="hs-identifier hs-var">g</span></a></span><span> </span><span class="annot"><span class="annottext">(InGraphM Three a PutM () -&gt; Put)
 -&gt; InGraphM Three a PutM () -&gt; Put
 forall a b. (a -&gt; b) -&gt; a -&gt; b
 </span><span class="hs-operator hs-var">$</span></span><span> </span><span class="hs-keyword">do</span><span>
-</span><span id="line-25"></span><span>     </span><span id="local-6989586621681415503"><span class="annot"><span class="annottext">Set a
-</span><a href="#local-6989586621681415503"><span class="hs-identifier hs-var">vertices</span></a></span></span><span> </span><span class="hs-glyph">&lt;-</span><span> </span><span class="annot"><span class="annottext">InGraphM Three a PutM (Set a)
+</span><span id="line-23"></span><span>     </span><span id="local-6989586621681298089"><span class="annot"><span class="annottext">Set a
+</span><a href="#local-6989586621681298089"><span class="hs-identifier hs-var">vertices</span></a></span></span><span> </span><span class="hs-glyph">&lt;-</span><span> </span><span class="annot"><span class="annottext">InGraphM Three a PutM (Set a)
 forall e (mon :: * -&gt; * -&gt; *) (m :: * -&gt; *).
 (Ord e, GraphMonoid mon Bool, Monad m) =&gt;
 InGraphM mon e m (Set e)
 </span><a href="Math.Graph.InGraphMonad.html#verticesM"><span class="hs-identifier hs-var">verticesM</span></a></span><span>
-</span><span id="line-26"></span><span>     </span><span id="local-6989586621681415505"><span class="annot"><span class="annottext">Set (a, a, a)
-</span><a href="#local-6989586621681415505"><span class="hs-identifier hs-var">edges</span></a></span></span><span> </span><span class="hs-glyph">&lt;-</span><span> </span><span class="annot"><span class="annottext">InGraphM Three a PutM (Set (a, a, a))
+</span><span id="line-24"></span><span>     </span><span id="local-6989586621681298091"><span class="annot"><span class="annottext">Set (a, a, a)
+</span><a href="#local-6989586621681298091"><span class="hs-identifier hs-var">edges</span></a></span></span><span> </span><span class="hs-glyph">&lt;-</span><span> </span><span class="annot"><span class="annottext">InGraphM Three a PutM (Set (a, a, a))
 forall (m :: * -&gt; *) e (mon :: * -&gt; * -&gt; *).
 (Monad m, Ord e, GraphMonoid mon Bool) =&gt;
 InGraphM mon e m (Set (e, e, e))
 </span><a href="Math.Graph.InGraphMonad.html#linksM"><span class="hs-identifier hs-var">linksM</span></a></span><span>
-</span><span id="line-27"></span><span>     </span><span class="annot"><span class="annottext">Put -&gt; InGraphM Three a PutM ()
+</span><span id="line-25"></span><span>     </span><span class="annot"><span class="annottext">Put -&gt; InGraphM Three a PutM ()
 forall (m :: * -&gt; *) a. Monad m =&gt; m a -&gt; InGraphM Three a m a
 forall (t :: (* -&gt; *) -&gt; * -&gt; *) (m :: * -&gt; *) a.
 (MonadTrans t, Monad m) =&gt;
@@ -60,8 +52,8 @@ forall a b. (a -&gt; b) -&gt; a -&gt; b
 </span><span class="hs-operator hs-var">$</span></span><span> </span><span class="annot"><span class="annottext">Set a -&gt; Put
 forall t. Binary t =&gt; t -&gt; Put
 </span><span class="hs-identifier hs-var">put</span></span><span> </span><span class="annot"><span class="annottext">Set a
-</span><a href="#local-6989586621681415503"><span class="hs-identifier hs-var">vertices</span></a></span><span>
-</span><span id="line-28"></span><span>     </span><span class="annot"><span class="annottext">Put -&gt; InGraphM Three a PutM ()
+</span><a href="#local-6989586621681298089"><span class="hs-identifier hs-var">vertices</span></a></span><span>
+</span><span id="line-26"></span><span>     </span><span class="annot"><span class="annottext">Put -&gt; InGraphM Three a PutM ()
 forall (m :: * -&gt; *) a. Monad m =&gt; m a -&gt; InGraphM Three a m a
 forall (t :: (* -&gt; *) -&gt; * -&gt; *) (m :: * -&gt; *) a.
 (MonadTrans t, Monad m) =&gt;
@@ -72,18 +64,18 @@ forall a b. (a -&gt; b) -&gt; a -&gt; b
 </span><span class="hs-operator hs-var">$</span></span><span> </span><span class="annot"><span class="annottext">Set (a, a, a) -&gt; Put
 forall t. Binary t =&gt; t -&gt; Put
 </span><span class="hs-identifier hs-var">put</span></span><span> </span><span class="annot"><span class="annottext">Set (a, a, a)
-</span><a href="#local-6989586621681415505"><span class="hs-identifier hs-var">edges</span></a></span><span>
-</span><span id="line-29"></span><span>   </span><span id="local-6989586621681415516"><span class="annot"><span class="annottext">get :: Get (Graph Three a)
-</span><a href="#local-6989586621681415516"><span class="hs-identifier hs-var hs-var hs-var hs-var">get</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="hs-keyword">do</span><span>
-</span><span id="line-30"></span><span>     </span><span class="hs-special">(</span><span id="local-6989586621681415518"><span class="annot"><span class="annottext">Set a
-</span><a href="#local-6989586621681415518"><span class="hs-identifier hs-var">vertices</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Set</span></span><span> </span><span class="annot"><a href="#local-6989586621681415383"><span class="hs-identifier hs-type">a</span></a></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">&lt;-</span><span> </span><span class="annot"><span class="annottext">Get (Set a)
+</span><a href="#local-6989586621681298091"><span class="hs-identifier hs-var">edges</span></a></span><span>
+</span><span id="line-27"></span><span>   </span><span id="local-6989586621681298102"><span class="annot"><span class="annottext">get :: Get (Graph Three a)
+</span><a href="#local-6989586621681298102"><span class="hs-identifier hs-var hs-var hs-var hs-var">get</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="hs-keyword">do</span><span>
+</span><span id="line-28"></span><span>     </span><span class="hs-special">(</span><span id="local-6989586621681298104"><span class="annot"><span class="annottext">Set a
+</span><a href="#local-6989586621681298104"><span class="hs-identifier hs-var">vertices</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Set</span></span><span> </span><span class="annot"><a href="#local-6989586621681297968"><span class="hs-identifier hs-type">a</span></a></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">&lt;-</span><span> </span><span class="annot"><span class="annottext">Get (Set a)
 forall t. Binary t =&gt; Get t
 </span><span class="hs-identifier hs-var">get</span></span><span>
-</span><span id="line-31"></span><span>     </span><span class="hs-special">(</span><span id="local-6989586621681415519"><span class="annot"><span class="annottext">Set (a, a, a)
-</span><a href="#local-6989586621681415519"><span class="hs-identifier hs-var">edges</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Set</span></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="#local-6989586621681415383"><span class="hs-identifier hs-type">a</span></a></span><span class="hs-special">,</span><span class="annot"><a href="#local-6989586621681415383"><span class="hs-identifier hs-type">a</span></a></span><span class="hs-special">,</span><span class="annot"><a href="#local-6989586621681415383"><span class="hs-identifier hs-type">a</span></a></span><span class="hs-special">)</span><span class="hs-special">)</span><span> </span><span class="hs-glyph">&lt;-</span><span> </span><span class="annot"><span class="annottext">Get (Set (a, a, a))
+</span><span id="line-29"></span><span>     </span><span class="hs-special">(</span><span id="local-6989586621681298105"><span class="annot"><span class="annottext">Set (a, a, a)
+</span><a href="#local-6989586621681298105"><span class="hs-identifier hs-var">edges</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Set</span></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="#local-6989586621681297968"><span class="hs-identifier hs-type">a</span></a></span><span class="hs-special">,</span><span class="annot"><a href="#local-6989586621681297968"><span class="hs-identifier hs-type">a</span></a></span><span class="hs-special">,</span><span class="annot"><a href="#local-6989586621681297968"><span class="hs-identifier hs-type">a</span></a></span><span class="hs-special">)</span><span class="hs-special">)</span><span> </span><span class="hs-glyph">&lt;-</span><span> </span><span class="annot"><span class="annottext">Get (Set (a, a, a))
 forall t. Binary t =&gt; Get t
 </span><span class="hs-identifier hs-var">get</span></span><span>
-</span><span id="line-32"></span><span>     </span><span class="annot"><span class="annottext">Graph Three a -&gt; Get (Graph Three a)
+</span><span id="line-30"></span><span>     </span><span class="annot"><span class="annottext">Graph Three a -&gt; Get (Graph Three a)
 forall a. a -&gt; Get a
 forall (m :: * -&gt; *) a. Monad m =&gt; a -&gt; m a
 </span><span class="hs-identifier hs-var">return</span></span><span> </span><span class="annot"><span class="annottext">(Graph Three a -&gt; Get (Graph Three a))
@@ -95,71 +87,56 @@ forall a. Ord a =&gt; [(a, (a, a))] -&gt; Graph Three a
 forall a b. (a -&gt; b) -&gt; a -&gt; b
 </span><span class="hs-operator hs-var">$</span></span><span> </span><span class="annot"><span class="annottext">((a, a, a) -&gt; (a, (a, a))) -&gt; [(a, a, a)] -&gt; [(a, (a, a))]
 forall a b. (a -&gt; b) -&gt; [a] -&gt; [b]
-</span><span class="hs-identifier hs-var">map</span></span><span> </span><span class="hs-special">(</span><span class="hs-glyph">\</span><span> </span><span class="hs-special">(</span><span id="local-6989586621681415521"><span class="annot"><span class="annottext">a
-</span><a href="#local-6989586621681415521"><span class="hs-identifier hs-var">a</span></a></span></span><span class="hs-special">,</span><span id="local-6989586621681415522"><span class="annot"><span class="annottext">a
-</span><a href="#local-6989586621681415522"><span class="hs-identifier hs-var">b</span></a></span></span><span class="hs-special">,</span><span id="local-6989586621681415523"><span class="annot"><span class="annottext">a
-</span><a href="#local-6989586621681415523"><span class="hs-identifier hs-var">c</span></a></span></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">a
-</span><a href="#local-6989586621681415521"><span class="hs-identifier hs-var">a</span></a></span><span class="hs-special">,</span><span class="hs-special">(</span><span class="annot"><span class="annottext">a
-</span><a href="#local-6989586621681415522"><span class="hs-identifier hs-var">b</span></a></span><span class="hs-special">,</span><span class="annot"><span class="annottext">a
-</span><a href="#local-6989586621681415523"><span class="hs-identifier hs-var">c</span></a></span><span class="hs-special">)</span><span class="hs-special">)</span><span class="hs-special">)</span><span> </span><span class="annot"><span class="annottext">([(a, a, a)] -&gt; [(a, (a, a))]) -&gt; [(a, a, a)] -&gt; [(a, (a, a))]
+</span><span class="hs-identifier hs-var">map</span></span><span> </span><span class="hs-special">(</span><span class="hs-glyph">\</span><span> </span><span class="hs-special">(</span><span id="local-6989586621681298107"><span class="annot"><span class="annottext">a
+</span><a href="#local-6989586621681298107"><span class="hs-identifier hs-var">a</span></a></span></span><span class="hs-special">,</span><span id="local-6989586621681298108"><span class="annot"><span class="annottext">a
+</span><a href="#local-6989586621681298108"><span class="hs-identifier hs-var">b</span></a></span></span><span class="hs-special">,</span><span id="local-6989586621681298109"><span class="annot"><span class="annottext">a
+</span><a href="#local-6989586621681298109"><span class="hs-identifier hs-var">c</span></a></span></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">a
+</span><a href="#local-6989586621681298107"><span class="hs-identifier hs-var">a</span></a></span><span class="hs-special">,</span><span class="hs-special">(</span><span class="annot"><span class="annottext">a
+</span><a href="#local-6989586621681298108"><span class="hs-identifier hs-var">b</span></a></span><span class="hs-special">,</span><span class="annot"><span class="annottext">a
+</span><a href="#local-6989586621681298109"><span class="hs-identifier hs-var">c</span></a></span><span class="hs-special">)</span><span class="hs-special">)</span><span class="hs-special">)</span><span> </span><span class="annot"><span class="annottext">([(a, a, a)] -&gt; [(a, (a, a))]) -&gt; [(a, a, a)] -&gt; [(a, (a, a))]
 forall a b. (a -&gt; b) -&gt; a -&gt; b
 </span><span class="hs-operator hs-var">$</span></span><span> </span><span class="annot"><span class="annottext">Set (a, a, a) -&gt; [(a, a, a)]
 forall a. Set a -&gt; [a]
 </span><span class="hs-identifier hs-var">Set.toList</span></span><span> </span><span class="annot"><span class="annottext">Set (a, a, a)
-</span><a href="#local-6989586621681415519"><span class="hs-identifier hs-var">edges</span></a></span><span>
-</span><span id="line-33"></span><span>
-</span><span id="line-34"></span><span> </span><span class="hs-keyword">instance</span><span> </span><span id="local-6989586621681415372"><span class="hs-special">(</span><span class="annot"><span class="hs-identifier hs-type">Ord</span></span><span> </span><span class="annot"><a href="#local-6989586621681415372"><span class="hs-identifier hs-type">a</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><a href="Math.Tools.PrettyP.html#PpShow"><span class="hs-identifier hs-type">PpShow</span></a></span><span> </span><span class="annot"><a href="#local-6989586621681415372"><span class="hs-identifier hs-type">a</span></a></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">=&gt;</span><span> </span><span class="annot"><a href="Math.Tools.PrettyP.html#PpShow"><span class="hs-identifier hs-type">PpShow</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="Math.Graph.Reversible.html#Graph"><span class="hs-identifier hs-type">Graph</span></a></span><span> </span><span class="annot"><a href="Math.Graph.GraphMonoid.html#Three"><span class="hs-identifier hs-type">Three</span></a></span><span> </span><span class="annot"><a href="#local-6989586621681415372"><span class="hs-identifier hs-type">a</span></a></span><span class="hs-special">)</span></span><span> </span><span class="hs-keyword">where</span><span>
-</span><span id="line-35"></span><span>   </span><span id="local-6989586621681415561"><span class="annot"><span class="annottext">pp :: Graph Three a -&gt; Doc
-</span><a href="#local-6989586621681415561"><span class="hs-identifier hs-var hs-var hs-var hs-var">pp</span></a></span></span><span> </span><span id="local-6989586621681415563"><span class="annot"><span class="annottext">Graph Three a
-</span><a href="#local-6989586621681415563"><span class="hs-identifier hs-var">g</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Doc -&gt; (([a], [Doc]) -&gt; Doc) -&gt; Maybe ([a], [Doc]) -&gt; Doc
+</span><a href="#local-6989586621681298105"><span class="hs-identifier hs-var">edges</span></a></span><span>
+</span><span id="line-31"></span><span>
+</span><span id="line-32"></span><span>
+</span><span id="line-33"></span><span> </span><span class="hs-keyword">instance</span><span> </span><span id="local-6989586621681298008"><span id="local-6989586621681298114"><span id="local-6989586621681298119"><span class="hs-special">(</span><span class="annot"><span class="hs-identifier hs-type">Ord</span></span><span> </span><span class="annot"><a href="#local-6989586621681298008"><span class="hs-identifier hs-type">a</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><a href="Math.Tools.PrettyP.html#PpShow"><span class="hs-identifier hs-type">PpShow</span></a></span><span> </span><span class="annot"><a href="#local-6989586621681298008"><span class="hs-identifier hs-type">a</span></a></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">=&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Show</span></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="Math.Graph.Reversible.html#Graph"><span class="hs-identifier hs-type">Graph</span></a></span><span> </span><span class="annot"><a href="Math.Graph.GraphMonoid.html#Three"><span class="hs-identifier hs-type">Three</span></a></span><span> </span><span class="annot"><a href="#local-6989586621681298008"><span class="hs-identifier hs-type">a</span></a></span><span class="hs-special">)</span></span></span></span><span> </span><span class="hs-keyword">where</span><span> </span><span class="hs-special">{</span><span> </span><span id="local-6989586621681298124"><span class="annot"><span class="annottext">show :: Graph Three a -&gt; String
+</span><a href="#local-6989586621681298124"><span class="hs-identifier hs-var hs-var hs-var hs-var">show</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Graph Three a -&gt; String
+forall a. PpShow a =&gt; a -&gt; String
+</span><a href="Math.Tools.PrettyP.html#pPrint"><span class="hs-identifier hs-var">pPrint</span></a></span><span> </span><span class="hs-special">}</span><span>
+</span><span id="line-34"></span><span> </span><span class="hs-keyword">instance</span><span> </span><span id="local-6989586621681298013"><span id="local-6989586621681298130"><span id="local-6989586621681298135"><span class="hs-special">(</span><span class="annot"><span class="hs-identifier hs-type">Ord</span></span><span> </span><span class="annot"><a href="#local-6989586621681298013"><span class="hs-identifier hs-type">a</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><a href="Math.Tools.PrettyP.html#PpShow"><span class="hs-identifier hs-type">PpShow</span></a></span><span> </span><span class="annot"><a href="#local-6989586621681298013"><span class="hs-identifier hs-type">a</span></a></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">=&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Show</span></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="Math.Graph.Reversible.html#Graph"><span class="hs-identifier hs-type">Graph</span></a></span><span> </span><span class="annot"><a href="Math.Graph.GraphMonoid.html#Four"><span class="hs-identifier hs-type">Four</span></a></span><span> </span><span class="annot"><a href="#local-6989586621681298013"><span class="hs-identifier hs-type">a</span></a></span><span class="hs-special">)</span></span></span></span><span> </span><span class="hs-keyword">where</span><span> </span><span class="hs-special">{</span><span> </span><span id="local-6989586621681298139"><span class="annot"><span class="annottext">show :: Graph Four a -&gt; String
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var">show</span></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Graph Four a -&gt; String
+forall a. PpShow a =&gt; a -&gt; String
+</span><a href="Math.Tools.PrettyP.html#pPrint"><span class="hs-identifier hs-var">pPrint</span></a></span><span> </span><span class="hs-special">}</span><span>
+</span><span id="line-35"></span><span>
+</span><span id="line-36"></span><span> </span><span class="hs-keyword">instance</span><span> </span><span id="local-6989586621681298009"><span class="hs-special">(</span><span class="annot"><span class="hs-identifier hs-type">Ord</span></span><span> </span><span class="annot"><a href="#local-6989586621681298009"><span class="hs-identifier hs-type">a</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><a href="Math.Tools.PrettyP.html#PpShow"><span class="hs-identifier hs-type">PpShow</span></a></span><span> </span><span class="annot"><a href="#local-6989586621681298009"><span class="hs-identifier hs-type">a</span></a></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">=&gt;</span><span> </span><span class="annot"><a href="Math.Tools.PrettyP.html#PpShow"><span class="hs-identifier hs-type">PpShow</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="Math.Graph.Reversible.html#Graph"><span class="hs-identifier hs-type">Graph</span></a></span><span> </span><span class="annot"><a href="Math.Graph.GraphMonoid.html#Three"><span class="hs-identifier hs-type">Three</span></a></span><span> </span><span class="annot"><a href="#local-6989586621681298009"><span class="hs-identifier hs-type">a</span></a></span><span class="hs-special">)</span></span><span> </span><span class="hs-keyword">where</span><span>
+</span><span id="line-37"></span><span>   </span><span id="local-6989586621681298161"><span class="annot"><span class="annottext">pp :: Graph Three a -&gt; Doc
+</span><a href="#local-6989586621681298161"><span class="hs-identifier hs-var hs-var hs-var hs-var">pp</span></a></span></span><span> </span><span id="local-6989586621681298163"><span class="annot"><span class="annottext">Graph Three a
+</span><a href="#local-6989586621681298163"><span class="hs-identifier hs-var">g</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Doc -&gt; (([a], [Doc]) -&gt; Doc) -&gt; Maybe ([a], [Doc]) -&gt; Doc
 forall b a. b -&gt; (a -&gt; b) -&gt; Maybe a -&gt; b
-</span><span class="hs-identifier hs-var">maybe</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">Text -&gt; Doc
-forall a. PpShow a =&gt; a -&gt; Doc
-</span><a href="Math.Tools.PrettyP.html#pp"><span class="hs-identifier hs-var">pp</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">Text
-</span><span class="hs-string">&quot;[]&quot;</span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">T.Text</span></span><span class="hs-special">)</span><span class="hs-special">)</span><span> </span><span class="hs-special">(</span><span class="hs-glyph">\</span><span> </span><span class="hs-special">(</span><span id="local-6989586621681415565"><span class="annot"><span class="annottext">[a]
-</span><a href="#local-6989586621681415565"><span class="hs-identifier hs-var">v</span></a></span></span><span class="hs-special">,</span><span id="local-6989586621681415566"><span class="annot"><span class="annottext">[Doc]
-</span><a href="#local-6989586621681415566"><span class="hs-identifier hs-var">e</span></a></span></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">-&gt;</span><span>
-</span><span id="line-36"></span><span>      </span><span class="annot"><span class="annottext">Text -&gt; Doc
-forall a. PpShow a =&gt; a -&gt; Doc
-</span><a href="Math.Tools.PrettyP.html#pp"><span class="hs-identifier hs-var">pp</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">Text
-</span><span class="hs-string">&quot;(&quot;</span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">T.Text</span></span><span class="hs-special">)</span><span> </span><span class="annot"><span class="annottext">Doc -&gt; Doc -&gt; Doc
-forall a. Semigroup a =&gt; a -&gt; a -&gt; a
-</span><span class="hs-operator hs-var">&lt;&gt;</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">[a] -&gt; Doc
-forall a. PpShow a =&gt; [a] -&gt; Doc
-</span><a href="Math.Tools.PrettyP.html#pp_list"><span class="hs-identifier hs-var">PrettyP.pp_list</span></a></span><span> </span><span class="annot"><span class="annottext">[a]
-</span><a href="#local-6989586621681415565"><span class="hs-identifier hs-var">v</span></a></span><span> </span><span class="annot"><span class="annottext">Doc -&gt; Doc -&gt; Doc
-</span><span class="hs-operator hs-var">&lt;+&gt;</span></span><span> </span><span class="annot"><span class="annottext">Char -&gt; Doc
-forall a. PpShow a =&gt; a -&gt; Doc
-</span><a href="Math.Tools.PrettyP.html#pp"><span class="hs-identifier hs-var">pp</span></a></span><span> </span><span class="annot"><span class="annottext">Char
-</span><span class="hs-char">';'</span></span><span> </span><span class="annot"><span class="annottext">Doc -&gt; Doc -&gt; Doc
-</span><span class="hs-operator hs-var">&lt;+&gt;</span></span><span> </span><span class="annot"><span class="annottext">[Doc] -&gt; Doc
-forall a. PpShow a =&gt; [a] -&gt; Doc
-</span><a href="Math.Tools.PrettyP.html#pp_list"><span class="hs-identifier hs-var">PrettyP.pp_list</span></a></span><span> </span><span class="annot"><span class="annottext">[Doc]
-</span><a href="#local-6989586621681415566"><span class="hs-identifier hs-var">e</span></a></span><span class="hs-special">)</span><span>
-</span><span id="line-37"></span><span>        </span><span class="annot"><span class="annottext">Doc -&gt; Doc -&gt; Doc
-forall a. Semigroup a =&gt; a -&gt; a -&gt; a
-</span><span class="hs-operator hs-var">&lt;&gt;</span></span><span> </span><span class="annot"><span class="annottext">Char -&gt; Doc
-forall a. PpShow a =&gt; a -&gt; Doc
-</span><a href="Math.Tools.PrettyP.html#pp"><span class="hs-identifier hs-var">pp</span></a></span><span> </span><span class="annot"><span class="annottext">Char
-</span><span class="hs-char">')'</span></span><span class="hs-special">)</span><span> </span><span class="annot"><span class="annottext">(Maybe ([a], [Doc]) -&gt; Doc) -&gt; Maybe ([a], [Doc]) -&gt; Doc
+</span><span class="hs-identifier hs-var">maybe</span></span><span> </span><span class="annot"><span class="annottext">Doc
+</span><a href="Math.Graph.Show.html#base"><span class="hs-identifier hs-var">base</span></a></span><span> </span><span class="annot"><span class="annottext">([a], [Doc]) -&gt; Doc
+forall a b. (PpShow a, PpShow b) =&gt; ([a], [b]) -&gt; Doc
+</span><a href="Math.Graph.Show.html#veprint"><span class="hs-identifier hs-var">veprint</span></a></span><span> </span><span class="annot"><span class="annottext">(Maybe ([a], [Doc]) -&gt; Doc) -&gt; Maybe ([a], [Doc]) -&gt; Doc
 forall a b. (a -&gt; b) -&gt; a -&gt; b
 </span><span class="hs-operator hs-var">$</span></span><span> </span><span class="annot"><span class="annottext">Graph Three a
 -&gt; InGraphM Three a Maybe ([a], [Doc]) -&gt; Maybe ([a], [Doc])
 forall (mon :: * -&gt; * -&gt; *) e (m :: * -&gt; *) a.
 Graph mon e -&gt; InGraphM mon e m a -&gt; m a
 </span><a href="Math.Graph.InGraphMonad.html#inGraphM"><span class="hs-identifier hs-var">inGraphM</span></a></span><span> </span><span class="annot"><span class="annottext">Graph Three a
-</span><a href="#local-6989586621681415563"><span class="hs-identifier hs-var">g</span></a></span><span> </span><span class="annot"><span class="annottext">(InGraphM Three a Maybe ([a], [Doc]) -&gt; Maybe ([a], [Doc]))
+</span><a href="#local-6989586621681298163"><span class="hs-identifier hs-var">g</span></a></span><span> </span><span class="annot"><span class="annottext">(InGraphM Three a Maybe ([a], [Doc]) -&gt; Maybe ([a], [Doc]))
 -&gt; InGraphM Three a Maybe ([a], [Doc]) -&gt; Maybe ([a], [Doc])
 forall a b. (a -&gt; b) -&gt; a -&gt; b
 </span><span class="hs-operator hs-var">$</span></span><span> </span><span class="hs-keyword">do</span><span>
-</span><span id="line-38"></span><span>                 </span><span id="local-6989586621681415568"><span class="annot"><span class="annottext">Set (a, a, a)
-</span><a href="#local-6989586621681415568"><span class="hs-identifier hs-var">edges</span></a></span></span><span> </span><span class="hs-glyph">&lt;-</span><span> </span><span class="annot"><span class="annottext">InGraphM Three a Maybe (Set (a, a, a))
+</span><span id="line-38"></span><span>                 </span><span id="local-6989586621681298167"><span class="annot"><span class="annottext">Set (a, a, a)
+</span><a href="#local-6989586621681298167"><span class="hs-identifier hs-var">edges</span></a></span></span><span> </span><span class="hs-glyph">&lt;-</span><span> </span><span class="annot"><span class="annottext">InGraphM Three a Maybe (Set (a, a, a))
 forall (m :: * -&gt; *) e (mon :: * -&gt; * -&gt; *).
 (Monad m, Ord e, GraphMonoid mon Bool) =&gt;
 InGraphM mon e m (Set (e, e, e))
 </span><a href="Math.Graph.InGraphMonad.html#linksM"><span class="hs-identifier hs-var">linksM</span></a></span><span>
-</span><span id="line-39"></span><span>                 </span><span id="local-6989586621681415569"><span class="annot"><span class="annottext">Set a
-</span><a href="#local-6989586621681415569"><span class="hs-identifier hs-var">vertices</span></a></span></span><span> </span><span class="hs-glyph">&lt;-</span><span> </span><span class="annot"><span class="annottext">InGraphM Three a Maybe (Set a)
+</span><span id="line-39"></span><span>                 </span><span id="local-6989586621681298168"><span class="annot"><span class="annottext">Set a
+</span><a href="#local-6989586621681298168"><span class="hs-identifier hs-var">vertices</span></a></span></span><span> </span><span class="hs-glyph">&lt;-</span><span> </span><span class="annot"><span class="annottext">InGraphM Three a Maybe (Set a)
 forall e (mon :: * -&gt; * -&gt; *) (m :: * -&gt; *).
 (Ord e, GraphMonoid mon Bool, Monad m) =&gt;
 InGraphM mon e m (Set e)
@@ -173,92 +150,155 @@ forall a b. (a -&gt; b) -&gt; a -&gt; b
 </span><span class="hs-operator hs-var">$</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">Set a -&gt; [a]
 forall a. Set a -&gt; [a]
 </span><span class="hs-identifier hs-var">Set.toList</span></span><span> </span><span class="annot"><span class="annottext">Set a
-</span><a href="#local-6989586621681415569"><span class="hs-identifier hs-var">vertices</span></a></span><span class="hs-special">,</span><span class="hs-special">(</span><span class="annot"><span class="annottext">((a, a, a) -&gt; Doc) -&gt; [(a, a, a)] -&gt; [Doc]
+</span><a href="#local-6989586621681298168"><span class="hs-identifier hs-var">vertices</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">((a, a, a) -&gt; Doc) -&gt; [(a, a, a)] -&gt; [Doc]
 forall a b. (a -&gt; b) -&gt; [a] -&gt; [b]
-</span><span class="hs-identifier hs-var">map</span></span><span> </span><span class="hs-special">(</span><span class="hs-glyph">\</span><span> </span><span class="hs-special">(</span><span id="local-6989586621681415570"><span class="annot"><span class="annottext">a
-</span><a href="#local-6989586621681415570"><span class="hs-identifier hs-var">e</span></a></span></span><span class="hs-special">,</span><span id="local-6989586621681415571"><span class="annot"><span class="annottext">a
-</span><a href="#local-6989586621681415571"><span class="hs-identifier hs-var">x</span></a></span></span><span class="hs-special">,</span><span id="local-6989586621681415572"><span class="annot"><span class="annottext">a
-</span><a href="#local-6989586621681415572"><span class="hs-identifier hs-var">y</span></a></span></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="annottext">a -&gt; Doc
-forall a. PpShow a =&gt; a -&gt; Doc
-</span><a href="Math.Tools.PrettyP.html#pp"><span class="hs-identifier hs-var">pp</span></a></span><span> </span><span class="annot"><span class="annottext">a
-</span><a href="#local-6989586621681415570"><span class="hs-identifier hs-var">e</span></a></span><span> </span><span class="annot"><span class="annottext">Doc -&gt; Doc -&gt; Doc
-</span><span class="hs-operator hs-var">&lt;+&gt;</span></span><span> </span><span class="annot"><span class="annottext">Char -&gt; Doc
-forall a. PpShow a =&gt; a -&gt; Doc
-</span><a href="Math.Tools.PrettyP.html#pp"><span class="hs-identifier hs-var">pp</span></a></span><span> </span><span class="annot"><span class="annottext">Char
-</span><span class="hs-char">'='</span></span><span> </span><span class="annot"><span class="annottext">Doc -&gt; Doc -&gt; Doc
-</span><span class="hs-operator hs-var">&lt;+&gt;</span></span><span> </span><span class="annot"><span class="annottext">a -&gt; Doc
-forall a. PpShow a =&gt; a -&gt; Doc
-</span><a href="Math.Tools.PrettyP.html#pp"><span class="hs-identifier hs-var">pp</span></a></span><span> </span><span class="annot"><span class="annottext">a
-</span><a href="#local-6989586621681415571"><span class="hs-identifier hs-var">x</span></a></span><span> </span><span class="annot"><span class="annottext">Doc -&gt; Doc -&gt; Doc
-</span><span class="hs-operator hs-var">&lt;+&gt;</span></span><span> </span><span class="annot"><span class="annottext">Text -&gt; Doc
-forall a. PpShow a =&gt; a -&gt; Doc
-</span><a href="Math.Tools.PrettyP.html#pp"><span class="hs-identifier hs-var">pp</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">Text
-</span><span class="hs-string">&quot;-&gt;&quot;</span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">T.Text</span></span><span class="hs-special">)</span><span> </span><span class="annot"><span class="annottext">Doc -&gt; Doc -&gt; Doc
-</span><span class="hs-operator hs-var">&lt;+&gt;</span></span><span> </span><span class="annot"><span class="annottext">a -&gt; Doc
-forall a. PpShow a =&gt; a -&gt; Doc
-</span><a href="Math.Tools.PrettyP.html#pp"><span class="hs-identifier hs-var">pp</span></a></span><span> </span><span class="annot"><span class="annottext">a
-</span><a href="#local-6989586621681415572"><span class="hs-identifier hs-var">y</span></a></span><span class="hs-special">)</span><span> </span><span class="annot"><span class="annottext">([(a, a, a)] -&gt; [Doc]) -&gt; [(a, a, a)] -&gt; [Doc]
+</span><span class="hs-identifier hs-var">map</span></span><span> </span><span class="annot"><span class="annottext">(a, a, a) -&gt; Doc
+forall e x y. (PpShow e, PpShow x, PpShow y) =&gt; (e, x, y) -&gt; Doc
+</span><a href="Math.Graph.Show.html#eprint"><span class="hs-identifier hs-var">eprint</span></a></span><span> </span><span class="annot"><span class="annottext">([(a, a, a)] -&gt; [Doc]) -&gt; [(a, a, a)] -&gt; [Doc]
 forall a b. (a -&gt; b) -&gt; a -&gt; b
 </span><span class="hs-operator hs-var">$</span></span><span> </span><span class="annot"><span class="annottext">Set (a, a, a) -&gt; [(a, a, a)]
 forall a. Set a -&gt; [a]
 </span><span class="hs-identifier hs-var">Set.toList</span></span><span> </span><span class="annot"><span class="annottext">Set (a, a, a)
-</span><a href="#local-6989586621681415568"><span class="hs-identifier hs-var">edges</span></a></span><span class="hs-special">)</span><span class="hs-special">)</span><span>
-</span><span id="line-41"></span><span>
-</span><span id="line-42"></span><span> </span><span class="hs-keyword">instance</span><span> </span><span id="local-6989586621681415377"><span class="hs-special">(</span><span class="annot"><span class="hs-identifier hs-type">Ord</span></span><span> </span><span class="annot"><a href="#local-6989586621681415377"><span class="hs-identifier hs-type">a</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><a href="Math.Tools.PrettyP.html#PpShow"><span class="hs-identifier hs-type">PpShow</span></a></span><span> </span><span class="annot"><a href="#local-6989586621681415377"><span class="hs-identifier hs-type">a</span></a></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">=&gt;</span><span> </span><span class="annot"><a href="Math.Tools.PrettyP.html#PpShow"><span class="hs-identifier hs-type">PpShow</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="Math.Graph.Reversible.html#Graph"><span class="hs-identifier hs-type">Graph</span></a></span><span> </span><span class="annot"><a href="Math.Graph.GraphMonoid.html#Four"><span class="hs-identifier hs-type">Four</span></a></span><span> </span><span class="annot"><a href="#local-6989586621681415377"><span class="hs-identifier hs-type">a</span></a></span><span class="hs-special">)</span></span><span> </span><span class="hs-keyword">where</span><span>
-</span><span id="line-43"></span><span>   </span><span id="local-6989586621681415611"><span class="annot"><span class="annottext">pp :: Graph Four a -&gt; Doc
-</span><a href="Math.Tools.PrettyP.html#pp"><span class="hs-identifier hs-var hs-var hs-var hs-var">pp</span></a></span></span><span> </span><span id="local-6989586621681415612"><span class="annot"><span class="annottext">Graph Four a
-</span><a href="#local-6989586621681415612"><span class="hs-identifier hs-var">g</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Doc -&gt; (([a], [Doc]) -&gt; Doc) -&gt; Maybe ([a], [Doc]) -&gt; Doc
-forall b a. b -&gt; (a -&gt; b) -&gt; Maybe a -&gt; b
-</span><span class="hs-identifier hs-var">maybe</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">Text -&gt; Doc
+</span><a href="#local-6989586621681298167"><span class="hs-identifier hs-var">edges</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-41"></span><span> </span><span>
+</span><span id="line-42"></span><span> </span><span class="annot"><a href="Math.Graph.Show.html#base"><span class="hs-identifier hs-type">base</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Doc</span></span><span>
+</span><span id="line-43"></span><span> </span><span id="base"><span class="annot"><span class="annottext">base :: Doc
+</span><a href="Math.Graph.Show.html#base"><span class="hs-identifier hs-var hs-var">base</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Text -&gt; Doc
 forall a. PpShow a =&gt; a -&gt; Doc
 </span><a href="Math.Tools.PrettyP.html#pp"><span class="hs-identifier hs-var">pp</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">Text
-</span><span class="hs-string">&quot;[]&quot;</span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">T.Text</span></span><span class="hs-special">)</span><span class="hs-special">)</span><span> </span><span class="hs-special">(</span><span class="hs-glyph">\</span><span> </span><span class="hs-special">(</span><span id="local-6989586621681415613"><span class="annot"><span class="annottext">[a]
-</span><a href="#local-6989586621681415613"><span class="hs-identifier hs-var">v</span></a></span></span><span class="hs-special">,</span><span id="local-6989586621681415614"><span class="annot"><span class="annottext">[Doc]
-</span><a href="#local-6989586621681415614"><span class="hs-identifier hs-var">e</span></a></span></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="annottext">Text -&gt; Doc
+</span><span class="hs-string">&quot;[]&quot;</span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">T.Text</span></span><span class="hs-special">)</span><span>
+</span><span id="line-44"></span><span>
+</span><span id="line-45"></span><span> </span><span id="local-6989586621681298022"><span id="local-6989586621681298023"><span id="local-6989586621681298024"><span class="annot"><a href="Math.Graph.Show.html#eprint"><span class="hs-identifier hs-type">eprint</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="hs-special">(</span><span class="annot"><a href="Math.Tools.PrettyP.html#PpShow"><span class="hs-identifier hs-type">PpShow</span></a></span><span> </span><span class="annot"><a href="#local-6989586621681298022"><span class="hs-identifier hs-type">e</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><a href="Math.Tools.PrettyP.html#PpShow"><span class="hs-identifier hs-type">PpShow</span></a></span><span> </span><span class="annot"><a href="#local-6989586621681298023"><span class="hs-identifier hs-type">x</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><a href="Math.Tools.PrettyP.html#PpShow"><span class="hs-identifier hs-type">PpShow</span></a></span><span> </span><span class="annot"><a href="#local-6989586621681298024"><span class="hs-identifier hs-type">y</span></a></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">=&gt;</span><span> </span><span class="hs-special">(</span><span class="annot"><a href="#local-6989586621681298022"><span class="hs-identifier hs-type">e</span></a></span><span class="hs-special">,</span><span class="annot"><a href="#local-6989586621681298023"><span class="hs-identifier hs-type">x</span></a></span><span class="hs-special">,</span><span class="annot"><a href="#local-6989586621681298024"><span class="hs-identifier hs-type">y</span></a></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Doc</span></span></span></span></span><span>
+</span><span id="line-46"></span><span> </span><span id="eprint"><span class="annot"><span class="annottext">eprint :: forall e x y. (PpShow e, PpShow x, PpShow y) =&gt; (e, x, y) -&gt; Doc
+</span><a href="Math.Graph.Show.html#eprint"><span class="hs-identifier hs-var hs-var">eprint</span></a></span></span><span> </span><span class="hs-special">(</span><span id="local-6989586621681298180"><span class="annot"><span class="annottext">e
+</span><a href="#local-6989586621681298180"><span class="hs-identifier hs-var">e</span></a></span></span><span class="hs-special">,</span><span id="local-6989586621681298181"><span class="annot"><span class="annottext">x
+</span><a href="#local-6989586621681298181"><span class="hs-identifier hs-var">x</span></a></span></span><span class="hs-special">,</span><span id="local-6989586621681298182"><span class="annot"><span class="annottext">y
+</span><a href="#local-6989586621681298182"><span class="hs-identifier hs-var">y</span></a></span></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">e -&gt; Doc
 forall a. PpShow a =&gt; a -&gt; Doc
-</span><a href="Math.Tools.PrettyP.html#pp"><span class="hs-identifier hs-var">pp</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">Text
-</span><span class="hs-string">&quot;(&quot;</span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">T.Text</span></span><span class="hs-special">)</span><span> </span><span class="annot"><span class="annottext">Doc -&gt; Doc -&gt; Doc
-forall a. Semigroup a =&gt; a -&gt; a -&gt; a
-</span><span class="hs-operator hs-var">&lt;&gt;</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">[a] -&gt; Doc
-forall a. PpShow a =&gt; [a] -&gt; Doc
-</span><a href="Math.Tools.PrettyP.html#pp_list"><span class="hs-identifier hs-var">PrettyP.pp_list</span></a></span><span> </span><span class="annot"><span class="annottext">[a]
-</span><a href="#local-6989586621681415613"><span class="hs-identifier hs-var">v</span></a></span><span> </span><span class="annot"><span class="annottext">Doc -&gt; Doc -&gt; Doc
+</span><a href="Math.Tools.PrettyP.html#pp"><span class="hs-identifier hs-var">pp</span></a></span><span> </span><span class="annot"><span class="annottext">e
+</span><a href="#local-6989586621681298180"><span class="hs-identifier hs-var">e</span></a></span><span> </span><span class="annot"><span class="annottext">Doc -&gt; Doc -&gt; Doc
+</span><span class="hs-operator hs-var">&lt;+&gt;</span></span><span> </span><span class="annot"><span class="annottext">Char -&gt; Doc
+forall a. PpShow a =&gt; a -&gt; Doc
+</span><a href="Math.Tools.PrettyP.html#pp"><span class="hs-identifier hs-var">pp</span></a></span><span> </span><span class="annot"><span class="annottext">Char
+</span><span class="hs-char">'='</span></span><span> </span><span class="annot"><span class="annottext">Doc -&gt; Doc -&gt; Doc
+</span><span class="hs-operator hs-var">&lt;+&gt;</span></span><span> </span><span class="annot"><span class="annottext">x -&gt; Doc
+forall a. PpShow a =&gt; a -&gt; Doc
+</span><a href="Math.Tools.PrettyP.html#pp"><span class="hs-identifier hs-var">pp</span></a></span><span> </span><span class="annot"><span class="annottext">x
+</span><a href="#local-6989586621681298181"><span class="hs-identifier hs-var">x</span></a></span><span> </span><span class="annot"><span class="annottext">Doc -&gt; Doc -&gt; Doc
 </span><span class="hs-operator hs-var">&lt;+&gt;</span></span><span> </span><span class="annot"><span class="annottext">Text -&gt; Doc
 forall a. PpShow a =&gt; a -&gt; Doc
 </span><a href="Math.Tools.PrettyP.html#pp"><span class="hs-identifier hs-var">pp</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">Text
-</span><span class="hs-string">&quot;;&quot;</span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">T.Text</span></span><span class="hs-special">)</span><span> </span><span class="annot"><span class="annottext">Doc -&gt; Doc -&gt; Doc
-</span><span class="hs-operator hs-var">&lt;+&gt;</span></span><span> </span><span class="annot"><span class="annottext">[Doc] -&gt; Doc
+</span><span class="hs-string">&quot;-&gt;&quot;</span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">T.Text</span></span><span class="hs-special">)</span><span> </span><span class="annot"><span class="annottext">Doc -&gt; Doc -&gt; Doc
+</span><span class="hs-operator hs-var">&lt;+&gt;</span></span><span> </span><span class="annot"><span class="annottext">y -&gt; Doc
+forall a. PpShow a =&gt; a -&gt; Doc
+</span><a href="Math.Tools.PrettyP.html#pp"><span class="hs-identifier hs-var">pp</span></a></span><span> </span><span class="annot"><span class="annottext">y
+</span><a href="#local-6989586621681298182"><span class="hs-identifier hs-var">y</span></a></span><span>
+</span><span id="line-47"></span><span>
+</span><span id="line-48"></span><span> </span><span id="local-6989586621681298028"><span id="local-6989586621681298029"><span id="local-6989586621681298030"><span class="annot"><a href="Math.Graph.Show.html#bidirectional_eprint"><span class="hs-identifier hs-type">bidirectional_eprint</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="hs-special">(</span><span class="annot"><span class="hs-identifier hs-type">Eq</span></span><span> </span><span class="annot"><a href="#local-6989586621681298028"><span class="hs-identifier hs-type">e</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><a href="Math.Tools.PrettyP.html#PpShow"><span class="hs-identifier hs-type">PpShow</span></a></span><span> </span><span class="annot"><a href="#local-6989586621681298028"><span class="hs-identifier hs-type">e</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><a href="Math.Tools.PrettyP.html#PpShow"><span class="hs-identifier hs-type">PpShow</span></a></span><span> </span><span class="annot"><a href="#local-6989586621681298029"><span class="hs-identifier hs-type">x</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><a href="Math.Tools.PrettyP.html#PpShow"><span class="hs-identifier hs-type">PpShow</span></a></span><span> </span><span class="annot"><a href="#local-6989586621681298030"><span class="hs-identifier hs-type">y</span></a></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">=&gt;</span><span> </span><span class="hs-special">(</span><span class="hs-special">(</span><span class="annot"><a href="#local-6989586621681298028"><span class="hs-identifier hs-type">e</span></a></span><span class="hs-special">,</span><span class="annot"><a href="#local-6989586621681298028"><span class="hs-identifier hs-type">e</span></a></span><span class="hs-special">)</span><span class="hs-special">,</span><span class="hs-special">(</span><span class="annot"><a href="#local-6989586621681298029"><span class="hs-identifier hs-type">x</span></a></span><span class="hs-special">,</span><span class="annot"><a href="#local-6989586621681298030"><span class="hs-identifier hs-type">y</span></a></span><span class="hs-special">)</span><span class="hs-special">)</span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Doc</span></span></span></span></span><span>
+</span><span id="line-49"></span><span> </span><span id="bidirectional_eprint"><span class="annot"><span class="annottext">bidirectional_eprint :: forall e x y.
+(Eq e, PpShow e, PpShow x, PpShow y) =&gt;
+((e, e), (x, y)) -&gt; Doc
+</span><a href="Math.Graph.Show.html#bidirectional_eprint"><span class="hs-identifier hs-var hs-var">bidirectional_eprint</span></a></span></span><span> </span><span class="hs-special">(</span><span class="hs-special">(</span><span id="local-6989586621681298198"><span class="annot"><span class="annottext">e
+</span><a href="#local-6989586621681298198"><span class="hs-identifier hs-var">e</span></a></span></span><span class="hs-special">,</span><span id="local-6989586621681298199"><span class="annot"><span class="annottext">e
+</span><a href="#local-6989586621681298199"><span class="hs-identifier hs-var">re</span></a></span></span><span class="hs-special">)</span><span class="hs-special">,</span><span class="hs-special">(</span><span id="local-6989586621681298200"><span class="annot"><span class="annottext">x
+</span><a href="#local-6989586621681298200"><span class="hs-identifier hs-var">x</span></a></span></span><span class="hs-special">,</span><span id="local-6989586621681298201"><span class="annot"><span class="annottext">y
+</span><a href="#local-6989586621681298201"><span class="hs-identifier hs-var">y</span></a></span></span><span class="hs-special">)</span><span class="hs-special">)</span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">e -&gt; Doc
+forall a. PpShow a =&gt; a -&gt; Doc
+</span><a href="Math.Tools.PrettyP.html#pp"><span class="hs-identifier hs-var">pp</span></a></span><span> </span><span class="annot"><span class="annottext">e
+</span><a href="#local-6989586621681298198"><span class="hs-identifier hs-var">e</span></a></span><span>
+</span><span id="line-50"></span><span>       </span><span class="annot"><span class="annottext">Doc -&gt; Doc -&gt; Doc
+</span><span class="hs-operator hs-var">&lt;+&gt;</span></span><span> </span><span class="hs-special">(</span><span class="hs-keyword">if</span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">e
+</span><a href="#local-6989586621681298198"><span class="hs-identifier hs-var">e</span></a></span><span> </span><span class="annot"><span class="annottext">e -&gt; e -&gt; Bool
+forall a. Eq a =&gt; a -&gt; a -&gt; Bool
+</span><span class="hs-operator hs-var">/=</span></span><span> </span><span class="annot"><span class="annottext">e
+</span><a href="#local-6989586621681298199"><span class="hs-identifier hs-var">re</span></a></span><span class="hs-special">)</span><span> </span><span class="hs-keyword">then</span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">Text -&gt; Doc
+forall a. PpShow a =&gt; a -&gt; Doc
+</span><a href="Math.Tools.PrettyP.html#pp"><span class="hs-identifier hs-var">pp</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">Text
+</span><span class="hs-string">&quot;/&quot;</span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">T.Text</span></span><span class="hs-special">)</span><span> </span><span class="annot"><span class="annottext">Doc -&gt; Doc -&gt; Doc
+</span><span class="hs-operator hs-var">&lt;+&gt;</span></span><span> </span><span class="annot"><span class="annottext">e -&gt; Doc
+forall a. PpShow a =&gt; a -&gt; Doc
+</span><a href="Math.Tools.PrettyP.html#pp"><span class="hs-identifier hs-var">pp</span></a></span><span> </span><span class="annot"><span class="annottext">e
+</span><a href="#local-6989586621681298199"><span class="hs-identifier hs-var">re</span></a></span><span class="hs-special">)</span><span> </span><span class="hs-keyword">else</span><span> </span><span class="annot"><span class="annottext">Doc
+</span><span class="hs-identifier hs-var">empty</span></span><span class="hs-special">)</span><span>
+</span><span id="line-51"></span><span>       </span><span class="annot"><span class="annottext">Doc -&gt; Doc -&gt; Doc
+</span><span class="hs-operator hs-var">&lt;+&gt;</span></span><span> </span><span class="annot"><span class="annottext">Char -&gt; Doc
+forall a. PpShow a =&gt; a -&gt; Doc
+</span><a href="Math.Tools.PrettyP.html#pp"><span class="hs-identifier hs-var">pp</span></a></span><span> </span><span class="annot"><span class="annottext">Char
+</span><span class="hs-char">'='</span></span><span> </span><span class="annot"><span class="annottext">Doc -&gt; Doc -&gt; Doc
+</span><span class="hs-operator hs-var">&lt;+&gt;</span></span><span> </span><span class="annot"><span class="annottext">x -&gt; Doc
+forall a. PpShow a =&gt; a -&gt; Doc
+</span><a href="Math.Tools.PrettyP.html#pp"><span class="hs-identifier hs-var">pp</span></a></span><span> </span><span class="annot"><span class="annottext">x
+</span><a href="#local-6989586621681298200"><span class="hs-identifier hs-var">x</span></a></span><span> </span><span class="annot"><span class="annottext">Doc -&gt; Doc -&gt; Doc
+</span><span class="hs-operator hs-var">&lt;+&gt;</span></span><span> </span><span class="annot"><span class="annottext">Text -&gt; Doc
+forall a. PpShow a =&gt; a -&gt; Doc
+</span><a href="Math.Tools.PrettyP.html#pp"><span class="hs-identifier hs-var">pp</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">Text
+</span><span class="hs-string">&quot;&lt;-&gt;&quot;</span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">T.Text</span></span><span class="hs-special">)</span><span> </span><span class="annot"><span class="annottext">Doc -&gt; Doc -&gt; Doc
+</span><span class="hs-operator hs-var">&lt;+&gt;</span></span><span> </span><span class="annot"><span class="annottext">y -&gt; Doc
+forall a. PpShow a =&gt; a -&gt; Doc
+</span><a href="Math.Tools.PrettyP.html#pp"><span class="hs-identifier hs-var">pp</span></a></span><span> </span><span class="annot"><span class="annottext">y
+</span><a href="#local-6989586621681298201"><span class="hs-identifier hs-var">y</span></a></span><span>
+</span><span id="line-52"></span><span>
+</span><span id="line-53"></span><span> </span><span id="local-6989586621681298020"><span id="local-6989586621681298021"><span class="annot"><a href="Math.Graph.Show.html#veprint"><span class="hs-identifier hs-type">veprint</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="hs-special">(</span><span class="annot"><a href="Math.Tools.PrettyP.html#PpShow"><span class="hs-identifier hs-type">PpShow</span></a></span><span> </span><span class="annot"><a href="#local-6989586621681298020"><span class="hs-identifier hs-type">a</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><a href="Math.Tools.PrettyP.html#PpShow"><span class="hs-identifier hs-type">PpShow</span></a></span><span> </span><span class="annot"><a href="#local-6989586621681298021"><span class="hs-identifier hs-type">b</span></a></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">=&gt;</span><span> </span><span class="hs-special">(</span><span class="hs-special">[</span><span class="annot"><a href="#local-6989586621681298020"><span class="hs-identifier hs-type">a</span></a></span><span class="hs-special">]</span><span class="hs-special">,</span><span> </span><span class="hs-special">[</span><span class="annot"><a href="#local-6989586621681298021"><span class="hs-identifier hs-type">b</span></a></span><span class="hs-special">]</span><span class="hs-special">)</span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Doc</span></span></span></span><span>
+</span><span id="line-54"></span><span> </span><span id="veprint"><span class="annot"><span class="annottext">veprint :: forall a b. (PpShow a, PpShow b) =&gt; ([a], [b]) -&gt; Doc
+</span><a href="Math.Graph.Show.html#veprint"><span class="hs-identifier hs-var hs-var">veprint</span></a></span></span><span> </span><span class="hs-special">(</span><span id="local-6989586621681298214"><span class="annot"><span class="annottext">[a]
+</span><a href="#local-6989586621681298214"><span class="hs-identifier hs-var">v</span></a></span></span><span class="hs-special">,</span><span id="local-6989586621681298215"><span class="annot"><span class="annottext">[b]
+</span><a href="#local-6989586621681298215"><span class="hs-identifier hs-var">e</span></a></span></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Text -&gt; Doc
+forall a. PpShow a =&gt; a -&gt; Doc
+</span><a href="Math.Tools.PrettyP.html#pp"><span class="hs-identifier hs-var">pp</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">Text
+</span><span class="hs-string">&quot;(&quot;</span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">T.Text</span></span><span class="hs-special">)</span><span>
+</span><span id="line-55"></span><span>              </span><span class="annot"><span class="annottext">Doc -&gt; Doc -&gt; Doc
+forall a. Semigroup a =&gt; a -&gt; a -&gt; a
+</span><span class="hs-operator hs-var">&lt;&gt;</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">[a] -&gt; Doc
 forall a. PpShow a =&gt; [a] -&gt; Doc
-</span><a href="Math.Tools.PrettyP.html#pp_list"><span class="hs-identifier hs-var">PrettyP.pp_list</span></a></span><span> </span><span class="annot"><span class="annottext">[Doc]
-</span><a href="#local-6989586621681415614"><span class="hs-identifier hs-var">e</span></a></span><span class="hs-special">)</span><span> </span><span class="annot"><span class="annottext">Doc -&gt; Doc -&gt; Doc
+</span><a href="Math.Tools.PrettyP.html#ppList"><span class="hs-identifier hs-var">PrettyP.ppList</span></a></span><span> </span><span class="annot"><span class="annottext">[a]
+</span><a href="#local-6989586621681298214"><span class="hs-identifier hs-var">v</span></a></span><span> </span><span class="annot"><span class="annottext">Doc -&gt; Doc -&gt; Doc
+</span><span class="hs-operator hs-var">&lt;+&gt;</span></span><span> </span><span class="annot"><span class="annottext">Char -&gt; Doc
+forall a. PpShow a =&gt; a -&gt; Doc
+</span><a href="Math.Tools.PrettyP.html#pp"><span class="hs-identifier hs-var">pp</span></a></span><span> </span><span class="annot"><span class="annottext">Char
+</span><span class="hs-char">';'</span></span><span> </span><span class="annot"><span class="annottext">Doc -&gt; Doc -&gt; Doc
+</span><span class="hs-operator hs-var">&lt;+&gt;</span></span><span> </span><span class="annot"><span class="annottext">[b] -&gt; Doc
+forall a. PpShow a =&gt; [a] -&gt; Doc
+</span><a href="Math.Tools.PrettyP.html#ppList"><span class="hs-identifier hs-var">PrettyP.ppList</span></a></span><span> </span><span class="annot"><span class="annottext">[b]
+</span><a href="#local-6989586621681298215"><span class="hs-identifier hs-var">e</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-56"></span><span>              </span><span class="annot"><span class="annottext">Doc -&gt; Doc -&gt; Doc
 forall a. Semigroup a =&gt; a -&gt; a -&gt; a
 </span><span class="hs-operator hs-var">&lt;&gt;</span></span><span> </span><span class="annot"><span class="annottext">Char -&gt; Doc
 forall a. PpShow a =&gt; a -&gt; Doc
 </span><a href="Math.Tools.PrettyP.html#pp"><span class="hs-identifier hs-var">pp</span></a></span><span> </span><span class="annot"><span class="annottext">Char
-</span><span class="hs-char">')'</span></span><span class="hs-special">)</span><span> </span><span class="annot"><span class="annottext">(Maybe ([a], [Doc]) -&gt; Doc) -&gt; Maybe ([a], [Doc]) -&gt; Doc
+</span><span class="hs-char">')'</span></span><span>
+</span><span id="line-57"></span><span>
+</span><span id="line-58"></span><span> </span><span class="hs-keyword">instance</span><span> </span><span id="local-6989586621681298014"><span class="hs-special">(</span><span class="annot"><span class="hs-identifier hs-type">Ord</span></span><span> </span><span class="annot"><a href="#local-6989586621681298014"><span class="hs-identifier hs-type">a</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><a href="Math.Tools.PrettyP.html#PpShow"><span class="hs-identifier hs-type">PpShow</span></a></span><span> </span><span class="annot"><a href="#local-6989586621681298014"><span class="hs-identifier hs-type">a</span></a></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">=&gt;</span><span> </span><span class="annot"><a href="Math.Tools.PrettyP.html#PpShow"><span class="hs-identifier hs-type">PpShow</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="Math.Graph.Reversible.html#Graph"><span class="hs-identifier hs-type">Graph</span></a></span><span> </span><span class="annot"><a href="Math.Graph.GraphMonoid.html#Four"><span class="hs-identifier hs-type">Four</span></a></span><span> </span><span class="annot"><a href="#local-6989586621681298014"><span class="hs-identifier hs-type">a</span></a></span><span class="hs-special">)</span></span><span> </span><span class="hs-keyword">where</span><span>
+</span><span id="line-59"></span><span>   </span><span id="local-6989586621681298240"><span class="annot"><span class="annottext">pp :: Graph Four a -&gt; Doc
+</span><a href="Math.Tools.PrettyP.html#pp"><span class="hs-identifier hs-var hs-var hs-var hs-var">pp</span></a></span></span><span> </span><span id="local-6989586621681298241"><span class="annot"><span class="annottext">Graph Four a
+</span><a href="#local-6989586621681298241"><span class="hs-identifier hs-var">g</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Doc -&gt; (([a], [Doc]) -&gt; Doc) -&gt; Maybe ([a], [Doc]) -&gt; Doc
+forall b a. b -&gt; (a -&gt; b) -&gt; Maybe a -&gt; b
+</span><span class="hs-identifier hs-var">maybe</span></span><span> </span><span class="annot"><span class="annottext">Doc
+</span><a href="Math.Graph.Show.html#base"><span class="hs-identifier hs-var">base</span></a></span><span> </span><span class="annot"><span class="annottext">([a], [Doc]) -&gt; Doc
+forall a b. (PpShow a, PpShow b) =&gt; ([a], [b]) -&gt; Doc
+</span><a href="Math.Graph.Show.html#veprint"><span class="hs-identifier hs-var">veprint</span></a></span><span> </span><span class="annot"><span class="annottext">(Maybe ([a], [Doc]) -&gt; Doc) -&gt; Maybe ([a], [Doc]) -&gt; Doc
 forall a b. (a -&gt; b) -&gt; a -&gt; b
 </span><span class="hs-operator hs-var">$</span></span><span> </span><span class="annot"><span class="annottext">Graph Four a
 -&gt; InGraphM Four a Maybe ([a], [Doc]) -&gt; Maybe ([a], [Doc])
 forall (mon :: * -&gt; * -&gt; *) e (m :: * -&gt; *) a.
 Graph mon e -&gt; InGraphM mon e m a -&gt; m a
 </span><a href="Math.Graph.InGraphMonad.html#inGraphM"><span class="hs-identifier hs-var">inGraphM</span></a></span><span> </span><span class="annot"><span class="annottext">Graph Four a
-</span><a href="#local-6989586621681415612"><span class="hs-identifier hs-var">g</span></a></span><span> </span><span class="annot"><span class="annottext">(InGraphM Four a Maybe ([a], [Doc]) -&gt; Maybe ([a], [Doc]))
+</span><a href="#local-6989586621681298241"><span class="hs-identifier hs-var">g</span></a></span><span> </span><span class="annot"><span class="annottext">(InGraphM Four a Maybe ([a], [Doc]) -&gt; Maybe ([a], [Doc]))
 -&gt; InGraphM Four a Maybe ([a], [Doc]) -&gt; Maybe ([a], [Doc])
 forall a b. (a -&gt; b) -&gt; a -&gt; b
 </span><span class="hs-operator hs-var">$</span></span><span> </span><span class="hs-keyword">do</span><span>
-</span><span id="line-44"></span><span>                 </span><span id="local-6989586621681415615"><span class="annot"><span class="annottext">Set ((a, a), (a, a))
-</span><a href="#local-6989586621681415615"><span class="hs-identifier hs-var">edges</span></a></span></span><span> </span><span class="hs-glyph">&lt;-</span><span> </span><span class="annot"><span class="annottext">InGraphM Four a Maybe (Set ((a, a), (a, a)))
+</span><span id="line-60"></span><span>                 </span><span id="local-6989586621681298242"><span class="annot"><span class="annottext">Set ((a, a), (a, a))
+</span><a href="#local-6989586621681298242"><span class="hs-identifier hs-var">edges</span></a></span></span><span> </span><span class="hs-glyph">&lt;-</span><span> </span><span class="annot"><span class="annottext">InGraphM Four a Maybe (Set ((a, a), (a, a)))
 forall (m :: * -&gt; *) e (mon :: * -&gt; * -&gt; *).
 (Monad m, Ord e, ReversibleGraphMonoid mon Bool) =&gt;
 InGraphM mon e m (Set ((e, e), (e, e)))
 </span><a href="Math.Graph.InGraphMonad.html#reversibleLinksM"><span class="hs-identifier hs-var">reversibleLinksM</span></a></span><span>
-</span><span id="line-45"></span><span>                 </span><span id="local-6989586621681415617"><span class="annot"><span class="annottext">Set a
-</span><a href="#local-6989586621681415617"><span class="hs-identifier hs-var">vertices</span></a></span></span><span> </span><span class="hs-glyph">&lt;-</span><span> </span><span class="annot"><span class="annottext">InGraphM Four a Maybe (Set a)
+</span><span id="line-61"></span><span>                 </span><span id="local-6989586621681298244"><span class="annot"><span class="annottext">Set a
+</span><a href="#local-6989586621681298244"><span class="hs-identifier hs-var">vertices</span></a></span></span><span> </span><span class="hs-glyph">&lt;-</span><span> </span><span class="annot"><span class="annottext">InGraphM Four a Maybe (Set a)
 forall e (mon :: * -&gt; * -&gt; *) (m :: * -&gt; *).
 (Ord e, GraphMonoid mon Bool, Monad m) =&gt;
 InGraphM mon e m (Set e)
 </span><a href="Math.Graph.InGraphMonad.html#verticesM"><span class="hs-identifier hs-var">verticesM</span></a></span><span>
-</span><span id="line-46"></span><span>                 </span><span class="annot"><span class="annottext">([a], [Doc]) -&gt; InGraphM Four a Maybe ([a], [Doc])
+</span><span id="line-62"></span><span>                 </span><span class="annot"><span class="annottext">([a], [Doc]) -&gt; InGraphM Four a Maybe ([a], [Doc])
 forall a. a -&gt; InGraphM Four a Maybe a
 forall (m :: * -&gt; *) a. Monad m =&gt; a -&gt; m a
 </span><span class="hs-identifier hs-var">return</span></span><span> </span><span class="annot"><span class="annottext">(([a], [Doc]) -&gt; InGraphM Four a Maybe ([a], [Doc]))
@@ -267,54 +307,18 @@ forall a b. (a -&gt; b) -&gt; a -&gt; b
 </span><span class="hs-operator hs-var">$</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">Set a -&gt; [a]
 forall a. Set a -&gt; [a]
 </span><span class="hs-identifier hs-var">Set.toList</span></span><span> </span><span class="annot"><span class="annottext">Set a
-</span><a href="#local-6989586621681415617"><span class="hs-identifier hs-var">vertices</span></a></span><span class="hs-special">,</span><span class="hs-special">(</span><span class="annot"><span class="annottext">(((a, a), (a, a)) -&gt; Doc) -&gt; [((a, a), (a, a))] -&gt; [Doc]
+</span><a href="#local-6989586621681298244"><span class="hs-identifier hs-var">vertices</span></a></span><span class="hs-special">,</span><span>
+</span><span id="line-63"></span><span>                           </span><span class="hs-special">(</span><span class="annot"><span class="annottext">(((a, a), (a, a)) -&gt; Doc) -&gt; [((a, a), (a, a))] -&gt; [Doc]
 forall a b. (a -&gt; b) -&gt; [a] -&gt; [b]
-</span><span class="hs-identifier hs-var">map</span></span><span> </span><span class="hs-special">(</span><span class="hs-glyph">\</span><span> </span><span class="hs-special">(</span><span class="hs-special">(</span><span id="local-6989586621681415618"><span class="annot"><span class="annottext">a
-</span><a href="#local-6989586621681415618"><span class="hs-identifier hs-var">e</span></a></span></span><span class="hs-special">,</span><span id="local-6989586621681415619"><span class="annot"><span class="annottext">a
-</span><a href="#local-6989586621681415619"><span class="hs-identifier hs-var">re</span></a></span></span><span class="hs-special">)</span><span class="hs-special">,</span><span class="hs-special">(</span><span id="local-6989586621681415620"><span class="annot"><span class="annottext">a
-</span><a href="#local-6989586621681415620"><span class="hs-identifier hs-var">x</span></a></span></span><span class="hs-special">,</span><span id="local-6989586621681415621"><span class="annot"><span class="annottext">a
-</span><a href="#local-6989586621681415621"><span class="hs-identifier hs-var">y</span></a></span></span><span class="hs-special">)</span><span class="hs-special">)</span><span> </span><span class="hs-glyph">-&gt;</span><span>
-</span><span id="line-47"></span><span>                        </span><span class="annot"><span class="annottext">a -&gt; Doc
-forall a. PpShow a =&gt; a -&gt; Doc
-</span><a href="Math.Tools.PrettyP.html#pp"><span class="hs-identifier hs-var">pp</span></a></span><span> </span><span class="annot"><span class="annottext">a
-</span><a href="#local-6989586621681415618"><span class="hs-identifier hs-var">e</span></a></span><span>
-</span><span id="line-48"></span><span>                         </span><span class="annot"><span class="annottext">Doc -&gt; Doc -&gt; Doc
-</span><span class="hs-operator hs-var">&lt;+&gt;</span></span><span> </span><span class="hs-special">(</span><span class="hs-keyword">if</span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">a
-</span><a href="#local-6989586621681415618"><span class="hs-identifier hs-var">e</span></a></span><span> </span><span class="annot"><span class="annottext">a -&gt; a -&gt; Bool
-forall a. Eq a =&gt; a -&gt; a -&gt; Bool
-</span><span class="hs-operator hs-var">/=</span></span><span> </span><span class="annot"><span class="annottext">a
-</span><a href="#local-6989586621681415619"><span class="hs-identifier hs-var">re</span></a></span><span class="hs-special">)</span><span> </span><span class="hs-keyword">then</span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">Text -&gt; Doc
-forall a. PpShow a =&gt; a -&gt; Doc
-</span><a href="Math.Tools.PrettyP.html#pp"><span class="hs-identifier hs-var">pp</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">Text
-</span><span class="hs-string">&quot;/&quot;</span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">T.Text</span></span><span class="hs-special">)</span><span> </span><span class="annot"><span class="annottext">Doc -&gt; Doc -&gt; Doc
-</span><span class="hs-operator hs-var">&lt;+&gt;</span></span><span> </span><span class="annot"><span class="annottext">a -&gt; Doc
-forall a. PpShow a =&gt; a -&gt; Doc
-</span><a href="Math.Tools.PrettyP.html#pp"><span class="hs-identifier hs-var">pp</span></a></span><span> </span><span class="annot"><span class="annottext">a
-</span><a href="#local-6989586621681415619"><span class="hs-identifier hs-var">re</span></a></span><span class="hs-special">)</span><span> </span><span class="hs-keyword">else</span><span> </span><span class="annot"><span class="annottext">Doc
-</span><span class="hs-identifier hs-var">empty</span></span><span class="hs-special">)</span><span>
-</span><span id="line-49"></span><span>                         </span><span class="annot"><span class="annottext">Doc -&gt; Doc -&gt; Doc
-</span><span class="hs-operator hs-var">&lt;+&gt;</span></span><span> </span><span class="annot"><span class="annottext">Char -&gt; Doc
-forall a. PpShow a =&gt; a -&gt; Doc
-</span><a href="Math.Tools.PrettyP.html#pp"><span class="hs-identifier hs-var">pp</span></a></span><span> </span><span class="annot"><span class="annottext">Char
-</span><span class="hs-char">'='</span></span><span> </span><span class="annot"><span class="annottext">Doc -&gt; Doc -&gt; Doc
-</span><span class="hs-operator hs-var">&lt;+&gt;</span></span><span> </span><span class="annot"><span class="annottext">a -&gt; Doc
-forall a. PpShow a =&gt; a -&gt; Doc
-</span><a href="Math.Tools.PrettyP.html#pp"><span class="hs-identifier hs-var">pp</span></a></span><span> </span><span class="annot"><span class="annottext">a
-</span><a href="#local-6989586621681415620"><span class="hs-identifier hs-var">x</span></a></span><span> </span><span class="annot"><span class="annottext">Doc -&gt; Doc -&gt; Doc
-</span><span class="hs-operator hs-var">&lt;+&gt;</span></span><span> </span><span class="annot"><span class="annottext">Text -&gt; Doc
-forall a. PpShow a =&gt; a -&gt; Doc
-</span><a href="Math.Tools.PrettyP.html#pp"><span class="hs-identifier hs-var">pp</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">Text
-</span><span class="hs-string">&quot;&lt;-&gt;&quot;</span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">T.Text</span></span><span class="hs-special">)</span><span> </span><span class="annot"><span class="annottext">Doc -&gt; Doc -&gt; Doc
-</span><span class="hs-operator hs-var">&lt;+&gt;</span></span><span> </span><span class="annot"><span class="annottext">a -&gt; Doc
-forall a. PpShow a =&gt; a -&gt; Doc
-</span><a href="Math.Tools.PrettyP.html#pp"><span class="hs-identifier hs-var">pp</span></a></span><span> </span><span class="annot"><span class="annottext">a
-</span><a href="#local-6989586621681415621"><span class="hs-identifier hs-var">y</span></a></span><span class="hs-special">)</span><span>
-</span><span id="line-50"></span><span>                         </span><span class="annot"><span class="annottext">([((a, a), (a, a))] -&gt; [Doc]) -&gt; [((a, a), (a, a))] -&gt; [Doc]
+</span><span class="hs-identifier hs-var">map</span></span><span> </span><span class="annot"><span class="annottext">((a, a), (a, a)) -&gt; Doc
+forall e x y.
+(Eq e, PpShow e, PpShow x, PpShow y) =&gt;
+((e, e), (x, y)) -&gt; Doc
+</span><a href="Math.Graph.Show.html#bidirectional_eprint"><span class="hs-identifier hs-var">bidirectional_eprint</span></a></span><span> </span><span class="annot"><span class="annottext">([((a, a), (a, a))] -&gt; [Doc]) -&gt; [((a, a), (a, a))] -&gt; [Doc]
 forall a b. (a -&gt; b) -&gt; a -&gt; b
 </span><span class="hs-operator hs-var">$</span></span><span> </span><span class="annot"><span class="annottext">Set ((a, a), (a, a)) -&gt; [((a, a), (a, a))]
 forall a. Set a -&gt; [a]
 </span><span class="hs-identifier hs-var">Set.toList</span></span><span> </span><span class="annot"><span class="annottext">Set ((a, a), (a, a))
-</span><a href="#local-6989586621681415615"><span class="hs-identifier hs-var">edges</span></a></span><span class="hs-special">)</span><span class="hs-special">)</span><span>
-</span><span id="line-51"></span><span>
-</span><span id="line-52"></span><span>
-</span><span id="line-53"></span></pre></body></html>
+</span><a href="#local-6989586621681298242"><span class="hs-identifier hs-var">edges</span></a></span><span class="hs-special">)</span><span class="hs-special">)</span><span>
+</span><span id="line-64"></span><span>
+</span><span id="line-65"></span></pre></body></html>

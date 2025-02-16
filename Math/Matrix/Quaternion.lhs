@@ -43,7 +43,7 @@
 >   x %* (Quaternion v) = Quaternion (x %* v)
 
 >instance (ConjugateSymmetric a, Floating a) => NormedSpace (Quaternion a) where
->   norm_squared (Quaternion v) = v %. v
+>   normSquared (Quaternion v) = v %. v
 
 >instance (Num a) => LieAlgebra (Quaternion a) where
 >   q %<>% p = p * q - q * p
@@ -58,31 +58,31 @@
 >        (a1*c2 - b1*d2 + c1*a2 + d1*b2)
 >        (a1*d2 + b1*c2 - c1*b2 + d1*a2)
 
->qcross_product :: (Fractional a) => Quaternion a -> Quaternion a -> Quaternion a
->qcross_product p q = (1/2) %* (p * q - conj p * conj q)
+>qcrossProduct :: (Fractional a) => Quaternion a -> Quaternion a -> Quaternion a
+>qcrossProduct p q = (1/2) %* (p * q - conj p * conj q)
 
->qdot_product :: (Fractional a) => Quaternion a -> Quaternion a -> a
->qdot_product p q = (1/2) * (qscalar $ conj p * q + conj q * p)
+>qdotProduct :: (Fractional a) => Quaternion a -> Quaternion a -> a
+>qdotProduct p q = (1/2) * (qscalar $ conj p * q + conj q * p)
 
 
 >instance (Fractional a) => InnerProductSpace (Quaternion a) where
->   (%.) = qdot_product
+>   (%.) = qdotProduct
 
 >-- | <https://en.wikipedia.org/wiki/Quaternion>
 >qconjugate :: (Num a) => (Quaternion a) -> (Quaternion a)
 >qconjugate (Q4 a b c d) = Q4 a (negate b) (negate c) (negate d)
 
 >-- | <https://en.wikipedia.org/wiki/Quaternion>
->quarternion_inverse :: (ConjugateSymmetric a, Floating a) => Quaternion a -> Quaternion a
->quarternion_inverse q = (norm_squared q) %* qconjugate q
+>quarternionInverse :: (ConjugateSymmetric a, Floating a) => Quaternion a -> Quaternion a
+>quarternionInverse q = (normSquared q) %* qconjugate q
 >
 >-- | <https://en.wikipedia.org/wiki/Quaternion>
 >left_divide :: (ConjugateSymmetric a, Floating a) => Quaternion a -> Quaternion a -> Quaternion a
->left_divide q p = quarternion_inverse q * p
+>left_divide q p = quarternionInverse q * p
 
 >-- | <https://en.wikipedia.org/wiki/Quaternion>
 >right_divide :: (ConjugateSymmetric a, Floating a) => Quaternion a -> Quaternion a -> Quaternion a
->right_divide q p = q * quarternion_inverse p
+>right_divide q p = q * quarternionInverse p
 
 >-- | <https://en.wikipedia.org/wiki/Quaternion>
 >split :: (Num a) => Quaternion a -> (Quaternion a, Quaternion a)
@@ -102,7 +102,7 @@
 
 >instance (Floating a, ConjugateSymmetric a) => Fractional (Quaternion a) where
 >   (/) = left_divide
->   recip = quarternion_inverse
+>   recip = quarternionInverse
 >   fromRational q = Q4 (fromRational q) 0 0 0
 
 >instance (Floating a, ConjugateSymmetric a) => Floating (Quaternion a) where

@@ -29,7 +29,7 @@
 >codiagonalsWith :: (Num a, Closed a) => Transform2D a b -> (Stream :*: Stream) a -> Stream b
 >codiagonalsWith z@(Transform2D diag pair thr) q = Pre (diag d) $ Pre (pair x y) $
 >             liftA3 thr xr (codiagonalsWith z m) yr 
->    where ~(d,(Pre x xr, Pre y yr),m) = dematrix_impl q
+>    where ~(d,(Pre x xr, Pre y yr),m) = dematrixImpl q
 
 >element2D :: a -> a -> Transform2D () a
 >element2D x y = Transform2D (\ () -> x) (\ () () -> y) (\ () m () -> m)
@@ -39,7 +39,7 @@
 
 >vector2D :: (Floating (Scalar v), InnerProductSpace v)
 >  => (v -> Scalar v -> v -> Scalar v) -> Transform2D v (Scalar v)
->vector2D = Transform2D innerproductspace_norm (%.)
+>vector2D = Transform2D innerproductspaceNorm (%.)
 
 >functor2D :: (TArrow.FunctorArrow f arr arr, C.Category arr) =>
 >   (arr a a -> arr a a -> arr (f a) (f a))
@@ -91,7 +91,7 @@
 
 >matrix2D :: (VectorSpace ((f :*: f) a), SupportsMatrixMultiplication f f f a)
 >  => ((f :*: f) a -> (f :*: f) a -> (f :*: f) a -> (f :*: f) a) -> Transform2D ((f :*: f) a) ((f :*: f) a)
->matrix2D = Transform2D transpose_impl (%*%)
+>matrix2D = Transform2D transposeImpl (%*%)
 
 matrixProduct2D :: (VectorSpace ((f :*: f) a), Transposable f f a,
  InnerProductSpace (f a), VectorSpaceOver (f a) a)
@@ -99,7 +99,7 @@ matrixProduct2D :: (VectorSpace ((f :*: f) a), Transposable f f a,
 
 >matrixProduct2D :: (SupportsMatrixMultiplication f f f a, VectorSpace ((f :*: f) a))
 > => Transform2D ((f :*: f) a) ((f :*: f) a)
->matrixProduct2D = Transform2D transpose_impl (\a b -> a %*% b %- b %*% a) (\a m b -> a %*% m %*% transpose_impl b)
+>matrixProduct2D = Transform2D transposeImpl (\a b -> a %*% b %- b %*% a) (\a m b -> a %*% m %*% transposeImpl b)
 
 >list2D :: Transform2D a [a]
 >list2D = Transform2D (\a -> [a]) (\a b -> [a,b]) (\a m b -> a : m ++ [b])

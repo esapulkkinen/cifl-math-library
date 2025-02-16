@@ -3,6 +3,7 @@
 >             TupleSections,  TypeOperators, AllowAmbiguousTypes, Arrows,TypeFamilies,
 >             LambdaCase, IncoherentInstances, FlexibleContexts, PolyKinds
 > #-}
+>{-# LANGUAGE LinearTypes #-}
 >-- |
 >-- Module: Math.Tools.Arrow
 >-- License: LGPL
@@ -68,6 +69,9 @@
 >class (Category arr) => BiArrow arr where
 >   (<->) :: (a -> b) -> (b -> a) -> arr a b
 
+>class (Category arr) => LinearBiArrow arr m where
+>  (<==>) :: (a %m -> b) -> (b %m -> a) -> arr a b
+
 >class (Category arr, Category m) => MonoidCategory arr m f | f -> m arr where
 >   monoidArr :: m a a -> arr (f a) (f a)
 
@@ -96,10 +100,10 @@
 >   aapply fx -<< y
 
 >class (Category arr, Category arr') => CoFunctorArrow f arr arr' where
->      inverseImage :: arr c d -> arr' (f d) (f c)
+>      inverseImageArr :: arr c d -> arr' (f d) (f c)
 
 >(|>) :: (CoFunctorArrow f (->) (->)) => f d -> (c -> d) -> f c
->x |> f = inverseImage f x
+>x |> f = inverseImageArr f x
 
 >class (Category arr, Category arr')
 >     => AdjunctionArrow arr arr' f g

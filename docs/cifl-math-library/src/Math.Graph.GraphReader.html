@@ -7,25 +7,25 @@
 </span><span id="line-7"></span><span> </span><span class="hs-keyword">import</span><span> </span><span class="annot"><a href="Math.Graph.Reversible.html"><span class="hs-identifier">Math.Graph.Reversible</span></a></span><span>
 </span><span id="line-8"></span><span> </span><span class="hs-keyword">import</span><span> </span><span class="annot"><a href="Math.Graph.InGraphMonad.html"><span class="hs-identifier">Math.Graph.InGraphMonad</span></a></span><span>
 </span><span id="line-9"></span><span>
-</span><span id="line-10"></span><span> </span><span id="local-6989586621681416953"><span id="local-6989586621681416954"><span id="local-6989586621681416955"><span class="annot"><a href="Math.Graph.GraphReader.html#dfsM"><span class="hs-identifier hs-type">dfsM</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="hs-special">(</span><span class="annot"><span class="hs-identifier hs-type">Monad</span></span><span> </span><span class="annot"><a href="#local-6989586621681416953"><span class="hs-identifier hs-type">m</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Ord</span></span><span> </span><span class="annot"><a href="#local-6989586621681416954"><span class="hs-identifier hs-type">e</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><a href="Math.Graph.GraphMonoid.html#GraphMonoid"><span class="hs-identifier hs-type">GraphMonoid</span></a></span><span> </span><span class="annot"><a href="#local-6989586621681416955"><span class="hs-identifier hs-type">mon</span></a></span><span> </span><span class="annot"><span class="hs-identifier hs-type">Bool</span></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">=&gt;</span><span> </span><span class="annot"><a href="#local-6989586621681416954"><span class="hs-identifier hs-type">e</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="Math.Graph.InGraphMonad.html#InGraphM"><span class="hs-identifier hs-type">InGraphM</span></a></span><span> </span><span class="annot"><a href="#local-6989586621681416955"><span class="hs-identifier hs-type">mon</span></a></span><span> </span><span class="annot"><a href="#local-6989586621681416954"><span class="hs-identifier hs-type">e</span></a></span><span> </span><span class="annot"><a href="#local-6989586621681416953"><span class="hs-identifier hs-type">m</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="hs-identifier hs-type">Forest</span></span><span> </span><span class="annot"><a href="#local-6989586621681416954"><span class="hs-identifier hs-type">e</span></a></span><span class="hs-special">)</span></span></span></span><span>
+</span><span id="line-10"></span><span> </span><span id="local-6989586621681299575"><span id="local-6989586621681299576"><span id="local-6989586621681299577"><span class="annot"><a href="Math.Graph.GraphReader.html#dfsM"><span class="hs-identifier hs-type">dfsM</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="hs-special">(</span><span class="annot"><span class="hs-identifier hs-type">Monad</span></span><span> </span><span class="annot"><a href="#local-6989586621681299575"><span class="hs-identifier hs-type">m</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Ord</span></span><span> </span><span class="annot"><a href="#local-6989586621681299576"><span class="hs-identifier hs-type">e</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><a href="Math.Graph.GraphMonoid.html#GraphMonoid"><span class="hs-identifier hs-type">GraphMonoid</span></a></span><span> </span><span class="annot"><a href="#local-6989586621681299577"><span class="hs-identifier hs-type">mon</span></a></span><span> </span><span class="annot"><span class="hs-identifier hs-type">Bool</span></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">=&gt;</span><span> </span><span class="annot"><a href="#local-6989586621681299576"><span class="hs-identifier hs-type">e</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="Math.Graph.InGraphMonad.html#InGraphM"><span class="hs-identifier hs-type">InGraphM</span></a></span><span> </span><span class="annot"><a href="#local-6989586621681299577"><span class="hs-identifier hs-type">mon</span></a></span><span> </span><span class="annot"><a href="#local-6989586621681299576"><span class="hs-identifier hs-type">e</span></a></span><span> </span><span class="annot"><a href="#local-6989586621681299575"><span class="hs-identifier hs-type">m</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="hs-identifier hs-type">Forest</span></span><span> </span><span class="annot"><a href="#local-6989586621681299576"><span class="hs-identifier hs-type">e</span></a></span><span class="hs-special">)</span></span></span></span><span>
 </span><span id="line-11"></span><span> </span><span id="dfsM"><span class="annot"><span class="annottext">dfsM :: forall (m :: * -&gt; *) e (mon :: * -&gt; * -&gt; *).
 (Monad m, Ord e, GraphMonoid mon Bool) =&gt;
 e -&gt; InGraphM mon e m (Forest e)
-</span><a href="Math.Graph.GraphReader.html#dfsM"><span class="hs-identifier hs-var hs-var">dfsM</span></a></span></span><span> </span><span id="local-6989586621681417009"><span class="annot"><span class="annottext">e
-</span><a href="#local-6989586621681417009"><span class="hs-identifier hs-var">root</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="hs-keyword">do</span><span> </span><span id="local-6989586621681417010"><span class="annot"><span class="annottext">Set e
-</span><a href="#local-6989586621681417010"><span class="hs-identifier hs-var">edgeset</span></a></span></span><span> </span><span class="hs-glyph">&lt;-</span><span> </span><span class="annot"><span class="annottext">e -&gt; InGraphM mon e m (Set e)
+</span><a href="Math.Graph.GraphReader.html#dfsM"><span class="hs-identifier hs-var hs-var">dfsM</span></a></span></span><span> </span><span id="local-6989586621681299631"><span class="annot"><span class="annottext">e
+</span><a href="#local-6989586621681299631"><span class="hs-identifier hs-var">root</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="hs-keyword">do</span><span> </span><span id="local-6989586621681299632"><span class="annot"><span class="annottext">Set e
+</span><a href="#local-6989586621681299632"><span class="hs-identifier hs-var">edgeset</span></a></span></span><span> </span><span class="hs-glyph">&lt;-</span><span> </span><span class="annot"><span class="annottext">e -&gt; InGraphM mon e m (Set e)
 forall (m :: * -&gt; *) e (mon :: * -&gt; * -&gt; *).
 (Monad m, Ord e, GraphMonoid mon Bool) =&gt;
 e -&gt; InGraphM mon e m (Set e)
 </span><a href="Math.Graph.InGraphMonad.html#edgesStartingFromM"><span class="hs-identifier hs-var">edgesStartingFromM</span></a></span><span> </span><span class="annot"><span class="annottext">e
-</span><a href="#local-6989586621681417009"><span class="hs-identifier hs-var">root</span></a></span><span>
-</span><span id="line-12"></span><span>                </span><span class="hs-keyword">let</span><span> </span><span id="local-6989586621681417012"><span class="annot"><span class="annottext">edgelist :: [e]
-</span><a href="#local-6989586621681417012"><span class="hs-identifier hs-var hs-var">edgelist</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Set e -&gt; [e]
+</span><a href="#local-6989586621681299631"><span class="hs-identifier hs-var">root</span></a></span><span>
+</span><span id="line-12"></span><span>                </span><span class="hs-keyword">let</span><span> </span><span id="local-6989586621681299634"><span class="annot"><span class="annottext">edgelist :: [e]
+</span><a href="#local-6989586621681299634"><span class="hs-identifier hs-var hs-var">edgelist</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Set e -&gt; [e]
 forall a. Set a -&gt; [a]
 </span><span class="hs-identifier hs-var">Set.toList</span></span><span> </span><span class="annot"><span class="annottext">Set e
-</span><a href="#local-6989586621681417010"><span class="hs-identifier hs-var">edgeset</span></a></span><span>
-</span><span id="line-13"></span><span>                </span><span id="local-6989586621681417014"><span class="annot"><span class="annottext">[e]
-</span><a href="#local-6989586621681417014"><span class="hs-identifier hs-var">childnodes</span></a></span></span><span> </span><span class="hs-glyph">&lt;-</span><span> </span><span class="annot"><span class="annottext">(e -&gt; InGraphM mon e m e) -&gt; [e] -&gt; InGraphM mon e m [e]
+</span><a href="#local-6989586621681299632"><span class="hs-identifier hs-var">edgeset</span></a></span><span>
+</span><span id="line-13"></span><span>                </span><span id="local-6989586621681299636"><span class="annot"><span class="annottext">[e]
+</span><a href="#local-6989586621681299636"><span class="hs-identifier hs-var">childnodes</span></a></span></span><span> </span><span class="hs-glyph">&lt;-</span><span> </span><span class="annot"><span class="annottext">(e -&gt; InGraphM mon e m e) -&gt; [e] -&gt; InGraphM mon e m [e]
 forall (t :: * -&gt; *) (m :: * -&gt; *) a b.
 (Traversable t, Monad m) =&gt;
 (a -&gt; m b) -&gt; t a -&gt; m (t b)
@@ -35,9 +35,9 @@ forall (mon :: * -&gt; * -&gt; *) (m :: * -&gt; *) e.
 (GraphMonoid mon Bool, Monad m) =&gt;
 e -&gt; InGraphM mon e m e
 </span><a href="Math.Graph.InGraphMonad.html#targetM"><span class="hs-identifier hs-var">targetM</span></a></span><span> </span><span class="annot"><span class="annottext">[e]
-</span><a href="#local-6989586621681417012"><span class="hs-identifier hs-var">edgelist</span></a></span><span>              </span><span>
-</span><span id="line-14"></span><span>                </span><span id="local-6989586621681417017"><span class="annot"><span class="annottext">[Forest e]
-</span><a href="#local-6989586621681417017"><span class="hs-identifier hs-var">subtrees</span></a></span></span><span> </span><span class="hs-glyph">&lt;-</span><span> </span><span class="annot"><span class="annottext">(e -&gt; InGraphM mon e m (Forest e))
+</span><a href="#local-6989586621681299634"><span class="hs-identifier hs-var">edgelist</span></a></span><span>              </span><span>
+</span><span id="line-14"></span><span>                </span><span id="local-6989586621681299639"><span class="annot"><span class="annottext">[Forest e]
+</span><a href="#local-6989586621681299639"><span class="hs-identifier hs-var">subtrees</span></a></span></span><span> </span><span class="hs-glyph">&lt;-</span><span> </span><span class="annot"><span class="annottext">(e -&gt; InGraphM mon e m (Forest e))
 -&gt; [e] -&gt; InGraphM mon e m [Forest e]
 forall (t :: * -&gt; *) (m :: * -&gt; *) a b.
 (Traversable t, Monad m) =&gt;
@@ -48,7 +48,7 @@ forall (m :: * -&gt; *) e (mon :: * -&gt; * -&gt; *).
 (Monad m, Ord e, GraphMonoid mon Bool) =&gt;
 e -&gt; InGraphM mon e m (Forest e)
 </span><a href="Math.Graph.GraphReader.html#dfsM"><span class="hs-identifier hs-var">dfsM</span></a></span><span> </span><span class="annot"><span class="annottext">[e]
-</span><a href="#local-6989586621681417014"><span class="hs-identifier hs-var">childnodes</span></a></span><span>
+</span><a href="#local-6989586621681299636"><span class="hs-identifier hs-var">childnodes</span></a></span><span>
 </span><span id="line-15"></span><span>                </span><span class="annot"><span class="annottext">Forest e -&gt; InGraphM mon e m (Forest e)
 forall a. a -&gt; InGraphM mon e m a
 forall (m :: * -&gt; *) a. Monad m =&gt; a -&gt; m a
@@ -60,7 +60,7 @@ forall a b c. (a -&gt; b -&gt; c) -&gt; [a] -&gt; [b] -&gt; [c]
 </span><span class="hs-identifier hs-var">zipWith</span></span><span> </span><span class="annot"><span class="annottext">e -&gt; Forest e -&gt; Tree e
 forall a. a -&gt; [Tree a] -&gt; Tree a
 </span><span class="hs-identifier hs-var">Node</span></span><span> </span><span class="annot"><span class="annottext">[e]
-</span><a href="#local-6989586621681417014"><span class="hs-identifier hs-var">childnodes</span></a></span><span> </span><span class="annot"><span class="annottext">[Forest e]
-</span><a href="#local-6989586621681417017"><span class="hs-identifier hs-var">subtrees</span></a></span><span>
+</span><a href="#local-6989586621681299636"><span class="hs-identifier hs-var">childnodes</span></a></span><span> </span><span class="annot"><span class="annottext">[Forest e]
+</span><a href="#local-6989586621681299639"><span class="hs-identifier hs-var">subtrees</span></a></span><span>
 </span><span id="line-16"></span><span>
 </span><span id="line-17"></span></pre></body></html>

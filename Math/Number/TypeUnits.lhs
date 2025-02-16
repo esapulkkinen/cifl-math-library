@@ -95,34 +95,35 @@
 >type instance DimensionMinus ('DDimension a1 a2 a3 a4 a5 a6 a7 a8) ('DDimension b1 b2 b3 b4 b5 b6 b7 b8) =
 >       'DDimension (SMinus a1 b1) (SMinus a2 b2) (SMinus a3 b3) (SMinus a4 b4) (SMinus a5 b5) (SMinus a6 b6) (SMinus a7 b7) (SMinus a8 b8)
 >
->unit_multiply :: (Scalar (DUnit (DimensionPlus u u')) ~ Double,
->     Scalar (DUnit u) ~ Double,
->     Scalar (DUnit u') ~ Double,
->     Unit (DUnit u), Unit (DUnit u'), LiteralUnit (DUnit (DimensionPlus u u')))
->  => DUnit u -> DUnit u' -> DUnit (DimensionPlus u u')
+>unit_multiply :: (
+> Scalar (DUnit (DimensionPlus u u') a) ~ Scalar (DUnit u' a),
+> Scalar (DUnit u a) ~ Scalar (DUnit u' a),
+> Unit (DUnit u a), Unit (DUnit u' a), LiteralUnit (DUnit (DimensionPlus u u') a))
+>  => DUnit u a -> DUnit u' a -> DUnit (DimensionPlus u u') a
 >unit_multiply a b = fromAmount (amount a * amount b) 
 
->unit_divide :: (Scalar (DUnit (DimensionMinus u u')) ~ Double,
->     Scalar (DUnit u) ~ Double,
->     Scalar (DUnit u') ~ Double,
->     Unit (DUnit u), Unit (DUnit u'), LiteralUnit (DUnit (DimensionMinus u u')))
->  => DUnit u -> DUnit u' -> DUnit (DimensionMinus u u')
+>unit_divide :: (
+>    Fractional (Scalar (DUnit u' a)),
+>    Scalar (DUnit (DimensionMinus u u') a) ~ Scalar (DUnit u' a),
+>    Scalar (DUnit u a) ~ Scalar (DUnit u' a),
+>     Unit (DUnit u a), Unit (DUnit u' a), LiteralUnit (DUnit (DimensionMinus u u') a))
+>  => DUnit u a -> DUnit u' a -> DUnit (DimensionMinus u u') a
 >unit_divide a b = fromAmount (amount a / amount b)
 
->half_circle_angle :: DUnit DAngle
+>half_circle_angle :: (Floating a) => DUnit DAngle a
 >half_circle_angle = DAngle $ Radians pi
 
->full_circle_angle :: DUnit DAngle
+>full_circle_angle :: (Floating a) => DUnit DAngle a
 >full_circle_angle = DAngle $ Radians (2 * pi)
 >
 >type family (:#:) a (dim :: [DDimension])
->type instance (:#:) Double '[] = DUnit DDimensionless
->type instance (:#:) Double (a ': '[]) = DUnit a
+>type instance (:#:) s '[] = DUnit DDimensionless s
+>type instance (:#:) s (a ': '[]) = DUnit a s
 >type instance (:#:) d (a ': b ': cr) = d :#: (DimensionPlus a b ': cr)
 >
 >type family (:/:) a (dim :: [DDimension])
 >type instance (:/:) a '[] = a
->type instance (:/:) (DUnit a) (b ': '[]) = DUnit (DimensionMinus a b)
+>type instance (:/:) (DUnit a s) (b ': '[]) = DUnit (DimensionMinus a b) s
 >type instance (:/:) a (b ': c ': cr) = a :/: (DimensionPlus b c ': cr)
 >
 >type family (:++) (a :: [k]) (b :: [k]) :: [k]
@@ -138,25 +139,25 @@
   => Double :#: lst -> Double :#: lst' -> Double :#: (lst :++ lst')
 a *%%% b = fromAmount (amount a * amount b)
  
->data family DUnit (u :: DDimension)
->data instance DUnit DAngle = DAngle Angle
->                           | DDegreesAngle DegreesAngle
+>data family DUnit (u :: DDimension) a
+>data instance DUnit DAngle a = DAngle (Angle a)
+>                           | DDegreesAngle (DegreesAngle a)
 >                           | DAngleZero
 >   deriving (Show, Read,Eq)
 
->newtype instance DUnit DSolidAngle = DSolidAngle SolidAngle
+>newtype instance DUnit DSolidAngle a = DSolidAngle (SolidAngle a)
 >   deriving (Show, Read,Eq)
 >   deriving newtype (VectorSpace)
 
 >-- | DDimensionlessZero is needed to avoid type error in vzero.
->data instance DUnit DDimensionless = DDimensionless Dimensionless
->                                   | DInformation Information
->                                   | DSoundLevel SoundLevel
->                                   | DPercentage Percentage
+>data instance DUnit DDimensionless a = DDimensionless (Dimensionless a)
+>                                   | DInformation (Information a)
+>                                   | DSoundLevel (SoundLevel a)
+>                                   | DPercentage (Percentage a)
 >                                   | DDimensionlessZero
 >   deriving (Show, Read,Eq, Typeable, Data, Generic)
->instance VectorSpace (DUnit DAngle) where
->   type Scalar (DUnit DAngle) = Double
+>instance (Num a) => VectorSpace (DUnit DAngle a) where
+>   type Scalar (DUnit DAngle a) = a
 >   vzero = DAngleZero
 >   vnegate (DAngle a) = DAngle (vnegate a)
 >   vnegate (DDegreesAngle a) = DDegreesAngle (vnegate a)
@@ -168,8 +169,8 @@ a *%%% b = fromAmount (amount a * amount b)
 >   k %* (DAngle a) = DAngle (k %* a)
 >   k %* (DDegreesAngle a) = DDegreesAngle (k %* a)
 
->instance VectorSpace (DUnit DDimensionless) where
->   type Scalar (DUnit DDimensionless) = Scalar Dimensionless
+>instance (Floating a) => VectorSpace (DUnit DDimensionless a) where
+>   type Scalar (DUnit DDimensionless a) = Scalar (Dimensionless a)
 >   vzero = DDimensionlessZero
 >   vnegate (DDimensionless a) = DDimensionless (vnegate a)
 >   vnegate (DInformation a) = DInformation (vnegate a)
@@ -188,37 +189,37 @@ a *%%% b = fromAmount (amount a * amount b)
 >   k %* (DSoundLevel a) = DSoundLevel (k %* a)
 >   k %* (DPercentage a) = DPercentage (k %* a)
 >   k %* DDimensionlessZero = DDimensionlessZero
->newtype instance DUnit DLength = DLength Length
+>newtype instance DUnit DLength a = DLength (Length a)
 >   deriving (Show, Read,Eq)
 >   deriving newtype (VectorSpace)
->newtype instance DUnit DSquareLength = DSquareLength SquareLength
+>newtype instance DUnit DSquareLength a = DSquareLength (SquareLength a)
 >   deriving (Show, Read,Eq)
 >   deriving newtype (VectorSpace)
->newtype instance DUnit DCubicLength = DCubicLength CubicLength
+>newtype instance DUnit DCubicLength a = DCubicLength (CubicLength a)
 >   deriving (Show, Read, Eq)
 >   deriving newtype (VectorSpace)
->newtype instance DUnit DMass = DMass Mass
+>newtype instance DUnit DMass a = DMass (Mass a)
 >   deriving (Show, Read,Eq)
 >   deriving newtype (VectorSpace)
->newtype instance DUnit DTime = DTime Time
+>newtype instance DUnit DTime a = DTime (Time a)
 >   deriving (Show, Read,Eq)
 >   deriving newtype (VectorSpace)
->newtype instance DUnit DCurrent = DCurrent Current
+>newtype instance DUnit DCurrent a = DCurrent (Current a)
 >   deriving (Show, Read,Eq)
 >   deriving newtype (VectorSpace)
->newtype instance DUnit DVelocity = DVelocity Velocity
+>newtype instance DUnit DVelocity a = DVelocity (Velocity a)
 >   deriving (Show, Read, Eq)
 >   deriving newtype (VectorSpace)
->newtype instance DUnit DAcceleration = DAcceleration Acceleration
+>newtype instance DUnit DAcceleration a = DAcceleration (Acceleration a)
 >   deriving (Show, Read, Eq)
 >   deriving newtype (VectorSpace, LiteralUnit)
->data instance DUnit DTemperature = DDegreesFahrenheit DegreesFahrenheit
->                                 | DDegreesCelcius DegreesTemperature
->                                 | DDegreesKelvin Temperature
+>data instance DUnit DTemperature a = DDegreesFahrenheit (DegreesFahrenheit a)
+>                                 | DDegreesCelcius (DegreesTemperature a)
+>                                 | DDegreesKelvin (Temperature a)
 >                                 | DZeroTemperature
 >   deriving (Show, Read,Eq)
->instance VectorSpace (DUnit DTemperature) where
->   type Scalar (DUnit DTemperature) = Double
+>instance (Num a) => VectorSpace (DUnit DTemperature a) where
+>   type Scalar (DUnit DTemperature a) = a
 >   vzero = DZeroTemperature
 >   vnegate (DDegreesFahrenheit a) = DDegreesFahrenheit (vnegate a)
 >   vnegate (DDegreesCelcius a) = DDegreesCelcius (vnegate a)
@@ -234,15 +235,15 @@ a *%%% b = fromAmount (amount a * amount b)
 >   k %* (DDegreesCelcius a) = DDegreesCelcius (k %* a)
 >   k %* (DDegreesKelvin a) = DDegreesKelvin (k %* a)
 >   k %* DZeroTemperature = DZeroTemperature
->newtype instance DUnit DSubstance = DSubstance Substance
+>newtype instance DUnit DSubstance a = DSubstance (Substance a)
 >   deriving (Show, Read,Eq)
 >   deriving newtype (VectorSpace)
->data instance DUnit DLuminosity = DLuminosity Intensity
->                                | DLuminousFlux LuminousFlux
+>data instance DUnit DLuminosity a = DLuminosity (Intensity a)
+>                                | DLuminousFlux (LuminousFlux a)
 >                                | DZeroLuminosity
 >   deriving (Show, Read,Eq)
->instance VectorSpace (DUnit DLuminosity) where
->   type Scalar (DUnit DLuminosity) = Double
+>instance (Num a) => VectorSpace (DUnit DLuminosity a) where
+>   type Scalar (DUnit DLuminosity a) = a
 >   vzero = DZeroLuminosity
 >   vnegate (DLuminosity a) = DLuminosity (vnegate a)
 >   vnegate (DLuminousFlux a) = DLuminousFlux (vnegate a)
@@ -255,56 +256,56 @@ a *%%% b = fromAmount (amount a * amount b)
 >   k %* (DLuminosity a) = DLuminosity (k %* a)
 >   k %* (DLuminousFlux a) = DLuminousFlux (k %* a)
 >   k %* DZeroLuminosity = DZeroLuminosity
->newtype instance DUnit DFrequency = DFrequency Frequency
+>newtype instance DUnit DFrequency a = DFrequency (Frequency a)
 >   deriving (Show, Read,Eq)
 >   deriving newtype (VectorSpace)
->newtype instance DUnit DForce = DForce Force
+>newtype instance DUnit DForce a = DForce (Force a)
 >   deriving (Show, Read,Eq)
 >   deriving newtype (VectorSpace)
->data instance DUnit DTorque = DTorque Torque
+>data instance DUnit DTorque a = DTorque (Torque a)
 >   deriving (Show, Read, Eq)
->data instance DUnit DEnergy = DEnergy Energy
+>data instance DUnit DEnergy a = DEnergy (Energy a)
 >   deriving (Show, Read,Eq)
 
->instance VectorSpace (DUnit DTorque) where
->   type Scalar (DUnit DTorque) = Double
+>instance (Num a) => VectorSpace (DUnit DTorque a) where
+>   type Scalar (DUnit DTorque a) = a
 >   vzero = DTorque vzero
 >   vnegate (DTorque x) = DTorque (vnegate x)
 >   (DTorque x) %+ (DTorque y) = DTorque (x %+ y)
 >   k %* (DTorque x) = DTorque (k %* x)
 
->instance VectorSpace (DUnit DEnergy) where
->   type Scalar (DUnit DEnergy) = Double
+>instance (Num a) => VectorSpace (DUnit DEnergy a) where
+>   type Scalar (DUnit DEnergy a) = a
 >   vzero = DEnergy vzero
 >   vnegate (DEnergy x) = DEnergy (vnegate x)
 >   (DEnergy x) %+ (DEnergy y) = DEnergy (x %+ y)
 >   k %* (DEnergy x) = DEnergy (k %* x)
 
->newtype instance DUnit DPressure = DPressure Pressure
+>newtype instance DUnit DPressure a = DPressure (Pressure a)
 >   deriving (Show, Read,Eq)
 >   deriving newtype (VectorSpace)
 
->newtype instance DUnit DPower = DPower Power
+>newtype instance DUnit DPower a = DPower (Power a)
 >   deriving (Show, Read,Eq)
 >   deriving newtype (VectorSpace)
->newtype instance DUnit DCharge = DCharge Charge
+>newtype instance DUnit DCharge a = DCharge (Charge a)
 >   deriving (Show, Read,Eq)
 >   deriving newtype (VectorSpace)
->newtype instance DUnit DVoltage = DVoltage Voltage
+>newtype instance DUnit DVoltage a = DVoltage (Voltage a)
 >   deriving (Show, Read,Eq)
 >   deriving newtype (VectorSpace)
->newtype instance DUnit DCapacitance = DCapacitance Capacitance
+>newtype instance DUnit DCapacitance a = DCapacitance (Capacitance a)
 >   deriving (Show, Read,Eq)
 >   deriving newtype (VectorSpace)
->newtype instance DUnit DResistance = DResistance Resistance
+>newtype instance DUnit DResistance a = DResistance (Resistance a)
 >   deriving (Show, Read,Eq)
 >   deriving newtype (VectorSpace)
->data instance DUnit DConductance = DConductance Conductance
->                                 | DEquivalentDose EquivalentDose
+>data instance DUnit DConductance a = DConductance (Conductance a)
+>                                 | DEquivalentDose (EquivalentDose a)
 >                                 | DZeroConductance
 >   deriving (Show, Read,Eq)
->instance VectorSpace (DUnit DConductance) where
->   type Scalar (DUnit DConductance) = Double
+>instance (Num a) => VectorSpace (DUnit DConductance a) where
+>   type Scalar (DUnit DConductance a) = a
 >   vzero = DZeroConductance
 >   vnegate (DConductance a) = DConductance (vnegate a)
 >   vnegate DZeroConductance = DZeroConductance
@@ -316,85 +317,85 @@ a *%%% b = fromAmount (amount a * amount b)
 >   k %* (DConductance a) = DConductance (k %* a)
 >   k %* (DEquivalentDose a) = DEquivalentDose (k %* a)
 >   k %* DZeroConductance = DZeroConductance
->newtype instance DUnit DFlux = DFlux Flux
+>newtype instance DUnit DFlux a = DFlux (Flux a)
 >   deriving (Show, Read,Eq)
 >   deriving newtype (VectorSpace, LiteralUnit)
->newtype instance DUnit DFluxDensity = DFluxDensity FluxDensity
+>newtype instance DUnit DFluxDensity a = DFluxDensity (FluxDensity a)
 >   deriving (Show, Read,Eq)
 >   deriving newtype (VectorSpace)
->newtype instance DUnit DInductance = DInductance Inductance
+>newtype instance DUnit DInductance a = DInductance (Inductance a)
 >   deriving (Show, Read,Eq)
 >   deriving newtype (VectorSpace)
->newtype instance DUnit DIlluminance = DIlluminance Illuminance
+>newtype instance DUnit DIlluminance a = DIlluminance (Illuminance a)
 >   deriving (Show, Read,Eq)
 >   deriving newtype (VectorSpace)
->newtype instance DUnit DRadioactivity = DRadioactivity Radioactivity
+>newtype instance DUnit DRadioactivity a = DRadioactivity (Radioactivity a)
 >   deriving (Show, Read,Eq)
 >   deriving newtype (VectorSpace)
->newtype instance DUnit DAbsorbedDose = DAbsorbedDose AbsorbedDose
+>newtype instance DUnit DAbsorbedDose a = DAbsorbedDose (AbsorbedDose a)
 >   deriving (Show, Read,Eq)
 >   deriving newtype (VectorSpace)
->newtype instance DUnit DCatalyticActivity = DCatalyticActivity CatalyticActivity
+>newtype instance DUnit DCatalyticActivity a = DCatalyticActivity (CatalyticActivity a)
 >   deriving (Show, Read,Eq)
 >   deriving newtype (VectorSpace)
 
->instance Unit (DUnit DLength) where
+>instance (Num a, Show a) => Unit (DUnit DLength a) where
 >  amount (DLength x) = amount x
 >  fromQuantity q = fromQuantity q >>= (return . DLength)
 >  unitOf (DLength x) = unitOf x
 >  dimension (DLength x) = dimension x
->instance LiteralUnit (DUnit DLength) where
+>instance (Num a, Show a) => LiteralUnit (DUnit DLength a) where
 >  fromAmount s = DLength (fromAmount s)
 
->instance Unit (DUnit DTime) where
+>instance (Num a, Show a) => Unit (DUnit DTime a) where
 >  amount (DTime x) = amount x
 >  fromQuantity q = fromQuantity q >>= (return . DTime)
 >  unitOf (DTime x) = unitOf x
 >  dimension (DTime x) = dimension x
->instance LiteralUnit (DUnit DTime) where
+>instance (Num a, Show a) => LiteralUnit (DUnit DTime a) where
 >  fromAmount s = DTime (fromAmount s)
 > 
->instance Unit (DUnit DSquareLength) where
+>instance (Num a, Show a) => Unit (DUnit DSquareLength a) where
 >   amount (DSquareLength a) = amount a
 >   fromQuantity q = fromQuantity q >>= (return . DSquareLength)
 >   unitOf (DSquareLength x) = unitOf x
 >   dimension (DSquareLength x) = dimension x
->instance LiteralUnit (DUnit DSquareLength) where
+>instance (Num a, Show a) => LiteralUnit (DUnit DSquareLength a) where
 >   fromAmount s = DSquareLength (fromAmount s)
 
->instance Unit (DUnit DCubicLength) where
+>instance (Num a, Show a) => Unit (DUnit DCubicLength a) where
 >   amount (DCubicLength a) = amount a
 >   fromQuantity q = fromQuantity q >>= (return . DCubicLength)
 >   unitOf (DCubicLength x) = unitOf x
 >   dimension (DCubicLength x) = dimension x
->instance LiteralUnit (DUnit DCubicLength) where
+>instance (Num a, Show a) => LiteralUnit (DUnit DCubicLength a) where
 >   fromAmount s = DCubicLength (fromAmount s)
 
->instance Unit (DUnit DMass) where
+>instance (Num a, Show a) => Unit (DUnit DMass a) where
 >   amount (DMass a) = amount a
 >   fromQuantity q = fromQuantity q >>= (return . DMass)
 >   unitOf (DMass x) = unitOf x
 >   dimension (DMass x) = dimension x
->instance LiteralUnit (DUnit DMass) where
+>instance (Num a, Show a) =>  LiteralUnit (DUnit DMass a) where
 >   fromAmount s = DMass (fromAmount s)
 > 
->instance Unit (DUnit DCurrent) where
+>instance (Num a, Show a) => Unit (DUnit DCurrent a) where
 >   amount (DCurrent a) = amount a
 >   fromQuantity q = fromQuantity q >>= (return . DCurrent)
 >   unitOf (DCurrent x) = unitOf x
 >   dimension (DCurrent x) = dimension x
->instance LiteralUnit (DUnit DCurrent) where
+>instance (Num a, Show a) => LiteralUnit (DUnit DCurrent a) where
 >   fromAmount s = DCurrent (fromAmount s)
 
->instance Unit (DUnit DVelocity) where
+>instance (Num a, Show a) => Unit (DUnit DVelocity a) where
 >   amount (DVelocity x) = amount x
 >   fromQuantity q = fromQuantity q >>= (return . DVelocity)
 >   unitOf (DVelocity x) = unitOf x
 >   dimension (DVelocity x) = dimension x
->instance LiteralUnit (DUnit DVelocity) where
+>instance (Num a, Show a) => LiteralUnit (DUnit DVelocity a) where
 >   fromAmount s = DVelocity (fromAmount s)
 >
->instance Unit (DUnit DAcceleration) where
+>instance (Num a, Show a) => Unit (DUnit DAcceleration a) where
 >   amount (DAcceleration x) = amount x
 >   fromQuantity q = fromQuantity q >>= (return . DAcceleration)
 >   unitOf (DAcceleration x) = unitOf x
@@ -403,72 +404,72 @@ a *%%% b = fromAmount (amount a * amount b)
 instance LiteralUnit (DUnit DAcceleration) where
    fromAmount s = DAcceleration (fromAmount s)
 
->instance Unit (DUnit DSubstance) where
+>instance (Num a, Show a) => Unit (DUnit DSubstance a) where
 >   amount (DSubstance a) = amount a
 >   fromQuantity q = fromQuantity q >>= (return . DSubstance)
 >   unitOf (DSubstance x) = unitOf x
 >   dimension (DSubstance x) = dimension x
->instance LiteralUnit (DUnit DSubstance) where
+>instance (Num a, Show a) => LiteralUnit (DUnit DSubstance a) where
 >   fromAmount s = DSubstance (fromAmount s)
 > 
->instance Unit (DUnit DFrequency) where
+>instance (Num a, Show a) => Unit (DUnit DFrequency a) where
 >   amount (DFrequency a) = amount a
 >   fromQuantity q = fromQuantity q >>= (return . DFrequency)
 >   unitOf (DFrequency x) = unitOf x
 >   dimension (DFrequency x) = dimension x
->instance LiteralUnit (DUnit DFrequency) where
+>instance (Num a, Show a) => LiteralUnit (DUnit DFrequency a) where
 >   fromAmount s = DFrequency (fromAmount s)
 
->instance Unit (DUnit DForce) where
+>instance (Num a, Show a) =>  Unit (DUnit DForce a) where
 >   amount (DForce a) = amount a
 >   fromQuantity q = fromQuantity q >>= (return . DForce)
 >   unitOf (DForce x) = unitOf x
 >   dimension (DForce x) = dimension x
->instance LiteralUnit (DUnit DForce) where
+>instance (Num a, Show a) => LiteralUnit (DUnit DForce a) where
 >   fromAmount s = DForce (fromAmount s)
->instance Unit (DUnit DPressure) where
+>instance (Num a, Show a) => Unit (DUnit DPressure a) where
 >   amount (DPressure a) = amount a
 >   fromQuantity q = fromQuantity q >>= (return . DPressure)
 >   unitOf (DPressure x) = unitOf x
 >   dimension (DPressure x) = dimension x
->instance LiteralUnit (DUnit DPressure) where
+>instance (Num a, Show a) => LiteralUnit (DUnit DPressure a) where
 >   fromAmount s = DPressure (fromAmount s)
->instance Unit (DUnit DPower) where
+>instance (Num a, Show a) => Unit (DUnit DPower a) where
 >   amount (DPower a) = amount a
 >   fromQuantity q = fromQuantity q >>= (return . DPower)
 >   unitOf (DPower x) = unitOf x
 >   dimension (DPower x) = dimension x
->instance LiteralUnit (DUnit DPower) where
+>instance (Num a, Show a) => LiteralUnit (DUnit DPower a) where
 >   fromAmount s = DPower (fromAmount s)
->instance Unit (DUnit DCharge) where
+>instance (Num a, Show a) => Unit (DUnit DCharge a) where
 >   amount (DCharge a) = amount a
 >   fromQuantity q = fromQuantity q >>= (return . DCharge)
 >   unitOf (DCharge x) = unitOf x
 >   dimension (DCharge x) = dimension x
->instance LiteralUnit (DUnit DCharge) where
+>instance (Num a, Show a) => LiteralUnit (DUnit DCharge a) where
 >   fromAmount s = DCharge (fromAmount s)
->instance Unit (DUnit DVoltage) where
+>instance (Num a, Show a) => Unit (DUnit DVoltage a) where
 >   amount (DVoltage a) = amount a
 >   fromQuantity q = fromQuantity q >>= (return . DVoltage)
 >   unitOf (DVoltage x) = unitOf x
 >   dimension (DVoltage x) = dimension x
->instance LiteralUnit (DUnit DVoltage) where
+>instance (Num a, Show a) => LiteralUnit (DUnit DVoltage a) where
 >   fromAmount s = DVoltage (fromAmount s)
->instance Unit (DUnit DCapacitance) where
+>instance (Num a, Show a) => Unit (DUnit DCapacitance a) where
 >   amount (DCapacitance a) = amount a
 >   fromQuantity q = fromQuantity q >>= (return . DCapacitance)
 >   unitOf (DCapacitance x) = unitOf x
 >   dimension (DCapacitance x) = dimension x
->instance LiteralUnit (DUnit DCapacitance) where
+>instance (Num a, Show a) => LiteralUnit (DUnit DCapacitance a) where
 >   fromAmount s = DCapacitance (fromAmount s)
->instance Unit (DUnit DResistance) where
+>instance (Num a, Show a) => Unit (DUnit DResistance a) where
 >   amount (DResistance a) = amount a
 >   fromQuantity q = fromQuantity q >>= (return . DResistance)
 >   unitOf (DResistance x) = unitOf x
 >   dimension (DResistance x) = dimension x
->instance LiteralUnit (DUnit DResistance) where
+>instance (Num a, Show a) => LiteralUnit (DUnit DResistance a) where
 >   fromAmount s = DResistance (fromAmount s)
->instance Unit (DUnit DFlux) where
+>instance (Num a, Show a) => Unit (DUnit DFlux a) where
 >   amount (DFlux a) = amount a
 >   fromQuantity q = fromQuantity q >>= (return . DFlux)
 >   unitOf (DFlux x) = unitOf x
@@ -477,47 +478,47 @@ instance LiteralUnit (DUnit DAcceleration) where
 instance LiteralUnit (DUnit DFlux) where
    fromAmount s = DFlux (fromAmount s)
 
->instance Unit (DUnit DFluxDensity) where
+>instance (Num a, Show a) => Unit (DUnit DFluxDensity a) where
 >   amount (DFluxDensity a) = amount a
 >   fromQuantity q = fromQuantity q >>= (return . DFluxDensity)
 >   unitOf (DFluxDensity x) = unitOf x
 >   dimension (DFluxDensity x) = dimension x
->instance LiteralUnit (DUnit DFluxDensity) where
+>instance (Num a, Show a) => LiteralUnit (DUnit DFluxDensity a) where
 >   fromAmount s = DFluxDensity (fromAmount s)
->instance Unit (DUnit DInductance) where
+>instance (Num a, Show a) => Unit (DUnit DInductance a) where
 >   amount (DInductance a) = amount a
 >   fromQuantity q = fromQuantity q >>= (return . DInductance)
 >   unitOf (DInductance x) = unitOf x
 >   dimension (DInductance x) = dimension x
->instance LiteralUnit (DUnit DInductance) where
+>instance (Num a, Show a) => LiteralUnit (DUnit DInductance a) where
 >   fromAmount s = DInductance (fromAmount s)
->instance Unit (DUnit DIlluminance) where
+>instance (Num a, Show a) => Unit (DUnit DIlluminance a) where
 >   amount (DIlluminance a) = amount a
 >   fromQuantity q = fromQuantity q >>= (return . DIlluminance)
 >   unitOf (DIlluminance x) = unitOf x
 >   dimension (DIlluminance x) = dimension x
->instance LiteralUnit (DUnit DIlluminance) where
+>instance (Num a, Show a) => LiteralUnit (DUnit DIlluminance a) where
 >   fromAmount s = DIlluminance (fromAmount s)
->instance Unit (DUnit DRadioactivity) where
+>instance (Num a, Show a) => Unit (DUnit DRadioactivity a) where
 >   amount (DRadioactivity a) = amount a
 >   fromQuantity q = fromQuantity q >>= (return . DRadioactivity)
 >   unitOf (DRadioactivity x) = unitOf x
 >   dimension (DRadioactivity x) = dimension x
->instance LiteralUnit (DUnit DRadioactivity) where
+>instance (Num a, Show a) => LiteralUnit (DUnit DRadioactivity a) where
 >   fromAmount s = DRadioactivity (fromAmount s)
 
->instance Unit (DUnit DAbsorbedDose) where
+>instance (Num a, Show a) => Unit (DUnit DAbsorbedDose a) where
 >   amount (DAbsorbedDose a) = amount a
 >   fromQuantity q = fromQuantity q >>= (return . DAbsorbedDose)
 >   unitOf (DAbsorbedDose x) = unitOf x
 >   dimension (DAbsorbedDose x) = dimension x
->instance LiteralUnit (DUnit DAbsorbedDose) where
+>instance (Num a, Show a) => LiteralUnit (DUnit DAbsorbedDose a) where
 >   fromAmount s = DAbsorbedDose (fromAmount s)
 
->instance Unit (DUnit DCatalyticActivity) where
+>instance (Num a, Show a) => Unit (DUnit DCatalyticActivity a) where
 >   amount (DCatalyticActivity a) = amount a
 >   fromQuantity q = fromQuantity q >>= (return . DCatalyticActivity)
 >   unitOf (DCatalyticActivity x) = unitOf x
 >   dimension (DCatalyticActivity x) = dimension x
->instance LiteralUnit (DUnit DCatalyticActivity) where
+>instance (Num a, Show a) => LiteralUnit (DUnit DCatalyticActivity a) where
 >   fromAmount s = DCatalyticActivity (fromAmount s)

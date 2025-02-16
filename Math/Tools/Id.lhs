@@ -20,15 +20,16 @@
 >newId :: String -> Id
 >newId x = mkId x emptyLineInfo
 
->all_ids :: [Id]
->all_ids = do i <- ([0..] :: [Integer])
->             return $ newId ("v_" ++ show i)
+>allIds :: [Id]
+>allIds = do
+>  i <- ([0..] :: [Integer])
+>  return $ newId ("v_" ++ show i)
  
 >instance Universe Id where
->   all_elements = all_ids
+>   allElements = allIds
 
 >instance Located Id where
->   location_of (MkId _ li) = li
+>   locationOf (MkId _ li) = li
 
 >instance Show Id where
 >   showsPrec _ z = showString (idName z) {- . showChar '@' . shows (idInfo z) -}
@@ -43,10 +44,10 @@
 >	  (MkId x _) <= (MkId y _) = x <= y
 
 >lineDesc :: Id -> Pretty.Doc
->lineDesc i = "Line" <+> (pp (location_of i) <> ":")
+>lineDesc i = "Line" <+> (pp (locationOf i) <> ":")
 
 >lineOf :: Id -> Int
->lineOf = li_row . idInfo
+>lineOf = liRow . idInfo
 
 >{- imported from Tools.LineInfo
 >data LineInfo = NewLineInfo { line :: !Int, lineStr :: Doc }

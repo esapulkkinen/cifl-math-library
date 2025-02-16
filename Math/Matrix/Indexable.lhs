@@ -14,14 +14,14 @@
 >import Math.Tools.Arrow
 
 >instance (Num a) => Indexable I a where
->  diagonal_projections = I id
->  indexable_indices = I 0
+>  diagonalProjections = I id
+>  indexableIndices = I 0
 
 >instance (Integral a, Indexable f a, Indexable g a) => Indexable (f :*: g) a where
->  diagonal_projections = matrix (\x y -> (I . (<!> (index_project x,index_project y))) <->
->                                           (\ a' -> matrix (*) (isomorphism_section x $ a') (isomorphism_section y $ a'))) 
->                                diagonal_projections diagonal_projections
->  indexable_indices = matrix (\x y -> (x+y)*(x+y+1)`div` 2 + x) indexable_indices indexable_indices
+>  diagonalProjections = matrix (\x y -> (I . (<!> (indexProject x,indexProject y))) <->
+>                                           (\ a' -> matrix (*) (isomorphismSection x $ a') (isomorphismSection y $ a'))) 
+>                                diagonalProjections diagonalProjections
+>  indexableIndices = matrix (\x y -> (x+y)*(x+y+1)`div` 2 + x) indexableIndices indexableIndices
 
 indexable_diagonal :: (Indexable f) => (f :*: f) a -> a -> f a
 indexable_diagonal ~(Matrix m) a = index_project (diagonal_projections a) <*> m
@@ -39,12 +39,12 @@ indexable_matrix_projections :: (Indexable f, Indexable g)
 indexable_matrix_projections ::
    a -> a -> (m :*: I) (m a :==: I a)
 
->indexable_matrix_projections ::
+>indexableMatrixProjections ::
 >  (Indexable m (n a), Indexable n a)
 > => (m :*: n) (Index (m :*: n) a)
->indexable_matrix_projections = matrix (\f g -> (unI <-> I) . amap g . f . (cells <-> Matrix))
->       diagonal_projections
->       diagonal_projections
+>indexableMatrixProjections = matrix (\f g -> (unI <-> I) . amap g . f . (cells <-> Matrix))
+>       diagonalProjections
+>       diagonalProjections
 
 transposedIndices :: (Indexable f, Indexable g) => a -> b -> (g :*: f) (Index (f :*: g) a)
 transposedIndices a b = fmap (. (cells <-> Matrix)) $ matrix (.) (diagonal_projections a) (diagonal_projections b)
@@ -59,11 +59,11 @@ join_matrix m a c = fmap (\ (Iso s p) -> (s <*> m) <-> (p <*> m)) $
 join_matrix m = cells (fmap cells m)
 
 
->apply_index :: (Indexable m a) => Index m a -> m a -> a
->apply_index = index_project
+>applyIndex :: (Indexable m a) => Index m a -> m a -> a
+>applyIndex = indexProject
 
 >with :: (Indexable f a) => (Index f a -> b) -> f b
->with f = liftA f $ diagonal_projections
+>with f = liftA f $ diagonalProjections
  
 >with2 :: (Indexable f a, Indexable g b)
 >      => (Index f a -> Index g b -> c) -> (f :*: g) c
@@ -78,10 +78,10 @@ join_matrix m = cells (fmap cells m)
 kronecker_delta :: (forall b. (Eq b) => Indexable f b, Num a) => (f :*: f) a
 kronecker_delta = matrix (\i j -> if i == j then 1 else 0) indexable_indices indexable_indices
 
->equal_indices :: (Indexable f Int) => Index f Int -> Index f Int -> Bool
->equal_indices a b = a `index_project` indexable_indices
->                  == b `index_project` indexable_indices
+>equalIndices :: (Indexable f Int) => Index f Int -> Index f Int -> Bool
+>equalIndices a b = a `indexProject` indexableIndices
+>                  == b `indexProject` indexableIndices
 
->sum_indices :: (Foldable f, Indexable f b, Num b) => (f :*: f) b -> b
->sum_indices f = sum_coordinates $ with $ \i ->
->    f <!> (index_project i,index_project i)
+>sumIndices :: (Foldable f, Indexable f b, Num b) => (f :*: f) b -> b
+>sumIndices f = sumCoordinates $ with $ \i ->
+>    f <!> (indexProject i,indexProject i)

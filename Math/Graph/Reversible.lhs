@@ -85,11 +85,11 @@
 
 >instance (Eq a, Universe (m Bool Bool)) => Eq (Graph m a) where
 >  g@(Graph v e _) == g'@(Graph v' e' _) = v == v' && e == e' &&
->    and [ action g ee i == action g' ee i | i <- all_elements, ee <- Set.toList e]
+>    and [ action g ee i == action g' ee i | i <- allElements, ee <- Set.toList e]
 
 >instance (Ord a, Universe (m Bool Bool)) => Ord (Graph m a) where
 >  g@(Graph v e _) <= g'@(Graph v' e' _) = v <= v' && e <= e' &&
->    and [ action g ee i <= action g' ee' i | i <- all_elements, (ee,ee') <- zip (Set.toList e) (Set.toList e')]
+>    and [ action g ee i <= action g' ee' i | i <- allElements, (ee,ee') <- zip (Set.toList e) (Set.toList e')]
 
 instance (MedianAlgebra a, Universe (m a a)) => MedianAlgebra (Graph m a) where
    med g@(Graph e _) g'@(Graph e' _) g''@(Graph e'' _) =
@@ -222,7 +222,7 @@ outerG (Graph e act) (Graph e' act') = Graph ee ract
 
 >-- | converts from undirected graph to directed graph
 >reversibleToDirectedG :: Graph Four a -> Graph Three a
->reversibleToDirectedG = inverseImageG three_to_four
+>reversibleToDirectedG = inverseImageG threeToFour
 
 >-- | inverts all edges
 >inverseGraphG :: (Group (m Bool Bool)) => Graph m a -> Graph m a
@@ -231,9 +231,9 @@ outerG (Graph e act) (Graph e' act') = Graph ee ract
 >-- | mapG uses an isomorphism of graph elements to permute a graph.
 >mapG :: (Ord a, Ord b) => a :==: b -> (Graph m a) :==: (Graph m b)
 >mapG f =  (\ (Graph v e act) -> Graph (Set.map (f =<) v) (Set.map (f =<) e) $
->                              \m -> Endo $ isomorphism_epimorphism f . appEndo (act m) . isomorphism_section f)
+>                              \m -> Endo $ isomorphismEpimorphism f . appEndo (act m) . isomorphismSection f)
 >      <-> (\ (Graph v e act) -> Graph (Set.map ((invertA f) =<) v) (Set.map ((invertA f) =<) e) $
->                              \m -> Endo $ isomorphism_section f . appEndo (act m) . isomorphism_epimorphism f)
+>                              \m -> Endo $ isomorphismSection f . appEndo (act m) . isomorphismEpimorphism f)
 
 >reversibleEdgeG :: (Ord a) => a -> a -> a -> a -> Graph Four a
 >reversibleEdgeG e re x y = reversibleEdgesG [((e,re),(x,y))]

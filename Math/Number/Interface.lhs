@@ -18,7 +18,7 @@
 >logroot x k = exp (log x / log k)
 
 >cuberoot :: (Floating a, Numerics a) => a -> a
->cuberoot = newtons_method (\x -> x*x*x)
+>cuberoot = newtonsMethod (\x -> x*x*x)
 
 >-- | Dedekind cut. Notice typically in constructive reals,
 >-- it's possible to implement comparison between rational and real
@@ -38,8 +38,8 @@
 >  is_apart x q y = (x <% q && q %< y) || (y <% q && q %< x)
 
 >class Approximations str a | a -> str where
->   floating_approximations :: a -> str Double
->   rational_approximations :: a -> str Rational
+>   floatingApproximations :: a -> str Double
+>   rationalApproximations :: a -> str Rational
 
 >class Infinitary a where
 >   infinite :: a
@@ -48,38 +48,38 @@
 >   is_infinite :: a -> Bool
 
 >class Numerics a where
->   newtons_method :: (a -> a) -> a -> a
+>   newtonsMethod :: (a -> a) -> a -> a
 
 >class RationalRoots a where
->   rational_power :: a -> Rational -> a
+>   rationalPower :: a -> Rational -> a
 
 >instance RationalRoots Float where
->   rational_power x r = x ** (fromRational r)
+>   rationalPower x r = x ** (fromRational r)
 
 >instance RationalRoots Double where
->   rational_power x r = x ** (fromRational r)
+>   rationalPower x r = x ** (fromRational r)
 
 >instance RationalRoots (Complex Double) where
->   rational_power x r = x ** (fromRational r)
+>   rationalPower x r = x ** (fromRational r)
 
 >class (Num r) => DifferentiallyClosed r where
 >   derivate :: (r -> r) -> r -> r
 >   integral :: (r,r) -> (r -> r) -> r
 
->integral_vector :: (VectorSpace b, Applicative f, Enum a, Num a)
+>integralVector :: (VectorSpace b, Applicative f, Enum a, Num a)
 >  => (f a, f a) -> (a -> b) -> f a -> f b
->integral_vector (x,y) f eps = fmap vsum $ liftA3 (\ x' y' eps -> map f [x',x' + eps .. y']) x y eps
+>integralVector (x,y) f eps = fmap vsum $ liftA3 (\ x' y' eps -> map f [x',x' + eps .. y']) x y eps
 
->derivate_vector :: (Applicative t, DifferentiallyClosed r) => t (r -> r) -> t r -> t r
->derivate_vector = liftA2 derivate
+>derivateVector :: (Applicative t, DifferentiallyClosed r) => t (r -> r) -> t r -> t r
+>derivateVector = liftA2 derivate
 
 >-- | <https://en.wikipedia.org/wiki/Wirtinger_derivatives>
->complex_derivate :: (RealFloat r, Closed r)
+>complexDerivate :: (RealFloat r, Closed r)
 >                 => (Complex r -> Complex r) -> Complex r -> Complex r
->complex_derivate f z =
->                   (partial_derivate (\eps z' -> z' + (eps :+ 0))
+>complexDerivate f z =
+>                   (partialDerivate (\eps z' -> z' + (eps :+ 0))
 >                                     (realPart . f) z)/2
->                :+ (negate $ (partial_derivate
+>                :+ (negate $ (partialDerivate
 >                                     (\eps z' -> z' + (0 :+ eps))
 >                                     (imagPart . f) z) / 2)
 
@@ -114,7 +114,8 @@
 >partial4_4 f x y z t = derivate (\t0 -> f x y z t0) t
 
 >class (Show r) => ShowPrecision r where
->   show_at_precision :: r -> Integer -> String
+>   showAtPrecision :: r -> Integer -> String
+>   showAtPrecision r _ = show r
 
 
 >-- | <https://en.wikipedia.org/wiki/Differential_form>
@@ -122,13 +123,13 @@
 >differential f x0 = Endo $ \dx -> dx * derivate f x0
 
 >-- | computes \(f'(x)*g(x) - f(x)*g'(x)\)
->derivate_commutator :: (DifferentiallyClosed r) => (r -> r) -> (r -> r) -> r -> r
->derivate_commutator f g x = derivate f x * g x - f x * (derivate g x)
+>derivateCommutator :: (DifferentiallyClosed r) => (r -> r) -> (r -> r) -> r -> r
+>derivateCommutator f g x = derivate f x * g x - f x * (derivate g x)
 
 
 >-- | computes \(f'(x)*g(x) + f(x)*g'(x)\). Notice this is product rule.
->derivate_anticommutator :: (DifferentiallyClosed r) => (r -> r) -> (r -> r) -> r -> r
->derivate_anticommutator f g x = derivate f x * g x + f x * (derivate g x)
+>derivateAnticommutator :: (DifferentiallyClosed r) => (r -> r) -> (r -> r) -> r -> r
+>derivateAnticommutator f g x = derivate f x * g x + f x * (derivate g x)
 
 >derivates :: (StreamBuilder str, DifferentiallyClosed r)
 > => (r -> r) -> str (r -> r)
@@ -137,8 +138,8 @@
 
 
 >-- | <http://en.wikipedia.org/wiki/Atan2 Atan2>
->atan2_generic :: (Floating a) => a -> a -> a
->atan2_generic y x = 2 * atan ((sqrt (x*x+y*y) - x) / y)
+>atan2Generic :: (Floating a) => a -> a -> a
+>atan2Generic y x = 2 * atan ((sqrt (x*x+y*y) - x) / y)
 
 >-- | <https://en.wikipedia.org/wiki/Trigonometric_functions>
 >cot :: (Floating a) => a -> a
@@ -190,25 +191,23 @@
 
 >-- | <https://en.wikipedia.org/wiki/Line_integral Line integral>
 
->line_integral :: (DifferentiallyClosed r) => (r -> r) -> (r -> r) -> (r,r) -> r
->line_integral f r (a,b) = integral (a,b) $ \t ->
+>lineIntegral :: (DifferentiallyClosed r) => (r -> r) -> (r -> r) -> (r,r) -> r
+>lineIntegral f r (a,b) = integral (a,b) $ \t ->
 >   f (r t) * abs (derivate r t)
 
 
->instance ShowPrecision Double where
->  show_at_precision r _ = show r
+>instance ShowPrecision Double
+>instance ShowPrecision Int 
+>instance ShowPrecision Integer 
+>instance ShowPrecision Float
+>instance ShowPrecision String where
+>  showAtPrecision r i | fromIntegral i < length r = take (fromIntegral i) r ++ "..."
+>                        | otherwise = r
 
->instance ShowPrecision Int where
->  show_at_precision r _ = show r
-
->instance ShowPrecision Integer where
->  show_at_precision r _ = show r
-
->instance ShowPrecision Float where
->  show_at_precision r _ = show r
+>instance ShowPrecision ()
 
 >instance (ShowPrecision a) => ShowPrecision (Data.Complex.Complex a) where
->   show_at_precision (a Data.Complex.:+ b) p = show_at_precision a p ++ " :+ " ++ show_at_precision b p
+>   showAtPrecision (a Data.Complex.:+ b) p = showAtPrecision a p ++ " :+ " ++ showAtPrecision b p
 
 
 >-- | compare to a certain precision, appropriate for floating point

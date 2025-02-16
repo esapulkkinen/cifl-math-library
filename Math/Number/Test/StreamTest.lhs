@@ -8,7 +8,7 @@
 >import Math.Number.StreamInterface
 
 >prop_sqrt_squared_naturals :: Property
->prop_sqrt_squared_naturals = property $ (sqrt_stream s * sqrt_stream s - s) < 0.001
+>prop_sqrt_squared_naturals = property $ (sqrtStream s * sqrtStream s - s) < 0.001
 >   where s :: Stream Double
 >         s = fmap fromIntegral naturals
 

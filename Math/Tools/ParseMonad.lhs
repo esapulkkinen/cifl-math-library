@@ -76,7 +76,7 @@
 >  eof = eof'
 >  newline = newline'
 >  readWhile = readWhile'
->  one_of = one_of'
+>  oneOf = oneOf'
 >  optional = optional'
 >  require = require'
 >  getRemainingInput = getRemainingInput'
@@ -85,7 +85,7 @@
 
 >readChar' :: ParseM Char
 >readChar' = ParseM (\ lst li -> case uncons lst of
->                       Just (c,cr) -> OkParse cr (next_column li) c
+>                       Just (c,cr) -> OkParse cr (nextColumn li) c
 >                       Nothing -> FailParse li "Unexpected end of file")
 
 >optional' :: ParseM a -> ParseM (Maybe a)
@@ -95,9 +95,9 @@
 >readWhile' :: (Char -> Bool) -> ParseM Text
 >readWhile' f = ParseM (\lst li -> let (s,r) = span f lst
 >                  in if null s then FailParse li (err r)
->                               else OkParse r (add_to_column (length s) li) s)
+>                               else OkParse r (addToColumn (length s) li) s)
 >     where err r = "unexpected character in input:" 
->                   <> if null r then "<eof>" else pp_list [head r]
+>                   <> if null r then "<eof>" else ppList [head r]
 
 
 readWhile :: (Char -> Bool) -> (Text -> ParseM a) -> ParseM a
@@ -113,22 +113,22 @@ readWhile f cont = ParseM (\ lst li -> let (s,r) = span f lst
 >                          _ -> FailParse li ("expected eof, found:'"
 >                                            <> (pp $ unpack $ take 10 lst)))
 
->one_of' :: (Char -> Bool) -> ParseM Char
->one_of' p = ParseM (\ lst li -> case uncons lst of
->                               Just (c,cr) | p c -> OkParse cr (next_column li) c
+>oneOf' :: (Char -> Bool) -> ParseM Char
+>oneOf' p = ParseM (\ lst li -> case uncons lst of
+>                               Just (c,cr) | p c -> OkParse cr (nextColumn li) c
 >                                      | otherwise -> FailParse li ("one_of: character '" <> pp c <> "' is not one of the expected characters")
 >                               Nothing -> FailParse li ("one_of: Unexpected end of file"))
 
 one_of :: (Char -> Bool) -> (Char -> ParseM a) -> ParseM a
 one_of p f = ParseM (\ lst li -> case lst of
                         (c:cr) | p c -> let ~(ParseM x) = f c 
-                                         in x cr (next_column li)
+                                         in x cr (nextColumn li)
                                | otherwise -> 
                         [] -> FailParse li ("one_of: Unexpected end of file"))
 
 >require' :: Char -> ParseM Char
 >require' c = ParseM (\ lst li -> case uncons lst of
->                      Just (c',cr) | c == c' -> OkParse cr (next_column li) c
+>                      Just (c',cr) | c == c' -> OkParse cr (nextColumn li) c
 >                                   | otherwise -> FailParse li (expected c c')
 >                      Nothing -> FailParse li "require: Unexpected end of file")
 >   where expected cx c' = ("expected '" <> pp cx <> "'")
@@ -137,7 +137,7 @@ one_of p f = ParseM (\ lst li -> case lst of
 
 >newline' :: ParseM ()
 >newline' = ParseM (\ lst li -> case uncons lst of
->                     Just ('\n',cr) -> OkParse cr (next_line li) ()
+>                     Just ('\n',cr) -> OkParse cr (nextLine li) ()
 >                     Just (c,_) -> FailParse li ("not a newline:" <> "'" <> pp c <> "'")
 >                     Nothing -> FailParse li "Unexpected end of file")
 

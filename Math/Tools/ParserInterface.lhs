@@ -9,7 +9,7 @@
 >  eof :: p ()
 >  newline :: p ()
 >  readWhile :: (Char -> Bool) -> p Text
->  one_of :: (Char -> Bool) -> p Char
+>  oneOf :: (Char -> Bool) -> p Char
 >  require   :: Char -> p Char
 >  optional  :: p a -> p (Maybe a)
 >  getRemainingInput :: p Text

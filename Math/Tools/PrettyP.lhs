@@ -2,7 +2,7 @@
 >{-# LANGUAGE OverloadedStrings #-}
 >module Math.Tools.PrettyP (
 >   PpShow(..), LeveledPpShow(..), enclose,
->   parenthesize, render, bracketize, verticalize, pPrint, pp_list, render132,
+>   parenthesize, render, bracketize, verticalize, pPrint, ppList, render132,
 >   alternativitize, PpShowF(..), PpShowVerticalF(..)
 > -- | module extends Text.PrettyPrint module from GHC library.
 > -- Text.PrettyPrint is (c) 2001 The University of Glasgow under BSD license.
@@ -75,18 +75,18 @@ hang :: Doc -> Int -> Doc -> Doc
 > verticalize lst = Pretty.vcat $ map (Pretty.nest 4 . pp) lst
  
 > class (PpShowF f) => PpShowVerticalF f where
->   ppf_vertical :: (PpShow a) => f a -> Doc
+>   ppfVertical :: (PpShow a) => f a -> Doc
   
  
 > instance PpShowVerticalF [] where
->   ppf_vertical = verticalize
+>   ppfVertical = verticalize
  
-> pp_list :: (PpShow a) => [a] -> Doc
-> pp_list x = Pretty.brackets $ Pretty.nest 8 (Pretty.fsep (Pretty.punctuate (pp ',') (map pp x)))
+> ppList :: (PpShow a) => [a] -> Doc
+> ppList x = Pretty.brackets $ Pretty.nest 8 (Pretty.fsep (Pretty.punctuate (pp ',') (map pp x)))
   
  
 > instance PpShowF [] where
->	  ppf = pp_list
+>	  ppf = ppList
 
 instance PpShow a => Show a where
 	  showsPrec _ x = showString $ render (pp x)
@@ -180,10 +180,10 @@ instance PpShow (f (Rec f)) => PpShow (Rec f) where
 >   pp = parenthesize . Map.assocs
 
 > instance PpShow [Integer] where
->   pp lst = pp_list lst
+>   pp lst = ppList lst
 
 > instance (PpShow a) => PpShow [(Integer,a)] where
->   pp lst = pp_list lst
+>   pp lst = ppList lst
 
 instance PpShow [(Integer,Integer)] where
    pp [] = pp "[]"

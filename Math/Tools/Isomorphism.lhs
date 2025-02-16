@@ -1,5 +1,6 @@
 >{-# LANGUAGE Trustworthy,FlexibleInstances, MultiParamTypeClasses, RankNTypes, ImpredicativeTypes, Arrows, TypeOperators, LambdaCase, ScopedTypeVariables, TypeFamilies #-}
->{-# LANGUAGE GADTs, PolyKinds, ConstraintKinds #-}
+>{-# LANGUAGE GADTs, PolyKinds, ConstraintKinds, LinearTypes, DataKinds #-}
+>{-# LANGUAGE BangPatterns #-}
 >module Math.Tools.Isomorphism where
 >import Prelude hiding ((.),id)
 >import Data.Map (Map)
@@ -23,18 +24,22 @@
 >import Data.ByteString.Lazy (ByteString)
 >import qualified Data.ByteString.Lazy as Bytes
 >import Data.Kind
+>import GHC.Types
 
 >-- | See <http://twanvl.nl/blog/haskell/isomorphism-lenses> I also saw
 >-- somewhere (can't remember where) a blog post for an idea for
 >-- combinator library using isomorphisms. This is some sort of
 >-- implementation of that idea.
 
->data a :==: b = Iso { isomorphism_epimorphism :: a -> b,
->                     isomorphism_section     :: b -> a }
+>data a :==: b = Iso { isomorphismEpimorphism :: a -> b,
+>                   isomorphismSection     :: b -> a }
+
+>data a ::=:: b = IsoLinear { linearEpimorphism :: a %1 -> b,
+>                             linearSection :: b %1 -> a }
 
 >appIso :: (Applicative f) => f (a :==: b) -> f a :==: f b
->appIso f = (\fa -> fmap isomorphism_epimorphism f <*> fa) <->
->           (\fb -> fmap isomorphism_section f <*> fb)
+>appIso f = (\fa -> fmap isomorphismEpimorphism f <*> fa) <->
+>           (\fb -> fmap isomorphismSection f <*> fb)
 
 >type Iso a b = a :==: b
 >type Automorphism a = a :==: a
@@ -43,10 +48,16 @@
 >-- Note that since we don't check the equations for isomorphisms,
 >-- this function need not produce identity.
 >leftIdempotent :: a :==: b -> Endo a
->leftIdempotent i = Endo $ isomorphism_section i . isomorphism_epimorphism i
+>leftIdempotent i = Endo $ isomorphismSection i . isomorphismEpimorphism i
 
 >instance FunctorArrow I (:==:) (:==:) where
 >   amap f = (I <-> unI) . f . (unI <-> I)
+
+>instance FunctorArrow I (::=::) (::=::) where
+>   amap f = (I <==> unILinear) . f . (unILinear <==> I)
+
+>unILinear :: I a %1 -> a
+>unILinear (I x) = x
 
 instance FunctorArrow Data.Set.Set (OrderedCat (:==:)) where
    amap (OrderedCat f) = (OrderedCat . amap (isomorphism_epimorphism f)) <-> (OrderedCat . amap (isomorphism_section f))
@@ -69,16 +80,16 @@ instance FunctorArrow Data.Set.Set (OrderedCat (->)) where
 >-- Note that since we don't check the equations for isomorphisms,
 >-- this function need not produce an identity.
 >rightIdempotent :: a :==: b -> Endo b 
->rightIdempotent i = Endo $ isomorphism_epimorphism i . isomorphism_section i
+>rightIdempotent (Iso x xi) = Endo (\y -> x (xi y))
 
 >automorphism :: Endo a -> Endo a -> Automorphism a
 >automorphism (Endo f) (Endo g) = f <-> g
 
->visit_iso :: (ComposableVisitor v) => v :==: a -> v -> a
->visit_iso = visit . embed . isomorphism_epimorphism
+>visitIso :: (ComposableVisitor v) => v :==: a -> v -> a
+>visitIso = visit . embed . isomorphismEpimorphism
 
->adjoint_iso :: (Adjunction f g) => (f a -> b) :==: (a -> g b)
->adjoint_iso = leftAdjunct <-> rightAdjunct
+>adjointIso :: (Adjunction f g) => (f a -> b) :==: (a -> g b)
+>adjointIso = leftAdjunct <-> rightAdjunct
 
 
 >packTextIso :: String :==: Text.Text
@@ -92,7 +103,7 @@ instance FunctorArrow Data.Set.Set (OrderedCat (->)) where
 >   transformIso :: IsoA f a b -> f a :==: f b
 
 >appIsoF :: (IsomorphicFunctor f) => IsoA f a b -> f a -> f b
->appIsoF = isomorphism_epimorphism . transformIso
+>appIsoF = isomorphismEpimorphism . transformIso
 
 >instance (Arrow arr) => ArrowTransformation (:==:) arr where
 >   mapA = mapA . runIso
@@ -100,9 +111,17 @@ instance FunctorArrow Data.Set.Set (OrderedCat (->)) where
 >instance Isomorphic (:==:) where
 >   iso = id
 
+>instance Category (FUN One) where
+>   id = \x -> x
+>   f . g = \x -> f (g x)
+
 >instance Category (:==:) where
 >   id = Iso id id 
 >   (Iso f f') . (Iso g g') = Iso (f . g) (f' >>> g') 
+
+>instance Category (::=::) where
+>   id = IsoLinear id id
+>   (IsoLinear f f') . (IsoLinear g g') = IsoLinear (f . g) (f' >>> g')
 
 >instance Groupoid (:==:) where
 >   invertA = invertIso
@@ -110,7 +129,13 @@ instance FunctorArrow Data.Set.Set (OrderedCat (->)) where
 >instance BiArrow (:==:) where
 >   (<->) = Iso
 
->toArrow :: (BiArrow arr) => a :==: b -> arr a b
+>instance LinearBiArrow (::=::) One where
+>   (<==>) = IsoLinear
+
+>instance LinearBiArrow (:==:) Many where
+>   (<==>) = Iso
+
+>toArrow :: (BiArrow arr) => a :==: b %m -> arr a b
 >toArrow (Iso f g) = f <-> g
 
 >abstract :: (Isomorphic arr) => (a :==: b) :==: arr a b
@@ -122,17 +147,17 @@ instance FunctorArrow Data.Set.Set (OrderedCat (->)) where
 >type FRepresentable f a = forall r. (a -> r) -> f r
 >type FCorepresentable f a = forall r. (r -> a) -> f r
 
->representable :: FRepresentable f a -> f a
+>representable :: FRepresentable f a %m -> f a
 >representable f = f id
 
->corepresentable :: FCorepresentable f a -> f a
+>corepresentable :: FCorepresentable f a %m -> f a
 >corepresentable f = f id
 
->inverse_representable :: (Functor f) => f a -> FRepresentable f a
->inverse_representable fa = \g -> fmap g fa
+>inverseRepresentable :: (Functor f) => f a -> FRepresentable f a
+>inverseRepresentable fa = \g -> fmap g fa
 
->coinverse_representable :: (CoFunctor f) => f a -> FCorepresentable f a
->coinverse_representable fa = \g -> inverse_image g fa
+>coinverseRepresentable :: (CoFunctor f) => f a -> FCorepresentable f a
+>coinverseRepresentable fa = \g -> inverseImage g fa
 
 >(=<) :: a :==: b -> a -> b
 >(=<) = runIso
@@ -149,6 +174,9 @@ instance FunctorArrow Data.Set.Set (OrderedCat (->)) where
 >invertIso :: a :==: b -> b :==: a
 >invertIso (Iso f g) = Iso g f
 
+>invertIsoLinear :: a ::=:: b %1 -> b ::=:: a
+>invertIsoLinear (IsoLinear f g) = IsoLinear g f
+
 >equalIso :: (Eq a) => (a,a) :==: (Either a (a,a))
 >equalIso = (\ (x,y) -> if x==y then Left x else Right (x,y)) 
 >            <-> (either (\x -> (x,x)) id)
@@ -160,7 +188,7 @@ instance FunctorArrow Data.Set.Set (OrderedCat (->)) where
 >mapIso (Iso f g) = fmap f <-> fmap g
 
 >inverseImageIso :: (CoFunctor p) => a :==: b -> p b :==: p a
->inverseImageIso (Iso f g) = Iso (inverse_image f) (inverse_image g)
+>inverseImageIso (Iso f g) = Iso (inverseImage f) (inverseImage g)
 
 >bimapIso :: (Functor f, CoFunctor f) => a :==: b -> a :==: c -> f c :==: f b
 >bimapIso f g = mapIso f . inverseImageIso g
@@ -185,10 +213,10 @@ instance FunctorArrow Data.Set.Set (OrderedCat (->)) where
 >-- <https://secure.wikimedia.org/wikipedia/en/wiki/Pairing_function>
 
 >pairingIso :: (Integer,Integer) :==: Integer
->pairingIso = (\ (x,y) -> let z = x + y in (z*(z+1)) `div` 2 + y)
+>pairingIso = (\ (x,y) -> let !z = x + y in (z*(z+1)) `div` 2 + y)
 >             <-> pairing_inverse
 >  where pairing_inverse z = (x,y)
->          where w = (square_root_integer (8*z + 1) - 1) `div` 2
+>          where w = (squareRootInteger (8*z + 1) - 1) `div` 2
 >                t = (w * w + w) `div` 2                 
 >                y = z - t
 >                x = w - y
@@ -197,7 +225,7 @@ TODO: negative integers?
 
 >squareIso :: Automorphism Integer
 >squareIso = absIso >>> (sqrIso <||> sqrIso) >>> invertA absIso
->   where sqrIso = (\i -> i*i) <-> square_root_integer
+>   where sqrIso = (\i -> i*i) <-> squareRootInteger
 
 
 
@@ -351,7 +379,7 @@ coexponentialIso :: arr (arr' c (Either a b)) (arr' (arr' c b) a)
 >swapEitherIso :: (BiArrow arr) => arr (Either a b) (Either b a)
 >swapEitherIso = swapEither <-> swapEither
 
->swapEither :: Either a b -> Either b a
+>swapEither :: Either a b %m -> Either b a
 >swapEither (Left x) = Right x
 >swapEither (Right x) = Left x
 

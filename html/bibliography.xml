@@ -176,6 +176,7 @@
     <field name="hasPart" type="WebPage"><summary name="name">Vector laplacian</summary><field name="url">https://en.wikipedia.org/wiki/Vector_Laplacian</field></field>
     <field name="hasPart" type="WebPage"><summary name="name">Vector space</summary><field name="url">https://en.wikipedia.org/wiki/Vector_space</field></field>
     <field name="hasPart" type="WebPage"><summary name="name">Wirtinger derivatives</summary><field name="url">https://en.wikipedia.org/wiki/Wirtinger_derivatives</field></field>
+    <field name="hasPart" type="WebPage"><summary name="name">Arctangent series</summary><field name="url">https://en.wikipedia.org/wiki/Arctangent_series</field></field>
   </WebSite>
 
   <SoftwareApplication id="ghc">
@@ -666,6 +667,11 @@ authors.
     <field name="issue">Special issue of selected papers from 6&apos;th Conference on Lisp and Functional Programming</field>
     <field name="url">https://homepages.inf.ed.ac.uk/wadler/papers/monads/monads.ps</field>
     <field name="copyrightYear">1992</field>
+  </Article>
+  <Article id="power-series-expansion-of-real-arcsine">
+    <summary>Power series expansion for real arcsine function</summary>
+    <field name="isPartOf">Proof wiki</field>
+    <field name="url">https://proofwiki.org/wiki/Power_Series_Expansion_for_Real_Arcsine_Function</field>
   </Article>
   <Article id="mazur-when-is-one-thing-equal">
     <summary>Mazur: When is one thing equal to some other thing?</summary>

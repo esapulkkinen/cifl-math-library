@@ -27,19 +27,19 @@ import Maybe (fromJust, isJust)
 >   fail msg = Map.empty
 
 >instance (Ord a, Eq b, Universe a, Universe b) => Universe (Map a b) where
->   all_elements = all_maps all_elements all_elements
+>   allElements = allMaps allElements allElements
 
->all_maps :: (Ord k) => [k] -> [a] -> [Map k a]
->all_maps k x = concatMap (`all_total_maps` x) (all_subsets k)
+>allMaps :: (Ord k) => [k] -> [a] -> [Map k a]
+>allMaps k x = concatMap (`allTotalMaps` x) (allSubsets k)
 
 all_total_maps gives all maps whose set of keys is exactly the given
 set.
 
->all_total_maps :: (Ord k) => [k] -> [a] -> [Map k a]
->all_total_maps [] _ = [Map.empty]
->all_total_maps (c:cr) el = do r <- all_total_maps cr el
->                              e <- el
->                              return (Map.insert c e r)
+>allTotalMaps :: (Ord k) => [k] -> [a] -> [Map k a]
+>allTotalMaps [] _ = [Map.empty]
+>allTotalMaps (c:cr) el = do r <- allTotalMaps cr el
+>                            e <- el
+>                            return (Map.insert c e r)
 
 >lookupMapM :: (MonadFail m, Show i, Ord i) => Map i a -> i -> m a
 >lookupMapM m i | Just v <- Map.lookup i m = return v

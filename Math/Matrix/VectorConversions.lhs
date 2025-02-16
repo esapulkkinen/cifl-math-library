@@ -4,6 +4,7 @@
 >import Math.Matrix.Interface
 >import Math.Matrix.Vector1
 >import Math.Matrix.Vector2
+>import Math.Matrix.Vector4
 >import Math.Matrix.Simple
 >import Math.Matrix.Points
 >import Math.Number.Stream

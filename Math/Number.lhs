@@ -26,7 +26,9 @@
 >-- * complex number tools
 >   module Math.Number.Complex,
 >-- ** symbolic expressions
->   module Math.Number.NumericExpression
+>   module Math.Number.NumericExpression,
+>-- ** fourier transform
+>   module Math.Number.Fourier
 > ) where
 >import safe qualified Math.Number.Real
 >import safe qualified Math.Number.R
@@ -42,3 +44,4 @@
 >import safe Math.Number.Interface
 >import safe Math.Number.StreamInterface
 >import safe Math.Number.Transform2D
+>import safe Math.Number.Fourier

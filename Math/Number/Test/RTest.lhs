@@ -4,8 +4,13 @@
 >import Test.QuickCheck
 >import Test.HUnit
 
->approximately_equal :: R -> R -> Bool
->approximately_equal = approximately_equal_to_r 0.0001
+>infix 4 `approximatelyEqual`
+>infix 4 ====
+
+>approximatelyEqual :: R -> R -> Bool
+>approximatelyEqual = approximatelyEqualToR 0.0001
+
+>(====) = approximatelyEqual
 
 >randomReal :: Gen R
 >randomReal = do
@@ -21,18 +26,50 @@
 >instance Arbitrary R where
 >   arbitrary = randomReal
 
->prop_equality_reflexive = (forAll randomReal $ \r -> r `approximately_equal` r)
+>prop_equality_reflexive = (forAll randomReal $ \r -> r ==== r)
 >prop_equality_transitive = (forAll randomReal $ \r ->
 >                      forAll randomReal $ \r' ->
 >                      forAll randomReal $ \r'' ->
->                      if r `approximately_equal` r' && r' `approximately_equal` r''
->                       then r `approximately_equal` r'' else True)
+>                      if r ==== r' && r' ==== r''
+>                       then r ==== r'' else True)
 
->prop_average_test = average (pi :: R) 0.0 `approximately_equal` (pi / 2)
+>prop_average_test = average (pi :: R) 0.0 ==== (pi / 2)
+
+>-- | <https://en.wikipedia.org/wiki/Construction_of_the_real_numbers>
+>prop_addition_associative = forAll randomReal $ \r ->
+>                            forAll randomReal $ \r' ->
+>                            forAll randomReal $ \r'' ->
+>                            (r + (r' + r'')) ==== ((r + r') + r'')
+
+>prop_addition_commutative = forAll randomReal $ \a ->
+>    forAll randomReal $ \b ->
+>    (a + b) ==== (b + a)
+
+>prop_multiplication_commutative = forAll randomReal $ \a ->
+>    forAll randomReal $ \b ->
+>    (a * b) ==== (b * a)
+
+>prop_multiplication_associative = forAll randomReal $ \r ->
+>                            forAll randomReal $ \r' ->
+>                            forAll randomReal $ \r'' ->
+>                            (r * (r' * r'')) ==== ((r * r') * r'')
+
+>prop_distributativity = forAll randomReal $ \r ->
+>                            forAll randomReal $ \r' ->
+>                            forAll randomReal $ \r'' ->
+>   r * (r' + r'') ==== (r*r') + (r*r'')
+
+>prop_additive_identity = forAll randomReal $ \x -> x + 0 ==== x
+>prop_multiplicative_identity = forAll randomReal $ \x -> x * 1 ==== x
+>prop_additive_inverse = forAll randomReal $ \x -> x + (negate x) ==== 0
+>prop_multiplicative_inverse = forAll randomReal $ \x ->
+>   x ==== 0 || x * (1 / x) ==== 1
+
+prop_refl_order = forAll randomReal $ \x -> x <= x
 
 >derivatetest1 :: Test
 >derivatetest1 = -- True ~? "derivatetest1"
->  ((derivate_r (\(x :: R) -> x*x) 4.0) `approximately_equal` 8.0) ~? "derivatetest1"
+>  ((derivateR (\(x :: R) -> x*x) 4.0) ==== 8.0) ~? "derivatetest1"
 
 >$(return [])
 >qcTests = $quickCheckAll

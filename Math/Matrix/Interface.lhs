@@ -13,8 +13,9 @@
 >import safe GHC.Generics hiding ((:*:),(:+:))
 >import safe Text.PrettyPrint hiding ((<>))
 >import safe Data.Data
+>import safe Data.Kind (Type)
 >import safe Data.Typeable
->import safe Data.Monoid hiding (Dual)
+>import safe Data.Monoid hiding (Dual, Endo)
 >import safe Data.Ratio
 >import safe Data.Traversable
 >import safe Data.Complex
@@ -38,6 +39,7 @@
 >import safe Math.Tools.CoFunctor
 >import safe Math.Tools.Arrow
 >import safe Math.Tools.Isomorphism
+>import safe Math.Tools.Endomorphism
 
 >infixl 7 %.%
 >infix 7 %*
@@ -58,15 +60,8 @@
 >newtype (f :*: g) a = Matrix { cells :: f (g a) }
 >  deriving (Typeable, Generic, Eq)
 
->data Vector1 a = Vector1 { vector_element :: !a }
->data Vector2 s = Vector2 { xcoord2 :: !s, ycoord2 :: !s }
->-- | Three element vector
->data Vector3 s = Vector3 { xcoord3 :: !s, ycoord3 :: !s,  zcoord3 :: !s }
->data Vector4 s = Vector4 { tcoord4 :: !s, xcoord4 :: !s, ycoord4 :: !s, zcoord4 :: !s }
-
-
-matrix_linearmap :: (Scalar (f (g a)) ~ a) => ((Dual :*: f) :*: g) a -> ((f :*: g) a) :-> I a
-matrix_linearmap (Matrix (Matrix (Covector m))) = m . LinearMap Refl cells
+matrixLinearmap :: (Scalar (f (g a)) ~ a) => ((Dual :*: f) :*: g) a -> ((f :*: g) a) :-> I a
+matrixLinearmap (Matrix (Matrix (Covector m))) = m . LinearMap Refl cells
 
 
 
@@ -75,8 +70,8 @@ instance FunctorArrow f LinearMap where
 
 
 
-cells_linear :: (Indexable f, LinearTransform f g a,Diagonalizable f a) => f a :-> g a -> f (g a)
-cells_linear = cells . fromLinear
+cellsLinear :: (Indexable f, LinearTransform f g a,Diagonalizable f a) => f a :-> g a -> f (g a)
+cellsLinear = cells . fromLinear
 
 >-- | This method of matrix construction is especially nice.
 >-- This is the functoriality of the tensor product.
@@ -86,39 +81,39 @@ cells_linear = cells . fromLinear
 >matrix f x = \y -> Matrix $ flip fmap x $ \a -> 
 >                            flip fmap y $ \b -> f a b
 
->inverse_matrix :: (Contravariant m, Contravariant n)
+>inverseMatrix :: (Contravariant m, Contravariant n)
 > => (g a -> c -> b) -> (m :*: n) c -> n b -> (m :*: g) a
->inverse_matrix f (Matrix x) y = Matrix $ flip inverse_image x $ \a ->
->                                flip inverse_image y $ \b -> f a b
+>inverseMatrix f (Matrix x) y = Matrix $ flip inverseImage x $ \a ->
+>                                flip inverseImage y $ \b -> f a b
 
->left_inverse_matrix :: (Contravariant m, Functor n)
+>leftInverseMatrix :: (Contravariant m, Functor n)
 >  => (g a -> c -> b) -> (m :*: n) b -> n c -> (m :*: g) a
->left_inverse_matrix f (Matrix x) y = Matrix $ flip inverse_image x $ \a ->
+>leftInverseMatrix f (Matrix x) y = Matrix $ flip inverseImage x $ \a ->
 >                                     flip fmap y $ \b -> f a b
 
->right_inverse_matrix :: (Functor m, Contravariant n)
+>rightInverseMatrix :: (Functor m, Contravariant n)
 >  => (t -> a -> b) -> m t -> n b -> (m :*: n) a
->right_inverse_matrix f x y = Matrix $ flip fmap x $ \a ->
->                                      flip inverse_image y $ \b -> f a b
+>rightInverseMatrix f x y = Matrix $ flip fmap x $ \a ->
+>                                      flip inverseImage y $ \b -> f a b
 
->inverse_fix :: (Contravariant p) => (a -> a) -> p a
->inverse_fix f = let x = x |>> f in x
+>inverseFix :: (Contravariant p) => (a -> a) -> p a
+>inverseFix f = let x = x |>> f in x
 
->inverse_fix2 :: (Contravariant p) => (a -> b) -> (b -> a) -> p a
->inverse_fix2 f g = let x = y |>> f
->                       y = x |>> g
+>inverseFix2 :: (Contravariant p) => (a -> b) -> (b -> a) -> p a
+>inverseFix2 f g = let x = y |>> f
+>                      y = x |>> g
 >                    in x
 
->matrix_compose :: (Functor m, Functor n, Category cat)
+>matrixCompose :: (Functor m, Functor n, Category cat)
 >               => m (cat b c) -> n (cat a b) -> (m :*: n) (cat a c)
->matrix_compose = matrix (<<<)
+>matrixCompose = matrix (<<<)
 
->tensor_product :: (Num a, Functor m, Functor n) => m a -> n a -> (m :*: n) a
->tensor_product x = \y -> matrix (*) x y
+>tensorProduct :: (Num a, Functor m, Functor n) => m a -> n a -> (m :*: n) a
+>tensorProduct x = \y -> matrix (*) x y
 
->tensor_product_lin :: (Linearizable arr (:*:) f g a, Num a, Functor f, Functor g)
+>tensorProductLin :: (Linearizable arr (:*:) f g a, Num a, Functor f, Functor g)
 > => f a -> g a -> arr (f a) (g a)
->tensor_product_lin x y = linear $ tensor_product x y
+>tensorProductLin x y = linear $ tensorProduct x y
 
 >-- | <https://en.wikipedia.org/wiki/Tensor_product>
 
@@ -135,12 +130,12 @@ cells_linear = cells . fromLinear
 >--    \[f (a, b + c) = f(a, b) + f(a,c)\]
 >--    \[f (a, k c) = k f(a, c)\]
 >-- <https://en.wikipedia.org/wiki/Bilinear_map>
->bilinear_impl :: (VectorSpace (g c), Scalar (g c) ~ c,
+>bilinearImpl :: (VectorSpace (g c), Scalar (g c) ~ c,
 > Indexable f c, Indexable g c, Integral c, VectorSpace ((f :*: g) c))
 >  => (f c -> f c -> g c) -> f c -> f c -> (f :*: g) c
->bilinear_impl f a b = (asplit a b) %+ (bsplit a b)
->  where asplit a' b' = Matrix $ fmap (\p -> p `index_project` a' %* f (basis_vector p) b') diagonal_projections
->        bsplit a' b' = Matrix $ fmap (\q -> q `index_project` b' %* f a' (basis_vector q)) diagonal_projections
+>bilinearImpl f a b = (asplit a b) %+ (bsplit a b)
+>  where asplit a' b' = Matrix $ fmap (\p -> p `indexProject` a' %* f (basisVector p) b') diagonalProjections
+>        bsplit a' b' = Matrix $ fmap (\q -> q `indexProject` b' %* f a' (basisVector q)) diagonalProjections
 
 
 
@@ -223,13 +218,13 @@ lie_compose m1 m2 = linmatrix (bilinear (%<>%)) (cells_linear m1, (cells_linear 
   
 
 >-- | norm_squared is an optimization that often avoids computing square root
->class (VectorSpace m) => NormedSpace m where
+>class (VectorSpace m, Num (Scalar m)) => NormedSpace m where
 >  norm :: m -> Scalar m
->  norm_squared :: m -> Scalar m
->  norm_squared x = let x2 = norm x in x2*x2
+>  normSquared :: m -> Scalar m
+>  normSquared x = let x2 = norm x in x2*x2
 >  default norm :: (Floating (Scalar m)) => m -> Scalar m
->  norm x = sqrt (norm_squared x)
->  {-# MINIMAL norm | norm_squared #-}
+>  norm x = sqrt (normSquared x)
+>  {-# MINIMAL norm | normSquared #-}
 
 >-- | This computes norm of each row, then computes the norm of the resulting column vector.
 >matrix_norm :: (Functor f, NormedSpace (g a), NormedSpace (f (Scalar (g a))))
@@ -250,16 +245,16 @@ lie_compose m1 m2 = linmatrix (bilinear (%<>%)) (cells_linear m1, (cells_linear 
 >  Lin :: (f :*: g) a -> Lin (f a) (g a)
 
 >class (Functor m, Functor n, Scalar (m a) ~ Scalar (n a)) => Transposable m n a where
->  transpose_impl :: (m :*: n) a -> (n :*: m) a
+>  transposeImpl :: (m :*: n) a -> (n :*: m) a
 
 >instance Transposable ((->) row) ((->) col) a where
->  transpose_impl (Matrix f) = Matrix $ \a b -> f b a
+>  transposeImpl (Matrix f) = Matrix $ \a b -> f b a
 
 >instance (Transposable f h (g (k a)), Transposable g h (k a),
 >          Transposable g k a, Transposable f k (g a),
 >          Scalar ((f :*: g) a) ~ Scalar ((h :*: k) a))
 > => Transposable (f :*: g) (h :*: k) a where
->  transpose_impl = Matrix . Matrix
+>  transposeImpl = Matrix . Matrix
 >                 . fmap (fmap Matrix)
 >                 . fmap trans
 >                 . fmap (fmap trans)
@@ -267,33 +262,33 @@ lie_compose m1 m2 = linmatrix (bilinear (%<>%)) (cells_linear m1, (cells_linear 
 >                 . fmap trans
 >                 . cells . fmap cells . cells
 >   where trans :: Transposable g' f' a' => g' (f' a') -> f' (g' a')
->         trans = cells . transpose_impl . Matrix
+>         trans = cells . transposeImpl . Matrix
 
 >-- | Oddly, scalars must match.
 >instance (Scalar a ~ Scalar b) => Transposable ((,) a) ((,) b) c where
->   transpose_impl (Matrix (a,(b,c))) = Matrix (b,(a,c))
+>   transposeImpl (Matrix (a,(b,c))) = Matrix (b,(a,c))
 
 transpose :: (Diagonalizable n a, LinearTransform n m a, LinearTransform m n a, Diagonalizable m a,Num a, Transposable m n a) => m a :-> n a -> n a :-> m a
 
 >transpose :: (Transposable g f a, Linearizable arr (:*:) f g a, Linearizable arr (:*:) g f a) => arr (g a) (f a) -> arr (f a) (g a)
->transpose x = linear $ transpose_impl $ fromLinear x
+>transpose x = linear $ transposeImpl $ fromLinear x
 
->indexable_transpose :: (Functor n, Indexable m a) => (n :*: m) a -> (m :*: n) a
->indexable_transpose (Matrix m) = matrix runIndex diagonal_projections m
+>indexableTranspose :: (Functor n, Indexable m a) => (n :*: m) a -> (m :*: n) a
+>indexableTranspose (Matrix m) = matrix runIndex diagonalProjections m
 
->update_column :: (Applicative h) => (a -> f b -> g c) -> h a -> (h :*: f) b -> (h :*: g) c
->update_column f col (Matrix m) = Matrix $ fmap f col <*> m
+>updateColumn :: (Applicative h) => (a -> f b -> g c) -> h a -> (h :*: f) b -> (h :*: g) c
+>updateColumn f col (Matrix m) = Matrix $ fmap f col <*> m
 
->update_row :: (a -> f (g b) -> f' (g' b')) -> a -> (f :*: g) b -> (f' :*: g') b'
->update_row f row (Matrix m) = Matrix $ f row m
+>updateRow :: (a -> f (g b) -> f' (g' b')) -> a -> (f :*: g) b -> (f' :*: g') b'
+>updateRow f row (Matrix m) = Matrix $ f row m
 
 >-- | Example use:
 >-- 
 >-- > write_column (Vector3 3 4 5) `ycoord3` identity3 == [[1,3,0],[0,4,0],[0,5,1]]
 >-- 
 >class UpdateableMatrixDimension f where
->  write_row    :: (Applicative h) => h a -> f ((f :*: h) a -> (f :*: h) a)
->  write_column :: (Applicative h) => h a -> f ((h :*: f) a -> (h :*: f) a)
+>  writeRow    :: (Applicative h) => h a -> f ((f :*: h) a -> (f :*: h) a)
+>  writeColumn :: (Applicative h) => h a -> f ((h :*: f) a -> (h :*: f) a)
 
 >-- | Cramer's rule <https://en.wikipedia.org/wiki/Cramer%27s_rule>.
 >-- 
@@ -303,10 +298,10 @@ transpose :: (Diagonalizable n a, LinearTransform n m a, LinearTransform m n a, 
 >-- > a <<*> solve_matrix a b == b
 >--
 >-- \[{\mathbf x}_i = {{\det(A[A_{ki} := {\mathbf b}_k])} \over {\det(A)}}\]
->solve_matrix :: (Traceable m b, Fractional b, UpdateableMatrixDimension m)
+>solveMatrix :: (Traceable m b, Fractional b, UpdateableMatrixDimension m)
 >     => (m :*: m) b -> m b -> m b
->solve_matrix m b = fmap (\f -> mdetinverse * determinant_impl (f m)) (write_column b)
->  where mdetinverse = 1 / determinant_impl m
+>solveMatrix m b = fmap (\f -> mdetinverse * determinantImpl (f m)) (writeColumn b)
+>  where mdetinverse = 1 / determinantImpl m
 
 >(<!-!>) :: (m a -> a) -> (a -> m a) -> Index m a
 >f <!-!> finv = (I . f) <-> (finv . unI)
@@ -320,22 +315,22 @@ transpose :: (Diagonalizable n a, LinearTransform n m a, LinearTransform m n a, 
 >type Index m a = m a :==: I a
 
 >class (Applicative m, Num a) => Indexable m a where
->  {-# MINIMAL diagonal_projections, indexable_indices #-}
->  diagonal_projections :: m (Index m a)
->  basis_vector :: Index m a -> m a
->  index_project :: Index m a -> m a -> a
->  indexable_indices :: m a
->  basis_vector ind = isomorphism_section ind (I 1)
->  index_project ind = unI . isomorphism_epimorphism ind
+>  {-# MINIMAL diagonalProjections, indexableIndices #-}
+>  diagonalProjections :: m (Index m a)
+>  basisVector :: Index m a -> m a
+>  indexProject :: Index m a -> m a -> a
+>  indexableIndices :: m a
+>  basisVector ind = isomorphismSection ind (I 1)
+>  indexProject ind = unI . isomorphismEpimorphism ind
 
 >-- | <https://en.wikipedia.org/wiki/Square_matrix>
 >class (Num a, Indexable m a, Transposable m m a) => Diagonalizable m a where
->  identity_impl :: m Integer -> (m :*: m) a
->  -- ^ argument to identity_impl is dimension of the matrix
+>  identityImpl :: m Integer -> (m :*: m) a
+>  -- ^ argument to identityImpl is dimension of the matrix
 >  identity :: (m :*: m) a
->  diagonal_impl :: (m :*: m) a -> m a
->  diagonal_matrix_impl :: m a -> (m :*: m) a
->  identity_impl = const identity
+>  diagonalImpl :: (m :*: m) a -> m a
+>  diagonalMatrixImpl :: m a -> (m :*: m) a
+>  identityImpl = const identity
 
 >basis :: (Diagonalizable m a) => m (m a)
 >basis = cells identity
@@ -346,17 +341,17 @@ transpose :: (Diagonalizable n a, LinearTransform n m a, LinearTransform m n a, 
 bilinear_map :: (Foldable m, VectorSpace a, Diagonalizable m b, Diagonalizable m c)
   => (m b -> m c -> a) -> m (Scalar a) -> m (Scalar a) -> a
 
->bilinear_map :: (VectorSpace a, Foldable m, Foldable n, Diagonalizable m b, Diagonalizable n c)
+>bilinearMap :: (VectorSpace a, Foldable m, Foldable n, Diagonalizable m b, Diagonalizable n c)
 >  => (m b -> n c -> a) -> m (Scalar a) -> n (Scalar a) -> a
->bilinear_map f x y = coefficients x $ fmap (coefficients y) $ cells $ matrix f basis basis
+>bilinearMap f x y = coefficients x $ fmap (coefficients y) $ cells $ matrix f basis basis
 
 >-- | <https://en.wikipedia.org/wiki/Linear_map#Matrices>
->linear_map_ :: (Foldable m, Diagonalizable m a, VectorSpace b) => (m a -> b) -> m (Scalar b) -> b
->linear_map_ f x = coefficients x $ fmap f basis
+>linearMap_ :: (Foldable m, Diagonalizable m a, VectorSpace b) => (m a -> b) -> m (Scalar b) -> b
+>linearMap_ f x = coefficients x $ fmap f basis
 
->linear_map' :: (b ~ Scalar (n b), Foldable m, Diagonalizable m a, VectorSpace (n b))
+>linearMap' :: (b ~ Scalar (n b), Foldable m, Diagonalizable m a, VectorSpace (n b))
 >  => (m a -> n b) -> m b -> n b
->linear_map' = linear_map_
+>linearMap' = linearMap_
 
 
 
@@ -364,19 +359,19 @@ bilinear_map :: (Foldable m, VectorSpace a, Diagonalizable m b, Diagonalizable m
 linear_id = linear_map id
 
 
->linear_identity :: (Linearizable arr (:*:) m m a, LinearTransform m m a, Diagonalizable m a) => arr (m a) (m a)
->linear_identity = linear identity
+>linearIdentity :: (Linearizable arr (:*:) m m a, LinearTransform m m a, Diagonalizable m a) => arr (m a) (m a)
+>linearIdentity = linear identity
 
 diagonal :: (LinearTransform m m a, Diagonalizable m a) => m a :-> m a -> m a
 
 >diagonal :: (Linearizable arr (:*:) m m a, Diagonalizable m a) => arr (m a) (m a) -> m a
->diagonal = diagonal_impl . fromLinear
+>diagonal = diagonalImpl . fromLinear
 
->class (Functor m, Functor n) => ProjectionSpace (m :: * -> *) (n :: * -> *) where
+>class (Functor m, Functor n) => ProjectionSpace (m :: Type -> Type) (n :: Type -> Type) where
 >   data (m \\\ n) a
->   project_first   :: m a -> n a
->   project_second  :: m a -> (m \\\ n) a
->   join_vector :: n a -> (m \\\ n) a -> m a
+>   projectFirst   :: m a -> n a
+>   projectSecond  :: m a -> (m \\\ n) a
+>   joinVector :: n a -> (m \\\ n) a -> m a
 
 >-- | CodiagonalMatrix represents a matrix that can be split along the diagonal.
 >-- The Codiagonal type represents a matrix without its diagonal.
@@ -386,10 +381,10 @@ diagonal :: (LinearTransform m m a, Diagonalizable m a) => m a :-> m a -> m a
 >class CodiagonalMatrix m a where
 >   data Codiagonal m a
 >   type (m \\ a)
->   codiagonal_impl :: (m :*: m) a -> Codiagonal m a
+>   codiagonalImpl :: (m :*: m) a -> Codiagonal m a
 >   (|\|) :: m a -> Codiagonal m a -> (m :*: m) a
->   down_project  :: Codiagonal m a -> m \\ a
->   right_project :: Codiagonal m a -> m \\ a
+>   downProject  :: Codiagonal m a -> m \\ a
+>   rightProject :: Codiagonal m a -> m \\ a
 
 codiagonal :: (Num a, Diagonalizable m a, LinearTransform m m a, CodiagonalMatrix m a) => m a :-> m a -> Codiagonal m a
 codiagonal = codiagonal_impl . fromLinear
@@ -401,25 +396,25 @@ codiagonal = codiagonal_impl . fromLinear
 
 >-- | <https://ncatlab.org/nlab/show/dimension>
 >class (Diagonalizable m a) => Traceable m a where
->  trace_impl :: (m :*: m) a -> a
->  determinant_impl :: (m :*: m) a -> a
->  vector_dimension :: m a -> a
->  vector_dimension (f :: m a) = trace_impl (identity :: (m :*: m) a)
+>  traceImpl :: (m :*: m) a -> a
+>  determinantImpl :: (m :*: m) a -> a
+>  vectorDimension :: m a -> a
+>  vectorDimension (f :: m a) = traceImpl (identity :: (m :*: m) a)
 
 >class (Category arr,Traceable m a) => LinearTraceable arr m a | m a -> arr where
 >  determinant :: arr (m a) (m a) -> a
 >  trace       :: arr (m a) (m a) -> a
 >  default determinant :: (Linearizable arr (:*:) m m a) => arr (m a) (m a) -> a
 >  default trace :: (Linearizable arr (:*:) m m a) => arr (m a) (m a) -> a
->  determinant = determinant_impl . fromLinear
->  trace = trace_impl . fromLinear
+>  determinant = determinantImpl . fromLinear
+>  trace = traceImpl . fromLinear
 
 >-- | <http://en.wikipedia.org/wiki/Adjugate>
 >-- \({\mathsf{cofactor}}(A) = |A|(A^{-1})^{\top}\) <https://en.wikipedia.org/wiki/Cross_product>
 >class (Traceable m a) => Invertible m a where
->   cofactor_impl :: (m :*: m) a -> (m :*: m) a
->   adjucate_impl :: (m :*: m) a -> (m :*: m) a
->   inverse_impl  :: (m :*: m) a -> (m :*: m) a
+>   cofactorImpl :: (m :*: m) a -> (m :*: m) a
+>   adjucateImpl :: (m :*: m) a -> (m :*: m) a
+>   inverseImpl  :: (m :*: m) a -> (m :*: m) a
 
 >class (LinearTraceable arr m a) => LinearInvertible arr m a where
 >   cofactor :: arr (m a) (m a) -> arr (m a) (m a)
@@ -428,18 +423,18 @@ codiagonal = codiagonal_impl . fromLinear
 >   default cofactor :: (Invertible m a, Linearizable arr (:*:) m m a) => arr (m a) (m a) -> arr (m a) (m a)
 >   default adjucate :: (Invertible m a, Linearizable arr (:*:) m m a) => arr (m a) (m a) -> arr (m a) (m a)
 >   default inverse :: (Invertible m a, Linearizable arr (:*:) m m a) => arr (m a) (m a) -> arr (m a) (m a)
->   cofactor = linear . cofactor_impl . fromLinear
->   adjucate = linear . adjucate_impl . fromLinear
->   inverse  = linear . inverse_impl . fromLinear
+>   cofactor = linear . cofactorImpl . fromLinear
+>   adjucate = linear . adjucateImpl . fromLinear
+>   inverse  = linear . inverseImpl . fromLinear
 
 >-- | this computes \[f(A) = (A^{-1})^{\top}\]
 >-- it's used to compute dual basis for a set of basis vectors.
->dual_basis_impl :: (Invertible m a) => (m :*: m) a -> (m :*: m) a
->dual_basis_impl a = transpose_impl (inverse_impl a)
+>dualBasisImpl :: (Invertible m a) => (m :*: m) a -> (m :*: m) a
+>dualBasisImpl a = transposeImpl (inverseImpl a)
 >
->dual_basis :: (Invertible m a, Linearizable arr (:*:) m m a)
+>dualBasis :: (Invertible m a, Linearizable arr (:*:) m m a)
 > => arr (m a) (m a) -> arr (m a) (m a)
->dual_basis = linear . dual_basis_impl . fromLinear
+>dualBasis = linear . dualBasisImpl . fromLinear
 
 is_unitary :: (Invertible m a, Eq (LinearMap (m a) (m a)),
               ConjugateSymmetric (LinearMap (m a) (m a)))
@@ -453,7 +448,7 @@ is_unitary m = conj -!< m == inverse m
 >  eigenvectors :: (m :*: m) a -> (m :*: m) a
 
 >class (Applicative m, Applicative n) => AppendableVector m n where
->  type (m :+: n) :: * -> *
+>  type (m :+: n) :: Type -> Type
 >  (||>>) :: m a -> n a -> (m :+: n) a
 
 >class (AppendableVector m n) => SplittableVector m n where
@@ -465,13 +460,13 @@ is_unitary m = conj -!< m == inverse m
 >  fromBoolean :: Bool -> a
 
 >class StandardBasis m where
->  unit_vectors :: [m]
+>  unitVectors :: [m]
 
 >class (VectorSpace v) => CoordinateSpace v where
 >  type Coordinate v 
 >  index  :: Coordinate v -> v -> Scalar v
 >  listVector :: [Scalar v] -> v  -- convert list to vector
->  dimension_size :: v -> Int
+>  dimensionSize :: v -> Int
 >  coordinates :: v -> [Coordinate v]
 
 >-- | vector space with scalars in Num class
@@ -486,7 +481,7 @@ is_unitary m = conj -!< m == inverse m
 >   finite :: arr ((d :*: d) v) (i v)
 
 >class HasIdentityLinear v arr where
->   mat_identity :: (Num a, ConjugateSymmetric a) => arr (v a) (v a)
+>   matIdentity :: (Num a, ConjugateSymmetric a) => arr (v a) (v a)
 
 >class (VectorSpace v) => Dualizable v d where
 >  covector :: (v -> Scalar v) -> d v
@@ -501,17 +496,17 @@ is_unitary m = conj -!< m == inverse m
 >class (VectorSpace v) => VectorDerivative v d arr | d -> arr, v arr -> d where
 >  divergence :: arr v v -> d v  -- (Del %. f)(v)
 >  grad       :: d v -> arr v v    -- (Del f)(v)
->  directional_derivative :: v -> d v -> d v -- (v %. Del f)(x)
+>  directionalDerivative :: v -> d v -> d v -- (v %. Del f)(x)
 >  laplace    :: d v -> d v    -- (Del^2 f)(v)
 >  laplace = divergence . grad
->  {-# MINIMAL divergence, grad, directional_derivative #-}
+>  {-# MINIMAL divergence, grad, directionalDerivative #-}
 
 >-- | version of directional derivative that normalizes the direction:
 >-- <https://mathworld.wolfram.com/DirectionalDerivative.html>
->normalized_directional_derivative :: (VectorDerivative v d arr, NormedSpace v, Fractional (Scalar v))
+>normalizedDirectionalDerivative :: (VectorDerivative v d arr, NormedSpace v, Fractional (Scalar v))
 >   => v -> d v -> d v
->normalized_directional_derivative v d =
->   directional_derivative ((1/norm v) %* v) d
+>normalizedDirectionalDerivative v d =
+>   directionalDerivative ((1/norm v) %* v) d
 
 >-- | <https://en.wikipedia.org/wiki/Curl_(mathematics)>
 >class VectorCrossProduct v arr where
@@ -519,13 +514,13 @@ is_unitary m = conj -!< m == inverse m
 >
 >-- | <https://en.wikipedia.org/wiki/Vector_Laplacian>
 >class VectorLaplacian v arr where
->  vector_laplace :: arr v v -> arr v v -- (Del^2 A)(v)
+>  vectorLaplace :: arr v v -> arr v v -- (Del^2 A)(v)
 
   default vector_laplace :: (VectorCrossProduct v arr) => arr v v -> arr v v
 
 
 >class (Functor f) => ProjectionDual f d a where
->   projection_dual :: f (d (f a))
+>   projectionDual :: f (d (f a))
 
 >matrixM :: (Traversable f, Traversable g, Monad m) => 
 >           (a -> b -> m c) -> f a -> g b -> m ((f :*: g) c)
@@ -559,18 +554,18 @@ eigenvectors_generic m a = Matrix $ fmap (fix . (a %/)) (eigenvalues m)
 >x %/ y = (1 / y) %* x
 
 >-- | <https://en.wikipedia.org/wiki/Angle>
->innerproductspace_cos_angle :: (InnerProductSpace m, Floating (Scalar m)) => m -> m -> Scalar m
->innerproductspace_cos_angle x y = (x %. y)
->              / (innerproductspace_norm x * innerproductspace_norm y)
+>innerproductspaceCosAngle :: (InnerProductSpace m, Floating (Scalar m)) => m -> m -> Scalar m
+>innerproductspaceCosAngle x y = (x %. y)
+>              / (innerproductspaceNorm x * innerproductspaceNorm y)
 
->normed_lie_algebra_sin_angle :: (LieAlgebra m, NormedSpace m, Floating (Scalar m)) => m -> m -> Scalar m
->normed_lie_algebra_sin_angle x y = norm (x %<>% y)
+>normedLieAlgebraSinAngle :: (LieAlgebra m, NormedSpace m, Floating (Scalar m)) => m -> m -> Scalar m
+>normedLieAlgebraSinAngle x y = norm (x %<>% y)
 >              / (norm x * norm y)
 
 >-- | <https://en.wikipedia.org/wiki/Angle>
 >angle :: (InnerProductSpace m, Floating (Scalar m))
 >      => m -> m -> Scalar m
->angle x y = acos (innerproductspace_cos_angle x y)
+>angle x y = acos (innerproductspaceCosAngle x y)
 
 -- | <https://en.wikipedia.org/wiki/Cross_product>
 -- This is a skew-symmetric matrix whose application to a vector
@@ -579,21 +574,21 @@ eigenvectors_generic m a = Matrix $ fmap (fix . (a %/)) (eigenvalues m)
 cross_product_matrix :: (Num a, LinearTransform m m a, Traceable m a, LieAlgebra (m a)) => m a -> m a :-> m a
 cross_product_matrix a = linear $ Matrix $ fmap (%<>% a) $ cells (identity $ vector_dimension a)
 
->i_vec,j_vec,k_vec,l_vec :: (StandardBasis v) => v
->i_vec = unit_vectors !! 0
->j_vec = unit_vectors !! 1
->k_vec = unit_vectors !! 2
->l_vec = unit_vectors !! 3
+>iVec,jVec,kVec,lVec :: (StandardBasis v) => v
+>iVec = unitVectors !! 0
+>jVec = unitVectors !! 1
+>kVec = unitVectors !! 2
+>lVec = unitVectors !! 3
 
->{-# INLINABLE innerproductspace_norm #-}
->innerproductspace_norm :: (Floating (Scalar m), InnerProductSpace m)
+>{-# INLINABLE innerproductspaceNorm #-}
+>innerproductspaceNorm :: (Floating (Scalar m), InnerProductSpace m)
 >                       => m -> Scalar m
->innerproductspace_norm v = sqrt (v %. v)
+>innerproductspaceNorm v = sqrt (v %. v)
 
->{-# INLINABLE innerproductspace_norm_squared #-}
->innerproductspace_norm_squared :: (Floating (Scalar m), InnerProductSpace m)
+>{-# INLINABLE innerproductspaceNormSquared #-}
+>innerproductspaceNormSquared :: (Floating (Scalar m), InnerProductSpace m)
 >         => m -> Scalar m
->innerproductspace_norm_squared v = v %. v
+>innerproductspaceNormSquared v = v %. v
 
 >vsum :: (Foldable t, VectorSpace a) => t a -> a
 >vsum = foldr (%+) vzero
@@ -605,8 +600,8 @@ fold_columns :: (Diagonalizable m a, Diagonalizable n a, LinearTransform m n a, 
               => (m a -> b) -> LinearMap (m a) (n a) -> n b
 fold_columns f x = fold_rows f (transpose x)
 
->index_unit :: (StandardBasis v) => Int -> v
->index_unit i = unit_vectors !! i
+>indexUnit :: (StandardBasis v) => Int -> v
+>indexUnit i = unitVectors !! i
 
 >projection :: (Fractional (Scalar v), VectorSpace v, InnerProductSpace v)
 >           => v -> v -> v
@@ -620,9 +615,9 @@ isEigenValue :: (Num a,Eq a, SquareMatrix m a) => (m :*: m) a -> a -> Bool
 isEigenValue m v = determinant (m %- (v %* identity)) == 0
 
 
->vector_length :: (Floating (Scalar m), InnerProductSpace m)
+>vectorLength :: (Floating (Scalar m), InnerProductSpace m)
 >              => m -> Scalar m
->vector_length x = sqrt (x %. x)
+>vectorLength x = sqrt (x %. x)
 
 >divide :: (Fractional (Scalar v), VectorSpace v) => v -> Scalar v -> v
 >divide v x = (1/x) %* v
@@ -631,16 +626,16 @@ isEigenValue m v = determinant (m %- (v %* identity)) == 0
 >vaverage lst = (1 / fromIntegral (length lst)) %* vsum lst
 
 >toScalarList :: (StandardBasis m, InnerProductSpace m) => m -> [Scalar m]
->toScalarList m = [m %. c | c <- unit_vectors]
+>toScalarList m = [m %. c | c <- unitVectors]
 
 >instance (Functor f, PpShowVerticalF f, PpShowF g) => PpShowF (f :*: g) where
->	  ppf (Matrix x) = ppf_vertical $ fmap (nest 4 . ppf) x
+>	  ppf (Matrix x) = ppfVertical $ fmap (nest 4 . ppf) x
 
 >instance (PpShowF g, PpShowVerticalF f, Functor f, PpShow a) => PpShow ((f :*: g) a) where
 >	  pp x = ppf x
 
 >fromScalarList :: (VectorSpace a, StandardBasis a) => [Scalar a] -> a
->fromScalarList lst = vsum $ zipWith (%*) lst unit_vectors
+>fromScalarList lst = vsum $ zipWith (%*) lst unitVectors
 
 >toListCS :: (CoordinateSpace v) => v -> [Scalar v]
 >toListCS m = [index i m | i <- coordinates m]
@@ -659,8 +654,8 @@ index2 (row,col) (C e) = index col (index row e)
 >         => m -> [[(Coordinate m,Coordinate (Scalar m))]]
 >coordinates2 m = [[(x,y) | y <- coordinates (index x m)] | x <- coordinates m]
 
->basis_of :: (StandardBasis m) => Basis m
->basis_of = Basis unit_vectors
+>basisOf :: (StandardBasis m) => Basis m
+>basisOf = Basis unitVectors
 
 >listMatrix :: (CoordinateSpace n, CoordinateSpace (Scalar n)) 
 >       => [[Scalar (Scalar n)]] -> n
@@ -671,7 +666,7 @@ index2 (row,col) (C e) = index col (index row e)
 
 >{-# INLINABLE (%*%) #-}
 >(%*%) :: (SupportsMatrixMultiplication f g h a) => (f :*: g) a -> (g :*: h) a -> (f :*: h) (Scalar (g a))
->(%*%) (Matrix m1) m2 = matrix (%.) m1 (cells $ transpose_impl m2)
+>(%*%) (Matrix m1) m2 = matrix (%.) m1 (cells $ transposeImpl m2)
 
 >(%**%) :: (SupportsMatrixMultiplication f g h a,
 >        Linearizable arr (:*:) f h a, Linearizable arr (:*:) f g a,
@@ -740,12 +735,12 @@ x %^% i = x %*% (x %^% (i-1))
 >(%.%) :: (Num (Scalar m), CoordinateSpace m) => m -> m -> Scalar m
 >x %.% y = sum [ index i x * index i y | i <- coordinates x]
 
->basis_coordinates :: (InnerProductSpace v) => Basis v -> v -> [Scalar v]
->basis_coordinates (Basis basis) x = map (%. x) basis
+>basisCoordinates :: (InnerProductSpace v) => Basis v -> v -> [Scalar v]
+>basisCoordinates (Basis basis) x = map (%. x) basis
 
 >coordinateSpaceFunctionMatrix :: (CoordinateSpace m, StandardBasis v)
 >               => (v -> Scalar m) -> m
->coordinateSpaceFunctionMatrix f = listVector $ map f $ unit_vectors
+>coordinateSpaceFunctionMatrix f = listVector $ map f $ unitVectors
 
 >-- | This is the linearity condition:
 
@@ -853,23 +848,6 @@ instance Diagonalizable Stream Integer where
 >   (a,b) %+ (a',b') = (a %+ a', b %+ b')
 >   a %* (b,c) = (a %* b, a %* c)
 
->instance (Num a) => VectorSpace (Endo a) where
->   type Scalar (Endo a) = a
->   vzero = Endo (const 0)
->   vnegate (Endo f) = Endo $ negate . f
->   a %* (Endo f) = Endo $ \x -> a * f x
->   (Endo f) %+ (Endo g) = Endo $ \x -> f x + g x
-
-
->instance (Num a) => Num (Endo a) where
->   (+) = (%+)
->   x - y = x %+ vnegate y
->   (Endo f) * (Endo g) = Endo $ f . g
->   negate (Endo f) = Endo $ negate . f
->   abs (Endo f) = Endo $ abs . f
->   signum f = f - abs f
->   fromInteger = Endo . const . fromInteger
-
 >-- | Note: Scalar (Complex a) = Complex a
 >instance (RealFloat a) => VectorSpace (Complex a) where
 >   type Scalar (Complex a) = Complex a
@@ -884,13 +862,13 @@ instance Diagonalizable Stream Integer where
 
 >instance {-# OVERLAPPABLE #-} (RealFloat a) => NormedSpace (Complex a) where
 >   norm x = sqrt (x %. x)
->   norm_squared x = x %. x
+>   normSquared x = x %. x
 
 >instance (RealFloat a) => MetricSpace (Complex a) where
 >   distance a b = norm (b - a)
 
 >instance (Num a) => StandardBasis (Complex a) where
->   unit_vectors = [(1 :+ 0), (0 :+ 1)]
+>   unitVectors = [(1 :+ 0), (0 :+ 1)]
 
 >instance (VectorSpace a) => VectorSpace (Maybe a) where
 >   type Scalar (Maybe a) = Scalar a
@@ -938,8 +916,8 @@ instance (Floating a) => NormedSpace [a] where
 >   a %* f = \i -> a * f i
 >   f %+ g = \i -> f i + g i
 
->vec2_cast :: a :~: b -> a :~: b -> a :~: b
->vec2_cast Refl Refl = Refl
+>vec2Cast :: a :~: b -> a :~: b -> a :~: b
+>vec2Cast Refl Refl = Refl
 
 
 >-- | <https://en.wikipedia.org/wiki/Commutator>
@@ -968,7 +946,7 @@ instance (Floating a) => NormedSpace [a] where
 
 
 >instance (Floating a, ConjugateSymmetric a) => NormedSpace (Sum a) where
->   norm_squared x = x %. x
+>   normSquared x = x %. x
 
 >instance (ConjugateSymmetric a,Num a) => InnerProductSpace (Sum a) where
 >   (Sum x) %. (Sum y) = x * conj y
@@ -983,7 +961,7 @@ instance (Floating a) => NormedSpace [a] where
 >   (First m) %+ (First Nothing) = First m
 
 >instance (Floating a) => NormedSpace (First a) where
->   norm_squared x = x %. x
+>   normSquared x = x %. x
 
 >instance (Num a) => InnerProductSpace (First a) where
 >   (First (Just x)) %. (First (Just y)) = x * y
@@ -1028,16 +1006,16 @@ instance (Floating a) => NormedSpace [a] where
 >-- | <https://en.wikipedia.org/wiki/Dot_product>
 >instance (Universe a, Num b)
 > => InnerProductSpace (a -> b) where
->   f %. g = sum [f i * (g i) | i <- all_elements]
+>   f %. g = sum [f i * (g i) | i <- allElements]
 
 
 this function is identically zero for hilbert spaces.
 
 >hilbertSpace :: (Num m, NormedSpace m) => m -> m -> Scalar m
->hilbertSpace x y = norm(x+y)+norm(x-y) - 2*(norm_squared x+norm_squared y)
+>hilbertSpace x y = norm(x+y)+norm(x-y) - 2*(normSquared x+normSquared y)
 
->lie_adjoint :: (LieAlgebra v) => v -> Endo v
->lie_adjoint x = Endo $ \y -> x %<>% y
+>lieAdjoint :: (LieAlgebra v) => v -> Endo v
+>lieAdjoint x = Endo $ \y -> x %<>% y
 
 >instance Conditional Integer where
 >  fromBoolean True  = 1
@@ -1057,21 +1035,21 @@ instance (Functor m) => Unital (:*:) m where
   rightId = matrixRightId
 
 >instance (Num a, Monoid a) => Indexable [] a where
->   diagonal_projections = diagonal_projections_list -- (head <-> ) : map (. tail) diagonal_projections
->   indexable_indices = 0 : map (+1) indexable_indices
+>   diagonalProjections = diagonalProjectionsList -- (head <-> ) : map (. tail) diagonalProjections
+>   indexableIndices = 0 : map (+1) indexableIndices
 
->diagonal_projections_list :: (Monoid a) => [Index [] a]
->diagonal_projections_list = ((I . head) <-> \ (I a) -> a:zero_list)
->                            : map (\i -> i . (tail <-> \lst -> (mempty:lst))) diagonal_projections_list
->   where zero_list = mempty : zero_list
-
->-- | <https://en.wikipedia.org/wiki/Norm_(mathematics)>
->is_on_unit_circle :: (NormedSpace v, Eq (Scalar v)) => v -> Bool
->is_on_unit_circle v = norm_squared v == 1
+>diagonalProjectionsList :: (Monoid a) => [Index [] a]
+>diagonalProjectionsList = ((I . head) <-> \ (I a) -> a:zeroList)
+>                            : map (\i -> i . (tail <-> \lst -> (mempty:lst))) diagonalProjectionsList
+>   where zeroList = mempty : zeroList
 
 >-- | <https://en.wikipedia.org/wiki/Norm_(mathematics)>
->is_inside_unit_circle :: (NormedSpace v, Ord (Scalar v)) => v -> Bool
->is_inside_unit_circle v = norm_squared v <= 1
+>isOnUnitCircle :: (NormedSpace v, Eq (Scalar v)) => v -> Bool
+>isOnUnitCircle v = normSquared v == 1
+
+>-- | <https://en.wikipedia.org/wiki/Norm_(mathematics)>
+>isInsideUnitCircle :: (NormedSpace v, Ord (Scalar v)) => v -> Bool
+>isInsideUnitCircle v = normSquared v <= 1
 
 instance VectorSpace (f (Complex a)) => VectorSpace ((f :*: Complex) a) where
   type Scalar ((f :*: Complex) a) = Scalar (f (Complex a))
@@ -1082,15 +1060,15 @@ instance VectorSpace (f (Complex a)) => VectorSpace ((f :*: Complex) a) where
 
 >instance {-# OVERLAPPING #-} (Indexable f a, Diagonalizable f a, Functor f, Scalar (f a) ~ Complex a, Num a)
 > => Transposable f Complex a where
->  transpose_impl (Matrix m) = Matrix $ fmap realPart m :+ fmap imagPart m
+>  transposeImpl (Matrix m) = Matrix $ fmap realPart m :+ fmap imagPart m
 
 >instance {-# OVERLAPPING #-} (LinearTransform f Complex a, Diagonalizable Complex a, Applicative f, Num a)
 > => Transposable Complex f a where
->  transpose_impl (Matrix (m :+ n)) = Matrix $ liftA2 (:+) m n
+>  transposeImpl (Matrix (m :+ n)) = Matrix $ liftA2 (:+) m n
 
 >-- | notice matrix of two complex numbers has special properties as matrix.
 >instance {-# OVERLAPS #-} Transposable Complex Complex a where
->  transpose_impl (Matrix ((m :+ mi)
+>  transposeImpl (Matrix ((m :+ mi)
 >                      :+ (ni :+ n)))
 >    = Matrix $ ((m :+ ni)
 >             :+ (mi :+ n))
@@ -1099,14 +1077,14 @@ instance VectorSpace (f (Complex a)) => VectorSpace ((f :*: Complex) a) where
 >-- diagonal ((a+bi)+i(c+di)) = (a-d) + i(b+c)
 >instance (Num a) => Diagonalizable Complex a where
 >  identity = Matrix $ (1 :+ 0) :+ (0 :+ 1)
->  diagonal_impl (Matrix ((a :+ b) :+ (c :+ d))) = (a-d) :+ (b+c)
->  diagonal_matrix_impl (a :+ b) = Matrix $ (a :+ 0) :+ (0 :+ negate b)
+>  diagonalImpl (Matrix ((a :+ b) :+ (c :+ d))) = (a-d) :+ (b+c)
+>  diagonalMatrixImpl (a :+ b) = Matrix $ (a :+ 0) :+ (0 :+ negate b)
 
 >instance (Show (f a)) => Show ((Complex :*: f) a) where
 >  show (Matrix (a :+ b)) = show a ++ " :+ " ++ show b
 
 >instance PpShowVerticalF Complex where
->  ppf_vertical (x :+ y) = pp x $$ ":+" <+> pp y
+>  ppfVertical (x :+ y) = pp x $$ ":+" <+> pp y
 
 >instance (Num a) => VectorSpace (I a) where
 >  type Scalar (I a) = a
@@ -1140,11 +1118,11 @@ instance {-# OVERLAPPING #-}
 >   empty = Matrix Applicative.empty
 >   (Matrix a) <|> (Matrix b) = Matrix $ pure (<|>) <*> a <*> b
 
->left_unitor :: (I :*: f) a -> f a
->left_unitor (Matrix (I x)) = x
+>leftUnitor :: (I :*: f) a -> f a
+>leftUnitor (Matrix (I x)) = x
 
->right_unitor :: (Functor f) => (f :*: I) a -> f a
->right_unitor (Matrix f) = fmap unI f
+>rightUnitor :: (Functor f) => (f :*: I) a -> f a
+>rightUnitor (Matrix f) = fmap unI f
 
 >associator :: (Functor f) => ((f :*: g) :*: h) a -> (f :*: (g :*: h)) a
 >associator (Matrix f) = Matrix $ fmap Matrix $ cells f
@@ -1154,14 +1132,14 @@ instance {-# OVERLAPPING #-}
 
 >instance (Functor f, Functor g, Num a, StandardBasis (g a), StandardBasis (f a))
 >   => StandardBasis ((f :*: g) a) where
->   unit_vectors = concat $ cells $ matrix (matrix (*)) unit_vectors unit_vectors
+>   unitVectors = concat $ cells $ matrix (matrix (*)) unitVectors unitVectors
 
 >instance (Num a) => Indexable Complex a where
->  diagonal_projections = diagonal_projections_complex
->  indexable_indices = 0 :+ 1
+>  diagonalProjections = diagonalProjectionsComplex
+>  indexableIndices = 0 :+ 1
 
->diagonal_projections_complex :: (Num a) => Complex (Index Complex a)
->diagonal_projections_complex = ((I . realPart) <-> \ (I a) -> a :+ 0)
+>diagonalProjectionsComplex :: (Num a) => Complex (Index Complex a)
+>diagonalProjectionsComplex = ((I . realPart) <-> \ (I a) -> a :+ 0)
 >                               :+ ((I . imagPart) <-> \ (I a) -> 0 :+ a)
 
 example use: m <!> (xcoord3,ycoord3)
@@ -1176,33 +1154,33 @@ example use: m <!> (xcoord3,ycoord3)
 >reduceI :: (I :*: I) a -> I a
 >reduceI (Matrix (I x)) = x
 
->sum_coordinates :: (Foldable t, Num a) => t a -> a
->sum_coordinates = Data.Foldable.foldr (+) 0
+>sumCoordinates :: (Foldable t, Num a) => t a -> a
+>sumCoordinates = Data.Foldable.foldr (+) 0
 
 >instance (Monad f, Monad g, forall b. Transposable g f b) => Monad (f :*: g) where
 >   return = Matrix . return . return
->   v >>= f = join_matrix $ fmap f v
+>   v >>= f = joinMatrix $ fmap f v
 
 >instance (forall b. Transposable g f b, MonadFail f, MonadFail g) => MonadFail (f :*: g) where
 >   fail msg = Matrix $ fmap (const $ fail msg) (fail msg)
 
->join_matrix :: (Monad g, Monad f, forall b. Transposable g f b)
+>joinMatrix :: (Monad g, Monad f, forall b. Transposable g f b)
 > => (f :*: g) ((f :*: g) a) -> (f :*: g) a
->join_matrix = Matrix . fmap join . join . fmap (cells . transpose_impl . Matrix) . cells . fmap cells
+>joinMatrix = Matrix . fmap join . join . fmap (cells . transposeImpl . Matrix) . cells . fmap cells
 
 >instance Transposable IO IO a where
->  transpose_impl = id
+>  transposeImpl = id
 
 >type Projection f = forall a. f a -> a
 >type ElementRemovals f g g' = forall a. f (g a -> g' a)
 
 >data Determinance f g f' g' gg a' a res = Determinance {
->  determinance_removes1 :: g (g a -> gg a),
->  determinance_removes2 :: g (f (gg a) -> f' (g' a')),
->  determinance_coord_proj1 :: Projection f,
->  determinance_coord_proj2 :: Projection g,
->  determinance_combine :: g a -> res,
->  determinance_nested_determinant :: (f' :*: g') a' -> a
+>  determinanceRemoves1 :: g (g a -> gg a),
+>  determinanceRemoves2 :: g (f (gg a) -> f' (g' a')),
+>  determinanceCoordProj1 :: Projection f,
+>  determinanceCoordProj2 :: Projection g,
+>  determinanceCombine :: g a -> res,
+>  determinanceNestedDeterminant :: (f' :*: g') a' -> a
 > }
 
 >genericDeterminant :: (Functor f, Applicative g, Num a) =>
@@ -1211,3 +1189,18 @@ example use: m <!> (xcoord3,ycoord3)
 >     = combine $ (*) <$> coord_proj1 m <*> amv  
 >   where amv = fmap (det . Matrix . coord_proj2 removes2 . (`fmap` m)) removes1
 
+>instance (Num a) => Num (Endo a) where
+>   (+) = (%+)
+>   x - y = x %+ vnegate y
+>   (Endo f) * (Endo g) = Endo $ f . g
+>   negate (Endo f) = Endo $ negate . f
+>   abs (Endo f) = Endo $ abs . f
+>   signum f = f - abs f
+>   fromInteger = Endo . const . fromInteger
+
+>instance (Num a) => VectorSpace (Endo a) where
+>   type Scalar (Endo a) = a
+>   vzero = Endo (const 0)
+>   vnegate (Endo f) = Endo $ negate . f
+>   a %* (Endo f) = Endo $ \x -> a * f x
+>   (Endo f) %+ (Endo g) = Endo $ \x -> f x + g x

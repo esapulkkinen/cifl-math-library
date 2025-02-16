@@ -19,7 +19,4 @@
 >unit_trans :: (Adjunction f g) => I :~> (g :*: f)
 >unit_trans = NatTrans (Matrix . unit . unI)
 
->instance (PpShow a) => PpShow (I a) where
->	  pp (I x) = pp x
 
->instance Group I 

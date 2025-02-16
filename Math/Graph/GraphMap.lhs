@@ -17,8 +17,8 @@
 > }
 >
 >mapGraphMap :: (Ord a, Ord b, Ord c, Ord c') => c :==: c' -> a :==: b -> GraphMap m c' a :==: GraphMap m c b
->mapGraphMap f' f = (\ (GraphMap g) -> GraphMap $ isomorphism_epimorphism fm . g . isomorphism_epimorphism fm')
->             <-> (\ (GraphMap g) -> GraphMap $ isomorphism_section fm . g . isomorphism_section fm')
+>mapGraphMap f' f = (\ (GraphMap g) -> GraphMap $ isomorphismEpimorphism fm . g . isomorphismEpimorphism fm')
+>             <-> (\ (GraphMap g) -> GraphMap $ isomorphismSection fm . g . isomorphismSection fm')
 >   where fm = mapG f
 >         fm' = mapG f'
 >instance Category (GraphMap m) where

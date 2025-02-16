@@ -6,7 +6,7 @@
 >import Math.Tools.CoMonad
 >import Data.List (intersperse, reverse)
 >import Math.Matrix.Interface
->import Math.Number.Stream (naturals, nonzero_naturals, stream_diagonal)
+>import Math.Number.Stream (naturals, nonzeroNaturals, streamDiagonal)
 >import qualified Math.Number.Stream as Stream
 >import Math.Number.StreamInterface
 
@@ -18,7 +18,7 @@
 >                       <+> ";" <+> (hsep (punctuate (pp ',') (Stream.take 5 $ fmap pp b)) <> "...") 
 
 >instance PpShowVerticalF BiStream where
->   ppf_vertical (BiStream a b) = vcat ((reverse $ Stream.take 5 (fmap pp a)) ++ Stream.take 5 (fmap pp b))
+>   ppfVertical (BiStream a b) = vcat ((reverse $ Stream.take 5 (fmap pp a)) ++ Stream.take 5 (fmap pp b))
 
 >instance (PpShow a) => PpShow (BiStream a) where
 >   pp (BiStream a b) = ("..." <> hsep (punctuate (pp ',') (reverse $ Stream.take 5 $ fmap pp a)))
@@ -30,27 +30,27 @@
 >   show (BiStream a b) = "..." ++ concat (intersperse "," $ reverse $ Stream.take 10 $ (fmap show a)) ++
 >      ";" ++ (concat $ intersperse "," $ Stream.take 10 (fmap show b)) ++ "..."
 
->integers_bistream :: (Num a) => BiStream a
->integers_bistream = BiStream (fmap negate nonzero_naturals) naturals
+>integersBistream :: (Num a) => BiStream a
+>integersBistream = BiStream (fmap negate nonzeroNaturals) naturals
 
 
->integer_pairs_matrix :: (Num a) => (BiStream :*: BiStream) (a,a)
->integer_pairs_matrix = matrix (,) integers_bistream integers_bistream
+>integerPairsMatrix :: (Num a) => (BiStream :*: BiStream) (a,a)
+>integerPairsMatrix = matrix (,) integersBistream integersBistream
 >   
 >fromIntegerStream :: (Integer -> a) -> BiStream a
->fromIntegerStream f = fmap f integers_bistream
+>fromIntegerStream f = fmap f integersBistream
 
->bistream_index :: BiStream a -> Integer -> a
->bistream_index (BiStream x r) i | i < 0 = shead (Stream.drop (abs (succ i)) x)
+>bistreamIndex :: BiStream a -> Integer -> a
+>bistreamIndex (BiStream x r) i | i < 0 = shead (Stream.drop (abs (succ i)) x)
 >                                | otherwise = shead (Stream.drop i r)
 
->bistream_diagonal :: (BiStream :*: BiStream) a -> BiStream a
->bistream_diagonal (Matrix x) = BiStream (stream_diagonal_impl nn) (stream_diagonal_impl pp)
+>bistreamDiagonal :: (BiStream :*: BiStream) a -> BiStream a
+>bistreamDiagonal (Matrix x) = BiStream (streamDiagonalImpl nn) (streamDiagonalImpl pp)
 >   where nn = Matrix $ fmap bifst (bifst x)
 >         pp = Matrix $ fmap bisnd (bisnd x)
 >
->bistream_cross_diagonal :: (BiStream :*: BiStream) a -> BiStream a
->bistream_cross_diagonal (Matrix x) = BiStream (stream_diagonal_impl np) (stream_diagonal_impl pn) 
+>bistreamCrossDiagonal :: (BiStream :*: BiStream) a -> BiStream a
+>bistreamCrossDiagonal (Matrix x) = BiStream (streamDiagonalImpl np) (streamDiagonalImpl pn) 
 >  where pn = Matrix $ fmap bisnd (bifst x)
 >        np = Matrix $ fmap bifst (bisnd x)
 

@@ -14,7 +14,7 @@
 >newtype ASet a b = ASet { runASet :: ((:<-:) a) :~> ((:<-:) b) }
 
 >instance Category ASet where
->   id = ASet id_trans
+>   id = ASet idTrans
 >   (ASet f) . (ASet g) = ASet (f `NT.vert` g)
 
 >arr_aset :: (a -> b) -> ASet a b

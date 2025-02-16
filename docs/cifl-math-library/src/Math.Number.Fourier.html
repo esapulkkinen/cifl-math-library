@@ -1,0 +1,200 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"><html xmlns="http://www.w3.org/1999/xhtml"><head><link rel="stylesheet" type="text/css" href="style.css" /><script type="text/javascript" src="highlight.js"></script></head><body><pre><span class="hs-operator">&gt;</span><span class="hs-pragma">{-# LANGUAGE Safe #-}</span><span>
+</span><span id="line-2"></span><span class="hs-operator">&gt;</span><span class="hs-pragma">{-# LANGUAGE TypeOperators, ScopedTypeVariables #-}</span><span>
+</span><span id="line-3"></span><span class="hs-operator">&gt;</span><span class="hs-keyword">module</span><span> </span><span class="hs-identifier">Math.Number.Fourier</span><span> </span><span class="hs-keyword">where</span><span>
+</span><span id="line-4"></span><span class="hs-operator">&gt;</span><span class="hs-keyword">import</span><span> </span><span class="hs-keyword">safe</span><span> </span><span class="annot"><span class="hs-identifier">Data.Complex</span></span><span>
+</span><span id="line-5"></span><span class="hs-operator">&gt;</span><span class="hs-keyword">import</span><span> </span><span class="hs-keyword">safe</span><span> </span><span class="annot"><span class="hs-identifier">Data.Ratio</span></span><span>
+</span><span id="line-6"></span><span class="hs-operator">&gt;</span><span class="hs-keyword">import</span><span> </span><span class="annot"><a href="Math.Matrix.Interface.html"><span class="hs-identifier">Math.Matrix.Interface</span></a></span><span>
+</span><span id="line-7"></span><span class="hs-operator">&gt;</span><span class="hs-keyword">import</span><span> </span><span class="hs-keyword">qualified</span><span> </span><span class="annot"><a href="Math.Number.Stream.html"><span class="hs-identifier">Math.Number.Stream</span></a></span><span> </span><span class="hs-keyword">as</span><span> </span><span class="annot"><span class="hs-identifier">Stream</span></span><span>
+</span><span id="line-8"></span><span class="hs-operator">&gt;</span><span class="hs-keyword">import</span><span> </span><span class="annot"><a href="Math.Number.Stream.html"><span class="hs-identifier">Math.Number.Stream</span></a></span><span>
+</span><span id="line-9"></span><span class="hs-operator">&gt;</span><span> </span><span>
+</span><span id="line-10"></span><span class="hs-operator">&gt;--</span><span> </span><span class="hs-glyph">|</span><span> </span><span class="hs-operator">&lt;</span><span class="hs-identifier">https</span><span class="hs-operator">://</span><span class="hs-identifier">en</span><span class="hs-operator">.</span><span class="hs-identifier">wikipedia</span><span class="hs-operator">.</span><span class="hs-identifier">org</span><span class="hs-operator">/</span><span class="hs-identifier">wiki</span><span class="hs-operator">/</span><span class="hs-identifier">Discrete_Fourier_transform</span><span class="hs-operator">&gt;</span><span>
+</span><span id="line-11"></span><span class="hs-operator">&gt;</span><span id="local-6989586621681248067"><span class="annot"><a href="Math.Number.Fourier.html#dft"><span class="hs-identifier hs-type">dft</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="hs-special">(</span><span class="annot"><span class="hs-identifier hs-type">RealFloat</span></span><span> </span><span class="annot"><a href="#local-6989586621681248067"><span class="hs-identifier hs-type">a</span></a></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">=&gt;</span><span> </span><span class="hs-special">[</span><span class="annot"><span class="hs-identifier hs-type">Complex</span></span><span> </span><span class="annot"><a href="#local-6989586621681248067"><span class="hs-identifier hs-type">a</span></a></span><span class="hs-special">]</span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="hs-special">[</span><span class="annot"><span class="hs-identifier hs-type">Complex</span></span><span> </span><span class="annot"><a href="#local-6989586621681248067"><span class="hs-identifier hs-type">a</span></a></span><span class="hs-special">]</span></span><span>
+</span><span id="line-12"></span><span class="hs-operator">&gt;</span><span id="dft"><span class="annot"><span class="annottext">dft :: forall a. RealFloat a =&gt; [Complex a] -&gt; [Complex a]
+</span><a href="Math.Number.Fourier.html#dft"><span class="hs-identifier hs-var hs-var">dft</span></a></span></span><span> </span><span class="hs-special">(</span><span id="local-6989586621681248144"><span id="local-6989586621681248145"><span class="annot"><span class="annottext">[Complex a]
+</span><a href="#local-6989586621681248145"><span class="hs-identifier hs-var">nums</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="hs-special">[</span><span class="annot"><span class="hs-identifier hs-type">Complex</span></span><span> </span><span class="annot"><a href="#local-6989586621681248144"><span class="hs-identifier hs-type">a</span></a></span><span class="hs-special">]</span></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">=</span><span> </span><span class="hs-special">[</span><span class="annot"><span class="annottext">Complex a -&gt; Complex a
+</span><a href="#local-6989586621681248146"><span class="hs-identifier hs-var">func</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">Int -&gt; Complex a
+forall a b. (Integral a, Num b) =&gt; a -&gt; b
+</span><span class="hs-identifier hs-var">fromIntegral</span></span><span> </span><span class="annot"><span class="annottext">Int
+</span><a href="#local-6989586621681248147"><span class="hs-identifier hs-var">k</span></a></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">|</span><span> </span><span id="local-6989586621681248147"><span class="annot"><span class="annottext">Int
+</span><a href="#local-6989586621681248147"><span class="hs-identifier hs-var">k</span></a></span></span><span> </span><span class="hs-glyph">&lt;-</span><span> </span><span class="hs-special">[</span><span class="annot"><span class="annottext">Int
+</span><span class="hs-number">0</span></span><span class="hs-glyph">..</span><span> </span><span class="annot"><span class="annottext">Int -&gt; Int
+forall a. Enum a =&gt; a -&gt; a
+</span><span class="hs-identifier hs-var">pred</span></span><span> </span><span class="annot"><span class="annottext">Int
+</span><a href="#local-6989586621681248149"><span class="hs-identifier hs-var">len</span></a></span><span class="hs-special">]</span><span class="hs-special">]</span><span>
+</span><span id="line-13"></span><span class="hs-operator">&gt;</span><span>  </span><span class="hs-keyword">where</span><span> </span><span id="local-6989586621681248149"><span class="annot"><span class="annottext">len :: Int
+</span><a href="#local-6989586621681248149"><span class="hs-identifier hs-var hs-var">len</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">[Complex a] -&gt; Int
+forall a. [a] -&gt; Int
+forall (t :: * -&gt; *) a. Foldable t =&gt; t a -&gt; Int
+</span><span class="hs-identifier hs-var">length</span></span><span> </span><span class="annot"><span class="annottext">[Complex a]
+</span><a href="#local-6989586621681248145"><span class="hs-identifier hs-var">nums</span></a></span><span>
+</span><span id="line-14"></span><span class="hs-operator">&gt;</span><span>        </span><span id="local-6989586621681248156"><span class="annot"><span class="annottext">len' :: Integer
+</span><a href="#local-6989586621681248156"><span class="hs-identifier hs-var hs-var">len'</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Int -&gt; Integer
+forall a b. (Integral a, Num b) =&gt; a -&gt; b
+</span><span class="hs-identifier hs-var">fromIntegral</span></span><span> </span><span class="annot"><span class="annottext">Int
+</span><a href="#local-6989586621681248149"><span class="hs-identifier hs-var">len</span></a></span><span>
+</span><span id="line-15"></span><span class="hs-operator">&gt;</span><span>        </span><span id="local-6989586621681248164"><span class="annot"><span class="annottext">coeff :: Complex a
+</span><a href="#local-6989586621681248164"><span class="hs-identifier hs-var hs-var">coeff</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">a
+</span><span class="hs-number">0</span></span><span> </span><span class="annot"><span class="annottext">a -&gt; a -&gt; Complex a
+forall a. a -&gt; a -&gt; Complex a
+</span><span class="hs-operator hs-var">:+</span></span><span> </span><span class="hs-special">(</span><span class="hs-glyph">-</span><span class="annot"><span class="annottext">a
+</span><span class="hs-number">2</span></span><span class="annot"><span class="annottext">a -&gt; a -&gt; a
+forall a. Num a =&gt; a -&gt; a -&gt; a
+</span><span class="hs-operator hs-var">*</span></span><span class="annot"><span class="annottext">a
+forall a. Floating a =&gt; a
+</span><span class="hs-identifier hs-var">pi</span></span><span class="hs-special">)</span><span>
+</span><span id="line-16"></span><span class="hs-operator">&gt;</span><span>        </span><span id="local-6989586621681248171"><span class="annot"><span class="annottext">facts :: [Complex a]
+</span><a href="#local-6989586621681248171"><span class="hs-identifier hs-var hs-var">facts</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Integer -&gt; [Complex a]
+forall a. Fractional a =&gt; Integer -&gt; [a]
+</span><a href="Math.Number.Fourier.html#factors"><span class="hs-identifier hs-var">factors</span></a></span><span> </span><span class="annot"><span class="annottext">Integer
+</span><a href="#local-6989586621681248156"><span class="hs-identifier hs-var">len'</span></a></span><span>
+</span><span id="line-17"></span><span class="hs-operator">&gt;</span><span>        </span><span id="local-6989586621681248146"><span class="annot"><span class="annottext">func :: Complex a -&gt; Complex a
+</span><a href="#local-6989586621681248146"><span class="hs-identifier hs-var hs-var">func</span></a></span></span><span> </span><span id="local-6989586621681248194"><span class="annot"><span class="annottext">Complex a
+</span><a href="#local-6989586621681248194"><span class="hs-identifier hs-var">k</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">[Complex a] -&gt; Complex a
+forall a. Num a =&gt; [a] -&gt; a
+forall (t :: * -&gt; *) a. (Foldable t, Num a) =&gt; t a -&gt; a
+</span><span class="hs-identifier hs-var">Prelude.sum</span></span><span> </span><span class="annot"><span class="annottext">([Complex a] -&gt; Complex a) -&gt; [Complex a] -&gt; Complex a
+forall a b. (a -&gt; b) -&gt; a -&gt; b
+</span><span class="hs-operator hs-var">$</span></span><span> </span><span class="hs-keyword">do</span><span>
+</span><span id="line-18"></span><span class="hs-operator">&gt;</span><span>           </span><span class="hs-glyph">~</span><span class="hs-special">(</span><span id="local-6989586621681248196"><span class="annot"><span class="annottext">Complex a
+</span><a href="#local-6989586621681248196"><span class="hs-identifier hs-var">xn</span></a></span></span><span class="hs-special">,</span><span id="local-6989586621681248197"><span class="annot"><span class="annottext">Complex a
+</span><a href="#local-6989586621681248197"><span class="hs-identifier hs-var">factor</span></a></span></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">&lt;-</span><span> </span><span class="annot"><span class="annottext">[Complex a] -&gt; [Complex a] -&gt; [(Complex a, Complex a)]
+forall a b. [a] -&gt; [b] -&gt; [(a, b)]
+</span><span class="hs-identifier hs-var">zip</span></span><span> </span><span class="annot"><span class="annottext">[Complex a]
+</span><a href="#local-6989586621681248145"><span class="hs-identifier hs-var">nums</span></a></span><span> </span><span class="annot"><span class="annottext">[Complex a]
+</span><a href="#local-6989586621681248171"><span class="hs-identifier hs-var">facts</span></a></span><span>
+</span><span id="line-19"></span><span class="hs-operator">&gt;</span><span>           </span><span class="annot"><span class="annottext">Complex a -&gt; [Complex a]
+forall a. a -&gt; [a]
+forall (m :: * -&gt; *) a. Monad m =&gt; a -&gt; m a
+</span><span class="hs-identifier hs-var">return</span></span><span> </span><span class="annot"><span class="annottext">(Complex a -&gt; [Complex a]) -&gt; Complex a -&gt; [Complex a]
+forall a b. (a -&gt; b) -&gt; a -&gt; b
+</span><span class="hs-operator hs-var">$</span></span><span> </span><span class="annot"><span class="annottext">Complex a
+</span><a href="#local-6989586621681248196"><span class="hs-identifier hs-var">xn</span></a></span><span> </span><span class="annot"><span class="annottext">Complex a -&gt; Complex a -&gt; Complex a
+forall a. Num a =&gt; a -&gt; a -&gt; a
+</span><span class="hs-operator hs-var">*</span></span><span> </span><span class="annot"><span class="annottext">Complex a -&gt; Complex a
+forall a. Floating a =&gt; a -&gt; a
+</span><span class="hs-identifier hs-var">exp</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">Complex a
+</span><a href="#local-6989586621681248197"><span class="hs-identifier hs-var">factor</span></a></span><span> </span><span class="annot"><span class="annottext">Complex a -&gt; Complex a -&gt; Complex a
+forall a. Num a =&gt; a -&gt; a -&gt; a
+</span><span class="hs-operator hs-var">*</span></span><span> </span><span class="annot"><span class="annottext">Complex a
+</span><a href="#local-6989586621681248194"><span class="hs-identifier hs-var">k</span></a></span><span> </span><span class="annot"><span class="annottext">Complex a -&gt; Complex a -&gt; Complex a
+forall a. Num a =&gt; a -&gt; a -&gt; a
+</span><span class="hs-operator hs-var">*</span></span><span> </span><span class="annot"><span class="annottext">Complex a
+</span><a href="#local-6989586621681248164"><span class="hs-identifier hs-var">coeff</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-20"></span><span>
+</span><span id="line-21"></span><span class="hs-operator">&gt;</span><span id="local-6989586621681248084"><span class="annot"><a href="Math.Number.Fourier.html#factors"><span class="hs-identifier hs-type">factors</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="hs-special">(</span><span class="annot"><span class="hs-identifier hs-type">Fractional</span></span><span> </span><span class="annot"><a href="#local-6989586621681248084"><span class="hs-identifier hs-type">a</span></a></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">=&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Integer</span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="hs-special">[</span><span class="annot"><a href="#local-6989586621681248084"><span class="hs-identifier hs-type">a</span></a></span><span class="hs-special">]</span></span><span>
+</span><span id="line-22"></span><span class="hs-operator">&gt;</span><span id="factors"><span class="annot"><span class="annottext">factors :: forall a. Fractional a =&gt; Integer -&gt; [a]
+</span><a href="Math.Number.Fourier.html#factors"><span class="hs-identifier hs-var hs-var">factors</span></a></span></span><span> </span><span id="local-6989586621681248211"><span class="annot"><span class="annottext">Integer
+</span><a href="#local-6989586621681248211"><span class="hs-identifier hs-var">len</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="hs-special">[</span><span class="annot"><span class="annottext">Rational -&gt; a
+forall a. Fractional a =&gt; Rational -&gt; a
+</span><span class="hs-identifier hs-var">fromRational</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">Integer -&gt; Integer
+forall a b. (Integral a, Num b) =&gt; a -&gt; b
+</span><span class="hs-identifier hs-var">fromIntegral</span></span><span> </span><span class="annot"><span class="annottext">Integer
+</span><a href="#local-6989586621681248212"><span class="hs-identifier hs-var">k</span></a></span><span> </span><span class="annot"><span class="annottext">Integer -&gt; Integer -&gt; Rational
+forall a. Integral a =&gt; a -&gt; a -&gt; Ratio a
+</span><span class="hs-operator hs-var">%</span></span><span> </span><span class="annot"><span class="annottext">Integer -&gt; Integer
+forall a b. (Integral a, Num b) =&gt; a -&gt; b
+</span><span class="hs-identifier hs-var">fromIntegral</span></span><span> </span><span class="annot"><span class="annottext">Integer
+</span><a href="#local-6989586621681248211"><span class="hs-identifier hs-var">len</span></a></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">|</span><span> </span><span id="local-6989586621681248212"><span class="annot"><span class="annottext">Integer
+</span><a href="#local-6989586621681248212"><span class="hs-identifier hs-var">k</span></a></span></span><span> </span><span class="hs-glyph">&lt;-</span><span> </span><span class="hs-special">[</span><span class="annot"><span class="annottext">Integer
+</span><span class="hs-number">0</span></span><span class="hs-glyph">..</span><span class="annot"><span class="annottext">Integer -&gt; Integer
+forall a. Enum a =&gt; a -&gt; a
+</span><span class="hs-identifier hs-var">pred</span></span><span> </span><span class="annot"><span class="annottext">Integer
+</span><a href="#local-6989586621681248211"><span class="hs-identifier hs-var">len</span></a></span><span class="hs-special">]</span><span class="hs-special">]</span><span>
+</span><span id="line-23"></span><span>
+</span><span id="line-24"></span><span class="hs-operator">&gt;</span><span id="local-6989586621681248214"><span class="annot"><a href="Math.Number.Fourier.html#inverse_dft"><span class="hs-identifier hs-type">inverse_dft</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="hs-special">(</span><span class="annot"><span class="hs-identifier hs-type">RealFloat</span></span><span> </span><span class="annot"><a href="#local-6989586621681248214"><span class="hs-identifier hs-type">a</span></a></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">=&gt;</span><span> </span><span class="hs-special">[</span><span class="annot"><span class="hs-identifier hs-type">Complex</span></span><span> </span><span class="annot"><a href="#local-6989586621681248214"><span class="hs-identifier hs-type">a</span></a></span><span class="hs-special">]</span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="hs-special">[</span><span class="annot"><span class="hs-identifier hs-type">Complex</span></span><span> </span><span class="annot"><a href="#local-6989586621681248214"><span class="hs-identifier hs-type">a</span></a></span><span class="hs-special">]</span></span><span>
+</span><span id="line-25"></span><span class="hs-operator">&gt;</span><span id="inverse_dft"><span class="annot"><span class="annottext">inverse_dft :: forall a. RealFloat a =&gt; [Complex a] -&gt; [Complex a]
+</span><a href="Math.Number.Fourier.html#inverse_dft"><span class="hs-identifier hs-var hs-var">inverse_dft</span></a></span></span><span> </span><span id="local-6989586621681248221"><span class="annot"><span class="annottext">[Complex a]
+</span><a href="#local-6989586621681248221"><span class="hs-identifier hs-var">lst</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Complex a
+Scalar [Complex a]
+</span><a href="#local-6989586621681248222"><span class="hs-identifier hs-var">factor</span></a></span><span> </span><span class="annot"><span class="annottext">Scalar [Complex a] -&gt; [Complex a] -&gt; [Complex a]
+forall v. VectorSpace v =&gt; Scalar v -&gt; v -&gt; v
+</span><a href="Math.Matrix.Interface.html#%25%2A"><span class="hs-operator hs-var">%*</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">(Complex a -&gt; Complex a) -&gt; [Complex a] -&gt; [Complex a]
+forall a b. (a -&gt; b) -&gt; [a] -&gt; [b]
+</span><span class="hs-identifier hs-var">map</span></span><span> </span><span class="annot"><span class="annottext">Complex a -&gt; Complex a
+forall {a}. Complex a -&gt; Complex a
+</span><a href="#local-6989586621681248224"><span class="hs-identifier hs-var">swap</span></a></span><span> </span><span class="annot"><span class="annottext">([Complex a] -&gt; [Complex a]) -&gt; [Complex a] -&gt; [Complex a]
+forall a b. (a -&gt; b) -&gt; a -&gt; b
+</span><span class="hs-operator hs-var">$</span></span><span> </span><span class="annot"><span class="annottext">[Complex a] -&gt; [Complex a]
+forall a. RealFloat a =&gt; [Complex a] -&gt; [Complex a]
+</span><a href="Math.Number.Fourier.html#dft"><span class="hs-identifier hs-var">dft</span></a></span><span> </span><span class="annot"><span class="annottext">([Complex a] -&gt; [Complex a]) -&gt; [Complex a] -&gt; [Complex a]
+forall a b. (a -&gt; b) -&gt; a -&gt; b
+</span><span class="hs-operator hs-var">$</span></span><span> </span><span class="annot"><span class="annottext">(Complex a -&gt; Complex a) -&gt; [Complex a] -&gt; [Complex a]
+forall a b. (a -&gt; b) -&gt; [a] -&gt; [b]
+</span><span class="hs-identifier hs-var">map</span></span><span> </span><span class="annot"><span class="annottext">Complex a -&gt; Complex a
+forall {a}. Complex a -&gt; Complex a
+</span><a href="#local-6989586621681248224"><span class="hs-identifier hs-var">swap</span></a></span><span> </span><span class="annot"><span class="annottext">[Complex a]
+</span><a href="#local-6989586621681248221"><span class="hs-identifier hs-var">lst</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-26"></span><span class="hs-operator">&gt;</span><span>   </span><span class="hs-keyword">where</span><span> </span><span id="local-6989586621681248224"><span class="annot"><span class="annottext">swap :: Complex a -&gt; Complex a
+</span><a href="#local-6989586621681248224"><span class="hs-identifier hs-var hs-var">swap</span></a></span></span><span> </span><span class="hs-special">(</span><span id="local-6989586621681248225"><span class="annot"><span class="annottext">a
+</span><a href="#local-6989586621681248225"><span class="hs-identifier hs-var">a</span></a></span></span><span class="annot"><span class="hs-operator hs-type">:+</span></span><span id="local-6989586621681248226"><span class="annot"><span class="annottext">a
+</span><a href="#local-6989586621681248226"><span class="hs-identifier hs-var">b</span></a></span></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">a
+</span><a href="#local-6989586621681248226"><span class="hs-identifier hs-var">b</span></a></span><span class="annot"><span class="annottext">a -&gt; a -&gt; Complex a
+forall a. a -&gt; a -&gt; Complex a
+</span><span class="hs-operator hs-var">:+</span></span><span class="annot"><span class="annottext">a
+</span><a href="#local-6989586621681248225"><span class="hs-identifier hs-var">a</span></a></span><span>
+</span><span id="line-27"></span><span class="hs-operator">&gt;</span><span>         </span><span id="local-6989586621681248222"><span class="annot"><span class="annottext">factor :: Complex a
+</span><a href="#local-6989586621681248222"><span class="hs-identifier hs-var hs-var">factor</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Complex a
+</span><span class="hs-number">1</span></span><span> </span><span class="annot"><span class="annottext">Complex a -&gt; Complex a -&gt; Complex a
+forall a. Fractional a =&gt; a -&gt; a -&gt; a
+</span><span class="hs-operator hs-var">/</span></span><span> </span><span class="annot"><span class="annottext">Int -&gt; Complex a
+forall a b. (Integral a, Num b) =&gt; a -&gt; b
+</span><span class="hs-identifier hs-var">fromIntegral</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">[Complex a] -&gt; Int
+forall a. [a] -&gt; Int
+forall (t :: * -&gt; *) a. Foldable t =&gt; t a -&gt; Int
+</span><span class="hs-identifier hs-var">length</span></span><span> </span><span class="annot"><span class="annottext">[Complex a]
+</span><a href="#local-6989586621681248221"><span class="hs-identifier hs-var">lst</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-28"></span><span>
+</span><span id="line-29"></span><span class="hs-operator">&gt;</span><span id="local-6989586621681248105"><span class="annot"><a href="Math.Number.Fourier.html#root_of_unity"><span class="hs-identifier hs-type">root_of_unity</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="hs-special">(</span><span class="annot"><span class="hs-identifier hs-type">RealFloat</span></span><span> </span><span class="annot"><a href="#local-6989586621681248105"><span class="hs-identifier hs-type">a</span></a></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">=&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Int</span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Complex</span></span><span> </span><span class="annot"><a href="#local-6989586621681248105"><span class="hs-identifier hs-type">a</span></a></span></span><span>
+</span><span id="line-30"></span><span class="hs-operator">&gt;</span><span id="root_of_unity"><span class="annot"><span class="annottext">root_of_unity :: forall a. RealFloat a =&gt; Int -&gt; Complex a
+</span><a href="Math.Number.Fourier.html#root_of_unity"><span class="hs-identifier hs-var hs-var">root_of_unity</span></a></span></span><span> </span><span id="local-6989586621681248250"><span class="annot"><span class="annottext">Int
+</span><a href="#local-6989586621681248250"><span class="hs-identifier hs-var">n</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Complex a -&gt; Complex a
+forall a. Floating a =&gt; a -&gt; a
+</span><span class="hs-identifier hs-var">exp</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">a
+</span><span class="hs-number">0</span></span><span> </span><span class="annot"><span class="annottext">a -&gt; a -&gt; Complex a
+forall a. a -&gt; a -&gt; Complex a
+</span><span class="hs-operator hs-var">:+</span></span><span> </span><span class="hs-special">(</span><span class="hs-glyph">-</span><span class="annot"><span class="annottext">a
+</span><span class="hs-number">2</span></span><span class="annot"><span class="annottext">a -&gt; a -&gt; a
+forall a. Num a =&gt; a -&gt; a -&gt; a
+</span><span class="hs-operator hs-var">*</span></span><span class="annot"><span class="annottext">a
+forall a. Floating a =&gt; a
+</span><span class="hs-identifier hs-var">pi</span></span><span class="annot"><span class="annottext">a -&gt; a -&gt; a
+forall a. Fractional a =&gt; a -&gt; a -&gt; a
+</span><span class="hs-operator hs-var">/</span></span><span class="annot"><span class="annottext">Int -&gt; a
+forall a b. (Integral a, Num b) =&gt; a -&gt; b
+</span><span class="hs-identifier hs-var">fromIntegral</span></span><span> </span><span class="annot"><span class="annottext">Int
+</span><a href="#local-6989586621681248250"><span class="hs-identifier hs-var">n</span></a></span><span class="hs-special">)</span><span class="hs-special">)</span><span>
+</span><span id="line-31"></span><span>
+</span><span id="line-32"></span><span class="hs-operator">&gt;</span><span id="local-6989586621681248107"><span class="annot"><a href="Math.Number.Fourier.html#dft_matrix"><span class="hs-identifier hs-type">dft_matrix</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="hs-special">(</span><span class="annot"><span class="hs-identifier hs-type">RealFloat</span></span><span> </span><span class="annot"><a href="#local-6989586621681248107"><span class="hs-identifier hs-type">a</span></a></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">=&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Int</span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="hs-special">(</span><span class="hs-special">[</span><span class="hs-special">]</span><span> </span><span class="annot"><a href="Math.Matrix.Interface.html#%3A%2A%3A"><span class="hs-operator hs-type">:*:</span></a></span><span> </span><span class="hs-special">[</span><span class="hs-special">]</span><span class="hs-special">)</span><span> </span><span class="hs-special">(</span><span class="annot"><span class="hs-identifier hs-type">Complex</span></span><span> </span><span class="annot"><a href="#local-6989586621681248107"><span class="hs-identifier hs-type">a</span></a></span><span class="hs-special">)</span></span><span>
+</span><span id="line-33"></span><span class="hs-operator">&gt;</span><span id="dft_matrix"><span class="annot"><span class="annottext">dft_matrix :: forall a. RealFloat a =&gt; Int -&gt; (:*:) [] [] (Complex a)
+</span><a href="Math.Number.Fourier.html#dft_matrix"><span class="hs-identifier hs-var hs-var">dft_matrix</span></a></span></span><span> </span><span id="local-6989586621681248275"><span class="annot"><span class="annottext">Int
+</span><a href="#local-6989586621681248275"><span class="hs-identifier hs-var">n</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">(Int -&gt; Int -&gt; Complex a)
+-&gt; [Int] -&gt; [Int] -&gt; (:*:) [] [] (Complex a)
+forall (m :: * -&gt; *) (n :: * -&gt; *) a b c.
+(Functor m, Functor n) =&gt;
+(a -&gt; b -&gt; c) -&gt; m a -&gt; n b -&gt; (:*:) m n c
+</span><a href="Math.Matrix.Interface.html#matrix"><span class="hs-identifier hs-var">matrix</span></a></span><span> </span><span class="hs-special">(</span><span class="hs-glyph">\</span><span id="local-6989586621681248277"><span class="annot"><span class="annottext">Int
+</span><a href="#local-6989586621681248277"><span class="hs-identifier hs-var">i</span></a></span></span><span> </span><span id="local-6989586621681248278"><span class="annot"><span class="annottext">Int
+</span><a href="#local-6989586621681248278"><span class="hs-identifier hs-var">j</span></a></span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="annottext">Complex a
+</span><a href="#local-6989586621681248279"><span class="hs-identifier hs-var">rou</span></a></span><span> </span><span class="annot"><span class="annottext">Complex a -&gt; Int -&gt; Complex a
+forall a b. (Num a, Integral b) =&gt; a -&gt; b -&gt; a
+</span><span class="hs-operator hs-var">^</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">Int
+</span><a href="#local-6989586621681248277"><span class="hs-identifier hs-var">i</span></a></span><span> </span><span class="annot"><span class="annottext">Int -&gt; Int -&gt; Scalar Int
+forall m. InnerProductSpace m =&gt; m -&gt; m -&gt; Scalar m
+</span><a href="Math.Matrix.Interface.html#%25."><span class="hs-operator hs-var">%.</span></a></span><span> </span><span class="annot"><span class="annottext">Int
+</span><a href="#local-6989586621681248278"><span class="hs-identifier hs-var">j</span></a></span><span class="hs-special">)</span><span class="hs-special">)</span><span> </span><span class="hs-special">[</span><span class="annot"><span class="annottext">Int
+</span><span class="hs-number">0</span></span><span class="hs-glyph">..</span><span class="annot"><span class="annottext">Int
+</span><a href="#local-6989586621681248275"><span class="hs-identifier hs-var">n</span></a></span><span class="annot"><span class="annottext">Int -&gt; Int -&gt; Int
+forall a. Num a =&gt; a -&gt; a -&gt; a
+</span><span class="hs-glyph hs-var">-</span></span><span class="annot"><span class="annottext">Int
+</span><span class="hs-number">1</span></span><span class="hs-special">]</span><span> </span><span class="hs-special">[</span><span class="annot"><span class="annottext">Int
+</span><span class="hs-number">0</span></span><span class="hs-glyph">..</span><span class="annot"><span class="annottext">Int
+</span><a href="#local-6989586621681248275"><span class="hs-identifier hs-var">n</span></a></span><span class="annot"><span class="annottext">Int -&gt; Int -&gt; Int
+forall a. Num a =&gt; a -&gt; a -&gt; a
+</span><span class="hs-glyph hs-var">-</span></span><span class="annot"><span class="annottext">Int
+</span><span class="hs-number">1</span></span><span class="hs-special">]</span><span>
+</span><span id="line-34"></span><span class="hs-operator">&gt;</span><span>  </span><span class="hs-keyword">where</span><span> </span><span id="local-6989586621681248279"><span class="annot"><span class="annottext">rou :: Complex a
+</span><a href="#local-6989586621681248279"><span class="hs-identifier hs-var hs-var">rou</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Int -&gt; Complex a
+forall a. RealFloat a =&gt; Int -&gt; Complex a
+</span><a href="Math.Number.Fourier.html#root_of_unity"><span class="hs-identifier hs-var">root_of_unity</span></a></span><span> </span><span class="annot"><span class="annottext">Int
+</span><a href="#local-6989586621681248275"><span class="hs-identifier hs-var">n</span></a></span><span>
+</span><span id="line-35"></span></pre></body></html>

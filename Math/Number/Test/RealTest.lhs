@@ -26,20 +26,20 @@
 >   arbitrary = randomReal
 
 
->prop_equality_reflexive = (forAll randomReal $ \r -> r `approximately_equal` r)
+>prop_equality_reflexive = (forAll randomReal $ \r -> r `approximatelyEqual` r)
 >prop_equality_transitive = (forAll randomReal $ \r ->
 >                      forAll randomReal $ \r' ->
 >                      forAll randomReal $ \r'' ->
->                      if r `approximately_equal` r' && r' `approximately_equal` r''
->                       then r `approximately_equal` r'' else True)
+>                      if r `approximatelyEqual` r' && r' `approximatelyEqual` r''
+>                       then r `approximatelyEqual` r'' else True)
 
-prop_median_test = med (pi :: R) (3.141 :: R) (3.242 :: R) `approximately_equal` pi
+prop_median_test = med (pi :: R) (3.141 :: R) (3.242 :: R) `approximatelyEqual` pi
 
->prop_average_test = average (pi :: R) 0 `approximately_equal` (pi / 2)
+>prop_average_test = average (pi :: R) 0 `approximatelyEqual` (pi / 2)
 
 >derivatetest1 :: Test
 >derivatetest1 = -- True ~? "derivatetest1"
->  (derivate (\(x :: R) -> x*x) 4.0) `approximately_equal` 8.0 ~? "derivatetest1"
+>  (derivate (\(x :: R) -> x*x) 4.0) `approximatelyEqual` 8.0 ~? "derivatetest1"
 
 >$(return [])
 >qcTests = $quickCheckAll

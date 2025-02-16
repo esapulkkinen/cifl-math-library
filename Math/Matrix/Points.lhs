@@ -164,19 +164,19 @@ to map indices.
 >-- the Universe constraint on Show instances, as it made things like
 >-- ((+) :: Integer -> Integer -> Integer) showable, which is scary.
 >instance (Show b) => Show (OneD -> b) where
->   show f = show [f i | i <- all_elements]
+>   show f = show [f i | i <- allElements]
 >instance (Show b) => Show (TwoD -> b) where
->   show f = show [f i | i <- all_elements]
+>   show f = show [f i | i <- allElements]
 >instance (Show b) => Show (ThreeD -> b) where
->   show f = show [f i | i <- all_elements]
+>   show f = show [f i | i <- allElements]
 >instance (Show b) => Show (FourD -> b) where
->   show f = show [f i | i <- all_elements]
+>   show f = show [f i | i <- allElements]
 >instance (Show b) => Show (FiveD -> b) where
->   show f = show [f i | i <- all_elements]
+>   show f = show [f i | i <- allElements]
 >instance (Show b) => Show (SixD -> b) where
->   show f = show [f i | i <- all_elements]
+>   show f = show [f i | i <- allElements]
 >instance (Show b) => Show (SevenD -> b) where
->   show f = show [f i | i <- all_elements]
+>   show f = show [f i | i <- allElements]
 
 >instance Show SevenD where { show x = show (toInt7 x) }
 >instance Show SixD where { show x = show (toInt6 x) }
@@ -195,19 +195,19 @@ to map indices.
 >instance PpShow OneD where { pp x = pp (toInt1 x) }
 
 >instance Universe OneD where
->   all_elements=[OneD0]
+>   allElements=[OneD0]
 >instance Universe TwoD where
->   all_elements=[TwoD0,TwoD1]
+>   allElements=[TwoD0,TwoD1]
 >instance Universe ThreeD where
->   all_elements=[ThreeD0,ThreeD1,ThreeD2]
+>   allElements=[ThreeD0,ThreeD1,ThreeD2]
 >instance Universe FourD where
->   all_elements=[FourD0,FourD1,FourD2,FourD3]
+>   allElements=[FourD0,FourD1,FourD2,FourD3]
 >instance Universe FiveD where
->   all_elements=[FiveD0, FiveD1, FiveD2, FiveD3, FiveD4]
+>   allElements=[FiveD0, FiveD1, FiveD2, FiveD3, FiveD4]
 >instance Universe SixD where
->   all_elements=[SixD0, SixD1, SixD2, SixD3, SixD4, SixD5]
+>   allElements=[SixD0, SixD1, SixD2, SixD3, SixD4, SixD5]
 >instance Universe SevenD where
->   all_elements=[SevenD0, SevenD1, SevenD2, SevenD3, SevenD4, SevenD5, SevenD6]
+>   allElements=[SevenD0, SevenD1, SevenD2, SevenD3, SevenD4, SevenD5, SevenD6]
 
 >instance Real OneD where
 >   toRational = toRational . toInt1

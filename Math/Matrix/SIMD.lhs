@@ -819,7 +819,7 @@
 
 #else
 
-#warning "SIMD optimizations are disabled. --flag '*:LLVM' is required for SIMD optimizations."
+-- #warning "SIMD optimizations are disabled. --flag '*:LLVM' is required for SIMD optimizations."
 
 >import GHC.Int
 >import GHC.TypeLits
@@ -1377,11 +1377,11 @@
 
 >instance NormedSpace (SIMDVec 2 (Complex Float)) where
 >   norm a = sqrt (a %. a)
->   norm_squared a = a %. a
+>   normSquared a = a %. a
 >
 >instance NormedSpace (SIMDVec 1 (Complex Double)) where
 >   norm a = sqrt (a %. a)
->   norm_squared a = a %. a
+>   normSquared a = a %. a
 
 >class (VectorSpace a) => Optimal a where
 >   type Optimized a
@@ -1530,15 +1530,15 @@
 
 >instance {-# OVERLAPS #-} (Scalar (SIMDVec 2 Double) ~ Double) => LinearTransform Vector2 Vector2 Double where
 >   (<<*>) = fast_multiply2_double
->   v <*>> m = fast_multiply2_double (transpose_impl m) v
+>   v <*>> m = fast_multiply2_double (transposeImpl m) v
 
 >instance {-# OVERLAPS #-} LinearTransform Vector3 Vector3 Float where
 >   (<<*>) = fast_multiply3_float
->   v <*>> m = fast_multiply3_float (transpose_impl m) v
+>   v <*>> m = fast_multiply3_float (transposeImpl m) v
 
 >instance {-# OVERLAPS #-} LinearTransform Vector4 Vector4 Float where
 >   (<<*>) = fast_multiply4_float
->   v <*>> m = fast_multiply4_float (transpose_impl m) v
+>   v <*>> m = fast_multiply4_float (transposeImpl m) v
 
 >instance {-# OVERLAPS #-} InnerProductSpace (Vector4 Float) where
 >   a %. b = (toO a) %. (toO b)
@@ -1549,11 +1549,11 @@
 
 >instance {-# OVERLAPS #-} NormedSpace (Vector2 (Complex Float)) where
 >   norm x = norm (toO x)
->   norm_squared x = norm_squared (toO x)
+>   normSquared x = normSquared (toO x)
 
 >instance {-# OVERLAPS #-} NormedSpace (Complex Double) where
 >   norm x = norm (toO x)
->   norm_squared x = norm_squared (toO x)
+>   normSquared x = normSquared (toO x)
 
 >{-# SPECIALISE (%*%) :: (Vector4 :*: Vector4) Float -> (Vector4 :*: Vector4) Float -> (Vector4 :*: Vector4) Float #-}
 >{-# SPECIALISE (%*%) :: (Vector3 :*: Vector3) Float -> (Vector3 :*: Vector3) Float -> (Vector3 :*: Vector3) Float #-}

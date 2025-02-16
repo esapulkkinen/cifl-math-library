@@ -41,12 +41,12 @@ A `intersects` B == (A `intersect` B != {})
 >-- | See "Soare: Recursively enumerable sets and degrees", this is split
 >-- of recursive into two recursively enumerable sets.
 
->split_prop :: (Universe a) => Prop a -> ([a],[a])
->split_prop (Characteristic f) = (filter f         all_elements,
->                            filter (not . f) all_elements)
+>splitProp :: (Universe a) => Prop a -> ([a],[a])
+>splitProp (Characteristic f) = (filter f         allElements,
+>                            filter (not . f) allElements)
 
->propositional_table :: (Universe a) => Prop a -> [(a,Bool)]
->propositional_table p = [(x,runCharacteristic p x) | x <- all_elements]
+>propositionalTable :: (Universe a) => Prop a -> [(a,Bool)]
+>propositionalTable p = [(x,runCharacteristic p x) | x <- allElements]
 
 >instance BinaryLogic Prop where
 >  toBool (Characteristic f) = f ()
@@ -57,20 +57,20 @@ A `intersects` B == (A `intersect` B != {})
 >instance Contravariant Prop where
 >   contramap f (Characteristic g) = Characteristic (g Cat.. f)
 
->prop_substitute :: (Contravariant p) => p a -> p (a,b)
->prop_substitute = contramap fst
+>propSubstitute :: (Contravariant p) => p a -> p (a,b)
+>propSubstitute = contramap fst
 
->prop_exists :: (Adjunction f p, Contravariant p) => f (p a) -> (a,b)
->prop_exists = rightAdjunct (contramap fst)
+>propExists :: (Adjunction f p, Contravariant p) => f (p a) -> (a,b)
+>propExists = rightAdjunct (contramap fst)
 >
->prop_exists_snd :: (Adjunction f p, Contravariant p) => f (p b) -> (a,b)
->prop_exists_snd = rightAdjunct (contramap snd)
+>propExistsSnd :: (Adjunction f p, Contravariant p) => f (p b) -> (a,b)
+>propExistsSnd = rightAdjunct (contramap snd)
 
->prop_always :: (Adjunction p g, Contravariant p) => a -> g (p (a,b))
->prop_always = leftAdjunct (contramap fst)
+>propAlways :: (Adjunction p g, Contravariant p) => a -> g (p (a,b))
+>propAlways = leftAdjunct (contramap fst)
 
->prop_always_snd :: (Adjunction p g, Contravariant p) => b -> g (p (a,b))
->prop_always_snd = leftAdjunct (contramap snd)
+>propAlwaysSnd :: (Adjunction p g, Contravariant p) => b -> g (p (a,b))
+>propAlwaysSnd = leftAdjunct (contramap snd)
 
 reflexive_and_transitive_frames = characteristic (uncurry system_S4)
 reflexive_frames  = characteristic (uncurry system_T)
@@ -78,58 +78,58 @@ frames = characteristic (uncurry system_K)
 serial_frames = characteristic (uncurry system_D)
 
 >-- | <https://en.wikipedia.org/wiki/Modal_logic>
->axiom_N :: (ModalLogic p, ImplicativeLogic p) => p a -> p a
->axiom_N p = p -=>- always p
+>axiomN :: (ModalLogic p, ImplicativeLogic p) => p a -> p a
+>axiomN p = p -=>- always p
 >
 >-- | <https://en.wikipedia.org/wiki/Modal_logic>
->axiom_K :: (ModalLogic p, ImplicativeLogic p) => p a -> p a -> p a
->axiom_K p q = always (p -=>- q) -=>- (always p -=>- always q)
+>axiomK :: (ModalLogic p, ImplicativeLogic p) => p a -> p a -> p a
+>axiomK p q = always (p -=>- q) -=>- (always p -=>- always q)
 
 >-- | <https://en.wikipedia.org/wiki/Modal_logic>
->axiom_4 :: (ModalLogic p, ImplicativeLogic p) => p a -> p a
->axiom_4 p = always p -=>- always (always p)
+>axiom4 :: (ModalLogic p, ImplicativeLogic p) => p a -> p a
+>axiom4 p = always p -=>- always (always p)
 
 >-- | <https://en.wikipedia.org/wiki/Modal_logic>
->axiom_B :: (ModalLogic p, ImplicativeLogic p) => p a -> p a
->axiom_B p = p -=>- always (eventually p)
+>axiomB :: (ModalLogic p, ImplicativeLogic p) => p a -> p a
+>axiomB p = p -=>- always (eventually p)
 
 >-- | <https://en.wikipedia.org/wiki/Modal_logic>
->axiom_D :: (ModalLogic p, ImplicativeLogic p) => p a -> p a
->axiom_D p = always p -=>- eventually p
+>axiomD :: (ModalLogic p, ImplicativeLogic p) => p a -> p a
+>axiomD p = always p -=>- eventually p
 >
 >-- | <https://en.wikipedia.org/wiki/Modal_logic>
->axiom_5 :: (ModalLogic p, ImplicativeLogic p) => p a -> p a
->axiom_5 p = eventually p -=>- always (eventually p)
+>axiom5 :: (ModalLogic p, ImplicativeLogic p) => p a -> p a
+>axiom5 p = eventually p -=>- always (eventually p)
 >
 >-- | <https://en.wikipedia.org/wiki/Modal_logic>
->axiom_T :: (ModalLogic p, ImplicativeLogic p) => p a -> p a
->axiom_T p = always p -=>- p
+>axiomT :: (ModalLogic p, ImplicativeLogic p) => p a -> p a
+>axiomT p = always p -=>- p
 
->system_K p q = axiom_K p q -&- axiom_N p -&- axiom_N q
->system_T p q = system_K p q -&- axiom_T p -&- axiom_T q
->system_S4 p q = system_T p q -&- axiom_4 p -&- axiom_4 q
->system_S5 p q = system_S4 p q -&- axiom_5 p -&- axiom_5 q
->system_D p q = system_K p q -&- axiom_D p -&- axiom_D q
+>systemK p q = axiomK p q -&- axiomN p -&- axiomN q
+>systemT p q = systemK p q -&- axiomT p -&- axiomT q
+>systemS4 p q = systemT p q -&- axiom4 p -&- axiom4 q
+>systemS5 p q = systemS4 p q -&- axiom5 p -&- axiom5 q
+>systemD p q = systemK p q -&- axiomD p -&- axiomD q
 
 >                       
 
 
 >instance (Universe a) => Eq (Prop a) where
->  (Characteristic p) == (Characteristic q) = and [p x == q x | x <- all_elements]
+>  (Characteristic p) == (Characteristic q) = and [p x == q x | x <- allElements]
 
 >instance (Universe a,Eq a) => Universe (Prop a) where
->   all_elements = map Characteristic all_elements
+>   allElements = map Characteristic allElements
 
 >instance (Show a, Universe a) => Show (Prop a) where
->   showsPrec _ (Characteristic (f :: a -> Bool)) = punctuate_list ";" $  map (\ a -> show a ++ "->" ++ show (f a)) $ all_elements
+>   showsPrec _ (Characteristic (f :: a -> Bool)) = punctuate_list ";" $  map (\ a -> show a ++ "->" ++ show (f a)) $ allElements
 
 >      
 >instance (Eq c) => HasEqualizers Prop c where
 >   equalizer f g = Characteristic $ \x -> f x == g x
 
->vector_equalizer :: (Eq (n a), LinearTransform m n a)
+>vectorEqualizer :: (Eq (n a), LinearTransform m n a)
 >                 => (m :*: n) a -> (m :*: n) a -> Prop (m a)
->vector_equalizer a b = Characteristic $ \v -> a <<*> v == b <<*> v
+>vectorEqualizer a b = Characteristic $ \v -> a <<*> v == b <<*> v
 
 >instance OverCategory (->) a where
 >   overmap g f = f . g
@@ -148,7 +148,7 @@ serial_frames = characteristic (uncurry system_D)
 >-- use the Universe constraint.
 
 >list_truthvalues :: (Universe a) => Prop a -> [(a,Bool)]
->list_truthvalues (Characteristic f) = map (\x -> (x,f x)) all_elements
+>list_truthvalues (Characteristic f) = map (\x -> (x,f x)) allElements
 
 >-- | relation and unrelation represent the natural isomorphism
 >-- \[Hom(-,P(A)) \cong Sub(- \times A)\]
@@ -169,17 +169,17 @@ serial_frames = characteristic (uncurry system_D)
 >      -- == singleton
 >      -- == unrelation reflexive
 
->existential_bind :: (Universe a) => Prop a -> (a -> Prop b) -> Prop b
->existential_bind f g = union_list $ map g (enumerate f)
+>existentialBind :: (Universe a) => Prop a -> (a -> Prop b) -> Prop b
+>existentialBind f g = unionList $ map g (enumerate f)
 
->existential_join :: (Universe b,Eq b) => Prop (Prop b) -> Prop b
->existential_join = union_list . enumerate
+>existentialJoin :: (Universe b,Eq b) => Prop (Prop b) -> Prop b
+>existentialJoin = unionList . enumerate
 
->universal_bind :: (Universe a) => Prop a -> (a -> Prop b) -> Prop b
->universal_bind f g = intersect_list $ map g (enumerate f)
+>universalBind :: (Universe a) => Prop a -> (a -> Prop b) -> Prop b
+>universalBind f g = intersectList $ map g (enumerate f)
 
->universal_join :: (Universe b, Eq b) => Prop (Prop b) -> Prop b
->universal_join = intersect_list . enumerate
+>universalJoin :: (Universe b, Eq b) => Prop (Prop b) -> Prop b
+>universalJoin = intersectList . enumerate
 
 >instance PropositionalLogic Prop where
 >   (-&-) = intersect
@@ -190,17 +190,17 @@ serial_frames = characteristic (uncurry system_D)
 >   true = truthvalue True
 
 >instance SubtractiveLogic Prop where
->   (-\-) = relative_complement 
+>   (-\-) = relativeComplement 
 
 >instance ImplicativeLogic Prop where
->   (-=>-) = propositional_implication
+>   (-=>-) = propositionalImplication
 
 >instance Propositional Prop where
->   runProposition = \p x -> fromBool $ runCharacteristic p x
+>   runProposition p x = fromBool $ runCharacteristic p x
 
 
->prop_fixedpoint :: (Prop a -> Prop a) -> Prop a
->prop_fixedpoint = Fix.fix
+>propFixedpoint :: (Prop a -> Prop a) -> Prop a
+>propFixedpoint = Fix.fix
 
 >truthvalue :: Bool -> Prop a
 >truthvalue = Characteristic . const
@@ -209,22 +209,22 @@ serial_frames = characteristic (uncurry system_D)
 >-- such that the proposition is satisfied. Note symmetry with 'axiom'.
 
 >satisfiable :: (Universe a) => Prop a -> Bool
->satisfiable = toBool Cat.. terminal_part Cat.. prop_existential Cat.. prop_iso_terminal_inverse
+>satisfiable = toBool Cat.. terminalPart Cat.. propExistential Cat.. propIsoTerminalInverse
 
 >-- | axiom returns true, if the proposition holds for all elements of the
 >-- universe.
 >axiom :: (Universe a) => Prop a -> Bool
->axiom = toBool Cat.. terminal_part Cat.. prop_universal Cat.. prop_iso_terminal_inverse
+>axiom = toBool Cat.. terminalPart Cat.. propUniversal Cat.. propIsoTerminalInverse
 
 >notMember :: a -> Prop a -> Bool
 >notMember x (Characteristic p) = not (p x)
 
 >-- | \[x \in subseteq i j \iff x \in i \implies x \in j\]
->subseteq_prop :: Prop a -> Prop a -> Prop a
->subseteq_prop i j = Characteristic (\x -> if toBool (x `member` i) then toBool (x `member` j) else True) 
+>subseteqProp :: Prop a -> Prop a -> Prop a
+>subseteqProp i j = Characteristic (\x -> if toBool (x `member` i) then toBool (x `member` j) else True) 
 
->is_section :: Prop a -> (Bool -> a) -> Bool
->is_section p g = toBool ((g True ) `member` p) && ((g False) `notMember` p)
+>isSection :: Prop a -> (Bool -> a) -> Bool
+>isSection p g = toBool ((g True ) `member` p) && ((g False) `notMember` p)
 
 >doublePropJoin :: Prop (Prop (Prop (Prop a))) -> Prop (Prop a)
 >doublePropJoin (Characteristic f) = Characteristic $ 
@@ -233,7 +233,7 @@ serial_frames = characteristic (uncurry system_D)
 
 >instance UniversalLogic Prop where
 >  singleton x = Characteristic $ \y -> x == y
->  all_members = Characteristic $ const True
+>  allMembers = Characteristic $ const True
 
 >fromAssoc :: (Eq a) => [(a,Bool)] -> Prop a
 >fromAssoc lst = Characteristic $ \v -> maybe False Cat.id (lookup v lst)
@@ -339,7 +339,7 @@ The following two functions are the same function.
 
 >prop_compose :: (Universe b) => Prop (a,b) -> Prop (b,c) -> Prop (a,c)
 >prop_compose (Characteristic f) (Characteristic g) =
->  Characteristic $ \ (a,c) -> or $ map (\b -> f (a,b) && g (b,c)) all_elements
+>  Characteristic $ \ (a,c) -> any (\b -> f (a,b) && g (b,c)) allElements
 
 >-- | \[<x,z> \in transitive \mathbb{R} \iff (\forall y. <x,y> \in \mathbb{R} & <y,z> \in \mathbb{R} \implies <x,z> \in \mathbb{R})\]
 
@@ -349,57 +349,57 @@ The following two functions are the same function.
 >antisymmetric :: (Eq a) => Prop (a,a) -> Prop (a,a)
 >antisymmetric p = (p -&- opposite p) -=>- reflexive
 
->prop_iso_terminal :: Prop ((),b) -> Prop b
->prop_iso_terminal (Characteristic f) = Characteristic (\b -> f ((),b))
+>propIsoTerminal :: Prop ((),b) -> Prop b
+>propIsoTerminal (Characteristic f) = Characteristic (\b -> f ((),b))
 
->prop_iso_terminal_inverse :: Prop b -> Prop ((),b)
->prop_iso_terminal_inverse (Characteristic f) = Characteristic (\ ((),x) -> f x)
+>propIsoTerminalInverse :: Prop b -> Prop ((),b)
+>propIsoTerminalInverse (Characteristic f) = Characteristic (\ ((),x) -> f x)
 
 >-- | \[fiber(p,y) = { x | p(x) = y } = p^{-1}({y})\]
 >fiber :: (HasEqualizers Prop c) => (b -> c) -> c -> Prop b
->fiber p y = prop_iso_terminal $ pullback (const y) p
+>fiber p y = propIsoTerminal $ pullback (const y) p
 
 >fiber_ :: (Eq b) => (a -> b) -> b -> Prop a
->fiber_ p y = inverse_image p (result y)
+>fiber_ p y = inverseImage p (result y)
 
 An equivalence relation is reflexive, transitive and symmetric
 (this is not apparent from the definition, but it's true).
 
->equivalence_relation :: (HasEqualizers Prop b) => (a -> b) -> Prop (a,a)
->equivalence_relation f = pullback f f
+>equivalenceRelation :: (HasEqualizers Prop b) => (a -> b) -> Prop (a,a)
+>equivalenceRelation f = pullback f f
 
 >reflexive :: (Eq a) => Prop (a,a)
->reflexive = binary_rel_prop (==)
+>reflexive = binaryRelProp (==)
 
->reflexive_closure :: (Eq a) => Prop (a,a) -> Prop (a,a)
->reflexive_closure p = p -|- reflexive
+>reflexiveClosure :: (Eq a) => Prop (a,a) -> Prop (a,a)
+>reflexiveClosure p = p -|- reflexive
 
->symmetric_closure :: Prop (a,a) -> Prop (a,a)
->symmetric_closure p = p -|- opposite p
+>symmetricClosure :: Prop (a,a) -> Prop (a,a)
+>symmetricClosure p = p -|- opposite p
 
->transitive_step :: (Universe a) => Prop (a,a) -> Prop (a,a)
->transitive_step p = Characteristic $ \ ~(a,c) ->
->     or [toBool ((a,b) `member` p) && toBool ((b,c) `member` p) | b <- all_elements]
+>transitiveStep :: (Universe a) => Prop (a,a) -> Prop (a,a)
+>transitiveStep p = Characteristic $ \ ~(a,c) ->
+>     or [toBool ((a,b) `member` p) && toBool ((b,c) `member` p) | b <- allElements]
 
->transitive_closure :: (Universe a) => Prop (a,a) -> Prop (a,a)
->transitive_closure p = p `union` transitive_closure (transitive_step p)
+>transitiveClosure :: (Universe a) => Prop (a,a) -> Prop (a,a)
+>transitiveClosure p = p `union` transitiveClosure (transitiveStep p)
 
->equivalence_generated_by :: (Eq a,Universe a) => Prop (a,a) -> Prop (a,a)
->equivalence_generated_by = transitive_closure Cat.. symmetric_closure Cat.. reflexive_closure
+>equivalenceGeneratedBy :: (Eq a,Universe a) => Prop (a,a) -> Prop (a,a)
+>equivalenceGeneratedBy = transitiveClosure Cat.. symmetricClosure Cat.. reflexiveClosure
 
 >opposite :: Prop (a,b) -> Prop (b,a)
->opposite = inverse_image swap
+>opposite = inverseImage swap
 
 
 >-- | Adjunction \[P^{op} \dashv P\] between functors \[P\] and \[P^{op}\],
 >-- where \[P : C^{op} \Rightarrow C\] and \[P^{op} : C \Rightarrow C^{op}\].
 >-- This is based on symmetry of product in relations.
 
->leftAdjunct_prop :: (a -> Prop b) -> b -> Prop a
->leftAdjunct_prop = unrelation Cat.. opposite Cat.. relation
+>leftAdjunctProp :: (a -> Prop b) -> b -> Prop a
+>leftAdjunctProp = unrelation Cat.. opposite Cat.. relation
 
->unit_prop :: b -> Prop (Prop b)
->unit_prop = leftAdjunct_prop Cat.id
+>unitProp :: b -> Prop (Prop b)
+>unitProp = leftAdjunctProp Cat.id
 
 >-- | rightAdjunct of that adjunction is difficult, because it would be in
 >-- C^{op}, and we don't have that category here. So how could we
@@ -407,67 +407,67 @@ An equivalence relation is reflexive, transitive and symmetric
 >-- would be exactly same as leftAdjunct_prop and unit_prop, but lifted to
 >-- opposite category. I'm not implementing that now.
 
->rel_prop :: (a -> Bool) -> Prop a
->rel_prop = Characteristic
+>relProp :: (a -> Bool) -> Prop a
+>relProp = Characteristic
 
->binary_rel_prop :: (a -> a -> Bool) -> Prop (a,a)
->binary_rel_prop = Characteristic Cat.. uncurry
+>binaryRelProp :: (a -> a -> Bool) -> Prop (a,a)
+>binaryRelProp = Characteristic Cat.. uncurry
 
 >-- | <http://nlab.mathforge.org/nlab/show/well-founded+relation>
 
->binary_rel :: (a -> a -> Bool) -> a -> Prop a
->binary_rel f x = Characteristic (\y -> f x y)
+>binaryRel :: (a -> a -> Bool) -> a -> Prop a
+>binaryRel f x = Characteristic (\y -> f x y)
 
->equal_functions :: (Universe a, Eq b) => Prop (a -> b, a -> b)
->equal_functions = binary_rel_prop separator
+>equalFunctions :: (Universe a, Eq b) => Prop (a -> b, a -> b)
+>equalFunctions = binaryRelProp separator
 
->test_equality_at :: a -> Prop (Prop a, Prop a)
->test_equality_at x = Characteristic $ \ (p,q) -> runCharacteristic p x == runCharacteristic q x
+>testEqualityAt :: a -> Prop (Prop a, Prop a)
+>testEqualityAt x = Characteristic $ \ (p,q) -> runCharacteristic p x == runCharacteristic q x
 
->equalizer_prop :: Prop a -> Prop a -> Prop a
->equalizer_prop (Characteristic f) (Characteristic g) = equalizer f g
+>equalizerProp :: Prop a -> Prop a -> Prop a
+>equalizerProp (Characteristic f) (Characteristic g) = equalizer f g
 
->pullback_prop :: Prop a -> Prop b -> Prop (a,b)
->pullback_prop (Characteristic f) (Characteristic g) = pullback f g
+>pullbackProp :: Prop a -> Prop b -> Prop (a,b)
+>pullbackProp (Characteristic f) (Characteristic g) = pullback f g
 
 >sum :: Prop a -> Prop b -> Prop (Either a b)
 >sum (Characteristic f) (Characteristic g) = Characteristic (either f g)
 
->prop_and :: Prop (Either a b) -> Prop (a,b)
->prop_and (Characteristic f) = Characteristic $ \(x,y) -> f (Left x) && f (Right y)
+>propAnd :: Prop (Either a b) -> Prop (a,b)
+>propAnd (Characteristic f) = Characteristic $ \(x,y) -> f (Left x) && f (Right y)
 
->prop_or :: Prop (Either a b) -> Prop (a,b)
->prop_or (Characteristic f) = Characteristic $ \ (x,y) -> f (Left x) || f (Right y)
+>propOr :: Prop (Either a b) -> Prop (a,b)
+>propOr (Characteristic f) = Characteristic $ \ (x,y) -> f (Left x) || f (Right y)
 
->prop_if :: Prop a -> Prop (Either a a) -> Prop a
->prop_if (Characteristic f) (Characteristic g)
+>propIf :: Prop a -> Prop (Either a a) -> Prop a
+>propIf (Characteristic f) (Characteristic g)
 >    = Characteristic $ \ x -> if f x then g (Left x) else g (Right x)
 
->prop_if_general :: Prop a -> Prop (Either b c) -> Prop (a,b,c)
->prop_if_general (Characteristic f) (Characteristic g)
+>propIfGeneral :: Prop a -> Prop (Either b c) -> Prop (a,b,c)
+>propIfGeneral (Characteristic f) (Characteristic g)
 >   = Characteristic $ \ (x,y,z) -> if f x then g (Left y) else g (Right z)
 
 
 >equal :: (Eq a) => Prop (a,a)
->equal = binary_rel_prop (==)
+>equal = binaryRelProp (==)
 
->not_equal :: (Eq a) => Prop (a,a)
->not_equal = binary_rel_prop (/=)
+>notEqual :: (Eq a) => Prop (a,a)
+>notEqual = binaryRelProp (/=)
 
 >lessthan :: (Ord a) => Prop (a,a)
->lessthan = binary_rel_prop (<)
+>lessthan = binaryRelProp (<)
 
 >lesseq :: (Ord a) => Prop (a,a)
->lesseq = binary_rel_prop (<=)
+>lesseq = binaryRelProp (<=)
 
->or_list_prop :: Prop a -> Prop [a]
->or_list_prop (Characteristic f) = Characteristic (\lst -> or $ map f lst)
+>orListProp :: Prop a -> Prop [a]
+>orListProp (Characteristic f) = Characteristic (any f)
 
->and_list_prop :: Prop a -> Prop [a]
->and_list_prop (Characteristic f) = Characteristic (\lst -> and $ map f lst)
+>andListProp :: Prop a -> Prop [a]
+>andListProp (Characteristic f) = Characteristic (all f)
 
 >enumerate :: (Universe a) => Prop a -> [a]
->enumerate (Characteristic p) = filter p all_elements
+>enumerate (Characteristic p) = filter p allElements
 
 
 
@@ -476,42 +476,42 @@ p |--> existential_map f p    preserves order
 
 existential_map f p = { b | p `intersect` f^-1({b}) }
 
->existential_map :: (Universe a, Eq b) => (a -> b) -> Prop a -> Prop b
->existential_map f p = Characteristic $ \b -> p `intersects` fiber f b
+>existentialMap :: (Universe a, Eq b) => (a -> b) -> Prop a -> Prop b
+>existentialMap f p = Characteristic $ \b -> p `intersects` fiber f b
 
 >-- | \[universal\_map( f, p ) = \{ b | p <= f^{-1}(\{b\}) \}\]
 
 
->universal_map :: (Universe a, Eq b) => (a -> b) -> Prop a -> Prop b
->universal_map f p = Characteristic $ \b -> p <= fiber f b
+>universalMap :: (Universe a, Eq b) => (a -> b) -> Prop a -> Prop b
+>universalMap f p = Characteristic $ \b -> p <= fiber f b
                                             
 >-- | prop_existential is basically the same as 'existential_map fst',
 >-- except for performance. 'existential_map fst' will need to iterate
 >-- over all pairs \[<a,b>\], whereas prop_existential will only iterate
 >-- through all elements of b only. Similarly for prop_universal.
 
->prop_existential :: (Universe b) => Prop (a,b) -> Prop a
->prop_existential (Characteristic rel) = 
->   Characteristic $ \a -> or $ map (\b -> rel (a,b)) all_elements
+>propExistential :: (Universe b) => Prop (a,b) -> Prop a
+>propExistential (Characteristic rel) = 
+>   Characteristic $ \a -> any (\b -> rel (a,b)) allElements
 
->prop_universal :: (Universe b) => Prop (a,b) -> Prop a
->prop_universal (Characteristic rel) = 
->   Characteristic $ \a -> and $ map (\b -> rel (a,b)) all_elements
+>propUniversal :: (Universe b) => Prop (a,b) -> Prop a
+>propUniversal (Characteristic rel) = 
+>   Characteristic $ \a -> all (\b -> rel (a,b)) allElements
 
 >image :: (Universe a) => Prop (a,b) -> Prop b
 >image (Characteristic rel) = 
->   Characteristic $ \b -> or $ map (\a -> rel (a,b)) all_elements
+>   Characteristic $ \b -> any (\a -> rel (a,b)) allElements
 
->prop_universal_image :: (Universe a, Universe b, Eq b) => Prop (a,b) -> Prop b
->prop_universal_image (Characteristic rel) 
->   = Characteristic $ \b -> and $ map (\a -> rel (a,b)) all_elements
+>propUniversalImage :: (Universe a, Universe b, Eq b) => Prop (a,b) -> Prop b
+>propUniversalImage (Characteristic rel) 
+>   = Characteristic $ \b -> all (\a -> rel (a,b)) allElements
 
 >instance Existential Prop where
->   direct_image = existential_map
->   universal_image    = universal_map
+>   directImage = existentialMap
+>   universalImage    = universalMap
 
 >forevery :: (Universe b) => Prop b -> Prop ()
->forevery = prop_universal Cat.. prop_iso_terminal_inverse
+>forevery = propUniversal Cat.. propIsoTerminalInverse
 
 >newtype (b :\: a) = PSub { runpsub :: PProp a -> PProp b }
 
@@ -519,10 +519,10 @@ existential_map f p = { b | p `intersect` f^-1({b}) }
 >   PProp :: Prop a -> PProp a
 >   PNeg  :: (Prop a -> Prop b) -> PProp (b :\: a)
 
->pneg_func :: (a -> b) -> PProp (a :\: b)
->pneg_func f = PNeg $ \a -> inverse_image f a
+>pnegFunc :: (a -> b) -> PProp (a :\: b)
+>pnegFunc f = PNeg $ \a -> inverseImage f a
 
 >instance Contravariant PProp where
->   contramap f (PProp p) = PProp $ inverse_image f p
+>   contramap f (PProp p) = PProp $ inverseImage f p
 
    inverse_image f (PNeg g) = PNeg (g . inverse_image f)

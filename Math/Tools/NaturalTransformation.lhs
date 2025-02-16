@@ -26,8 +26,8 @@
 
 === NATURAL TRANSFORMATION ============
 
->newtype (f :: k -> *) :~> (g :: k -> *) = NatTrans {
->   nattrans_component :: forall (a :: k). f a -> g a
+>newtype (f :: k -> Type) :~> (g :: k -> Type) = NatTrans {
+>   nattransComponent :: forall (a :: k). f a -> g a
 > }
 
 >instance Category (:~>) where
@@ -66,25 +66,25 @@
 >joinMT :: (Monad m) => (m :*: m) :~> m
 >joinMT = NatTrans (join . cells)
 
->id_trans :: f :~> f
->id_trans = NatTrans id
+>idTrans :: f :~> f
+>idTrans = NatTrans id
 
->unit_trans :: (Adjunction f g) => I :~> (g :*: f)
->unit_trans = NatTrans (\ (I x) -> Matrix $ unit x)
+>unitTrans :: (Adjunction f g) => I :~> (g :*: f)
+>unitTrans = NatTrans (\ (I x) -> Matrix $ unit x)
 
->counit_trans :: (Adjunction f g) => (f :*: g) :~> I
->counit_trans = NatTrans (\ (Matrix f) -> I $ counit f)
+>counitTrans :: (Adjunction f g) => (f :*: g) :~> I
+>counitTrans = NatTrans (\ (Matrix f) -> I $ counit f)
 
 >vert :: g :~> h -> f :~> g -> f :~> h
 >vert (NatTrans f) (NatTrans g) = NatTrans (f . g)
 
 >horiz :: (Functor h) => h :~> k -> f :~> g -> (h :*: f) :~> (k :*: g)
->horiz s t = NatTrans (Matrix .  nattrans_component s . fmap (nattrans_component t) . cells)
+>horiz s t = NatTrans (Matrix .  nattransComponent s . fmap (nattransComponent t) . cells)
 
->map_natural_matrix :: (Functor f, Functor h) 
+>mapNaturalMatrix :: (Functor f, Functor h) 
 >           => f :~> g -> h :~> i -> (a -> b) -> (f :*: h) a -> (g :*: i) b
->map_natural_matrix f g t = nattrans_component (map_columns f)
->                         . nattrans_component (map_rows g)
+>mapNaturalMatrix f g t = nattransComponent (mapColumns f)
+>                         . nattransComponent (mapRows g)
 >                         . fmap t
 
 >data Day f g c = forall a b. Day ((a,b) -> c) (f a) (g b)
@@ -92,28 +92,28 @@
 >convolve :: (Functor f, Functor g) => Day f g c -> (f :*: g) c
 >convolve (Day f x y) = matrix (curry f) x y
 
->convolve_trans :: (Functor f, Functor g) => Day f g :~> (f :*: g)
->convolve_trans = NatTrans convolve
+>convolveTrans :: (Functor f, Functor g) => Day f g :~> (f :*: g)
+>convolveTrans = NatTrans convolve
 
->map_rows :: (Functor h) => f :~> g -> (h :*: f) :~> (h :*: g)
->map_rows (NatTrans f) = NatTrans (Matrix . fmap f . cells)
+>mapRows :: (Functor h) => f :~> g -> (h :*: f) :~> (h :*: g)
+>mapRows (NatTrans f) = NatTrans (Matrix . fmap f . cells)
 
->map_columns :: f :~> g -> (f :*: h) :~> (g :*: h)
->map_columns (NatTrans f) = NatTrans (Matrix . f . cells)
+>mapColumns :: f :~> g -> (f :*: h) :~> (g :*: h)
+>mapColumns (NatTrans f) = NatTrans (Matrix . f . cells)
 
->mapMatrix :: (Functor f, Functor g)
+>mapMatrixNat :: (Functor f, Functor g)
 > => f :~> f' -> g :~> g' -> (a -> b) -> (f :*: g) a -> (f' :*: g') b
->mapMatrix col row elem m = (col `horiz` row) `nattrans_component` (fmap elem m)
+>mapMatrixNat col row elem m = (col `horiz` row) `nattransComponent` (fmap elem m)
 
->rec_map :: (Functor f) =>  f :~> g -> Rec f -> Rec g
->rec_map z (In x) = In $ nattrans_component z $ fmap (rec_map z) x
+>recMap :: (Functor f) =>  f :~> g -> Rec f -> Rec g
+>recMap z (In x) = In $ nattransComponent z $ fmap (recMap z) x
 
->transform_map :: (Functor f, Functor g)
+>transformMap :: (Functor f, Functor g)
 > => Coalgebra f a -> f :~> g -> Algebra g b -> a -> b
->transform_map divide f combine = fold combine . rec_map f . unfold divide
+>transformMap divide f combine = fold combine . recMap f . unfold divide
 
 >tmap :: (InitialAlgebra f a, FinalCoalgebra g b) => f :~> g -> a -> b
->tmap f = transform_map unCreate f unDestroy
+>tmap f = transformMap unCreate f unDestroy
 
 >tapp :: (Functor f) => f :~> g -> (a -> b) -> f a -> g b
 >tapp (NatTrans f) g x = f (fmap g x)
@@ -121,30 +121,30 @@
 >unyoneda :: (Category cat) => cat a :~> f -> f a
 >unyoneda (NatTrans f) = f id
 
->yoneda_function :: (Functor t) => t a -> (->) a :~> t
->yoneda_function f = NatTrans (\g -> fmap g f)
+>yonedaFunction :: (Functor t) => t a -> (->) a :~> t
+>yonedaFunction f = NatTrans (\g -> fmap g f)
 
->inverse_horiz :: (CoFunctor k) => f :~> k -> f' :~> k'
+>inverseHoriz :: (CoFunctor k) => f :~> k -> f' :~> k'
 >              -> (f :*: k') :~> (k :*: f')
->inverse_horiz s t = NatTrans (Matrix . inverse_image (nattrans_component t) . nattrans_component s . cells)
+>inverseHoriz s t = NatTrans (Matrix . inverseImage (nattransComponent t) . nattransComponent s . cells)
 
->first_trans :: (y -> x) -> (->) (x,d) :~> (->) (y,d)
->first_trans g = NatTrans (\ f (y,d) -> f (g y,d))
+>firstTrans :: (y -> x) -> (->) (x,d) :~> (->) (y,d)
+>firstTrans g = NatTrans (\ f (y,d) -> f (g y,d))
 
->reverse_list :: [] :~> []
->reverse_list = NatTrans reverse
+>reverseList :: [] :~> []
+>reverseList = NatTrans reverse
 
->concat_list :: ([] :*: []) :~> []
->concat_list = NatTrans $ concat . cells
+>concatList :: ([] :*: []) :~> []
+>concatList = NatTrans $ concat . cells
 
->return_trans :: (Monad m) => I :~> m
->return_trans = NatTrans (return . unI)
+>returnTrans :: (Monad m) => I :~> m
+>returnTrans = NatTrans (return . unI)
 
->join_trans :: (Monad m) => (m :*: m) :~> m
->join_trans = NatTrans (join . cells)
+>joinTrans :: (Monad m) => (m :*: m) :~> m
+>joinTrans = NatTrans (join . cells)
 
->swap_dimensions :: (Applicative g, Traversable f) => (f :*: g) :~> (g :*: f)
->swap_dimensions = NatTrans (Matrix . sequenceA . cells)
+>swapDimensions :: (Applicative g, Traversable f) => (f :*: g) :~> (g :*: f)
+>swapDimensions = NatTrans (Matrix . sequenceA . cells)
 
 >data f :<~>: g = NaturalIso { fwdNaturalIso :: f :~> g,
 >                              bckNaturalIso :: g :~> f }
@@ -153,8 +153,8 @@
 >  id = NaturalIso id id
 >  (NaturalIso f g) . (NaturalIso f' g') = NaturalIso (f . f') (g' . g)
 >
->id_iso :: f :<~>: f
->id_iso = NaturalIso id_trans id_trans
+>idIso :: f :<~>: f
+>idIso = NaturalIso idTrans idTrans
 
 >symmetricIso :: g :<~>: f -> f :<~>: g
 >symmetricIso (NaturalIso f g) = NaturalIso g f
@@ -175,7 +175,7 @@
 
 >outerIso :: (Functor g') => (->) row :<~>: g' -> (->) col :<~>: h'
 >      -> ((->) row :*: (->) col) :<~>: (g' :*: h')
->outerIso = isoMatrix_ id_iso
+>outerIso = isoMatrix_ idIso
 
 >matrixFrom :: (Functor g) => (row -> col -> a)
 >   -> ((->) row :<~>: g) -> ((->) col :<~>: h) -> (g :*: h) a
@@ -184,16 +184,16 @@
 >matrixIso :: (Functor f, Functor f', Functor g, Functor g')
 > => f :<~>: f' -> g :<~>: g' -> a :==: b -> ((f :*: g) a) :==: ((f' :*: g') b)
 >matrixIso (NaturalIso f f') (NaturalIso g g') (Iso x x') =
->   Iso (mapMatrix f g x) (mapMatrix f' g' x')
+>   Iso (mapMatrixNat f g x) (mapMatrixNat f' g' x')
 
 
->swap_dimensions_iso :: (Traversable f, Traversable g,
+>swapDimensionsIso :: (Traversable f, Traversable g,
 >                        Applicative f, Applicative g)
 >                    => (f :*: g) :<~>: (g :*: f)
->swap_dimensions_iso = NaturalIso swap_dimensions swap_dimensions
+>swapDimensionsIso = NaturalIso swapDimensions swapDimensions
 
 >runNaturalIso :: f :<~>: g -> f a :==: g a
->runNaturalIso (NaturalIso fwd bck) = nattrans_component fwd <-> nattrans_component bck
+>runNaturalIso (NaturalIso fwd bck) = nattransComponent fwd <-> nattransComponent bck
 
 
 >newtype (f :~~> g) a = NaturalTrans { unNatTrans :: f a -> g a }
@@ -216,24 +216,24 @@ mapmatrix :: (Applicative f) => ((f :~~> i) :*: h) a
                              -> (f :*: g) a
                              -> (i :*: h) a
 
->transform_matrix :: (Applicative f') => ((f :~~> f') :*: g) a
+>transformMatrix :: (Applicative f') => ((f :~~> f') :*: g) a
 >                             -> (f' :*: (g :~~> g')) a
 >                             -> (f  :*: g) a
 >                             -> (f' :*: g') a
->transform_matrix (Matrix u) (Matrix t)  (Matrix x) = Matrix $ pure unNatTrans <*> t <*> unNatTrans u x
+>transformMatrix (Matrix u) (Matrix t)  (Matrix x) = Matrix $ pure unNatTrans <*> t <*> unNatTrans u x
 
->newtype NaturalTransA (arr :: k -> k -> *) f g a = NaturalTransA { unNatTransA :: arr (f a) (g a) }
->newtype NatTransA (arr :: k -> k -> *) f g = NatTransA { nattrans_componentA :: forall a. arr (f a) (g a) }
+>newtype NaturalTransA (arr :: k -> k -> Type) f g a = NaturalTransA { unNatTransA :: arr (f a) (g a) }
+>newtype NatTransA (arr :: k -> k -> Type) f g = NatTransA { nattransComponentA :: forall a. arr (f a) (g a) }
 
 >instance (Category arr) => Category (NatTransA arr) where
 >  id = NatTransA id
 >  (NatTransA f) . (NatTransA g) = NatTransA (f . g)
 
->id_transA :: (Arrow arr) => NatTransA arr f f
->id_transA = NatTransA returnA
+>idTransA :: (Arrow arr) => NatTransA arr f f
+>idTransA = NatTransA returnA
 
 >horizA :: (Arrow arr,FunctorArrow k arr arr) => NatTransA arr h k -> NatTransA arr f g -> NatTransA arr (h :*: f) (k :*: g)
->horizA s t = NatTransA (arr Matrix <<< amap (nattrans_componentA t) <<< nattrans_componentA s <<< arr cells)
+>horizA s t = NatTransA (arr Matrix <<< amap (nattransComponentA t) <<< nattransComponentA s <<< arr cells)
 
 >vertA :: (Arrow arr) => NatTransA arr g h -> NatTransA arr f g -> NatTransA arr f h
 >vertA (NatTransA f) (NatTransA g) = NatTransA (f <<< g)

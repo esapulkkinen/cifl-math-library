@@ -1,5 +1,6 @@
 >{-# OPTIONS_HADDOCK prune #-}
 >module Math.Tools.Group where
+>import Math.Tools.I
 
 >class (Monad g) => Group g where
 >      greturn :: top -> g top
@@ -10,6 +11,8 @@
 >      gjoin = (>>= id)
 >      glift f = fmap f . greturn
 >      gbind f = gjoin  . fmap f
+
+
 
 >gjoin3 :: (Group g) => g (g (g top)) -> g top
 >gjoin3 = gjoin . gjoin
@@ -32,3 +35,4 @@
 >instance Group Maybe
 >instance Group IO
 >instance Group []
+>instance Group I 

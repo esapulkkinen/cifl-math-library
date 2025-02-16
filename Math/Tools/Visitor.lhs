@@ -6,6 +6,7 @@
 >import Data.Array (Array,array,assocs)
 >import Data.Ix
 >import Data.Complex
+>import Data.Kind (Type)
 >import Data.Map (Map)
 >import qualified Data.Map as Map
 >import Data.Set (Set)
@@ -17,19 +18,19 @@
 >-- | loosely based on "Gamma et al: Design Patterns" visitor pattern, and also on
 >-- Haskell 'foldr' function and common variations of it.
 >class Visitor v where
->   data Fold v :: * -> *
+>   data Fold v :: Type -> Type
 >   visit :: Fold v a -> v -> a
 
 >class Builder v where
->   data Unfold v :: * -> *
+>   data Unfold v :: Type -> Type
 >   build :: Unfold v a -> a -> v
 
->class (Category arr) => VisitorArrow (arr :: k -> k -> *) (v :: k) where
->   data ArrFold arr v :: k -> *
+>class (Category arr) => VisitorArrow (arr :: k -> k -> Type) (v :: k) where
+>   data ArrFold arr v :: k -> Type
 >   arr_visit :: ArrFold arr v a -> arr v a
 
->class VisitorMonad (m :: k -> *) (v :: k) where
->   data MonadFold m v :: k -> *
+>class VisitorMonad (m :: k -> Type) (v :: k) where
+>   data MonadFold m v :: k -> Type
 >   monad_visit :: MonadFold m v a -> m v -> m a
 
 

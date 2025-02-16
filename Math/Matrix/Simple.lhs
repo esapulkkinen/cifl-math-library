@@ -48,6 +48,10 @@
 >import Math.Matrix.Interface
 >import Math.Matrix.Linear
 >import Math.Matrix.Points
+>import Math.Matrix.Vector1
+>import Math.Matrix.Vector2
+>import Math.Matrix.Vector3
+>import Math.Matrix.Vector4
 >import Math.Number.StreamInterface hiding (drop, take)
 
 >type (row :&: col) elem = (row -> elem) :-> (col -> elem)
@@ -68,13 +72,13 @@
 
 >instance (Universe a) => PpShowF ((->) a) where
 >   ppf f = (hsep $ take 10 lst) <> if null lst2 then Pretty.empty else pp ".." 
->     where lst = [pp (f i) | i <- all_elements]
+>     where lst = [pp (f i) | i <- allElements]
 >           lst2 = drop 10 lst
 
 >mapDimensions :: (Universe a, Universe b, Integral a, ConjugateSymmetric c, Num c)
 > => (->) a :~> f -> (->) b :~> g -> (a :&: b) c -> (f :*: g) c
->mapDimensions col row = \m -> Matrix $ nattrans_component col $
->    fmap (nattrans_component row) $ cells $ fromLinear m
+>mapDimensions col row = \m -> Matrix $ nattransComponent col $
+>    fmap (nattransComponent row) $ cells $ fromLinear m
 
 >simpleMatrix :: (Integral a, Universe b, Universe a, ConjugateSymmetric c, Num c,Functor m, Functor n) =>
 > (a :&: b) c -> m a -> n b -> (m :*: n) c
@@ -87,8 +91,8 @@ dimensionFlip :: (Integral a, Functor m, Functor n) =>
 dimensionFlip m = fromLinear m <!> (matrix,flip)
 
 >instance (Universe a) => PpShowVerticalF ((->) a) where
->   ppf_vertical f = vcat $ (take 10 $ lst) ++ [if null (drop 10 lst) then Pretty.empty else pp ".."]
->     where lst = [pp (f j) | j <- all_elements]
+>   ppfVertical f = vcat $ (take 10 $ lst) ++ [if null (drop 10 lst) then Pretty.empty else pp ".."]
+>     where lst = [pp (f j) | j <- allElements]
 
 instance (Universe row, Universe col, PpShow elem) => Show ((row :&: col) elem) where
    show m = render $ ppf_vertical (fmap ppf $ m)
@@ -163,105 +167,105 @@ instance (Universe row, Universe col, Universe dep, Universe tim, PpShow elem) =
 
 
 >instance (Num a, Universe row, Universe col) => LinearTransform ((->) row) ((->) col) a where
->   colv <*>> (Matrix m) = \i -> sum [colv j * m i j | j <- all_elements]
->   (Matrix m) <<*> rowv = \j -> sum [m i j * rowv i | i <- all_elements]
+>   colv <*>> (Matrix m) = \i -> sum [colv j * m i j | j <- allElements]
+>   (Matrix m) <<*> rowv = \j -> sum [m i j * rowv i | i <- allElements]
 
 >instance (Num a, Universe col) => LinearTransform Vector1 ((->) col) a where
->   f <*>> (Matrix (Vector1 n)) = Vector1 $ sum [f j * n j | j <- all_elements]
+>   f <*>> (Matrix (Vector1 n)) = Vector1 $ sum [f j * n j | j <- allElements]
 >   (Matrix (Vector1 m)) <<*> (Vector1 k) = k %* m
 
 >instance (Universe row, Num a) => LinearTransform ((->) row) Vector1 a where
->   (Vector1 x) <*>> (Matrix m) = \i -> vector_element (m i)
->   (Matrix m) <<*> f = Vector1 $ sum [vector_element (m i) * f i | i <- all_elements]
+>   (Vector1 x) <*>> (Matrix m) = \i -> vectorElement (m i)
+>   (Matrix m) <<*> f = Vector1 $ sum [vectorElement (m i) * f i | i <- allElements]
 
 >instance (Num a, Universe col) => LinearTransform Vector2 ((->) col) a where
->   f <*>> (Matrix (Vector2 x y)) = Vector2 (sum [f j * x j | j <- all_elements]) (sum [f j * y j | j <- all_elements])
+>   f <*>> (Matrix (Vector2 x y)) = Vector2 (sum [f j * x j | j <- allElements]) (sum [f j * y j | j <- allElements])
 >   (Matrix (Vector2 x y)) <<*> (Vector2 x' y') = \j -> x' * x j + y' * y j
 
 >instance (Universe row, Num a) => LinearTransform ((->) row) Vector2 a where
 >   (Vector2 x y) <*>> (Matrix m) = \i -> let mi = m i in x * xcoord2 mi + y * ycoord2 mi
->   (Matrix m) <<*> f = Vector2 (sum [xcoord2 (m i) * f i | i <- all_elements])
->                               (sum [ycoord2 (m i) * f i | i <- all_elements])
+>   (Matrix m) <<*> f = Vector2 (sum [xcoord2 (m i) * f i | i <- allElements])
+>                               (sum [ycoord2 (m i) * f i | i <- allElements])
 
 >instance (Num a, Universe col) => LinearTransform Vector3 ((->) col) a where
->   f <*>> (Matrix (Vector3 x y z)) = Vector3 (sum [f j * x j | j <- all_elements])
->                                             (sum [f j * y j | j <- all_elements])
->                                             (sum [f j * z j | j <- all_elements])
+>   f <*>> (Matrix (Vector3 x y z)) = Vector3 (sum [f j * x j | j <- allElements])
+>                                             (sum [f j * y j | j <- allElements])
+>                                             (sum [f j * z j | j <- allElements])
 >   (Matrix (Vector3 x y z)) <<*> (Vector3 x' y' z') = \j -> x' * x j + y' * y j + z' * z j
 
 
 >instance (Universe row, Num a) => LinearTransform ((->) row) Vector3 a where
 >   (Vector3 x y z) <*>> (Matrix m) = \i -> let mi = m i in x * xcoord3 mi + y * ycoord3 mi + z * zcoord3 mi
->   (Matrix m) <<*> f = Vector3 (sum [f i * xcoord3 (m i) | i <- all_elements])
->                               (sum [f i * ycoord3 (m i) | i <- all_elements])
->                               (sum [f i * zcoord3 (m i) | i <- all_elements])
+>   (Matrix m) <<*> f = Vector3 (sum [f i * xcoord3 (m i) | i <- allElements])
+>                               (sum [f i * ycoord3 (m i) | i <- allElements])
+>                               (sum [f i * zcoord3 (m i) | i <- allElements])
 
 >instance (Universe col, Num a) => LinearTransform Vector4 ((->) col) a where
->   f <*>> (Matrix (Vector4 t x y z)) = Vector4 (sum [f j * t j | j <- all_elements])
->                                               (sum [f j * x j | j <- all_elements])
->                                               (sum [f j * y j | j <- all_elements])
->                                               (sum [f j * z j | j <- all_elements])
+>   f <*>> (Matrix (Vector4 t x y z)) = Vector4 (sum [f j * t j | j <- allElements])
+>                                               (sum [f j * x j | j <- allElements])
+>                                               (sum [f j * y j | j <- allElements])
+>                                               (sum [f j * z j | j <- allElements])
 >   (Matrix (Vector4 t x y z)) <<*> (Vector4 t' x' y' z') = \j -> x' * x j + y' * y j + z' * z j + t' * t j
 
 
 >instance (Universe row, Num a) => LinearTransform ((->) row) Vector4 a where
 >   (Vector4 t x y z) <*>> (Matrix m) = \i -> let mi = m i in t * tcoord4 mi + x * xcoord4 mi + y * ycoord4 mi + z * zcoord4 mi
->   (Matrix m) <<*> f = Vector4 (sum [f i * tcoord4 (m i) | i <- all_elements])
->                               (sum [f i * xcoord4 (m i) | i <- all_elements])
->                               (sum [f i * ycoord4 (m i) | i <- all_elements])
->                               (sum [f i * zcoord4 (m i) | i <- all_elements])
+>   (Matrix m) <<*> f = Vector4 (sum [f i * tcoord4 (m i) | i <- allElements])
+>                               (sum [f i * xcoord4 (m i) | i <- allElements])
+>                               (sum [f i * ycoord4 (m i) | i <- allElements])
+>                               (sum [f i * zcoord4 (m i) | i <- allElements])
 
 >
 >instance (Floating b, Universe a) => NormedSpace (a -> b) where
 >   norm f = sqrt (f %. f)
->   norm_squared f = f %. f
+>   normSquared f = f %. f
 
 instance Transposable ((->) row) ((->) col) a where
-   transpose_impl (Matrix f) = Matrix $ \i j -> f j i
+   transposeImpl (Matrix f) = Matrix $ \i j -> f j i
 
->index_delta :: (Eq ind, Num a) => ind -> a -> (ind -> a) -> (ind -> a)
->index_delta ind eps v = \ind' -> if ind == ind' then eps + v ind else v ind
+>indexDelta :: (Eq ind, Num a) => ind -> a -> (ind -> a) -> (ind -> a)
+>indexDelta ind eps v = \ind' -> if ind == ind' then eps + v ind else v ind
 
->partial_derivate_ind :: (Integral ind, Universe ind, Eq ind, ConjugateSymmetric a, Closed a, Infinitesimal Stream a) => ind -> Dual (ind -> a) -> Dual (ind -> a)
->partial_derivate_ind ind' (Covector f) = Covector $ arr_linear $ Vector1 . partial_derivate (index_delta ind') (vector_element . appLinear f)
+>partialDerivateInd :: (Integral ind, Universe ind, Eq ind, ConjugateSymmetric a, Closed a, Infinitesimal Stream a) => ind -> Dual (ind -> a) -> Dual (ind -> a)
+>partialDerivateInd ind' (Covector f) = Covector $ arrLinear $ Vector1 . partialDerivate (indexDelta ind') (vectorElement . appLinear f)
 
->partial_derivate_list :: (Universe a, Eq a, Integral a, ConjugateSymmetric b, Closed b, Infinitesimal Stream b) => [Dual (a -> b) -> Dual (a -> b)]
->partial_derivate_list = map partial_derivate_ind all_elements
+>partialDerivateList :: (Universe a, Eq a, Integral a, ConjugateSymmetric b, Closed b, Infinitesimal Stream b) => [Dual (a -> b) -> Dual (a -> b)]
+>partialDerivateList = map partialDerivateInd allElements
 
 >instance (Integral a, Universe a, Num b, ConjugateSymmetric b) => Dualizable (a -> b) Dual where
->  covector = covector_impl
+>  covector = covectorImpl
 
->divergence_index :: (ConjugateSymmetric b, Closed b, Infinitesimal Stream b, Integral ind, Eq ind, Universe a, Universe ind)
+>divergenceIndex :: (ConjugateSymmetric b, Closed b, Infinitesimal Stream b, Integral ind, Eq ind, Universe a, Universe ind)
 > => (ind -> b) :-> (a -> b) -> Dual (ind -> b)
->divergence_index f = vsum (partial_derivate_list <*> flst)
->   where flst = map (\i -> covector (($ i) . appLinear f)) all_elements
+>divergenceIndex f = vsum (partialDerivateList <*> flst)
+>   where flst = map (\i -> covector (($ i) . appLinear f)) allElements
 
->grad_index :: (Scalar (ind -> a) ~ a, Integral ind, Universe ind, ConjugateSymmetric a, Closed a, Infinitesimal Stream a, Eq ind)
+>gradIndex :: (Scalar (ind -> a) ~ a, Integral ind, Universe ind, ConjugateSymmetric a, Closed a, Infinitesimal Stream a, Eq ind)
 >  => Dual (ind -> a) -> (ind -> a) :-> (ind -> a)
->grad_index f = arr_linear $ \z ind -> (partial_derivate_ind ind f) `bracket` z
+>gradIndex f = arrLinear $ \z ind -> (partialDerivateInd ind f) `bracket` z
 
->laplace_index :: (ConjugateSymmetric a, Closed a, Infinitesimal Stream a, Integral ind,Eq ind, Universe ind)
+>laplaceIndex :: (ConjugateSymmetric a, Closed a, Infinitesimal Stream a, Integral ind,Eq ind, Universe ind)
 >  => Dual (ind -> a) -> Dual (ind -> a)
->laplace_index f = divergence_index (grad_index f)
+>laplaceIndex f = divergenceIndex (gradIndex f)
 
->set_index :: (Eq ind) => ind -> s -> (ind -> s) -> (ind -> s)
->set_index col x = \v ind -> if ind == col then x else v ind
+>setIndex :: (Eq ind) => ind -> s -> (ind -> s) -> (ind -> s)
+>setIndex col x = \v ind -> if ind == col then x else v ind
 
->update_row_index :: (Eq ind) => g a -> (ind -> ((((->) ind) :*: g) a -> (((->) ind) :*: g) a))
->update_row_index x = \ind -> update_row (set_index ind) x
+>updateRowIndex :: (Eq ind) => g a -> (ind -> ((((->) ind) :*: g) a -> (((->) ind) :*: g) a))
+>updateRowIndex x = \ind -> updateRow (setIndex ind) x
 
->update_column_index :: (Applicative f, Eq ind) => f a -> (ind -> ((f :*: (->) ind) a -> (f :*: (->) ind) a))
->update_column_index x = \ind -> update_column (set_index ind) x
+>updateColumnIndex :: (Applicative f, Eq ind) => f a -> (ind -> ((f :*: (->) ind) a -> (f :*: (->) ind) a))
+>updateColumnIndex x = \ind -> updateColumn (setIndex ind) x
 
 >instance (Eq ind) => UpdateableMatrixDimension ((->) ind) where
->  write_row = update_row_index
->  write_column = update_column_index
+>  writeRow = updateRowIndex
+>  writeColumn = updateColumnIndex
 
 >instance (b ~ Scalar a, Scalar (a -> b) ~ b, Integral a, VectorSpace b, ConjugateSymmetric b, Closed b, Infinitesimal Stream b, Eq a, Universe a)
 > => VectorDerivative (a -> b) Dual LinearMap where
->  grad = grad_index
->  divergence = divergence_index
->  laplace = laplace_index
+>  grad = gradIndex
+>  divergence = divergenceIndex
+>  laplace = laplaceIndex
 
 >instance (Num a) => Num (FourD -> a) where
 >  f + g = \i -> f i + g i
@@ -302,36 +306,36 @@ instance Transposable ((->) row) ((->) col) a where
 >instance (Integral col, Integral row, Universe row, Universe col, Num a, ConjugateSymmetric a)
 > => InnerProductSpace (((->) row :*: (->) col) a) where
 >   (Matrix m) %. (Matrix n) = sum $
->      [(m i j) * conj (n i j) | i <- all_elements, j <- all_elements]
+>      [(m i j) * conj (n i j) | i <- allElements, j <- allElements]
 
 >sumS :: (Num b, Universe a) => (a -> b) -> b
->sumS f = sum [f i | i <- all_elements]
+>sumS f = sum [f i | i <- allElements]
 
 >productS :: (Num b, Universe a) => (a -> b) -> b
->productS f = product [f i | i <- all_elements]
+>productS f = product [f i | i <- allElements]
 
->cov_index :: (Integral a, Universe a, Num (Scalar a), ConjugateSymmetric (Scalar a))
+>covIndex :: (Integral a, Universe a, Num (Scalar a), ConjugateSymmetric (Scalar a))
 >  => a -> Dual (a -> Scalar a)
->cov_index x = covector_impl $ \f -> f x
+>covIndex x = covectorImpl $ \f -> f x
 
 >instance (Integral row, Integral col, Floating a, Universe row, Universe col, ConjugateSymmetric a)
 > => NormedSpace (((->) row :*: (->) col) a) where
 >   norm m = sqrt (m %. m)
->   norm_squared m = m %. m
+>   normSquared m = m %. m
 
 >instance (VectorSpace a, Integral col, Integral row, Universe row, ConjugateSymmetric a, Universe col, Floating a, Integral row, Scalar (col -> a) ~ a) => NormedSpace ((row :&: col) a) where
 >   norm m = norm (fromLinear m)
->   norm_squared m = norm_squared (fromLinear m)
+>   normSquared m = normSquared (fromLinear m)
 
 >-- | <https://en.wikipedia.org/wiki/Kronecker_delta>
->kronecker_delta :: (Eq a, Num b) => a -> a -> b
->kronecker_delta i j = if i == j then 1 else 0
+>kroneckerDelta :: (Eq a, Num b) => a -> a -> b
+>kroneckerDelta i j = if i == j then 1 else 0
 
 >instance (Num a, Eq dim, Integral dim) => Diagonalizable ((->) dim) a where
->   identity = Matrix kronecker_delta
->   identity_impl = const (Matrix kronecker_delta)
->   diagonal_impl (Matrix f) = \i -> f i i
->   diagonal_matrix_impl f = Matrix $ \i j -> if i == j then f i else 0
+>   identity = Matrix kroneckerDelta
+>   identityImpl = const (Matrix kroneckerDelta)
+>   diagonalImpl (Matrix f) = \i -> f i i
+>   diagonalMatrixImpl f = Matrix $ \i j -> if i == j then f i else 0
 >
 >instance (Integral row, Universe row, SupportsMatrixMultiplication ((->) row) ((->) row) ((->) row) a)
 > => LieAlgebra ((row :&: row) a) where
@@ -384,7 +388,7 @@ leviCivita4S :: (VectorSpace a, Fractional (Scalar a), ConjugateSymmetric a, Num
 >-- | <https://en.wikipedia.org/wiki/Levi-Civita_symbol>
 >leviCivitaS :: (Num b, Enum a, Universe a) => (a -> b) -> b
 >leviCivitaS = \f -> product [signum ((f aj) - (f ai))
->                            | aj <- all_elements,
+>                            | aj <- allElements,
 >                              ai <- map toEnum $ [0..fromEnum aj-1]]
 
 >-- | <https://en.wikipedia.org/wiki/Levi-Civita_symbol>
@@ -396,35 +400,35 @@ leviCivita4S :: (VectorSpace a, Fractional (Scalar a), ConjugateSymmetric a, Num
 >-- | <https://en.wikipedia.org/wiki/Cross_product>
 >crossProductS :: (Integral a, Num b, Universe a) => (a -> b) -> (a -> b) -> a -> b
 >crossProductS u v i = sum [fromIntegral (leviCivitaS (svec3 (toInteger i) (toInteger j) (toInteger k))) * u j * v k
->                          | j <- all_elements,
->                            k <- all_elements]
+>                          | j <- allElements,
+>                            k <- allElements]
 
 >-- | <https://en.wikipedia.org/wiki/Cross_product>
 >crossProduct :: (Integral a, Monoid a) => [a] -> [a] -> [a]
->crossProduct u v = [sum [leviCivita [i,j `index_project` indexable_indices,k `index_project` indexable_indices]
->                    * j `index_project` u * k `index_project` v
->                    | k <- take (length v) diagonal_projections,
->                      j <- take (length u) diagonal_projections]
+>crossProduct u v = [sum [leviCivita [i,j `indexProject` indexableIndices,k `indexProject` indexableIndices]
+>                    * j `indexProject` u * k `indexProject` v
+>                    | k <- take (length v) diagonalProjections,
+>                      j <- take (length u) diagonalProjections]
 >                    | i <- [0..fromIntegral (length u-1)]]
   
 
 >instance (Eq dim,Num dim, Integral dim, Universe dim, CoFactorDimension dim, ConjugateSymmetric a,Num a)
 > => Traceable ((->) dim) a where
->   trace_impl m = sum [f i i | i <- all_elements]
+>   traceImpl m = sum [f i i | i <- allElements]
 >     where (Matrix f) = m
->   determinant_impl = sdeterminant . linear
+>   determinantImpl = sdeterminant . linear
 
 >instance (Num a, Integral row) => Indexable ((->) row) a where
->   diagonal_projections = \i -> (\fi -> I (fi i)) <-> (\ (I v) j -> v)
->   indexable_indices = \i -> fromIntegral i
+>   diagonalProjections = \i -> (\fi -> I (fi i)) <-> (\ (I v) j -> v)
+>   indexableIndices = \i -> fromIntegral i
 >
 
 instance (Universe a, Integral a, InnerProductSpace b) => CoordinateSpace (a -> b) where
    type Coordinate (a -> b) = a
    index i f = f i
    listVector lst = \i -> lst !! fromIntegral (toInteger i)
-   dimension_size (f :: a -> b) = length (all_elements :: [a])
-   coordinates (f :: a -> b) = (all_elements :: [a])
+   dimension_size (f :: a -> b) = length (allElements :: [a])
+   coordinates (f :: a -> b) = (allElements :: [a])
 
 >instance (Integral col, Floating elem, Scalar (col -> elem) ~ elem, VectorSpace elem, Fractional (Scalar elem), Integral row, Universe row, Universe col, ConjugateSymmetric elem)
 > => Num ((row :&: col) elem) where
@@ -569,14 +573,14 @@ index4S m (i,j,k,t) = m `cells2` i `cells2` j `cells2` k $ t
 >sdeterminant :: (ConjugateSymmetric a, Num a, Integral dim, Universe dim, CoFactorDimension dim)
 >             => (dim :&: dim) a -> a
 >sdeterminant m = sum $
->  map (\i -> m # (i,0) * cofactorDim i m) $ all_elements
+>  map (\i -> m # (i,0) * cofactorDim i m) $ allElements
 
 determinant3S :: (Num a) => (ThreeD :&: ThreeD) a -> a
 determinant3S f = sumS $ \i -> sumS $ \j -> sumS $ \k ->
    leviCivita3S `index3S` (i,j,k) * (f # (0,i)) * (f # (1,j)) * (f # (2,k))
 
 determinantS :: (dim :&: dim) a -> a
-determinantS f = leviCivita jlst * product [f <!> (i,j) | i <- all_elements]
+determinantS f = leviCivita jlst * product [f <!> (i,j) | i <- allElements]
 
 
 >sdeterminant3 :: (Num a, ConjugateSymmetric a) => (ThreeD :&: ThreeD) a -> a

@@ -109,7 +109,7 @@
 >data GroupRing r g = GroupRing { groupring_apply :: g -> r }
 
 >groupring_element :: (Universe g, VectorSpace g) => GroupRing (Scalar g) g -> g
->groupring_element (GroupRing f) = vsum [f x %* x | x <- all_elements]
+>groupring_element (GroupRing f) = vsum [f x %* x | x <- allElements]
 >
 >instance (Num r) => VectorSpace (GroupRing r g) where
 >   type Scalar (GroupRing r g) = r
@@ -122,7 +122,7 @@
 >   (GroupRing f) + (GroupRing g) = GroupRing $ \a -> f a + g a
 >   (GroupRing f) - (GroupRing g) = GroupRing $ \a -> f a - g a
 >   (GroupRing f) * (GroupRing g) = GroupRing $ \a -> sum $
->             [f u * g (ginvert a <> u) | u <- all_elements]
+>             [f u * g (ginvert a <> u) | u <- allElements]
 >   abs (GroupRing f) = GroupRing (abs . f)
 >   signum (GroupRing f) = GroupRing (signum . f)
 >   fromInteger i = GroupRing $ \_ -> fromInteger i

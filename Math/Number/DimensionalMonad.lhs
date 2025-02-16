@@ -24,8 +24,10 @@
 >  (QuantityM f) <*> (QuantityM x) = QuantityM $ \d -> f d (x d)
 
 >instance Monad QuantityM where
->   return x = returnM (x `As` dimensionless)
+>   return = pure
 >   (QuantityM f) >>= g = QuantityM $ \d -> g (f d) `runQuantifyM` d
+
+>instance MonadFail QuantityM where
 >   fail msg = QuantityM $ \d -> error $ "dimension " ++ show d ++ ":" ++ msg
 
 >resultM :: QuantityM a -> QuantityM (Quantity a)
@@ -36,7 +38,7 @@
 > if d == d' then a
 >  else error $ "dimension mismatch: " ++ show d ++ " != " ++ show d'
 
->quantityM :: (Monad m) => Quantity a -> QuantityM (m a)
+>quantityM :: (MonadFail m) => Quantity a -> QuantityM (m a)
 >quantityM (a `As` d) = QuantityM $ \d' -> if d == d' then return a
 >   else fail $ "dimension mismatch: " ++ show d ++ " != " ++ show d'
 
@@ -66,3 +68,43 @@
 
 >dimension_doc :: QuantityM Doc
 >dimension_doc = QuantityM pp
+
+
+>-- | Monad transformed that add dimensional analysis
+>-- The second argument to runDimensionalMT is the dimension of scalars.
+>data DimensionalMT m r = DimensionalMT { runDimensionalMT :: Dimension -> m (Quantity r) }
+
+>instance (Num r, Applicative m, VectorSpace r) => VectorSpace (DimensionalMT m r) where
+>   type Scalar (DimensionalMT m r) = r
+>   vzero = DimensionalMT $ \d -> pure (vzero `As` d)
+>   vnegate (DimensionalMT f) = DimensionalMT $ \d -> fmap vnegate (f d)
+>   (DimensionalMT f) %+ (DimensionalMT g) = DimensionalMT $ \d -> liftA2 (%+) (f d) (g d)
+>   k %* (DimensionalMT f) = DimensionalMT $ \d -> fmap (k %*) (f d)
+
+>scalarDimensionMT :: (Applicative m) => DimensionalMT m Dimension
+>scalarDimensionMT = DimensionalMT $ \d -> pure (d `As` dimensionless)
+
+>-- | quantityMT validates the dimension
+>quantityMT :: (MonadFail m) => Quantity r -> DimensionalMT m r
+>quantityMT (x `As` rd) = DimensionalMT $ \d ->
+>   if d == rd then return (x `As` d) else fail $ "Invalid dimensions: [" ++ show d ++ "] != [" ++ show rd ++ "]"
+
+>terminalMT :: (Monad m) => DimensionalMT m ()
+>terminalMT = DimensionalMT $ \d -> return (() `As` d)
+
+>instance (Functor m) => Functor (DimensionalMT m) where
+>  fmap f (DimensionalMT x) = DimensionalMT $ \d -> fmap (fmap f) (x d)
+
+>instance (Applicative m) => Applicative (DimensionalMT m) where
+>   pure x = DimensionalMT $ \d -> pure (x `As` d)
+>   (DimensionalMT f) <*> (DimensionalMT x) = DimensionalMT $ \d -> liftA2 (<*>) (f d) (x d)
+
+>instance (Monad m) => Monad (DimensionalMT m) where
+>  return = pure
+>  (DimensionalMT g) >>= f = DimensionalMT $ \d -> do
+>     (As v d') <- g d
+>     f v `runDimensionalMT` d'
+
+>instance (MonadFail m) => MonadFail (DimensionalMT m) where
+>  fail msg = DimensionalMT $ \d -> fail $ msg ++ "\n  in context with dimension [" ++ show d ++ "]"
+

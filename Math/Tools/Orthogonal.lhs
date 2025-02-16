@@ -4,11 +4,11 @@
 >import Control.Monad (join)
 >import Math.Tools.Functor
 
->new_function :: (Functor f) => (a -> f a) -> (f c -> c) -> a -> c
->new_function dtr ctr = ctr . fmap (new_function dtr ctr) . dtr
+>newFunction :: (Functor f) => (a -> f a) -> (f c -> c) -> a -> c
+>newFunction dtr ctr = ctr . fmap (newFunction dtr ctr) . dtr
 
->fold_func :: (Functor f) => (a -> f a) -> (f c -> f c -> c) -> a -> a -> c
->fold_func f g x y = new_function f (\a -> new_function f (g a) y) x
+>foldFunc :: (Functor f) => (a -> f a) -> (f c -> f c -> c) -> a -> a -> c
+>foldFunc f g x y = newFunction f (\a -> newFunction f (g a) y) x
 
 
 cross_function :: (Functor f) => (c -> a -> f a) -> (f c -> c) -> ((a -> c1) -> c1) -> c -> c1
@@ -23,23 +23,23 @@ cffunc f y x = new_function (\a -> new_function (f a) y) x
 dfunction f x y = x `fbind` \a -> y `fbind` (f a)
 
 >fbind :: (Functor f) => (f c -> c) -> (a -> f a) -> a -> c
->fbind = flip new_function
+>fbind = flip newFunction
 
 ----
 
 >outer'' f x y = fmap (\a -> fmap (f a) y) x
 
->functor_outer :: (Functor f, Functor g) => (a -> b -> c) -> f a -> g b -> f (g c)
->functor_outer f x y = x `mapf` \a -> y `mapf` \b -> f a b
+>functorOuter :: (Functor f, Functor g) => (a -> b -> c) -> f a -> g b -> f (g c)
+>functorOuter f x y = x `mapf` \a -> y `mapf` \b -> f a b
 
->outer_left :: (Functor f, Functor g) => f (a -> b) -> g a -> f (g b)
->outer_left = functor_outer id
+>outerLeft :: (Functor f, Functor g) => f (a -> b) -> g a -> f (g b)
+>outerLeft = functorOuter id
 
->outer_right :: (Functor f, Functor g) => f a -> g (a -> b) -> f (g b)
->outer_right = functor_outer (flip id)
+>outerRight :: (Functor f, Functor g) => f a -> g (a -> b) -> f (g b)
+>outerRight = functorOuter (flip id)
 
->list_dotproduct :: (Num a) => [a] -> [a] -> a
->list_dotproduct x y = sum $ liftA2 (*) x y  
+>listDotproduct :: (Num a) => [a] -> [a] -> a
+>listDotproduct x y = sum $ liftA2 (*) x y  
 
   sum == foldl (+) 0
   (*) == \x y -> fold 0 (+ x) y
@@ -52,34 +52,34 @@ dfunction f x y = x `fbind` \a -> y `fbind` (f a)
 >outer' :: (Functor f) => (a -> f b -> b) -> f a -> f (f b)
 >outer' f x = x `mapf` \a -> outer' f x `mapf` \b -> f a b
 
->full_outer :: (Functor f, Functor g) => f a -> (a -> g b) -> (a -> b -> c) -> f (g c)
->full_outer x f1 f2 = x `mapf` \a -> f1 a `mapf` \b -> f2 a b
+>fullOuter :: (Functor f, Functor g) => f a -> (a -> g b) -> (a -> b -> c) -> f (g c)
+>fullOuter x f1 f2 = x `mapf` \a -> f1 a `mapf` \b -> f2 a b
 
 >self :: (Functor f) => (a -> a -> b) -> f a -> f (f b)
->self f x = functor_outer f x x
+>self f x = functorOuter f x x
 
 >mapf :: (Functor f) => f a -> (a -> b) -> f b
 >mapf = flip fmap
 
->outer_product :: (Functor f, Functor g) => f a -> g b -> f (g (a,b))
->outer_product = functor_outer (,)
+>outerProduct :: (Functor f, Functor g) => f a -> g b -> f (g (a,b))
+>outerProduct = functorOuter (,)
 
->outer_apply :: (Functor f, Functor g) => f (b -> c) -> g b -> f (g c)
->outer_apply = functor_outer id
+>outerApply :: (Functor f, Functor g) => f (b -> c) -> g b -> f (g c)
+>outerApply = functorOuter id
 
 >(|**|) :: (Functor f, Monad f) => f a -> f b -> f (a,b)
->x |**| y = join $ functor_outer (,) x y
+>x |**| y = join $ functorOuter (,) x y
 
 
->outer3_functor :: (Functor f, Functor g, Functor h)
+>outer3Functor :: (Functor f, Functor g, Functor h)
 >	=> (a -> b -> c -> d) -> f a -> g b -> h c -> f (g (h d))
->outer3_functor f x x' y = functor_outer (\a b -> fmap (f a b) y) x x'
+>outer3Functor f x x' y = functorOuter (\a b -> fmap (f a b) y) x x'
 
 
 
->outer4_functor :: (Functor f, Functor g, Functor h, Functor i) =>
+>outer4Functor :: (Functor f, Functor g, Functor h, Functor i) =>
 >	(a -> b -> c -> d -> e) -> f a -> g b -> h c -> i d -> f (g (h (i e)))
->outer4_functor f x x' y y' = functor_outer (\a b -> functor_outer (f a b) y y') x x'
+>outer4Functor f x x' y y' = functorOuter (\a b -> functorOuter (f a b) y y') x x'
 
 data LayerSeq f a = LayerSeq a (f (LayerSeq f a))
 

@@ -134,14 +134,14 @@
 >quantity (x :: u) = (conversionFactor (fromAmount :: Scalar u -> u) * (amount x
 >                    + zeroAmount (fromAmount :: Scalar u -> u))) @@ dimension x
 
->data a :/ b  = QDivide { qdivide_amount :: !(Scalar a),
->                         qdivide_dividend_unit :: UnitName a,
->                         qdivide_divisor_unit  :: UnitName b }
+>data a :/ b  = QDivide { qdivideAmount :: !(Scalar a),
+>                         qdivideDividendUnit :: UnitName a,
+>                         qdivideDivisorUnit  :: UnitName b }
 >   deriving (Typeable, Generic)
 
->data a :* b = QProduct { qproduct_amount :: !(Scalar a),
->                         qproduct_first_unit :: UnitName a,
->                         qproduct_second_unit :: UnitName b
+>data a :* b = QProduct { qproductAmount :: !(Scalar a),
+>                         qproduct_firstUnit :: UnitName a,
+>                         qproduct_secondUnit :: UnitName b
 >                       }
 >   deriving (Typeable, Generic)
 >
@@ -160,13 +160,13 @@
 >   k %* (QDivide d s t) = QDivide (k * d) s t
 
 >instance (LiteralUnit a, LiteralUnit b, Show (Scalar a), Scalar a ~ Scalar b) => Unit (a :* b) where
->   amount = qproduct_amount
+>   amount = qproductAmount
 >   unitOf z@(QProduct x _ _) = show (dimension z)
 >   fromQuantity q = do
->     let res = QProduct (value_amount q) fromAmount fromAmount
->     guard (value_dimension q == dimension res)
->       <|> invalidDimensions "fromQuantity" (value_dimension q) (dimension res)
->                                           (value_amount q) (value_amount q)
+>     let res = QProduct (valueAmount q) fromAmount fromAmount
+>     guard (valueDimension q == dimension res)
+>       <|> invalidDimensions "fromQuantity" (valueDimension q) (dimension res)
+>                                           (valueAmount q) (valueAmount q)
 >     return res
 >   dimension (QProduct x s t) = unitNameToDimension s + unitNameToDimension t
 
@@ -174,13 +174,13 @@
 >   fromAmount d = QProduct d fromAmount fromAmount 
 
 >instance (LiteralUnit a, LiteralUnit b, Show (Scalar a), Scalar a ~ Scalar b) => Unit (a :/ b) where
->   amount = qdivide_amount
+>   amount = qdivideAmount
 >   unitOf z@(QDivide x _ _) = show (dimension z)
 >   fromQuantity q = do
->      let res = QDivide (value_amount q) fromAmount fromAmount 
->      guard (value_dimension q == dimension res)
->        <|> invalidDimensions "fromQuantity" (value_dimension q) (dimension res)
->                                            (value_amount q) (value_amount q)
+>      let res = QDivide (valueAmount q) fromAmount fromAmount 
+>      guard (valueDimension q == dimension res)
+>        <|> invalidDimensions "fromQuantity" (valueDimension q) (dimension res)
+>                                            (valueAmount q) (valueAmount q)
 >      return $ res
 >   dimension (QDivide x a b) = unitNameToDimension a - unitNameToDimension b
 
@@ -222,973 +222,1049 @@
 >instance LiteralUnit R where
 >   fromAmount x = x
 
->newtype Dimensionless = Dimensionless { dimensionless_value :: Double }
+>newtype Dimensionless a = Dimensionless { dimensionlessValue :: a }
 > deriving (Eq,Ord, Typeable, Data, Generic)
 > deriving newtype (Binary, Num, Fractional, Real, RealFrac, Floating, RealFloat)
->instance Show Dimensionless where { show = show_unit }
->instance Read Dimensionless where
+>instance (Num a, Show a) => Show (Dimensionless a) where { show = showUnit }
+>instance (Show a, Read a) => Read (Dimensionless a) where
 >   readPrec = readPrec >>= (return . Dimensionless)
->instance VectorSpace Dimensionless where
->   type Scalar Dimensionless = Double
+>instance (Num a) => VectorSpace (Dimensionless a) where
+>   type Scalar (Dimensionless a) = a
 >   vzero = Dimensionless 0
 >   vnegate (Dimensionless x) = Dimensionless (negate x)
 >   (Dimensionless x) %+ (Dimensionless y) = Dimensionless $ x + y
 >   k %* (Dimensionless x) = Dimensionless $ k * x
 
 
->instance NormedSpace Dimensionless where
+>instance (Num a) => NormedSpace (Dimensionless a) where
 >   norm = amount
+>   normSquared (Dimensionless x) = x*x
 
->instance Unit Dimensionless where
->   amount = dimensionless_value
+>instance (Num a) => Unit (Dimensionless a) where
+>   amount = dimensionlessValue
 >   unitOf _ = ""
 >   dimension _ = dimensionless
 >   fromQuantity (x `As` d) = do
 >     guard (isDimensionless d)
 >     return $ Dimensionless x
 
->instance LiteralUnit Dimensionless where
+>instance (Show a, Num a) => LiteralUnit (Dimensionless a) where
 >   fromAmount = Dimensionless
 
->newtype Information = Bits { number_of_bits :: Double }
+>newtype Information a = Bits { numberOfBits :: a }
 >  deriving (Eq,Ord, Data,Generic, Typeable)
 >  deriving newtype (Binary)
->instance Show Information where { show = show_unit }
+>instance (Num a, Show a) => Show ( Information  a) where { show = showUnit }
 
->instance Unit Information where
->   amount = number_of_bits
+>instance (Num a, Show a) => Unit (Information a) where
+>   amount = numberOfBits
 >   dimension _ = dimensionless
 >   fromQuantity = fromQuantityDef dimensionless Bits
 >   unitOf _ = "b"
->instance LiteralUnit Information where { fromAmount = Bits }
+>instance (Show a, Num a) => LiteralUnit (Information a) where { fromAmount = Bits }
 > 
->newtype SoundLevel = SoundAmplitude { sound_amplitude :: Double }
+>newtype SoundLevel a = SoundAmplitude { soundAmplitude :: a }
 >  deriving (Eq, Ord, Typeable, Data, Generic)
 >  deriving newtype (Binary)
 
->instance Show SoundLevel where { show = show_unit }
+>instance (Floating a, Show a) => Show ( SoundLevel  a) where { show = showUnit }
 >-- | NOTE: additive operations mapped to multiplicative.
 >-- Notice this reduces the possible range of SoundLevel values
 >-- to around -300..300 dB based on possible exponents in Double.
->instance VectorSpace SoundLevel where
->   type Scalar SoundLevel = Double
+>instance (Floating a) => VectorSpace (SoundLevel a) where
+>   type Scalar (SoundLevel a) = a
 >   vzero = SoundAmplitude 1
 >   vnegate (SoundAmplitude x) = SoundAmplitude (1/x)
 >   (SoundAmplitude x) %+ (SoundAmplitude y) = SoundAmplitude (x * y)
 >   k %* (SoundAmplitude x) = SoundAmplitude (x ** k)
 
->instance Unit SoundLevel where
->   amount x = log (sound_amplitude x) / log 10
+>instance (Floating a, Show a) => Unit (SoundLevel a) where
+>   amount x = log (soundAmplitude x) / log 10
 >   dimension _ = dimensionless
 >   fromQuantity = fromQuantityDef dimensionless fromAmount
 >   unitOf _ = "dB"
->instance LiteralUnit SoundLevel where { fromAmount = SoundAmplitude . (10.0 **) }
+>instance (Show a, Floating a) => LiteralUnit (SoundLevel a) where { fromAmount = SoundAmplitude . (10.0 **) }
 
-
->newtype Angle = Radians { radians :: Double }
+>newtype Angle a = Radians { radians :: a }
 >   deriving (Eq,Ord, Typeable, Data, Generic)
 >   deriving newtype (Binary, Num, Fractional)
 
->instance Show Angle where { show = show_unit }
+>instance Functor Angle where
+>  fmap f (Radians x) = Radians (f x)
 
->pi_angle :: Angle
->pi_angle = Radians pi
+>instance (Show a, Num a) => Show (Angle a) where { show = showUnit }
 
->fraction_of_circle :: Rational -> Angle
->fraction_of_circle r = fromRational (2*r) %* pi_angle
+>class (Functor angle) => DimensionalFloating angle where
+>  halfRotation :: angle Double
+>  fullRotation :: angle Double
+>  fractionOfRotation :: Rational -> angle Double
+>  dimSin :: (Floating a) => angle a -> a
+>  dimCos :: (Floating a) => angle a -> a
+>  dimTan :: (Floating a) => angle a -> a
+>  dimAsin :: (Floating a) => a -> angle a
+>  dimAcos :: (Floating a) => a -> angle a
+>  dimAtan :: (Floating a) => a -> angle a
+>  dimLog :: (RealFloat a) => Complex a -> angle a
+>  dimExp :: (RealFloat a) => angle a -> Complex a
+>  dimFromPolar :: (RealFloat a) => a -> angle a -> Complex a
+>  dimToPolar :: (RealFloat a) => Complex a -> (a, angle a)
+>  fullRotation = fractionOfRotation (1 % 1)
+>  halfRotation = fractionOfRotation (1 % 2)
 
->asin_angle :: Double -> Angle
->asin_angle = Radians . asin
+>instance DimensionalFloating Angle where
+>  halfRotation = piAngle
+>  fullRotation = fromRational 2 %* halfRotation
+>  fractionOfRotation q = fromRational q %* fullRotation
+>  dimSin = sinAngle
+>  dimCos = cosAngle
+>  dimTan = tanAngle
+>  dimAsin = asinAngle
+>  dimAcos = acosAngle
+>  dimAtan = atanAngle
+>  dimLog = logAngle
+>  dimExp = expAngle
+>  dimFromPolar r (Radians alfa) = (r * cos alfa) :+ (r * sin alfa)
+>  dimToPolar (a :+ b) = (sqrt (a*a+b*b), Radians (atan2 b a))
+> 
+>piAngle :: Angle Double
+>piAngle = Radians pi
 
->acos_angle :: Double -> Angle
->acos_angle = Radians . acos
+>fraction_of_circle :: Rational -> Angle Double
+>fraction_of_circle r = fromRational (2*r) %* piAngle
+
+>asinAngle :: (Floating a) => a -> Angle a
+>asinAngle = Radians . asin
+
+>acosAngle :: (Floating a) => a -> Angle a
+>acosAngle = Radians . acos
 >
->atan_angle :: Double -> Angle
->atan_angle = Radians . atan
+>atanAngle :: (Floating a) => a -> Angle a
+>atanAngle = Radians . atan
 
->sin_angle :: Angle -> Double
->sin_angle = sin . radians
+>sinAngle :: (Floating a) => Angle a -> a
+>sinAngle = sin . radians
 
->cos_angle :: Angle -> Double
->cos_angle = cos . radians
+>cosAngle :: (Floating a) => Angle a -> a
+>cosAngle = cos . radians
 >
->tan_angle :: Angle -> Double
->tan_angle = tan . radians
+>tanAngle :: (Floating a) => Angle a -> a
+>tanAngle = tan . radians
 
->log_angle :: Complex Double -> Angle
->log_angle = Radians . phase
+>logAngle :: (RealFloat a) => Complex a -> Angle a
+>logAngle = Radians . phase
 
->exp_angle :: Angle -> Complex Double
->exp_angle (Radians x) = (cos x :+ sin x)
+>expAngle :: (Floating a) => Angle a -> Complex a
+>expAngle (Radians x) = (cos x :+ sin x)
 >
->fromPolar :: (Unit u, Scalar u ~ Double) => u -> Angle -> Complex u
+>fromPolar :: (Unit u, Floating (Scalar u)) => u -> Angle (Scalar u) -> Complex u
 >fromPolar r (Radians alfa) = (cos alfa %* r :+ sin alfa %* r)
 
->toPolar :: (LiteralUnit u, Scalar u ~ Double) => Complex u -> (u, Angle)
->toPolar z@((a :: u) :+ b) = (fromAmount (sqrt (a'*a' %+ b'*b')) :: u , Radians $ atan2 b' a')
+>toPolar :: (LiteralUnit u, RealFloat (Scalar u)) => Complex u -> (u, Angle (Scalar u))
+>toPolar z@((a :: u) :+ b) = (fromAmount (sqrt (a'*a' + b'*b')) :: u , Radians $ atan2 b' a')
 >   where a' = amount a
 >         b' = amount b
 
->newtype DegreesAngle = Degrees { degrees :: Double }
+>newtype DegreesAngle a = Degrees { degrees :: a }
 >   deriving (Eq,Ord, Typeable, Data, Generic)
->   deriving newtype (Binary)
+>   deriving newtype (Binary, Num, Fractional)
 
 
->instance Show DegreesAngle where { show = show_unit }
+>instance (Show a, Floating a) => Show (DegreesAngle a) where { show = showUnit }
 
 
->degreesAngle :: DegreesAngle -> Angle
+>degreesAngle :: (Floating a) => DegreesAngle a -> Angle a
 >degreesAngle (Degrees d) = Radians $ (d * pi) / 180.0
 
->angleDegrees :: Angle -> DegreesAngle
+>angleDegrees :: (Floating a) => Angle a -> DegreesAngle a
 >angleDegrees (Radians r) = Degrees $ r * 180.0 / pi
 
->isoDegreesToAngle :: DegreesAngle :==: Angle
+>isoDegreesToAngle :: (Floating a) => DegreesAngle a :==: Angle a
 >isoDegreesToAngle = degreesAngle <-> angleDegrees
 
->instance Unit DegreesAngle where
+>instance (Show a, Floating a) => Unit (DegreesAngle a) where
 >   amount = degrees
 >   dimension _ = dimensionless
 >   fromQuantity = fromQuantityDef dimensionless Degrees
 >   unitOf _ = "°"
->instance LiteralUnit DegreesAngle where
+>instance (Show a, Floating a) => LiteralUnit (DegreesAngle a) where
 >   fromAmount = Degrees
 >   zeroAmount _ = 0
 >   conversionFactor _ = pi/180.0
 
 
->instance Unit Angle where
+>instance (Num a, Show a) => Unit (Angle a) where
 >   amount = radians
 >   dimension _ = dimensionless
 >   fromQuantity = fromQuantityDef dimensionless Radians
 >   unitOf _ = "rad"
->instance LiteralUnit Angle where { fromAmount = Radians }
+
+>instance (Num a, Show a) => LiteralUnit (Angle a) where { fromAmount = Radians }
 
 >-- | <https://en.wikipedia.org/wiki/Steradian>
->newtype SolidAngle = Steradians { steradians :: Double }
+>newtype SolidAngle a = Steradians { steradians :: a }
 >   deriving (Eq,Ord, Typeable, Data, Generic)
->   deriving newtype (Binary)
+>   deriving newtype (Binary, Num, Fractional)
 
->instance Show SolidAngle where { show = show_unit }
+>instance (Num a, Show a) => Show ( SolidAngle  a) where { show = showUnit }
 
->instance Unit SolidAngle where
+>instance (Num a, Show a) => Unit (SolidAngle a) where
 >   amount = steradians
 >   dimension _ = dimensionless
 >   fromQuantity = fromQuantityDef dimensionless Steradians
 >   unitOf _ = "sr"
->instance LiteralUnit SolidAngle where { fromAmount = Steradians }
+>instance (Show a, Num a) => LiteralUnit (SolidAngle a) where { fromAmount = Steradians }
 
->show_unit :: (Unit u, Show (Scalar u)) => u -> String
->show_unit i = show (amount i) ++ " " ++ unitOf i
+>showUnit :: (Unit u, Show (Scalar u)) => u -> String
+>showUnit i = show (amount i) ++ " " ++ unitOf i
 
->read_unit :: (Unit u, Read (Scalar u)) => UnitName u -> Text.ParserCombinators.ReadPrec.ReadPrec u
->read_unit unitname = readPrec >>= \d -> lift skipSpaces
+>readUnit :: (Unit u, Read (Scalar u)) => UnitName u -> Text.ParserCombinators.ReadPrec.ReadPrec u
+>readUnit unitname = readPrec >>= \d -> lift skipSpaces
 > >> lift (string $ unitOf $ unitname d)
 > >> return (unitname d)
 
->newtype Percentage = Percentages { percentages :: Double }
+>newtype Percentage a = Percentages { percentages :: a }
 >  deriving (Eq,Ord, Typeable, Data, Generic)
->  deriving newtype (Binary)
+>  deriving newtype (Binary, Num, Fractional)
 
->instance Show Percentage where { show = show_unit }
+>instance (Fractional a, Show a) => Show (Percentage a) where { show = showUnit }
 >
->instance Unit Percentage where
+>instance (Fractional a, Show a) => Unit (Percentage a) where
 >  amount = percentages
 >  fromQuantity = fromQuantityDef dimensionless (Percentages . (100.0*))
 >  dimension _ = dimensionless
 >  unitOf _ = "%"
->instance LiteralUnit Percentage where
+>instance (Show a, Fractional a) => LiteralUnit (Percentage a) where
 >   fromAmount = Percentages
 >   conversionFactor _ = 0.01
 >
->newtype Acceleration = MetersPerSquareSecond { metersPerSquareSecond :: Double }
+>newtype Acceleration a = MetersPerSquareSecond { metersPerSquareSecond :: a }
 >   deriving (Eq,Ord, Typeable, Data, Generic)
 >   deriving newtype (Binary)
 
->instance Show Acceleration where { show = show_unit }
+>instance (Num a, Show a) => Show (Acceleration a) where { show = showUnit }
 
->instance Unit Acceleration where
+>instance (Num a, Show a) => Unit (Acceleration a) where
 >   amount = metersPerSquareSecond
->   fromQuantity = fromQuantityDef (meter_dimension %- (second_dimension %+ second_dimension)) MetersPerSquareSecond
->   dimension _ = meter_dimension %- (second_dimension %+ second_dimension)
+>   fromQuantity = fromQuantityDef (meterDimension %- (secondDimension %+ secondDimension)) MetersPerSquareSecond
+>   dimension _ = meterDimension %- (secondDimension %+ secondDimension)
 >   unitOf _ = "m/s^2"
->instance LiteralUnit Acceleration where { fromAmount = MetersPerSquareSecond }
->newtype Velocity = MetersPerSecond { metersPerSecond :: Double }
+>instance (Show a, Num a) => LiteralUnit (Acceleration a) where { fromAmount = MetersPerSquareSecond }
+>newtype Velocity a = MetersPerSecond { metersPerSecond :: a }
 >   deriving (Eq,Ord, Typeable, Data, Generic)
 >   deriving newtype (Binary)
->instance Show Velocity where { show = show_unit }
+>instance (Num a, Show a) => Show (Velocity a) where { show = showUnit }
 >
->instance Unit Velocity where
+>instance (Num a, Show a) => Unit (Velocity a) where
 >   amount = metersPerSecond
->   fromQuantity = fromQuantityDef (meter_dimension %- second_dimension) MetersPerSecond
->   dimension _ = meter_dimension %- second_dimension
+>   fromQuantity = fromQuantityDef (meterDimension %- secondDimension) MetersPerSecond
+>   dimension _ = meterDimension %- secondDimension
 >   unitOf _ = "m/s"
->instance LiteralUnit Velocity where { fromAmount = MetersPerSecond }
->newtype SquareLength = SquareMeters { squaremeters :: Double }
+>instance (Show a, Num a) => LiteralUnit (Velocity a) where { fromAmount = MetersPerSecond }
+>newtype SquareLength a = SquareMeters { squaremeters :: a }
 > deriving (Eq,Ord, Typeable, Data, Generic)
 > deriving newtype (Binary)
 
->newtype CubicLength = CubicMeters { cubicmeters :: Double }
+>newtype CubicLength a = CubicMeters { cubicmeters :: a }
 >  deriving (Eq,Ord, Typeable, Data, Generic)
 >  deriving newtype (Binary)
 >
->sqrt_length :: SquareLength -> Length
+>sqrt_length :: (Floating a) => SquareLength a -> Length a
 >sqrt_length (SquareMeters m) = Meters (sqrt m)
 
->square_length :: Length -> SquareLength
+>square_length :: (Num a) => Length a -> SquareLength a
 >square_length (Meters m) = SquareMeters (m * m)
 
->times_length :: Length -> Length -> SquareLength
+>times_length :: (Num a) => Length a -> Length a -> SquareLength a
 >times_length (Meters m1) (Meters m2) = SquareMeters (m1 * m2)
 
->instance Show CubicLength where { show = show_unit }
->instance Unit CubicLength where
+>instance (Num a, Show a) => Show (CubicLength a) where { show = showUnit }
+>instance (Num a, Show a) => Unit (CubicLength a) where
 >   amount = cubicmeters
->   fromQuantity = fromQuantityDef cubicmeter_dimension CubicMeters
->   dimension _ = 3 %* meter_dimension
+>   fromQuantity = fromQuantityDef cubicmeterDimension CubicMeters
+>   dimension _ = 3 %* meterDimension
 >   unitOf _ = "m^3"
->instance LiteralUnit CubicLength where { fromAmount = CubicMeters }
->instance Show SquareLength where { show = show_unit }
->instance Unit SquareLength where
+>instance (Show a, Num a) => LiteralUnit (CubicLength a) where { fromAmount = CubicMeters }
+>instance (Num a, Show a) => Show (SquareLength a) where { show = showUnit }
+>instance (Num a, Show a) => Unit (SquareLength a) where
 >   amount = squaremeters
->   fromQuantity = fromQuantityDef squaremeter_dimension SquareMeters
->   dimension _ = meter_dimension %+ meter_dimension
+>   fromQuantity = fromQuantityDef squaremeterDimension SquareMeters
+>   dimension _ = meterDimension %+ meterDimension
 >   unitOf _ = "m^2"
->instance LiteralUnit SquareLength where { fromAmount = SquareMeters }
+>instance (Show a, Num a) => LiteralUnit (SquareLength a) where { fromAmount = SquareMeters }
 >-- types for basic units <https://en.wikipedia.org/wiki/International_System_of_Units>
->newtype Length = Meters { meters :: Double }
+>newtype Length a = Meters { meters :: a }
 > deriving (Eq,Ord, Typeable, Data, Generic)
 > deriving newtype (Binary)
->instance Show Length where { show = show_unit }
+>instance (Num a, Show a) => Show (Length a) where { show = showUnit }
 
->newtype Mass = Kilograms { kilograms :: Double }
+>newtype Mass a = Kilograms { kilograms :: a }
 >  deriving (Eq,Ord, Typeable, Data, Generic)
 >  deriving newtype (Binary)
->instance Show Mass where { show = show_unit }
->newtype Time = Seconds { seconds :: Double }
+>instance (Num a, Show a) => Show ( Mass  a) where { show = showUnit }
+>newtype Time a = Seconds { seconds :: a }
 > deriving (Eq,Ord, Typeable, Data, Generic)
 > deriving newtype (Binary)
->instance Show Time where { show = show_unit }
+>instance (Num a, Show a) => Show (Time a) where { show = showUnit }
 
->newtype Current = Amperes { amperes :: Double }
+>newtype Current a = Amperes { amperes :: a }
 >  deriving (Eq,Ord, Typeable, Data, Generic)
 >  deriving newtype (Binary)
->instance Show Current where { show = show_unit }
+>instance (Num a, Show a) => Show (Current a) where { show = showUnit }
 
 >-- | <https://en.wikipedia.org/wiki/Fahrenheit>
->newtype DegreesFahrenheit = DegreesFahrenheit { fahrenheits :: Double }
+>newtype DegreesFahrenheit a = DegreesFahrenheit { fahrenheits :: a }
 > deriving (Eq,Ord, Typeable, Data, Generic)
 > deriving newtype (Binary)
->instance Show DegreesFahrenheit where { show = show_unit }
->instance Unit DegreesFahrenheit where
+>instance (Fractional a, Show a) => Show (DegreesFahrenheit a) where { show = showUnit }
+>instance (Fractional a, Show a) => Unit (DegreesFahrenheit a) where
 >   amount = fahrenheits
->   dimension _ = kelvin_dimension
+>   dimension _ = kelvinDimension
 >   unitOf _ = "°F"
 >   fromQuantity x
->     | dimension x == kelvin_dimension = return $ DegreesFahrenheit $
->                            (amount x * (9/5) - 459.67)
->     | otherwise = invalidDimensions "fromQuantity:DegreesFahrenheit" (dimension x) kelvin_dimension (amount x) (amount x)
->instance LiteralUnit DegreesFahrenheit where
+>     | valueDimension x == kelvinDimension = return $ DegreesFahrenheit $
+>                            (valueAmount x * (9/5) - 459.67)
+>     | otherwise = invalidDimensions "fromQuantity:DegreesFahrenheit" (valueDimension x) kelvinDimension (valueAmount x) (valueAmount x)
+>instance (Show a, Fractional a) => LiteralUnit (DegreesFahrenheit a) where
 >  fromAmount = DegreesFahrenheit
 >  conversionFactor _ = 5/9
 >  zeroAmount _ = 459.67
-> 
->newtype DegreesTemperature = DegreesCelcius { celciuses :: Double }
+>
+>-- | <https://en.wikipedia.org/wiki/Rankine_scale>
+>newtype DegreesRankine a = DegreesRankine { rankines :: a }
+> deriving (Eq, Ord, Typeable, Data, Generic)
+> deriving newtype (Binary)
+>instance (Fractional a, Show a) => Show (DegreesRankine a) where { show = showUnit }
+>instance (Fractional a, Show a) => Unit (DegreesRankine a) where
+>  amount = rankines
+>  dimension _ = kelvinDimension
+>  unitOf _ = "°R"
+>  fromQuantity x
+>    | valueDimension x == kelvinDimension = return $ DegreesRankine $ toRankine x
+>    | otherwise = invalidDimensions "fromQuantity:DegreesRankine" (valueDimension x) kelvinDimension (valueAmount x) (valueAmount x)
+
+>instance (Fractional a, Show a) => LiteralUnit (DegreesRankine a) where
+>  fromAmount = DegreesRankine
+>  conversionFactor _ = 5/9
+>  zeroAmount _ = 0.0 
+
+>newtype DegreesTemperature a = DegreesCelcius { celciuses :: a }
 > deriving (Eq,Ord, Typeable, Data, Generic)
 > deriving newtype (Binary)
->instance Show DegreesTemperature where { show = show_unit }
+>instance (Fractional a, Show a) => Show (DegreesTemperature a) where { show = showUnit }
 >
->instance Unit DegreesTemperature where
+>instance (Fractional a, Show a) => Unit (DegreesTemperature a) where
 >   amount = celciuses
->   dimension _ = kelvin_dimension
+>   dimension _ = kelvinDimension
 >   unitOf _ = "°C"
 >   fromQuantity x
->     | dimension x == kelvin_dimension = return $ DegreesCelcius $ amount (x - (273.15 @@ kelvin_dimension))
->     | otherwise = invalidDimensions "fromQuantity:DegreesTemperature" (dimension x) kelvin_dimension (amount x) (amount x)
+>     | valueDimension x == kelvinDimension = return $ DegreesCelcius $ valueAmount (x - (273.15 @@ kelvinDimension))
+>     | otherwise = invalidDimensions "fromQuantity:DegreesTemperature" (valueDimension x) kelvinDimension (valueAmount x) (valueAmount x)
 
->instance LiteralUnit DegreesTemperature where
+>instance (Show a, Fractional a) => LiteralUnit (DegreesTemperature a) where
 >   fromAmount = DegreesCelcius
 >   zeroAmount _ = 273.15
 
->newtype Temperature = DegreesKelvin { kelvins :: Double }
+>newtype Temperature a = DegreesKelvin { kelvins :: a }
 > deriving (Eq,Ord, Typeable, Data, Generic)
 > deriving newtype (Binary)
->instance Show Temperature where { show = show_unit }
+>instance (Num a, Show a) => Show (Temperature a) where { show = showUnit }
 
->isoCelciusToKelvin :: DegreesTemperature :==: Temperature
+>isoCelciusToKelvin :: (Fractional a) => DegreesTemperature a :==: Temperature a
 >isoCelciusToKelvin = celciusToKelvin <-> kelvinToCelcius
 >
->celciusToKelvin :: DegreesTemperature -> Temperature
+>celciusToKelvin :: (Fractional a) => DegreesTemperature a -> Temperature a
 >celciusToKelvin (DegreesCelcius x) = DegreesKelvin (x + 273.15)
 
->kelvinToCelcius :: Temperature -> DegreesTemperature
+>kelvinToCelcius :: (Fractional a) => Temperature a -> DegreesTemperature a
 >kelvinToCelcius (DegreesKelvin x) = DegreesCelcius (x - 273.15)
 
->newtype Substance = Moles { moles :: Double }
+>newtype Substance a = Moles { moles :: a }
 > deriving (Eq,Ord, Typeable, Data, Generic)
 > deriving newtype (Binary)
->instance Show Substance where { show = show_unit }
+>instance (Num a, Show a) => Show (Substance a) where { show = showUnit }
 
->newtype Intensity = Candelas { candelas :: Double }
+>newtype Intensity a = Candelas { candelas :: a }
 > deriving (Eq,Ord, Typeable, Data, Generic)
 > deriving newtype (Binary)
->instance Show Intensity where { show = show_unit }
+>instance (Num a, Show a) => Show (Intensity a) where { show = showUnit }
 
->newtype Frequency = Hertzes { hertzes :: Double }
+>newtype Frequency a = Hertzes { hertzes :: a }
 > deriving (Eq,Ord, Typeable, Data, Generic)
 > deriving newtype (Binary)
->instance Show Frequency where { show = show_unit }
+>instance (Num a, Show a) => Show (Frequency a) where { show = showUnit }
 
->newtype Force = Newtons { newtons :: Double }
+>newtype Force a = Newtons { newtons :: a }
 > deriving (Eq,Ord, Typeable, Data, Generic)
 > deriving newtype (Binary)
->instance Show Force where { show = show_unit }
+>instance (Num a, Show a) => Show (Force a) where { show = showUnit }
 
->newtype Torque = NewtonMeters { newtonmeters :: Double }
+>newtype Torque a = NewtonMeters { newtonmeters :: a }
 >  deriving (Eq, Ord, Typeable, Data, Generic)
 >  deriving newtype (Binary)
->instance Show Torque where { show = show_unit }
+>instance (Num a, Show a) => Show (Torque a) where { show = showUnit }
 
->newtype Pressure = Pascals { pascals :: Double }
+>newtype Pressure a = Pascals { pascals :: a }
 > deriving (Eq,Ord, Typeable, Data, Generic)
 > deriving newtype (Binary)
->instance Show Pressure where { show = show_unit }
+>instance (Num a, Show a) => Show ( Pressure  a) where { show = showUnit }
 
->newtype Energy = Joules { joules :: Double }
+>newtype Energy a = Joules { joules :: a }
 > deriving (Eq,Ord, Typeable, Data, Generic)
 > deriving newtype (Binary)
->instance Show Energy where { show = show_unit }
+>instance (Num a, Show a) => Show (Energy a) where { show = showUnit }
 
->newtype Power = Watts { watts :: Double }
+>newtype Power a = Watts { watts :: a }
 > deriving (Eq,Ord, Typeable, Data, Generic)
 > deriving newtype (Binary)
->instance Show Power where { show = show_unit }
+>instance (Num a, Show a) => Show (Power a) where { show = showUnit }
 
->newtype Charge = Coulombs { coulombs :: Double }
+>newtype Charge a = Coulombs { coulombs :: a }
 > deriving (Eq,Ord, Typeable, Data, Generic)
 > deriving newtype (Binary)
->instance Show Charge where { show = show_unit }
+>instance (Num a, Show a) => Show (Charge a) where { show = showUnit }
 
->newtype Voltage = Volts { volts :: Double }
+>newtype Voltage a = Volts { volts :: a }
 > deriving (Eq,Ord, Typeable, Data, Generic)
 > deriving newtype (Binary)
->instance Show Voltage where { show = show_unit }
+>instance (Num a, Show a) => Show (Voltage a) where { show = showUnit }
 
->newtype Capacitance = Farads { farads :: Double }
+>newtype Capacitance a = Farads { farads :: a }
 > deriving (Eq,Ord, Typeable, Data, Generic) deriving newtype (Binary)
->instance Show Capacitance where { show = show_unit }
+>instance (Num a, Show a) => Show (Capacitance a) where { show = showUnit }
 
->newtype Resistance = Ohms { ohms :: Double }
+>newtype Resistance a = Ohms { ohms :: a }
 > deriving (Eq,Ord, Typeable, Data, Generic)
 > deriving newtype (Binary)
->instance Show Resistance where { show = show_unit }
+>instance (Num a, Show a) => Show (Resistance a) where { show = showUnit }
 
->newtype Conductance = Siemenses { siemenses :: Double }
+>newtype Conductance a = Siemenses { siemenses :: a }
 > deriving (Eq,Ord, Typeable, Data, Generic) deriving newtype (Binary)
->instance Show Conductance where { show = show_unit }
+>instance (Num a, Show a) => Show ( Conductance  a) where { show = showUnit }
 
->newtype Flux = Webers { webers :: Double }
+>newtype Flux a = Webers { webers :: a }
 > deriving (Eq,Ord, Typeable, Data, Generic) deriving newtype (Binary)
->instance Show Flux where { show = show_unit }
+>instance (Num a, Show a) => Show (Flux a) where { show = showUnit }
 
->newtype FluxDensity = Teslas { teslas :: Double }
+>newtype FluxDensity a = Teslas { teslas :: a }
 > deriving (Eq,Ord, Typeable, Data, Generic) deriving newtype (Binary)
->instance Show FluxDensity where { show = show_unit }
+>instance (Num a, Show a) => Show (FluxDensity a) where { show = showUnit }
 
->newtype Inductance  = Henrys { henrys :: Double }
+>newtype Inductance a = Henrys { henrys :: a }
 > deriving (Eq,Ord, Typeable, Data, Generic)
 > deriving newtype (Binary)
->instance Show Inductance where { show = show_unit }
+>instance (Num a, Show a) => Show (Inductance a) where { show = showUnit }
 
->newtype LuminousFlux = Lumens { lumens :: Double }
+>newtype LuminousFlux a = Lumens { lumens :: a }
 > deriving (Eq,Ord, Typeable, Data, Generic) deriving newtype (Binary)
->instance Show LuminousFlux where { show = show_unit }
+>instance (Num a, Show a) => Show ( LuminousFlux  a) where { show = showUnit }
 
->newtype Illuminance = Luxes { luxes :: Double }
+>newtype Illuminance a = Luxes { luxes :: a }
 > deriving (Eq,Ord, Typeable, Data, Generic)
 > deriving newtype (Binary)
->instance Show Illuminance where { show = show_unit }
+>instance (Num a, Show a) => Show (Illuminance a) where { show = showUnit }
 
->newtype Radioactivity = Becquerels { becquerels :: Double }
+>newtype Radioactivity a = Becquerels { becquerels :: a }
 > deriving (Eq,Ord, Typeable, Data, Generic)
 > deriving newtype (Binary)
->instance Show Radioactivity where { show = show_unit }
+>instance (Num a, Show a) => Show (Radioactivity a) where { show = showUnit }
 
->newtype AbsorbedDose  = Grays { grays :: Double }
+>newtype AbsorbedDose a = Grays { grays :: a }
 > deriving (Eq,Ord, Typeable, Data, Generic)
 > deriving newtype (Binary)
->instance Show AbsorbedDose where { show = show_unit }
+>instance (Num a, Show a) => Show (AbsorbedDose a) where { show = showUnit }
 
->newtype EquivalentDose = Sieverts { sieverts :: Double }
+>newtype EquivalentDose a = Sieverts { sieverts :: a }
 > deriving (Eq,Ord, Typeable, Data, Generic)
 > deriving newtype (Binary)
 
->instance Show EquivalentDose where { show = show_unit }
+>instance (Num a, Show a) => Show (EquivalentDose a) where { show = showUnit }
 
 
->newtype CatalyticActivity = Katals { katals :: Double }
+>newtype CatalyticActivity a = Katals { katals :: a }
 > deriving (Eq,Ord, Typeable, Data, Generic)
 > deriving newtype (Binary)
->instance Show CatalyticActivity where { show = show_unit }
+>instance (Num a, Show a) => Show (CatalyticActivity a) where { show = showUnit }
 
->instance Unit CatalyticActivity where
+>instance (Num a, Show a) => Unit (CatalyticActivity a) where
 >   amount = katals
->   dimension _ = katal_dimension
->   fromQuantity = fromQuantityDef katal_dimension Katals
+>   dimension _ = katalDimension
+>   fromQuantity = fromQuantityDef katalDimension Katals
 >   unitOf _ = "kat"
->instance LiteralUnit CatalyticActivity where { fromAmount = Katals }
->instance Unit EquivalentDose where
+>instance (Show a, Num a) => LiteralUnit (CatalyticActivity a) where { fromAmount = Katals }
+>instance (Num a, Show a) => Unit (EquivalentDose a) where
 >   amount = sieverts
->   dimension _ = sievert_dimension
->   fromQuantity = fromQuantityDef sievert_dimension Sieverts
+>   dimension _ = sievertDimension
+>   fromQuantity = fromQuantityDef sievertDimension Sieverts
 >   unitOf _ = "Sv"
->instance LiteralUnit EquivalentDose where { fromAmount = Sieverts }
+>instance (Show a, Num a) => LiteralUnit (EquivalentDose a) where { fromAmount = Sieverts }
 >   
 >                                     
->instance Unit AbsorbedDose where
+>instance (Num a, Show a) => Unit (AbsorbedDose a) where
 >   amount = grays
->   dimension _ = gray_dimension
->   fromQuantity = fromQuantityDef gray_dimension Grays
+>   dimension _ = grayDimension
+>   fromQuantity = fromQuantityDef grayDimension Grays
 >   unitOf _ = "Gy"
->instance LiteralUnit AbsorbedDose where { fromAmount = Grays }   
->instance Unit Radioactivity where
+>instance (Show a, Num a) => LiteralUnit (AbsorbedDose a) where { fromAmount = Grays }   
+>instance (Num a, Show a) => Unit (Radioactivity a) where
 >   amount = becquerels
->   dimension _ = becquerel_dimension
->   fromQuantity = fromQuantityDef becquerel_dimension Becquerels
+>   dimension _ = becquerelDimension
+>   fromQuantity = fromQuantityDef becquerelDimension Becquerels
 >   unitOf _ = "Bq"
->instance LiteralUnit Radioactivity where { fromAmount = Becquerels }
->instance Unit Illuminance where
+>instance (Show a, Num a) => LiteralUnit (Radioactivity a) where { fromAmount = Becquerels }
+>instance (Num a, Show a) => Unit (Illuminance a) where
 >   amount = luxes
->   dimension _ = lux_dimension
->   fromQuantity = fromQuantityDef lux_dimension Luxes
+>   dimension _ = luxDimension
+>   fromQuantity = fromQuantityDef luxDimension Luxes
 >   unitOf _ = "lx"
->instance LiteralUnit Illuminance where { fromAmount = Luxes }
->instance Unit LuminousFlux where
+>instance (Show a, Num a) => LiteralUnit (Illuminance a) where { fromAmount = Luxes }
+>instance (Num a, Show a) => Unit (LuminousFlux a) where
 >   amount = lumens
->   dimension _ = lumen_dimension
->   fromQuantity = fromQuantityDef lumen_dimension Lumens
+>   dimension _ = lumenDimension
+>   fromQuantity = fromQuantityDef lumenDimension Lumens
 >   unitOf _ = "lm"
->instance LiteralUnit LuminousFlux where { fromAmount = Lumens }
->instance Unit Inductance where
+>instance (Show a, Num a) => LiteralUnit (LuminousFlux a) where { fromAmount = Lumens }
+>instance (Num a, Show a) => Unit (Inductance a) where
 >   amount = henrys
->   dimension _ = henry_dimension
->   fromQuantity = fromQuantityDef henry_dimension Henrys
+>   dimension _ = henryDimension
+>   fromQuantity = fromQuantityDef henryDimension Henrys
 >   unitOf _ = "H"
->instance LiteralUnit Inductance where { fromAmount = Henrys }
->instance Unit FluxDensity where
+>instance (Show a, Num a) => LiteralUnit (Inductance a) where { fromAmount = Henrys }
+>instance (Num a, Show a) => Unit (FluxDensity a) where
 >   amount = teslas
->   dimension _ = tesla_dimension
->   fromQuantity = fromQuantityDef tesla_dimension Teslas
+>   dimension _ = teslaDimension
+>   fromQuantity = fromQuantityDef teslaDimension Teslas
 >   unitOf _ = "T"
->instance LiteralUnit FluxDensity where { fromAmount = Teslas }
->instance Unit Flux where
+>instance (Show a, Num a) => LiteralUnit (FluxDensity a) where { fromAmount = Teslas }
+>instance (Num a, Show a) => Unit (Flux a) where
 >   amount = webers
->   dimension _ = weber_dimension
->   fromQuantity = fromQuantityDef weber_dimension Webers
+>   dimension _ = weberDimension
+>   fromQuantity = fromQuantityDef weberDimension Webers
 >   unitOf _ = "W"
->instance LiteralUnit Flux where { fromAmount = Webers }
->instance Unit Conductance where
+>instance (Show a, Num a) => LiteralUnit (Flux a) where { fromAmount = Webers }
+>instance (Num a, Show a) => Unit (Conductance a) where
 >   amount = siemenses
->   dimension _ = siemens_dimension
->   fromQuantity = fromQuantityDef siemens_dimension Siemenses
+>   dimension _ = siemensDimension
+>   fromQuantity = fromQuantityDef siemensDimension Siemenses
 >   unitOf _ = "S"
->instance LiteralUnit Conductance where { fromAmount = Siemenses }
->instance Unit Resistance where
+>instance (Show a, Num a) => LiteralUnit (Conductance a) where { fromAmount = Siemenses }
+>instance (Num a, Show a) => Unit (Resistance a) where
 >   amount = ohms
->   dimension _ = ohm_dimension
->   fromQuantity = fromQuantityDef ohm_dimension Ohms
+>   dimension _ = ohmDimension
+>   fromQuantity = fromQuantityDef ohmDimension Ohms
 >   unitOf _ = "Ω"
->instance LiteralUnit Resistance where { fromAmount = Ohms }
->instance Unit Capacitance where
+>instance (Show a, Num a) => LiteralUnit (Resistance a) where { fromAmount = Ohms }
+>instance (Num a, Show a) => Unit (Capacitance a) where
 >   amount = farads
->   dimension _ = farad_dimension
->   fromQuantity = fromQuantityDef farad_dimension Farads
+>   dimension _ = faradDimension
+>   fromQuantity = fromQuantityDef faradDimension Farads
 >   unitOf _ = "F"
->instance LiteralUnit Capacitance where { fromAmount = Farads }
->instance Unit Voltage where
+>instance (Show a, Num a) => LiteralUnit (Capacitance a) where { fromAmount = Farads }
+>instance (Num a, Show a) => Unit (Voltage a) where
 >   amount = volts
->   dimension _ = volt_dimension
->   fromQuantity = fromQuantityDef volt_dimension Volts
+>   dimension _ = voltDimension
+>   fromQuantity = fromQuantityDef voltDimension Volts
 >   unitOf _ = "V"
->instance LiteralUnit Voltage where { fromAmount = Volts }
->instance Unit Charge where
+>instance (Show a, Num a) => LiteralUnit (Voltage a) where { fromAmount = Volts }
+>instance (Num a, Show a) => Unit (Charge a) where
 >   amount = coulombs
->   dimension _ = coulomb_dimension
->   fromQuantity = fromQuantityDef coulomb_dimension Coulombs
+>   dimension _ = coulombDimension
+>   fromQuantity = fromQuantityDef coulombDimension Coulombs
 >   unitOf _ = "C"
->instance LiteralUnit Charge where { fromAmount = Coulombs }
->instance Unit Power where
+>instance (Show a, Num a) => LiteralUnit (Charge a) where { fromAmount = Coulombs }
+>instance (Num a, Show a) => Unit ( Power  a) where
 >   amount = watts
->   dimension _ = watt_dimension
->   fromQuantity = fromQuantityDef watt_dimension Watts
+>   dimension _ = wattDimension
+>   fromQuantity = fromQuantityDef wattDimension Watts
 >   unitOf _ = "W"
->instance LiteralUnit Power where { fromAmount = Watts }
->instance Unit Energy where
+>instance (Show a, Num a) => LiteralUnit ( Power  a) where { fromAmount = Watts }
+>instance (Num a, Show a) => Unit ( Energy  a) where
 >   amount = joules
->   dimension _ = joule_dimension
->   fromQuantity = fromQuantityDef joule_dimension Joules
+>   dimension _ = jouleDimension
+>   fromQuantity = fromQuantityDef jouleDimension Joules
 >   unitOf _ = "J"
->instance LiteralUnit Energy where { fromAmount = Joules }
->instance Unit Pressure where
+>instance (Show a, Num a) => LiteralUnit ( Energy  a) where { fromAmount = Joules }
+>instance (Num a, Show a) => Unit ( Pressure  a) where
 >   amount = pascals
->   dimension _ = pascal_dimension
->   fromQuantity = fromQuantityDef pascal_dimension Pascals
+>   dimension _ = pascalDimension
+>   fromQuantity = fromQuantityDef pascalDimension Pascals
 >   unitOf _ = "Pa"
->instance LiteralUnit Pressure where { fromAmount = Pascals }
->instance Unit Force where
+>instance (Show a, Num a) => LiteralUnit ( Pressure  a) where { fromAmount = Pascals }
+>instance (Num a, Show a) => Unit ( Force  a) where
 >   amount = newtons
->   dimension _ = newton_dimension
->   fromQuantity = fromQuantityDef newton_dimension Newtons
+>   dimension _ = newtonDimension
+>   fromQuantity = fromQuantityDef newtonDimension Newtons
 >   unitOf _ = "N"
->instance LiteralUnit Force where { fromAmount = Newtons }
->instance Unit Torque where
+>instance (Show a, Num a) => LiteralUnit ( Force  a) where { fromAmount = Newtons }
+>instance (Num a, Show a) => Unit ( Torque  a) where
 >   amount = newtonmeters
->   dimension _ = joule_dimension %- radian_dimension
->   fromQuantity = fromQuantityDef (joule_dimension %- radian_dimension) NewtonMeters
+>   dimension _ = jouleDimension %- radianDimension
+>   fromQuantity = fromQuantityDef (jouleDimension %- radianDimension) NewtonMeters
 >   unitOf _ = "N m" -- notice not displayed similarly than joule.
->instance LiteralUnit Torque where { fromAmount = NewtonMeters }
+>instance (Show a, Num a) => LiteralUnit ( Torque  a) where { fromAmount = NewtonMeters }
 
->instance Unit Frequency where
+>instance (Num a, Show a) => Unit ( Frequency  a) where
 >   amount = hertzes
->   dimension _ = hertz_dimension
->   fromQuantity = fromQuantityDef hertz_dimension Hertzes
+>   dimension _ = hertzDimension
+>   fromQuantity = fromQuantityDef hertzDimension Hertzes
 >   unitOf _ = "Hz"
->instance LiteralUnit Frequency where { fromAmount = Hertzes }
->instance Unit Length where
+>instance (Show a, Num a) => LiteralUnit ( Frequency  a) where { fromAmount = Hertzes }
+>instance (Num a, Show a) => Unit ( Length  a) where
 >   amount = meters
->   dimension _ = meter_dimension
->   fromQuantity = fromQuantityDef meter_dimension Meters
+>   dimension _ = meterDimension
+>   fromQuantity = fromQuantityDef meterDimension Meters
 >   unitOf _ = "m"
->instance LiteralUnit Length where { fromAmount = Meters }
->instance Unit Mass where
+>instance (Show a, Num a) => LiteralUnit ( Length  a) where { fromAmount = Meters }
+>instance (Num a, Show a) => Unit ( Mass  a) where
 >   amount = kilograms
->   dimension _ = kilogram_dimension
->   fromQuantity = fromQuantityDef kilogram_dimension Kilograms
+>   dimension _ = kilogramDimension
+>   fromQuantity = fromQuantityDef kilogramDimension Kilograms
 >   unitOf _ = "kg"
->instance LiteralUnit Mass where { fromAmount = Kilograms }
->instance Unit Time where
+>instance (Show a, Num a) => LiteralUnit ( Mass  a) where { fromAmount = Kilograms }
+>instance (Num a, Show a) => Unit ( Time  a) where
 >   amount = seconds
->   dimension _ = second_dimension
->   fromQuantity = fromQuantityDef second_dimension Seconds
+>   dimension _ = secondDimension
+>   fromQuantity = fromQuantityDef secondDimension Seconds
 >   unitOf _ = "s"
->instance LiteralUnit Time where { fromAmount = Seconds }
->instance Unit Current where
+>instance (Show a, Num a) => LiteralUnit ( Time  a) where { fromAmount = Seconds }
+>instance (Num a, Show a) => Unit ( Current  a) where
 >   amount = amperes
->   dimension _ = ampere_dimension
->   fromQuantity = fromQuantityDef ampere_dimension Amperes
+>   dimension _ = ampereDimension
+>   fromQuantity = fromQuantityDef ampereDimension Amperes
 >   unitOf _ = "A"
->instance LiteralUnit Current where { fromAmount = Amperes }
->instance Unit Temperature where
+>instance (Show a, Num a) => LiteralUnit ( Current  a) where { fromAmount = Amperes }
+>instance (Num a, Show a) => Unit ( Temperature  a) where
 >   amount = kelvins
->   dimension _ = kelvin_dimension
->   fromQuantity = fromQuantityDef kelvin_dimension DegreesKelvin
+>   dimension _ = kelvinDimension
+>   fromQuantity = fromQuantityDef kelvinDimension DegreesKelvin
 >   unitOf _ = "K"
->instance LiteralUnit Temperature where { fromAmount = DegreesKelvin }
+>instance (Show a, Num a) => LiteralUnit ( Temperature  a) where { fromAmount = DegreesKelvin }
 > 
->instance Unit Substance where
+>instance (Num a, Show a) => Unit ( Substance  a) where
 >   amount = moles
->   dimension _ = mol_dimension
->   fromQuantity = fromQuantityDef mol_dimension Moles
+>   dimension _ = molDimension
+>   fromQuantity = fromQuantityDef molDimension Moles
 >   unitOf _ = "mol"
->instance LiteralUnit Substance where { fromAmount = Moles }
->instance Unit Intensity where
+>instance (Show a, Num a) => LiteralUnit ( Substance  a) where { fromAmount = Moles }
+>instance (Num a, Show a) => Unit ( Intensity  a) where
 >   amount = candelas
->   dimension _ = candela_dimension
->   fromQuantity = fromQuantityDef candela_dimension Candelas
+>   dimension _ = candelaDimension
+>   fromQuantity = fromQuantityDef candelaDimension Candelas
 >   unitOf _ = "cd"
->instance LiteralUnit Intensity where { fromAmount = Candelas }
->instance Read Angle where { readPrec = read_unit fromAmount }
->instance Read Resistance where { readPrec = read_unit fromAmount }
->instance Read DegreesAngle where { readPrec = read_unit fromAmount }
->instance Read Information where { readPrec = read_unit fromAmount }
->instance Read Inductance where { readPrec = read_unit fromAmount }
->instance Read EquivalentDose where { readPrec = read_unit fromAmount }
->instance Read Conductance where { readPrec = read_unit fromAmount }
->instance Read CatalyticActivity where { readPrec = read_unit fromAmount }
->instance Read Radioactivity where { readPrec = read_unit fromAmount }
->instance Read Illuminance where { readPrec = read_unit fromAmount }
->instance Read AbsorbedDose where { readPrec = read_unit fromAmount }
->instance Read FluxDensity where { readPrec = read_unit fromAmount }
->instance Read Flux where { readPrec = read_unit fromAmount }
->instance Read LuminousFlux where { readPrec = read_unit fromAmount }
->instance Read Capacitance where { readPrec = read_unit fromAmount }
->instance Read Charge where { readPrec = read_unit fromAmount }
->instance Read Power where { readPrec = read_unit fromAmount }
->instance Read Voltage where { readPrec = read_unit fromAmount }
->instance Read Energy where { readPrec = read_unit fromAmount }
->instance Read Pressure where { readPrec = read_unit fromAmount }
->instance Read Force where { readPrec = read_unit fromAmount }
->instance Read Intensity where { readPrec = read_unit fromAmount }
->instance Read Substance where { readPrec = read_unit fromAmount }
->instance Read Temperature where { readPrec = read_unit fromAmount }
->instance Read Frequency where { readPrec = read_unit fromAmount }
->instance Read SolidAngle where { readPrec = read_unit fromAmount }
->instance Read DegreesTemperature where { readPrec = read_unit fromAmount }
->instance Read Current where { readPrec = read_unit fromAmount }
->instance Read DegreesFahrenheit where { readPrec = read_unit fromAmount }
->instance Read Percentage where { readPrec = read_unit fromAmount }
->instance Read Time where { readPrec = read_unit fromAmount }
->instance Read Length where { readPrec = read_unit fromAmount }
->instance Read Mass where { readPrec = read_unit fromAmount }
->instance Read SquareLength where { readPrec = read_unit fromAmount }
->instance Read CubicLength where { readPrec = read_unit fromAmount }
->instance Read Acceleration where { readPrec = read_unit fromAmount }
->instance Read Velocity where { readPrec = read_unit fromAmount }
->instance Read Torque where { readPrec = read_unit fromAmount }
->instance Read SoundLevel where { readPrec = read_unit fromAmount }
->instance (LiteralUnit a, LiteralUnit b, Read (Scalar a), Show (Scalar a), Scalar a ~ Scalar b) => Read (a :* b) where { readPrec = read_unit (fromAmount *%% fromAmount) }
->instance (LiteralUnit a, LiteralUnit b, Read (Scalar a), Show (Scalar a), Scalar a ~ Scalar b) => Read (a :/ b) where { readPrec = read_unit (fromAmount /%% fromAmount) }
+>instance (Show a, Num a) => LiteralUnit ( Intensity  a) where { fromAmount = Candelas }
+>instance (Floating a, Read a, Show a) => Read (Angle a) where { readPrec = readUnit fromAmount }
+>instance (Show a, Read a, Num a) => Read (Resistance a) where { readPrec = readUnit fromAmount }
+>instance (Floating a, Read a, Show a) => Read (DegreesAngle a) where { readPrec = readUnit fromAmount }
+>instance (Show a, Num a, Read a) => Read ( Information  a) where { readPrec = readUnit fromAmount }
+>instance (Show a, Num a, Read a) => Read ( Inductance  a) where { readPrec = readUnit fromAmount }
+>instance (Show a, Num a, Read a) => Read ( EquivalentDose  a) where { readPrec = readUnit fromAmount }
+>instance (Show a, Num a, Read a) => Read ( Conductance  a) where { readPrec = readUnit fromAmount }
+>instance (Show a, Num a, Read a) => Read ( CatalyticActivity  a) where { readPrec = readUnit fromAmount }
+>instance (Show a, Num a, Read a) => Read ( Radioactivity  a) where { readPrec = readUnit fromAmount }
+>instance (Show a, Num a, Read a) => Read ( Illuminance  a) where { readPrec = readUnit fromAmount }
+>instance (Show a, Num a, Read a) => Read ( AbsorbedDose  a) where { readPrec = readUnit fromAmount }
+>instance (Show a, Num a, Read a) => Read ( FluxDensity  a) where { readPrec = readUnit fromAmount }
+>instance (Show a, Num a, Read a) => Read ( Flux  a) where { readPrec = readUnit fromAmount }
+>instance (Show a, Num a, Read a) => Read ( LuminousFlux  a) where { readPrec = readUnit fromAmount }
+>instance (Show a, Num a, Read a) => Read ( Capacitance  a) where { readPrec = readUnit fromAmount }
+>instance (Show a, Num a, Read a) => Read ( Charge  a) where { readPrec = readUnit fromAmount }
+>instance (Show a, Num a, Read a) => Read ( Power  a) where { readPrec = readUnit fromAmount }
+>instance (Show a, Num a, Read a) => Read ( Voltage  a) where { readPrec = readUnit fromAmount }
+>instance (Show a, Num a, Read a) => Read ( Energy  a) where { readPrec = readUnit fromAmount }
+>instance (Show a, Num a, Read a) => Read ( Pressure  a) where { readPrec = readUnit fromAmount }
+>instance (Show a, Num a, Read a) => Read ( Force  a) where { readPrec = readUnit fromAmount }
+>instance (Show a, Num a, Read a) => Read ( Intensity  a) where { readPrec = readUnit fromAmount }
+>instance (Show a, Num a, Read a) => Read ( Substance  a) where { readPrec = readUnit fromAmount }
+>instance (Show a, Num a, Read a) => Read ( Temperature  a) where { readPrec = readUnit fromAmount }
+>instance (Show a, Num a, Read a) => Read ( Frequency  a) where { readPrec = readUnit fromAmount }
+>instance (Show a, Num a, Read a) => Read ( SolidAngle  a) where { readPrec = readUnit fromAmount }
+>instance (Show a, Fractional a, Read a) => Read ( DegreesTemperature  a) where { readPrec = readUnit fromAmount }
+>instance (Show a, Num a, Read a) => Read ( Current  a) where { readPrec = readUnit fromAmount }
+>instance (Show a, Fractional a, Read a) => Read ( DegreesFahrenheit  a) where { readPrec = readUnit fromAmount }
+>instance (Show a, Fractional a, Read a) => Read ( DegreesRankine  a) where { readPrec = readUnit fromAmount }
+>instance (Show a, Fractional a, Read a) => Read ( Percentage  a) where { readPrec = readUnit fromAmount }
+>instance (Show a, Num a, Read a) => Read ( Time  a) where { readPrec = readUnit fromAmount }
+>instance (Show a, Num a, Read a) => Read ( Length  a) where { readPrec = readUnit fromAmount }
+>instance (Show a, Num a, Read a) => Read ( Mass  a) where { readPrec = readUnit fromAmount }
+>instance (Show a, Num a, Read a) => Read ( SquareLength  a) where { readPrec = readUnit fromAmount }
+>instance (Show a, Num a, Read a) => Read ( CubicLength  a) where { readPrec = readUnit fromAmount }
+>instance (Show a, Num a, Read a) => Read ( Acceleration  a) where { readPrec = readUnit fromAmount }
+>instance (Show a, Num a, Read a) => Read ( Velocity  a) where { readPrec = readUnit fromAmount }
+>instance (Show a, Num a, Read a) => Read ( Torque  a) where { readPrec = readUnit fromAmount }
+>instance (Show a, Floating a, Read a) => Read ( SoundLevel  a) where { readPrec = readUnit fromAmount }
+>instance (LiteralUnit a, LiteralUnit b, Read (Scalar a), Show (Scalar a), Scalar a ~ Scalar b) => Read (a :* b) where { readPrec = readUnit (fromAmount *%% fromAmount) }
+>instance (LiteralUnit a, LiteralUnit b, Read (Scalar a), Show (Scalar a), Scalar a ~ Scalar b) => Read (a :/ b) where { readPrec = readUnit (fromAmount /%% fromAmount) }
+
+>instance (Num a) => VectorSpace (Angle a) where
+>  type Scalar (Angle a) = a
+>  vzero = Radians 0
+>  vnegate (Radians a) = Radians (negate a)
+>  (Radians a) %+ (Radians b) = Radians (a + b)
+>  k %* (Radians a) = Radians $ k * a
+
+>instance (Num a) => VectorSpace (DegreesAngle a) where
+>  type Scalar (DegreesAngle a) = a
+>  vzero = Degrees 0
+>  vnegate (Degrees a) = Degrees (negate a)
+>  (Degrees a) %+ (Degrees b) = Degrees (a + b)
+>  k %* (Degrees a) = Degrees $ k * a
 
 #if __GLASGOW_HASKELL__ >= 806
 
->deriving via Dimensionless instance VectorSpace (Angle)
->deriving via Dimensionless instance VectorSpace (Resistance)
->deriving via Dimensionless instance VectorSpace (DegreesAngle)
->deriving via Dimensionless instance VectorSpace (Information)
->deriving via Dimensionless instance VectorSpace (Inductance)
->deriving via Dimensionless instance VectorSpace (EquivalentDose)
->deriving via Dimensionless instance VectorSpace (Conductance)
->deriving via Dimensionless instance VectorSpace (CatalyticActivity)
->deriving via Dimensionless instance VectorSpace (Radioactivity)
->deriving via Dimensionless instance VectorSpace (Illuminance)
->deriving via Dimensionless instance VectorSpace (AbsorbedDose)
->deriving via Dimensionless instance VectorSpace (FluxDensity)
->deriving via Dimensionless instance VectorSpace (Flux)
->deriving via Dimensionless instance VectorSpace (LuminousFlux)
->deriving via Dimensionless instance VectorSpace (Capacitance)
->deriving via Dimensionless instance VectorSpace (Charge)
->deriving via Dimensionless instance VectorSpace (Power)
->deriving via Dimensionless instance VectorSpace (Voltage)
->deriving via Dimensionless instance VectorSpace (Energy)
->deriving via Dimensionless instance VectorSpace (Pressure)
->deriving via Dimensionless instance VectorSpace (Force)
->deriving via Dimensionless instance VectorSpace (Intensity)
->deriving via Dimensionless instance VectorSpace (Substance)
->deriving via Dimensionless instance VectorSpace (Temperature)
->deriving via Dimensionless instance VectorSpace (Frequency)
->deriving via Dimensionless instance VectorSpace (SolidAngle)
->deriving via Dimensionless instance VectorSpace (DegreesTemperature)
->deriving via Dimensionless instance VectorSpace (Current)
->deriving via Dimensionless instance VectorSpace (DegreesFahrenheit)
->deriving via Dimensionless instance VectorSpace (Percentage)
->deriving via Dimensionless instance VectorSpace (Time)
->deriving via Dimensionless instance VectorSpace (Length)
->deriving via Dimensionless instance VectorSpace (Mass)
->deriving via Dimensionless instance VectorSpace (SquareLength)
->deriving via Dimensionless instance VectorSpace (CubicLength)
->deriving via Dimensionless instance VectorSpace (Acceleration)
->deriving via Dimensionless instance VectorSpace (Velocity)
->deriving via Dimensionless instance VectorSpace (Torque)
-
->deriving via Dimensionless instance NormedSpace (Angle)
->deriving via Dimensionless instance NormedSpace (Resistance)
->deriving via Dimensionless instance NormedSpace (DegreesAngle)
->deriving via Dimensionless instance NormedSpace (Information)
->deriving via Dimensionless instance NormedSpace (Inductance)
->deriving via Dimensionless instance NormedSpace (EquivalentDose)
->deriving via Dimensionless instance NormedSpace (Conductance)
->deriving via Dimensionless instance NormedSpace (CatalyticActivity)
->deriving via Dimensionless instance NormedSpace (Radioactivity)
->deriving via Dimensionless instance NormedSpace (Illuminance)
->deriving via Dimensionless instance NormedSpace (AbsorbedDose)
->deriving via Dimensionless instance NormedSpace (FluxDensity)
->deriving via Dimensionless instance NormedSpace (Flux)
->deriving via Dimensionless instance NormedSpace (LuminousFlux)
->deriving via Dimensionless instance NormedSpace (Capacitance)
->deriving via Dimensionless instance NormedSpace (Charge)
->deriving via Dimensionless instance NormedSpace (Power)
->deriving via Dimensionless instance NormedSpace (Voltage)
->deriving via Dimensionless instance NormedSpace (Energy)
->deriving via Dimensionless instance NormedSpace (Pressure)
->deriving via Dimensionless instance NormedSpace (Force)
->deriving via Dimensionless instance NormedSpace (Intensity)
->deriving via Dimensionless instance NormedSpace (Substance)
->deriving via Dimensionless instance NormedSpace (Temperature)
->deriving via Dimensionless instance NormedSpace (Frequency)
->deriving via Dimensionless instance NormedSpace (SolidAngle)
->deriving via Dimensionless instance NormedSpace (DegreesTemperature)
->deriving via Dimensionless instance NormedSpace (Current)
->deriving via Dimensionless instance NormedSpace (DegreesFahrenheit)
->deriving via Dimensionless instance NormedSpace (Percentage)
->deriving via Dimensionless instance NormedSpace (Time)
->deriving via Dimensionless instance NormedSpace (Length)
->deriving via Dimensionless instance NormedSpace (Mass)
->deriving via Dimensionless instance NormedSpace (SquareLength)
->deriving via Dimensionless instance NormedSpace (Acceleration)
->deriving via Dimensionless instance NormedSpace (Velocity)
->deriving via Dimensionless instance NormedSpace (Torque)
+>deriving via (Dimensionless a) instance (Num a) => VectorSpace (Resistance a)
+>deriving via (Dimensionless a) instance (Num a) => VectorSpace (Information a)
+>deriving via (Dimensionless a) instance (Num a) => VectorSpace (Inductance a)
+>deriving via (Dimensionless a) instance (Num a) => VectorSpace (EquivalentDose a)
+>deriving via (Dimensionless a) instance (Num a) => VectorSpace (Conductance a)
+>deriving via (Dimensionless a) instance (Num a) => VectorSpace (CatalyticActivity a)
+>deriving via (Dimensionless a) instance (Num a) => VectorSpace (Radioactivity a)
+>deriving via (Dimensionless a) instance (Num a) => VectorSpace (Illuminance a)
+>deriving via (Dimensionless a) instance (Num a) => VectorSpace (AbsorbedDose a)
+>deriving via (Dimensionless a) instance (Num a) => VectorSpace (FluxDensity a)
+>deriving via (Dimensionless a) instance (Num a) => VectorSpace (Flux a)
+>deriving via (Dimensionless a) instance (Num a) => VectorSpace (LuminousFlux a)
+>deriving via (Dimensionless a) instance (Num a) => VectorSpace (Capacitance a)
+>deriving via (Dimensionless a) instance (Num a) => VectorSpace (Charge a)
+>deriving via (Dimensionless a) instance (Num a) => VectorSpace (Power a)
+>deriving via (Dimensionless a) instance (Num a) => VectorSpace (Voltage a)
+>deriving via (Dimensionless a) instance (Num a) => VectorSpace (Energy a)
+>deriving via (Dimensionless a) instance (Num a) => VectorSpace (Pressure a)
+>deriving via (Dimensionless a) instance (Num a) => VectorSpace (Force a)
+>deriving via (Dimensionless a) instance (Num a) => VectorSpace (Intensity a)
+>deriving via (Dimensionless a) instance (Num a) => VectorSpace (Substance a)
+>deriving via (Dimensionless a) instance (Num a) => VectorSpace (Temperature a)
+>deriving via (Dimensionless a) instance (Num a) => VectorSpace (Frequency a)
+>deriving via (Dimensionless a) instance (Num a) => VectorSpace (SolidAngle a)
+>deriving via (Dimensionless a) instance (Num a) => VectorSpace (DegreesTemperature a)
+>deriving via (Dimensionless a) instance (Num a) => VectorSpace (Current a)
+>deriving via (Dimensionless a) instance (Num a) => VectorSpace (DegreesFahrenheit a)
+>deriving via (Dimensionless a) instance (Num a) => VectorSpace (DegreesRankine a)
+>deriving via (Dimensionless a) instance (Num a) => VectorSpace (Percentage a)
+>deriving via (Dimensionless a) instance (Num a) => VectorSpace (Time a)
+>deriving via (Dimensionless a) instance (Num a) => VectorSpace (Length a)
+>deriving via (Dimensionless a) instance (Num a) => VectorSpace (Mass a)
+>deriving via (Dimensionless a) instance (Num a) => VectorSpace (SquareLength a)
+>deriving via (Dimensionless a) instance (Num a) => VectorSpace (CubicLength a)
+>deriving via (Dimensionless a) instance (Num a) => VectorSpace (Acceleration a)
+>deriving via (Dimensionless a) instance (Num a) => VectorSpace (Velocity a)
+>deriving via (Dimensionless a) instance (Num a) => VectorSpace (Torque a)
+>deriving via (Dimensionless a) instance (Num a) => NormedSpace (Angle a)
+>deriving via (Dimensionless a) instance (Num a) => NormedSpace (Resistance a)
+>deriving via (Dimensionless a) instance (Num a) => NormedSpace (DegreesAngle a)
+>deriving via (Dimensionless a) instance (Num a) => NormedSpace (Information a)
+>deriving via (Dimensionless a) instance (Num a) => NormedSpace (Inductance a)
+>deriving via (Dimensionless a) instance (Num a) => NormedSpace (EquivalentDose a)
+>deriving via (Dimensionless a) instance (Num a) => NormedSpace (Conductance a)
+>deriving via (Dimensionless a) instance (Num a) => NormedSpace (CatalyticActivity a)
+>deriving via (Dimensionless a) instance (Num a) => NormedSpace (Radioactivity a)
+>deriving via (Dimensionless a) instance (Num a) => NormedSpace (Illuminance a)
+>deriving via (Dimensionless a) instance (Num a) => NormedSpace (AbsorbedDose a)
+>deriving via (Dimensionless a) instance (Num a) => NormedSpace (FluxDensity a)
+>deriving via (Dimensionless a) instance (Num a) => NormedSpace (Flux a)
+>deriving via (Dimensionless a) instance (Num a) => NormedSpace (LuminousFlux a)
+>deriving via (Dimensionless a) instance (Num a) => NormedSpace (Capacitance a)
+>deriving via (Dimensionless a) instance (Num a) => NormedSpace (Charge a)
+>deriving via (Dimensionless a) instance (Num a) => NormedSpace (Power a)
+>deriving via (Dimensionless a) instance (Num a) => NormedSpace (Voltage a)
+>deriving via (Dimensionless a) instance (Num a) => NormedSpace (Energy a)
+>deriving via (Dimensionless a) instance (Num a) => NormedSpace (Pressure a)
+>deriving via (Dimensionless a) instance (Num a) => NormedSpace (Force a)
+>deriving via (Dimensionless a) instance (Num a) => NormedSpace (Intensity a)
+>deriving via (Dimensionless a) instance (Num a) => NormedSpace (Substance a)
+>deriving via (Dimensionless a) instance (Num a) => NormedSpace (Temperature a)
+>deriving via (Dimensionless a) instance (Num a) => NormedSpace (Frequency a)
+>deriving via (Dimensionless a) instance (Num a) => NormedSpace (SolidAngle a)
+>deriving via (Dimensionless a) instance (Num a) => NormedSpace (DegreesTemperature a)
+>deriving via (Dimensionless a) instance (Num a) => NormedSpace (Current a)
+>deriving via (Dimensionless a) instance (Num a) => NormedSpace (DegreesFahrenheit a)
+>deriving via (Dimensionless a) instance (Num a) => NormedSpace (DegreesRankine a)
+>deriving via (Dimensionless a) instance (Num a) => NormedSpace (Percentage a)
+>deriving via (Dimensionless a) instance (Num a) => NormedSpace (Time a)
+>deriving via (Dimensionless a) instance (Num a) => NormedSpace (Length a)
+>deriving via (Dimensionless a) instance (Num a) => NormedSpace (Mass a)
+>deriving via (Dimensionless a) instance (Num a) => NormedSpace (SquareLength a)
+>deriving via (Dimensionless a) instance (Num a) => NormedSpace (Acceleration a)
+>deriving via (Dimensionless a) instance (Num a) => NormedSpace (Velocity a)
+>deriving via (Dimensionless a) instance (Num a) => NormedSpace (Torque a)
 
 #else
 
->instance VectorSpace Velocity where
->   type Scalar Velocity = Double
+>instance (Num a) => VectorSpace ( Velocity  a) where
+>   type Scalar (Velocity a) = a
 >   vzero = MetersPerSecond 0
 >   vnegate (MetersPerSecond x) = MetersPerSecond (negate x)
 >   (MetersPerSecond x) %+ (MetersPerSecond y) = MetersPerSecond $ x + y
 >   k %* (MetersPerSecond x) = MetersPerSecond (k * x)
 >instance NormedSpace Velocity where { norm = amount }
->instance VectorSpace Acceleration where
->   type Scalar Acceleration = Double
+>instance (Num a) => VectorSpace ( Acceleration  a) where
+>   type Scalar (Acceleration a) = a
 >   vzero = MetersPerSquareSecond 0
 >   vnegate (MetersPerSquareSecond x) = MetersPerSquareSecond (negate x)
 >   (MetersPerSquareSecond x) %+ (MetersPerSquareSecond y) = MetersPerSquareSecond (x + y)
 >   k %* (MetersPerSquareSecond x) = MetersPerSquareSecond (k %* x)
 >instance NormedSpace Acceleration where { norm = amount }
->instance VectorSpace CubicLength where
->   type Scalar CubicLength = Double
+>instance (Num a) => VectorSpace ( CubicLength  a) where
+>   type Scalar (CubicLength a) = a
 >   vzero = CubicMeters 0
 >   vnegate (CubicMeters x) = CubicMeters $ negate x
 >   (CubicMeters x) %+ (CubicMeters y) = CubicMeters $ x + y
 >   k %* (CubicMeters x) = CubicMeters $ k * x
->instance VectorSpace SquareLength where
->   type Scalar SquareLength = Double
+>instance (Num a) => VectorSpace ( SquareLength  a) where
+>   type Scalar (SquareLength a) = a
 >   vzero = SquareMeters 0
 >   vnegate (SquareMeters x) = SquareMeters $ negate x
 >   (SquareMeters x) %+ (SquareMeters y) = SquareMeters $ x + y
 >   k %* (SquareMeters x) = SquareMeters $ k * x
 >instance NormedSpace SquareLength where { norm = amount }
 
->instance VectorSpace Mass where
->   type Scalar Mass = Double
+>instance (Num a) => VectorSpace ( Mass  a) where
+>   type Scalar (Mass a) = a
 >   vzero = Kilograms 0
 >   vnegate (Kilograms x) = Kilograms $ negate x
 >   (Kilograms x) %+ (Kilograms y) = Kilograms $ x + y
 >   k %* (Kilograms x) = Kilograms $ k * x
 >instance NormedSpace Mass where { norm = amount }
->instance VectorSpace Length where
->   type Scalar Length = Double
+>instance (Num a) => VectorSpace ( Length  a) where
+>   type Scalar (Length a) = a
 >   vzero = Meters 0
 >   vnegate (Meters x) = Meters $ negate x
 >   (Meters x) %+ (Meters y) = Meters $ x + y
 >   k %* (Meters x) = Meters $ k * x
 >instance NormedSpace Length where { norm = amount }
->instance VectorSpace Time where
->   type Scalar Time = Double
+>instance (Num a) => VectorSpace ( Time  a) where
+>   type Scalar (Time a) = a
 >   vzero = Seconds 0
 >   vnegate (Seconds x) = Seconds $ negate x
 >   (Seconds x) %+ (Seconds y) = Seconds $ x + y
 >   k %* (Seconds x) = Seconds $ k * x
 >instance NormedSpace Time where { norm = amount }
->instance VectorSpace Percentage where
->   type Scalar Percentage = Double
+>instance (Num a) => VectorSpace ( Percentage  a) where
+>   type Scalar (Percentage a) = a
 >   vzero = Percentages 0
 >   vnegate (Percentages i) = Percentages $ negate i
 >   (Percentages x) %+ (Percentages y) = Percentages $ x + y
 >   k %* (Percentages x) = Percentages (k * x)
 >instance NormedSpace Percentage where { norm = amount }
->instance VectorSpace DegreesFahrenheit where
->   type Scalar DegreesFahrenheit = Double
+>instance (Num a) => VectorSpace ( DegreesFahrenheit  a) where
+>   type Scalar (DegreesFahrenheit a) = a
 >   vzero = DegreesFahrenheit 0
 >   vnegate (DegreesFahrenheit x) = DegreesFahrenheit $ negate x
 >   (DegreesFahrenheit x) %+ (DegreesFahrenheit y) = DegreesFahrenheit $ x + y
 >   k %* (DegreesFahrenheit x) = DegreesFahrenheit $ k * x
 >instance NormedSpace DegreesFahrenheit where { norm = amount }
->instance VectorSpace Current where
->   type Scalar Current = Double
+>instance (Num a) => VectorSpace ( DegreesRankine  a) where
+>   type Scalar (DegreesRankine a) = a
+>   vzero = DegreesRankine 0
+>   vnegate (DegreesRankine x) = DegreesRankine $ negate x
+>   (DegreesRankine x) %+ (DegreesRankine y) = DegreesRankine $ x + y
+>   k %* (DegreesRankine x) = DegreesRankine $ k * x
+>instance NormedSpace DegreesRankine where { norm = amount }
+>instance (Num a) => VectorSpace ( Current  a) where
+>   type Scalar (Current a) = a
 >   vzero = Amperes 0
 >   vnegate (Amperes x) = Amperes $ negate x
 >   (Amperes x) %+ (Amperes y) = Amperes $ x + y
 >   k %* (Amperes x) = Amperes $ k * x
 >instance NormedSpace Current where { norm = amount }
->instance VectorSpace DegreesTemperature where
->   type Scalar DegreesTemperature = Double
+>instance (Num a) => VectorSpace ( DegreesTemperature  a) where
+>   type Scalar (DegreesTemperature a) = a
 >   vzero = DegreesCelcius 0
 >   vnegate (DegreesCelcius x) = DegreesCelcius $ negate x
 >   (DegreesCelcius x) %+ (DegreesCelcius y) = DegreesCelcius $ x + y
 >   k %* (DegreesCelcius x) = DegreesCelcius $ k * x
 >instance NormedSpace DegreesTemperature where { norm = amount }
->instance VectorSpace SolidAngle where
->   type Scalar SolidAngle = Double
+>instance (Num a) => VectorSpace ( SolidAngle  a) where
+>   type Scalar (SolidAngle a) = a
 >   vzero = Steradians 0
 >   vnegate (Steradians x) = Steradians (negate x)
 >   (Steradians x) %+ (Steradians y) = Steradians $ x + y
 >   k %* (Steradians x) = Steradians $ k * x
 >instance NormedSpace SolidAngle where { norm = amount }
->instance VectorSpace Frequency where
->   type Scalar Frequency = Double
+>instance (Num a) => VectorSpace ( Frequency  a) where
+>   type Scalar (Frequency a) = a
 >   vzero = Hertzes 0
 >   vnegate (Hertzes x) = Hertzes $ negate x
 >   (Hertzes x) %+ (Hertzes y) = Hertzes $ x + y
 >   k %* (Hertzes x) = Hertzes $ k * x
 >instance NormedSpace Frequency where { norm = amount }
->instance VectorSpace Temperature where
->   type Scalar Temperature = Double
+>instance (Num a) => VectorSpace ( Temperature  a) where
+>   type Scalar (Temperature a) = a
 >   vzero = DegreesKelvin 0
 >   vnegate (DegreesKelvin x) = DegreesKelvin $ negate x
 >   (DegreesKelvin x) %+ (DegreesKelvin y) = DegreesKelvin $ x + y
 >   k %* (DegreesKelvin x) = DegreesKelvin $ k * x
 >instance NormedSpace Temperature where { norm = amount }
->instance VectorSpace Substance where
->   type Scalar Substance = Double
+>instance (Num a) => VectorSpace ( Substance  a) where
+>   type Scalar (Substance a) = a
 >   vzero = Moles 0
 >   vnegate (Moles x) = Moles $ negate x
 >   (Moles x) %+ (Moles y) = Moles $ x + y
 >   k %* (Moles x) = Moles $ k * x
 >instance NormedSpace Substance where { norm = amount }
->instance VectorSpace Intensity where
->   type Scalar Intensity = Double
+>instance (Num a) => VectorSpace ( Intensity  a) where
+>   type Scalar (Intensity a) = a
 >   vzero = Candelas 0
 >   vnegate (Candelas x) = Candelas $ negate x
 >   (Candelas x) %+ (Candelas y) = Candelas $ x + y
 >   k %* (Candelas x) = Candelas $ k * x
 >instance NormedSpace Intensity where { norm = amount }
->instance VectorSpace Force where
->   type Scalar Force = Double
+>instance (Num a) => VectorSpace ( Force  a) where
+>   type Scalar (Force a) = a
 >   vzero = Newtons 0
 >   vnegate (Newtons x) = Newtons $ negate x
 >   (Newtons x) %+ (Newtons y) = Newtons $ x + y
 >   k %* (Newtons x) = Newtons $ k * x
 >instance NormedSpace Force where { norm = amount }
->instance VectorSpace Pressure where
->   type Scalar Pressure = Double
+>instance (Num a) => VectorSpace ( Pressure  a) where
+>   type Scalar (Pressure a) = a
 >   vzero = Pascals 0
 >   vnegate (Pascals x) = Pascals $ negate x
 >   (Pascals x) %+ (Pascals y) = Pascals $ x + y
 >   k %* (Pascals x) = Pascals $ k * x
 >instance NormedSpace Pressure where { norm = amount }
->instance VectorSpace Energy where
->   type Scalar Energy = Double
+>instance (Num a) => VectorSpace ( Energy  a) where
+>   type Scalar (Energy a) = a
 >   vzero = Joules 0
 >   vnegate (Joules x) = Joules $ negate x
 >   (Joules x) %+ (Joules y) = Joules $ x + y
 >   k %* (Joules x) = Joules $ k * x
 >instance NormedSpace Energy where { norm = amount }
->instance VectorSpace Voltage where
->   type Scalar Voltage = Double
+>instance (Num a) => VectorSpace ( Voltage  a) where
+>   type Scalar (Voltage a) = a
 >   vzero = Volts 0
 >   vnegate (Volts x) = Volts $ negate x
 >   (Volts x) %+ (Volts y) = Volts $ x + y
 >   k %* (Volts x) = Volts $ k * x
 >instance NormedSpace Voltage where { norm = amount }
->instance VectorSpace Power where
->   type Scalar Power = Double
+>instance (Num a) => VectorSpace ( Power  a) where
+>   type Scalar (Power a) = a
 >   vzero = Watts 0
 >   vnegate (Watts x) = Watts $ negate x
 >   (Watts x) %+ (Watts y) = Watts $ x + y
 >   k %* (Watts x) = Watts $ k * x
 >instance NormedSpace Power where { norm = amount }
->instance VectorSpace Charge where
->   type Scalar Charge = Double
+>instance (Num a) => VectorSpace ( Charge  a) where
+>   type Scalar (Charge a) = a
 >   vzero = Coulombs 0
 >   vnegate (Coulombs x) = Coulombs $ negate x
 >   (Coulombs x) %+ (Coulombs y) = Coulombs $ x + y
 >   k %* (Coulombs x) = Coulombs $ k * x
 >instance NormedSpace Charge where { norm = amount }
->instance VectorSpace Capacitance where
->   type Scalar Capacitance = Double
+>instance (Num a) => VectorSpace ( Capacitance  a) where
+>   type Scalar (Capacitance a) = a
 >   vzero = Farads 0
 >   vnegate (Farads x) = Farads $ negate x
 >   (Farads x) %+ (Farads y) = Farads $ x + y
 >   k %* (Farads x) = Farads $ k * x
 >instance NormedSpace Capacitance where { norm = amount }
->instance VectorSpace LuminousFlux where
->   type Scalar LuminousFlux = Double
+>instance (Num a) => VectorSpace ( LuminousFlux  a) where
+>   type Scalar (LuminousFlux a) = a
 >   vzero = Lumens 0
 >   vnegate (Lumens x) = Lumens $ negate x
 >   (Lumens x) %+ (Lumens y) = Lumens $ x + y
 >   k %* (Lumens x) = Lumens $ k * x
 >instance NormedSpace LuminousFlux where { norm = amount }
->instance VectorSpace Flux where
->   type Scalar Flux = Double
+>instance (Num a) => VectorSpace ( Flux  a) where
+>   type Scalar (Flux a) = a
 >   vzero = Webers 0
 >   vnegate (Webers x) = Webers $ negate x
 >   (Webers x) %+ (Webers y) = Webers $ x + y
 >   k %* (Webers x) = Webers $ k * x
 >instance NormedSpace Flux where { norm = amount }
 
->instance VectorSpace FluxDensity where
->   type Scalar FluxDensity = Double
+>instance (Num a) => VectorSpace ( FluxDensity  a) where
+>   type Scalar (FluxDensity a) = a
 >   vzero = Teslas 0
 >   vnegate (Teslas x) = Teslas $ negate x
 >   (Teslas x) %+ (Teslas y) = Teslas $ x + y
 >   k %* (Teslas x) = Teslas $ k * x
 >instance NormedSpace FluxDensity where { norm = amount }
->instance VectorSpace AbsorbedDose where
->   type Scalar AbsorbedDose = Double
+>instance (Num a) => VectorSpace ( AbsorbedDose  a) where
+>   type Scalar (AbsorbedDose a) = a
 >   vzero = Grays 0
 >   vnegate (Grays x) = Grays $ negate x
 >   (Grays x) %+ (Grays y) = Grays $ x + y
 >   k %* (Grays x) = Grays $ k * x
 >instance NormedSpace AbsorbedDose where { norm = amount }
->instance VectorSpace Illuminance where
->   type Scalar Illuminance = Double
+>instance (Num a) => VectorSpace ( Illuminance  a) where
+>   type Scalar (Illuminance a) = a
 >   vzero = Luxes 0
 >   vnegate (Luxes x) = Luxes $ negate x
 >   (Luxes x) %+ (Luxes y) = Luxes $ x + y
 >   k %* (Luxes x) = Luxes $ k * x
 >instance NormedSpace Illuminance where { norm = amount }
->instance VectorSpace Radioactivity where
->   type Scalar Radioactivity = Double
+>instance (Num a) => VectorSpace ( Radioactivity  a) where
+>   type Scalar (Radioactivity a) = a
 >   vzero = Becquerels 0
 >   vnegate (Becquerels x) = Becquerels $ negate x
 >   (Becquerels x) %+ (Becquerels y) = Becquerels $ x + y
 >   k %* (Becquerels x) = Becquerels $ k * x
 >instance NormedSpace Radioactivity where { norm = amount }
->instance VectorSpace CatalyticActivity where
->   type Scalar CatalyticActivity = Double
+>instance (Num a) => VectorSpace ( CatalyticActivity  a) where
+>   type Scalar (CatalyticActivity a) = a
 >   vzero = Katals 0
 >   vnegate (Katals x) = Katals $ negate x
 >   (Katals x) %+ (Katals y) = Katals $ x + y
 >   k %* (Katals x) = Katals $ k * x
 >instance NormedSpace CatalyticActivity where { norm = amount }
->instance VectorSpace Conductance where
->   type Scalar Conductance = Double
+>instance (Num a) => VectorSpace ( Conductance  a) where
+>   type Scalar (Conductance a) = a
 >   vzero = Siemenses 0
 >   vnegate (Siemenses x) = Siemenses $ negate x
 >   (Siemenses x) %+ (Siemenses y) = Siemenses $ x + y
 >   k %* (Siemenses x) = Siemenses $ k * x
 >instance NormedSpace Conductance where { norm = amount }
 
->instance VectorSpace EquivalentDose where
->   type Scalar EquivalentDose = Double
+>instance (Num a) => VectorSpace ( EquivalentDose  a) where
+>   type Scalar (EquivalentDose a) = a
 >   vzero = Sieverts 0
 >   vnegate (Sieverts x) = Sieverts $ negate x
 >   (Sieverts x) %+ (Sieverts y) = Sieverts $ x + y
 >   k %* (Sieverts x) = Sieverts $ k * x
 >instance NormedSpace EquivalentDose where { norm = amount }
 
->instance VectorSpace Angle where
->   type Scalar Angle = Double
+>instance (Num a) => VectorSpace ( Angle  a) where
+>   type Scalar (Angle a) = a
 >   vzero = Radians 0
 >   vnegate (Radians x) = Radians (negate x)
 >   (Radians x) %+ (Radians y) = Radians $ x + y
 >   k %* (Radians x) = Radians $ k * x
+
 >instance NormedSpace Angle where { norm = amount }
 
->instance VectorSpace Resistance where
->   type Scalar Resistance = Double
+>instance (Num a) => VectorSpace ( Resistance  a) where
+>   type Scalar (Resistance a) = a
 >   vzero = Ohms 0
 >   vnegate (Ohms x) = Ohms $ negate x
 >   (Ohms x) %+ (Ohms y) = Ohms $ x + y
 >   k %* (Ohms x) = Ohms $ k * x
 >instance NormedSpace Resistance where { norm = amount }
 
->instance VectorSpace DegreesAngle where
->   type Scalar DegreesAngle = Double
+>instance (Num a) => VectorSpace ( DegreesAngle  a) where
+>   type Scalar (DegreesAngle a) = a
 >   vzero = Degrees 0
 >   vnegate (Degrees x) = Degrees $ negate x
 >   (Degrees x) %+ (Degrees y) = Degrees $ x + y
 >   k %* (Degrees x) = Degrees $ k * x
 >instance NormedSpace DegreesAngle where { norm = amount }
 
->instance VectorSpace Information where
->   type Scalar Information = Double
+>instance (Num a) => VectorSpace ( Information  a) where
+>   type Scalar (Information a) = a
 >   vzero = Bits 0
 >   vnegate (Bits x) = Bits (negate x)
 >   (Bits x) %+ (Bits y) = Bits $ x + y
 >   k %* (Bits x) = Bits (k * x)
 >instance NormedSpace Information where { norm = amount }
 
->instance VectorSpace Inductance where
->   type Scalar Inductance = Double
+>instance (Num a) => VectorSpace ( Inductance  a) where
+>   type Scalar (Inductance a) = a
 >   vzero = Henrys 0
 >   vnegate (Henrys x) = Henrys $ negate x
 >   (Henrys x) %+ (Henrys y) = Henrys $ x + y
 >   k %* (Henrys x) = Henrys $ k * x
 >instance NormedSpace Inductance where { norm = amount }
 
->instance VectorSpace Torque where
->   type Scalar Torque = Double
+>instance (Num a) => VectorSpace ( Torque  a) where
+>   type Scalar (Torque a) = a
 >   vzero = NewtonMeters 0
 >   vnegate (NewtonMeters x) = NewtonMeters $ negate x
 >   (NewtonMeters x) %+ (NewtonMeters y) = NewtonMeters $ x + y

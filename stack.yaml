@@ -74,4 +74,4 @@ allow-newer-deps: [aeson, algebraic-graphs, graphviz, bytestring, cifl-math-libr
 ghc-options:
         "$locals": -fobject-code
         "$targets": -fobject-code
-        "$everything": -fobject-code
+        "$everything": -fobject-code -haddock

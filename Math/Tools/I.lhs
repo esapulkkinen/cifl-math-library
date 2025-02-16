@@ -1,5 +1,7 @@
->{-# LANGUAGE Safe, RankNTypes #-}
+>{-# LANGUAGE Safe, RankNTypes, LinearTypes #-}
 >module Math.Tools.I where
+>import Math.Tools.PrettyP
+> 
 >newtype I a = I { unI :: a }
 
 >data Void a = Void
@@ -62,3 +64,6 @@
 
 >instance Show (V a) where
 >  show V = "V"
+
+>instance (PpShow a) => PpShow (I a) where
+>	  pp (I x) = pp x

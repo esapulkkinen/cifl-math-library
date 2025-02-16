@@ -25,7 +25,7 @@
 >-- 
 >-- @show (3 %* meter) = "3 m"@
 >--
->-- @3 %* meter + 4 %* kilogram == throw (InvalidDimensionsException meter_dimension kilogram_dimension "<...>")@
+>-- @3 %* meter + 4 %* kilogram == throw (InvalidDimensionsException meterDimension kilogramDimension "<...>")@
 >-- 
 >-- @convert (3 %* meter) (milli meter) == return 3000.0@
 >--
@@ -67,9 +67,10 @@
 >import safe qualified Math.Matrix.Covector as Covector
 
 >data Quantity r = As {
->   value_amount :: r,
->   value_dimension :: !Dimension }
+>   valueAmount :: r,
+>   valueDimension :: !Dimension }
 >  deriving (Typeable, Data, Generic)
+
 
 >instance Applicative Quantity where
 >   pure x = x `As` dimensionless
@@ -102,16 +103,16 @@
 
 
 >-- | checked projection
->dimensionless_amount :: (Show r) => Quantity r -> r
->dimensionless_amount (x `As` d) | isDimensionless d = x
->                             | otherwise = invalidDimensions "dimensionless_amount" d dimensionless x x
+>dimensionlessAmount :: (Show r) => Quantity r -> r
+>dimensionlessAmount (x `As` d) | isDimensionless d = x
+>                             | otherwise = invalidDimensions "dimensionlessAmount" d dimensionless x x
 
 >instance (Show r, DifferentiallyClosed r, VectorSpace r) => DifferentiallyClosed (Quantity r) where
->  derivate f (x `As` d) = derivate (\x' -> value_amount $ f (x' `As` d)) x
+>  derivate f (x `As` d) = derivate (\x' -> valueAmount $ f (x' `As` d)) x
 >                     `As` (dimension (f (x `As` d)) - d)
 >  integral (a `As` da,b `As` db) f
 >     | da == db =
->         integral (a,b) (\x -> value_amount (f (x `As` da)))
+>         integral (a,b) (\x -> valueAmount (f (x `As` da)))
 >         `As` ((dimension $! f (a `As` da)) %+ da)
 >     | otherwise = error $ "integral: invalid dimensions: " ++ show da ++ " != " ++ show db
 
@@ -124,31 +125,34 @@
 >     | d == d' = x == y
 >     | otherwise = invalidDimensions "==-closure" d d' x y
 
->equal_up_to :: (Floating a, Show a, Ord a) => a -> Quantity a -> Quantity a -> Bool
->equal_up_to tolerance (x `As` d) (y `As` d')
+>equalUpTo :: (Floating a, Show a, Ord a) => a -> Quantity a -> Quantity a -> Bool
+>equalUpTo tolerance (x `As` d) (y `As` d')
 >   | d == d' = abs (x-y) < tolerance
->   | otherwise = invalidDimensions "equal_up_to" d d' x y
+>   | otherwise = invalidDimensions "equalUpTo" d d' x y
 
 >data Dimension = Dimension {
->   length_power :: {-# UNPACK #-} !Rational,
->   weight_power :: {-# UNPACK #-} !Rational,
->   time_power   :: {-# UNPACK #-} !Rational,
->   current_power :: {-# UNPACK #-} !Rational,
->   temperature_power :: {-# UNPACK #-} !Rational,
->   luminosity_power  :: {-# UNPACK #-} !Rational,
->   substance_power   :: {-# UNPACK #-} !Rational }
+>   lengthPower :: {-# UNPACK #-} !Rational,
+>   weightPower :: {-# UNPACK #-} !Rational,
+>   timePower   :: {-# UNPACK #-} !Rational,
+>   currentPower :: {-# UNPACK #-} !Rational,
+>   temperaturePower :: {-# UNPACK #-} !Rational,
+>   luminosityPower  :: {-# UNPACK #-} !Rational,
+>   substancePower   :: {-# UNPACK #-} !Rational }
 >  deriving (Eq, Typeable, Ord, Data, Generic)
 
+>instance ShowPrecision Dimension where
+>  showAtPrecision r _ = show r
+
 >instance StandardBasis Dimension where
->  unit_vectors = [meter_dimension,kilogram_dimension,second_dimension,
->                   ampere_dimension, kelvin_dimension, candela_dimension,
->                   mol_dimension]
+>  unitVectors = [meterDimension,kilogramDimension,secondDimension,
+>                   ampereDimension, kelvinDimension, candelaDimension,
+>                   molDimension]
 
->dimension_multiples :: Dimension -> Stream Dimension
->dimension_multiples d = Pre d $ fmap (%+ d) $ dimension_multiples d
+>dimensionMultiples :: Dimension -> Stream Dimension
+>dimensionMultiples d = Pre d $ fmap (%+ d) $ dimensionMultiples d
 
->quantity_powers :: (Num a, Show a) => Quantity a -> Stream (Quantity a)
->quantity_powers u = Stream.iterate_stream (* u) u
+>quantityPowers :: (Num a, Show a) => Quantity a -> Stream (Quantity a)
+>quantityPowers u = Stream.iterateStream (* u) u
 
 >-- | isFractionalDimensional checks if a dimension is fractional dimensional
 >isFractionalDimensional :: Dimension -> Bool
@@ -175,13 +179,13 @@
 >instance Exception DimensionException
 
 >instance (Show r, Infinitesimal Stream r) => Infinitesimal Stream (Quantity r) where
->   epsilon_closure = QuantityClosure epsilon_closure dimensionless
->   infinite_closure = QuantityClosure infinite_closure dimensionless
->   minus_infinite_closure = QuantityClosure minus_infinite_closure dimensionless
->   nan_closure = QuantityClosure nan_closure dimensionless
->   epsilon_stream = fmap (`As` dimensionless) epsilon_stream
->   infinite_stream = fmap (`As` dimensionless) infinite_stream
->   minus_infinite_stream = fmap (`As` dimensionless) minus_infinite_stream
+>   epsilonClosure = QuantityClosure epsilonClosure dimensionless
+>   infiniteClosure = QuantityClosure infiniteClosure dimensionless
+>   minusInfiniteClosure = QuantityClosure minusInfiniteClosure dimensionless
+>   nanClosure = QuantityClosure nanClosure dimensionless
+>   epsilonStream = fmap (`As` dimensionless) epsilonStream
+>   infiniteStream = fmap (`As` dimensionless) infiniteStream
+>   minusInfiniteStream = fmap (`As` dimensionless) minusInfiniteStream
 
 >instance (Show r, InnerProductSpace r, Scalar (Quantity r) ~ Scalar r) => InnerProductSpace (Quantity r) where
 >   (x `As` d) %. (y `As` d') = x %. y
@@ -231,16 +235,16 @@
 >                                <|> invalidDimensionsM "fromQuantityDef" d dim x x
 
 >instance (Closed a, Show a) => Closed (Quantity a) where
->   accumulation_point s
+>   accumulationPoint s
 >     | (Stream.Pre (As x d) xr) <- approximations s
->     = accumulation_point (limit $ Stream.Pre x (fmap value_amount xr)) `As` d
+>     = accumulationPoint (limit $ Stream.Pre x (fmap valueAmount xr)) `As` d
 
 >-- | <https://en.wikipedia.org/wiki/Level_(logarithmic_quantity)
 >-- Level represents a reference to which computations involving
 >-- logarithmic scales are compared to.
 >data Level r = Level {
->   reference_value :: Quantity r,
->   base_of_logarithm :: r }
+>   referenceValue :: Quantity r,
+>   baseOfLogarithm :: r }
 
 >deriving instance Read (Level Double)
 >deriving instance Read (Level (Complex Double))
@@ -261,15 +265,15 @@
 >hyperbolic x (Level q b) = (b ** ((0 :+ 1) * x)) %* q
 
 >-- | This is a way to convert radians to complex numbers
->-- e.g. @(pi/2) `logarithmic` radian_scale == 0 :+ 1@.
->radian_scale :: (RealFloat a) => Level (Complex a)
->radian_scale = Level (pure (1 :+ 0)) (exp (0 :+ 1))
+>-- e.g. @(pi/2) `logarithmic` radianScale == 0 :+ 1@.
+>radianScale :: (RealFloat a) => Level (Complex a)
+>radianScale = Level (pure (1 :+ 0)) (exp (0 :+ 1))
 
->bit_scale :: (Num a) => Level a
->bit_scale = Level (1 `As` dimensionless) 2
+>bitScale :: (Num a) => Level a
+>bitScale = Level (1 `As` dimensionless) 2
 
->bel_scale :: (Num a) => Level a
->bel_scale = Level (1 `As` dimensionless) 10
+>belScale :: (Num a) => Level a
+>belScale = Level (1 `As` dimensionless) 10
 
 >-- | logarithmic voltage with respect to base 10 relative to 1V.
 >-- <https://en.wikipedia.org/wiki/Decibel>
@@ -283,73 +287,73 @@
 
 >-- | <https://en.wikipedia.org/wiki/Decibel>
 >-- logarithmic pressure in base 10 compared to 20 micro pascals.
->dB_SPL :: (Floating a) => Level a
->dB_SPL = Level (20 %* micro pascal) 10
+>dBSPL :: (Floating a) => Level a
+>dBSPL = Level (20 %* micro pascal) 10
 
 >-- | <https://en.wikipedia.org/wiki/Decibel>
->dB_SIL :: (Floating a, Show a) => Level a
->dB_SIL = Level ((10**(negate 12)) %* (watt / squaremeter)) 10
+>dBSIL :: (Floating a, Show a) => Level a
+>dBSIL = Level ((10**(negate 12)) %* (watt / squaremeter)) 10
 
 >-- <https://en.wikipedia.org/wiki/Decibel>
->dB_SWL :: (Floating a) => Level a
->dB_SWL = Level (10e-12 %* watt) 10
+>dBSWL :: (Floating a) => Level a
+>dBSWL = Level (10e-12 %* watt) 10
 
 >-- | for logarithmic lengths in base 10.
->length_scale :: (Floating a) => Level a
->length_scale = Level (1.0 %* meter) 10
+>lengthScale :: (Floating a) => Level a
+>lengthScale = Level (1.0 %* meter) 10
 
 >-- | <https://en.wikipedia.org/wiki/Octave>
 >-- logarithmic frequency in base 2 relative to 16.352 Hz.
 >-- a.k.a. in scientific designation.
 >-- middle-C is fourth octave, e.g. @4 \`logarithmic\` octave == 261.626 %* hertz@
->frequency_scale :: (Floating a) => Level a
->frequency_scale = Level (16.352 %* hertz) 2
+>frequencyScale :: (Floating a) => Level a
+>frequencyScale = Level (16.352 %* hertz) 2
 
 >-- | <https://en.wikipedia.org/wiki/Octave>
 >-- logarithmic frequency in base 2 relative to 16.352 Hz.
 >-- a.k.a. in scientific designation.
 >-- middle-C is fourth octave, e.g. @4 \`logarithmic\` octave == 261.626 %* hertz@
->-- octave is just a different name for 'frequency_scale'.
+>-- octave is just a different name for 'frequencyScale'.
 >octave :: (Floating a) => Level a
->octave = frequency_scale
+>octave = frequencyScale
 
 >-- | <https://en.wikipedia.org/wiki/Moment_magnitude_scale>
->moment_magnitude_scale :: (Show a, Floating a) => Level a
->moment_magnitude_scale = Level ((10 ** (-7)) %* (newton * meter)) 10
+>momentMagnitudeScale :: (Show a, Floating a) => Level a
+>momentMagnitudeScale = Level ((10 ** (-7)) %* (newton * meter)) 10
 
 >-- | <https://en.wikipedia.org/wiki/Entropy>
->entropy_scale :: (Floating a) => Level a
->entropy_scale = Level boltzmann_constant (exp 1)
+>entropyScale :: (Floating a) => Level a
+>entropyScale = Level boltzmannConstant (exp 1)
 
->hartley_scale :: (Num a) => Level a
->hartley_scale = Level (1 `As` dimensionless) 10
+>hartleyScale :: (Num a) => Level a
+>hartleyScale = Level (1 `As` dimensionless) 10
 
->ban_scale :: (Num a) => Level a
->ban_scale = hartley_scale
+>banScale :: (Num a) => Level a
+>banScale = hartleyScale
 
->time_scale :: (Floating a) => Level a
->time_scale = Level (1 %* second) 10
+>timeScale :: (Floating a) => Level a
+>timeScale = Level (1 %* second) 10
 
->weight_scale :: (Floating a) => Level a
->weight_scale = Level (1 %* kilogram) 10
+>weightScale :: (Floating a) => Level a
+>weightScale = Level (1 %* kilogram) 10
 
 >-- | compute how many nines a probability has. @nines 0.99999 == 5.0@.
 >-- <https://en.wikipedia.org/wiki/9#Probability>
 >nines :: Double -> Double
->nines prob = value_amount $ negate $ (1.0 `As` dimensionless - prob `As` dimensionless) `scale` bel_scale
+>nines prob = valueAmount $ negate $ (1.0 `As` dimensionless - prob `As` dimensionless) `scale` belScale
 
 >-- | compute probability when given number of nines.
 >-- <https://en.wikipedia.org/wiki/9#Probability>
 >fromNines :: Double -> Double
->fromNines n = value_amount $ 1.0 - ((negate n) `logarithmic` Level (1.0 `As` dimensionless) 10)
+>fromNines n = valueAmount $ 1.0 - ((negate n) `logarithmic` Level (1.0 `As` dimensionless) 10)
 
 >-- | note frequency from octave and index of note within octave.
->-- @note_pitch 4 0@ is middle-C.
->note_pitch :: Int -> Int -> Quantity Double
->note_pitch oct note_index = (fromIntegral oct + fromIntegral note_index / 12) `logarithmic` frequency_scale
+>-- @notePitch 4 0@ is middle-C.
+>notePitch :: Int -> Int -> Quantity Double
+>notePitch oct noteIndex = (fromIntegral oct + fromIntegral noteIndex / 12) `logarithmic` frequencyScale
 
 >ratioToDecibel :: (Fractional a, Show a, Floating a, Real a) => Quantity a -> Level a -> Quantity a
->ratioToDecibel x lvl = base_of_logarithm lvl %* (x `scale` lvl)
+>ratioToDecibel x lvl = baseOfLogarithm lvl %* (x `scale` lvl)
 
 >-- | WARNING: native representation is in number of bits.
 >-- Use code such as the following for conversion:
@@ -365,13 +369,13 @@
 >byte = fromAlternatives 256
 
 >fromAlternatives :: (Floating a, Real a, Show a) => a -> Quantity a
->fromAlternatives count = scale (count `As` dimensionless) bit_scale
+>fromAlternatives count = scale (count `As` dimensionless) bitScale
 
 >-- | Note that the number of alternatives grows quickly.
 >toAlternatives :: (Floating a, Ord a, ShowPrecision a, MonadFail m) => Quantity a -> m a
 >toAlternatives x
->   | isDimensionless (value_dimension x) = return $! 2.0 ** value_amount x
->   | otherwise = invalidDimensionsM "toAlternatives" (value_dimension x) dimensionless x x
+>   | isDimensionless (valueDimension x) = return $! 2.0 ** valueAmount x
+>   | otherwise = invalidDimensionsM "toAlternatives" (valueDimension x) dimensionless x x
 
 >(@@) :: r -> Dimension -> Quantity r
 >x @@ y = x `As` y
@@ -388,7 +392,7 @@
 >  fromQuantity q = return $! q
 >  dimension (_ `As` r) = r
 >  -- | fromAmount is not implemented, as the dimension is not known.
-
+  
 >(=/) :: (Fractional (Scalar a), Unit a, Show a) => a -> a -> Scalar a
 >(=/) x y
 >   | dimension x == dimension y = amount x / amount y
@@ -416,10 +420,10 @@
 >     su <- Binary.get
 >     return $! Dimension l w t c te lu su
 
->dimension_basis :: [Dimension]
->dimension_basis = [meter_dimension, kilogram_dimension, second_dimension,
->                   ampere_dimension, kelvin_dimension, candela_dimension,
->                   mol_dimension]
+>dimensionBasis :: [Dimension]
+>dimensionBasis = [meterDimension, kilogramDimension, secondDimension,
+>                   ampereDimension, kelvinDimension, candelaDimension,
+>                   molDimension]
 
 >isDimensionless :: Dimension -> Bool
 >isDimensionless d = d == dimensionless
@@ -466,6 +470,12 @@
 >   a %+ b = zipWithDimension (+) a b
 >   k %* a = mapDimension (k *) a
 
+>instance Unit Dimension where
+>   amount _ = 1
+>   fromQuantity q = return (valueDimension q)
+>   unitOf = showDimension
+>   dimension = id
+
 >(=*) :: (VectorSpace v) => Scalar v -> v -> v
 >(=*) = (%*)
 
@@ -484,51 +494,51 @@
 >ronna = (1000000000000000000000000000 =*)
 >quetta =(1000000000000000000000000000000 =*)
 
->prefix_value :: (Num a) => Prefix a -> a
->prefix_value f = value_amount $ f $ 1 `As` dimensionless
+>prefixValue :: (Num a) => Prefix a -> a
+>prefixValue f = valueAmount $ f $ 1 `As` dimensionless
 
 >-- | <https://en.wikipedia.org/wiki/Metric_prefix>
->decimal_prefixes :: (Num a) => [(String,a)]
->decimal_prefixes = [
->   ("deca",prefix_value deca),
->   ("hecto",prefix_value hecto),
->   ("kilo",prefix_value kilo),
->   ("mega",prefix_value mega),
->   ("giga",prefix_value giga),
->   ("tera",prefix_value tera),
->   ("peta",prefix_value peta),
->   ("exa", prefix_value exa),
->   ("zetta", prefix_value zetta),
->   ("yotta", prefix_value yotta),
->   ("ronna", prefix_value ronna),
->   ("quetta", prefix_value quetta)]
+>decimalPrefixes :: (Num a) => [(String,a)]
+>decimalPrefixes = [
+>   ("deca",prefixValue deca),
+>   ("hecto",prefixValue hecto),
+>   ("kilo",prefixValue kilo),
+>   ("mega",prefixValue mega),
+>   ("giga",prefixValue giga),
+>   ("tera",prefixValue tera),
+>   ("peta",prefixValue peta),
+>   ("exa", prefixValue exa),
+>   ("zetta", prefixValue zetta),
+>   ("yotta", prefixValue yotta),
+>   ("ronna", prefixValue ronna),
+>   ("quetta", prefixValue quetta)]
 
 >-- | <https://en.wikipedia.org/wiki/Metric_prefix>
->floating_prefixes :: (Floating a) => [(String,a)]
->floating_prefixes = decimal_prefixes ++ [ 
->   ("deci",prefix_value deci ),
->   ("centi",prefix_value centi ),
->   ("milli",prefix_value milli),
->   ("micro",prefix_value micro),
->   ("nano",prefix_value nano ),
->   ("pico",prefix_value pico ),
->   ("femto",prefix_value femto ),
->   ("atto", prefix_value atto),
->   ("zepto",prefix_value zepto ),
->   ("yocto",prefix_value yocto),
->   ("ronto",prefix_value ronto),
->   ("quecto",prefix_value quecto)]
+>floatingPrefixes :: (Floating a) => [(String,a)]
+>floatingPrefixes = decimalPrefixes ++ [ 
+>   ("deci",prefixValue deci ),
+>   ("centi",prefixValue centi ),
+>   ("milli",prefixValue milli),
+>   ("micro",prefixValue micro),
+>   ("nano",prefixValue nano ),
+>   ("pico",prefixValue pico ),
+>   ("femto",prefixValue femto ),
+>   ("atto", prefixValue atto),
+>   ("zepto",prefixValue zepto ),
+>   ("yocto",prefixValue yocto),
+>   ("ronto",prefixValue ronto),
+>   ("quecto",prefixValue quecto)]
 >                    
->binary_prefixes :: (Num a) => [(String,a)]
->binary_prefixes = [
->   ("kibi",prefix_value kibi ),
->   ("mebi",prefix_value mebi ),
->   ("gibi",prefix_value gibi ),
->   ("tebi",prefix_value tebi ),
->   ("pebi",prefix_value pebi ),
->   ("exbi",prefix_value exbi ),
->   ("zebi",prefix_value zebi ),
->   ("yobi",prefix_value yobi )
+>binaryPrefixes :: (Num a) => [(String,a)]
+>binaryPrefixes = [
+>   ("kibi",prefixValue kibi ),
+>   ("mebi",prefixValue mebi ),
+>   ("gibi",prefixValue gibi ),
+>   ("tebi",prefixValue tebi ),
+>   ("pebi",prefixValue pebi ),
+>   ("exbi",prefixValue exbi ),
+>   ("zebi",prefixValue zebi ),
+>   ("yobi",prefixValue yobi )
 >   ]
 
 >-- | https://en.wikipedia.org/wiki/Binary_prefix#kibi
@@ -589,8 +599,8 @@
 >   recip (QuantityClosure x d) = QuantityClosure (recip x) (vnegate d)
 >   fromRational x = QuantityClosure (fromRational x) dimensionless
 
->require_dimensionless :: (Show a) => String -> (a -> a) -> Quantity a -> Quantity a
->require_dimensionless op f ~(x `As` r)
+>requireDimensionless :: (Show a) => String -> (a -> a) -> Quantity a -> Quantity a
+>requireDimensionless op f ~(x `As` r)
 >   | isDimensionless r = f x `As` dimensionless
 >   | otherwise = invalidDimensions op r dimensionless x (f x)
 
@@ -626,106 +636,106 @@
 >   isDenormalized (x `As` d) = isDenormalized x
 >   isIEEE (x `As` d) = isIEEE x
 >   atan2 (x `As` d) (y `As` d')
->     | d == d' = atan2 x y `As` radian_dimension
+>     | d == d' = atan2 x y `As` radianDimension
 >     | otherwise = invalidDimensions "atan2" d d' x y
 
 >instance (Show r, ConjugateSymmetric r) => ConjugateSymmetric (Quantity r) where
 >   conj (x `As` d) = (conj x) `As` d
 
->lift_quantity_closure :: (Closure Stream a -> Closure Stream b) -> Closure Stream (Quantity a) -> Closure Stream (Quantity b)
->lift_quantity_closure f (QuantityClosure x d) = QuantityClosure (f x) d
+>liftQuantityClosure :: (Closure Stream a -> Closure Stream b) -> Closure Stream (Quantity a) -> Closure Stream (Quantity b)
+>liftQuantityClosure f (QuantityClosure x d) = QuantityClosure (f x) d
 
->lift_quantity_closure2 :: (Show (Closure Stream a), Show (Closure Stream b))
+>liftQuantityClosure2 :: (Show (Closure Stream a), Show (Closure Stream b))
 >   => String
 >   -> (Closure Stream a -> Closure Stream b -> Closure Stream c)
 >   -> Closure Stream (Quantity a) -> Closure Stream (Quantity b) -> Closure Stream (Quantity c)
->lift_quantity_closure2 msg f (QuantityClosure x d) (QuantityClosure y d')
+>liftQuantityClosure2 msg f (QuantityClosure x d) (QuantityClosure y d')
 >    | d == d' = QuantityClosure (f x y) d
 >    | otherwise = invalidDimensions msg d d' x y
 
 >instance (Show (Closure Stream r), Floating (Closure Stream r)) => Floating (Closure Stream (Quantity r)) where
 >  pi = QuantityClosure pi dimensionless
->  exp = lift_quantity_closure exp
->  log = lift_quantity_closure log
->  (**) = lift_quantity_closure2 "(**)-closure" (**)
->  logBase = lift_quantity_closure2 "logBase-closure" logBase
->  sqrt = lift_quantity_closure sqrt
->  sin = lift_quantity_closure sin
->  cos = lift_quantity_closure cos
->  tan = lift_quantity_closure tan
->  asin = lift_quantity_closure asin
->  acos = lift_quantity_closure acos
->  atan = lift_quantity_closure atan
->  sinh = lift_quantity_closure sinh
->  cosh = lift_quantity_closure cosh
->  tanh = lift_quantity_closure tanh
->  asinh = lift_quantity_closure asinh
->  acosh = lift_quantity_closure acosh
->  atanh = lift_quantity_closure atanh
+>  exp = liftQuantityClosure exp
+>  log = liftQuantityClosure log
+>  (**) = liftQuantityClosure2 "(**)-closure" (**)
+>  logBase = liftQuantityClosure2 "logBase-closure" logBase
+>  sqrt = liftQuantityClosure sqrt
+>  sin = liftQuantityClosure sin
+>  cos = liftQuantityClosure cos
+>  tan = liftQuantityClosure tan
+>  asin = liftQuantityClosure asin
+>  acos = liftQuantityClosure acos
+>  atan = liftQuantityClosure atan
+>  sinh = liftQuantityClosure sinh
+>  cosh = liftQuantityClosure cosh
+>  tanh = liftQuantityClosure tanh
+>  asinh = liftQuantityClosure asinh
+>  acosh = liftQuantityClosure acosh
+>  atanh = liftQuantityClosure atanh
 
->pi_complex_quantity :: (RealFloat a) => Quantity (Complex a)
->pi_complex_quantity = pi `As` radian_dimension
+>piComplexQuantity :: (RealFloat a) => Quantity (Complex a)
+>piComplexQuantity = pi `As` radianDimension
 
->sqrt_complex_quantity :: (RealFloat a) => Quantity (Complex a) -> Quantity (Complex a)
->sqrt_complex_quantity (c `As` q) = sqrt c `As` (q/2)
+>sqrtComplexQuantity :: (RealFloat a) => Quantity (Complex a) -> Quantity (Complex a)
+>sqrtComplexQuantity (c `As` q) = sqrt c `As` (q/2)
 
->power_complex_quantity :: (RealFloat a) => Quantity (Complex a) -> Rational -> Quantity (Complex a)
->power_complex_quantity (x `As` r) q = (x ** fromRational q) `As` (q %* r)
+>powerComplexQuantity :: (RealFloat a) => Quantity (Complex a) -> Rational -> Quantity (Complex a)
+>powerComplexQuantity (x `As` r) q = (x ** fromRational q) `As` (q %* r)
 
->exp_complex_quantity :: (RealFloat a, Show a) => Quantity (Complex a) -> Quantity (Complex a)
->exp_complex_quantity = require_dimensionless "exp" exp
+>expComplexQuantity :: (RealFloat a, Show a) => Quantity (Complex a) -> Quantity (Complex a)
+>expComplexQuantity = requireDimensionless "exp" exp
 
->log_complex_quantity :: (RealFloat a, Show a) => Quantity (Complex a) -> Quantity (Complex a)
->log_complex_quantity = require_dimensionless "log" log
+>logComplexQuantity :: (RealFloat a, Show a) => Quantity (Complex a) -> Quantity (Complex a)
+>logComplexQuantity = requireDimensionless "log" log
 
->sin_complex_quantity :: (RealFloat a, Show a) => Quantity (Complex a) -> Quantity (Complex a)
->sin_complex_quantity = require_dimensionless "sin" sin
->cos_complex_quantity :: (RealFloat a, Show a) => Quantity (Complex a) -> Quantity (Complex a)
->cos_complex_quantity = require_dimensionless "cos" cos
->tan_complex_quantity :: (RealFloat a, Show a) => Quantity (Complex a) -> Quantity (Complex a)
->tan_complex_quantity = require_dimensionless "tan" tan
->asin_complex_quantity :: (RealFloat a, Show a) => Quantity (Complex a) -> Quantity (Complex a)
->asin_complex_quantity = require_dimensionless "asin" asin
->acos_complex_quantity :: (RealFloat a, Show a) => Quantity (Complex a) -> Quantity (Complex a)
->acos_complex_quantity = require_dimensionless "acos" acos
->atan_complex_quantity :: (RealFloat a, Show a) => Quantity (Complex a) -> Quantity (Complex a)
->atan_complex_quantity = require_dimensionless "atan" atan
->sinh_complex_quantity :: (RealFloat a, Show a) => Quantity (Complex a) -> Quantity (Complex a)
->sinh_complex_quantity = require_dimensionless "sinh" sinh
->cosh_complex_quantity :: (RealFloat a, Show a) => Quantity (Complex a) -> Quantity (Complex a)
->cosh_complex_quantity = require_dimensionless "cosh" cosh
->tanh_complex_quantity :: (RealFloat a, Show a) => Quantity (Complex a) -> Quantity (Complex a)
->tanh_complex_quantity = require_dimensionless "tanh" tanh
->asinh_complex_quantity :: (RealFloat a, Show a) => Quantity (Complex a) -> Quantity (Complex a)
->asinh_complex_quantity = require_dimensionless "asinh" asinh
->acosh_complex_quantity :: (RealFloat a, Show a) => Quantity (Complex a) -> Quantity (Complex a)
->acosh_complex_quantity = require_dimensionless "acosh" acosh
->atanh_complex_quantity :: (RealFloat a, Show a) => Quantity (Complex a) -> Quantity (Complex a)
->atanh_complex_quantity = require_dimensionless "atanh" atanh
+>sinComplexQuantity :: (RealFloat a, Show a) => Quantity (Complex a) -> Quantity (Complex a)
+>sinComplexQuantity = requireDimensionless "sin" sin
+>cosComplexQuantity :: (RealFloat a, Show a) => Quantity (Complex a) -> Quantity (Complex a)
+>cosComplexQuantity = requireDimensionless "cos" cos
+>tanComplexQuantity :: (RealFloat a, Show a) => Quantity (Complex a) -> Quantity (Complex a)
+>tanComplexQuantity = requireDimensionless "tan" tan
+>asinComplexQuantity :: (RealFloat a, Show a) => Quantity (Complex a) -> Quantity (Complex a)
+>asinComplexQuantity = requireDimensionless "asin" asin
+>acosComplexQuantity :: (RealFloat a, Show a) => Quantity (Complex a) -> Quantity (Complex a)
+>acosComplexQuantity = requireDimensionless "acos" acos
+>atanComplexQuantity :: (RealFloat a, Show a) => Quantity (Complex a) -> Quantity (Complex a)
+>atanComplexQuantity = requireDimensionless "atan" atan
+>sinhComplexQuantity :: (RealFloat a, Show a) => Quantity (Complex a) -> Quantity (Complex a)
+>sinhComplexQuantity = requireDimensionless "sinh" sinh
+>coshComplexQuantity :: (RealFloat a, Show a) => Quantity (Complex a) -> Quantity (Complex a)
+>coshComplexQuantity = requireDimensionless "cosh" cosh
+>tanhComplexQuantity :: (RealFloat a, Show a) => Quantity (Complex a) -> Quantity (Complex a)
+>tanhComplexQuantity = requireDimensionless "tanh" tanh
+>asinhComplexQuantity :: (RealFloat a, Show a) => Quantity (Complex a) -> Quantity (Complex a)
+>asinhComplexQuantity = requireDimensionless "asinh" asinh
+>acoshComplexQuantity :: (RealFloat a, Show a) => Quantity (Complex a) -> Quantity (Complex a)
+>acoshComplexQuantity = requireDimensionless "acosh" acosh
+>atanhComplexQuantity :: (RealFloat a, Show a) => Quantity (Complex a) -> Quantity (Complex a)
+>atanhComplexQuantity = requireDimensionless "atanh" atanh
 
 >instance (RationalRoots a) => RationalRoots (Quantity a) where
->   rational_power (x `As` r) q = rational_power x q `As` (q %* r)
+>   rationalPower (x `As` r) q = rationalPower x q `As` (q %* r)
 
 >instance (Real a, Floating a, Show a) => Floating (Quantity a) where
->   pi = pi `As` radian_dimension
+>   pi = pi `As` radianDimension
 >   sqrt (x `As` r) = sqrt x `As` (r / 2)
 >   (x `As` r) ** (y `As` q)
 >     | isDimensionless q = (x ** y) `As` (toRational y %* r)
 >     | otherwise = invalidDimensions "**" q dimensionless y y
->   exp = require_dimensionless "exp" exp
->   log = require_dimensionless "log" log
->   sin = require_dimensionless "sin" sin
->   cos = require_dimensionless "cos" cos
->   tan = require_dimensionless "tan" tan
->   asin = require_dimensionless "asin" asin
->   acos = require_dimensionless "acos" acos
->   atan = require_dimensionless "atan" atan
->   sinh = require_dimensionless "sinh" sinh
->   cosh = require_dimensionless "cosh" cosh
->   tanh = require_dimensionless "tanh" tanh
->   asinh = require_dimensionless "asinh" asinh
->   acosh = require_dimensionless "acosh" acosh
->   atanh = require_dimensionless "atanh" atanh
+>   exp = requireDimensionless "exp" exp
+>   log = requireDimensionless "log" log
+>   sin = requireDimensionless "sin" sin
+>   cos = requireDimensionless "cos" cos
+>   tan = requireDimensionless "tan" tan
+>   asin = requireDimensionless "asin" asin
+>   acos = requireDimensionless "acos" acos
+>   atan = requireDimensionless "atan" atan
+>   sinh = requireDimensionless "sinh" sinh
+>   cosh = requireDimensionless "cosh" cosh
+>   tanh = requireDimensionless "tanh" tanh
+>   asinh = requireDimensionless "asinh" asinh
+>   acosh = requireDimensionless "acosh" acosh
+>   atanh = requireDimensionless "atanh" atanh
 
 
 >instance (Ord r, Num r, Show r) => Ord (Quantity r) where
@@ -795,10 +805,10 @@
 >                           TRead.<++ parens chooseunits
   
 >instance (ShowPrecision r) => Show (Quantity r) where
->  show (x `As` d) = show_at_precision x 10 ++ " " ++ show d
+>  show (x `As` d) = showAtPrecision x 10 ++ " " ++ show d
 
 >instance (ShowPrecision r) => PpShow (Quantity r) where
->  pp (x `As` d) = pp (show_at_precision x 10) Pretty.<+> pp d
+>  pp (x `As` d) = pp (showAtPrecision x 10) Pretty.<+> pp d
 
 
 >invalidDimensions :: (Show b, Show c) => String -> Dimension -> Dimension -> b -> c -> a
@@ -866,12 +876,12 @@
 >  fromInteger a = (fromInteger a) `As` dimensionless
 
 >instance (Show (Closure Stream r), Num (Closure Stream r)) => Num (Closure Stream (Quantity r)) where
->  (+) = lift_quantity_closure2 "(+)-closure" (+)
->  (-) = lift_quantity_closure2 "(-)-closure" (-)
+>  (+) = liftQuantityClosure2 "(+)-closure" (+)
+>  (-) = liftQuantityClosure2 "(-)-closure" (-)
 >  (QuantityClosure x d) * (QuantityClosure x' d') = QuantityClosure (x*x') (d %+ d')
->  negate = lift_quantity_closure negate
->  abs = lift_quantity_closure abs
->  signum = lift_quantity_closure signum
+>  negate = liftQuantityClosure negate
+>  abs = liftQuantityClosure abs
+>  signum = liftQuantityClosure signum
 >  fromInteger a = QuantityClosure (fromInteger a) dimensionless
 
 
@@ -889,8 +899,8 @@
 
 
 
->show_dimension :: Dimension -> String
->show_dimension (Dimension a b c d e f g) = if str /= "" then take (length str - 1) str else ""
+>showDimension :: Dimension -> String
+>showDimension (Dimension a b c d e f g) = if str /= "" then take (length str - 1) str else ""
 > where str = showz "A" d ++ showz "kg" b ++ showz "m" a ++  showz "s" c ++ showz "K" e ++ showz "cd" f ++ showz "mol" g
 >       showz u 0 = ""
 >       showz u 1 = u ++ " "
@@ -898,15 +908,15 @@
 >           | denominator i == 1 = u ++ "^" ++ show (numerator i) ++ " "
 >           | otherwise = u ++ "^(" ++ show i ++ ") "
 
->full_dimension_table :: [(Dimension,String)]
->full_dimension_table = res4
->  where res4 = dimension_table `interleave` map mapper dimension_table
+>fullDimensionTable :: [(Dimension,String)]
+>fullDimensionTable = res4
+>  where res4 = dimensionTable `interleave` map mapper dimensionTable
 >        mapper (dim,p) = (vnegate dim, p ++ "^-1")
 
 order in the table is significant
 
->dimension_table :: [(Dimension,String)]
->dimension_table = [
+>dimensionTable :: [(Dimension,String)]
+>dimensionTable = [
 >  (Dimension (-2) (-1) 4 2 0 0 0 , "F"),
 >  (Dimension 2 1 (-3) (-2) 0 0 0 , "Ω"),
 >  (Dimension (-2) (-1) 3 2 0 0 0 , "S"),
@@ -929,21 +939,21 @@ order in the table is significant
 >  ]
 
 >instance Read Dimension where
->   readPrec = do lst <- dimension_product_reader
+>   readPrec = do lst <- dimensionProduct_reader
 >                 lst' <- ((optional_whitespace >> string "/" >> dimension_divider_reader) >>= (return . Just)) TRead.<++ return Nothing
 >                 let lst'' = maybe lst (\lst2 -> lst ++ map (\j -> negate j) lst2) lst'
 >                 return $! sum lst''
 
->dimension_product_reader :: TRead.ReadPrec [Dimension]
->dimension_product_reader = TRead.step $ do
+>dimensionProduct_reader :: TRead.ReadPrec [Dimension]
+>dimensionProduct_reader = TRead.step $ do
 >                                     v <- dimension_reader
 >                                     optional_whitespace
 >                                     string "*"
 >                                     optional_whitespace
->                                     r <- dimension_product_reader
+>                                     r <- dimensionProduct_reader
 >                                     return $! (v:r)
 >                            TRead.<++ some dimension_reader
->                            TRead.<++ TRead.parens dimension_product_reader
+>                            TRead.<++ TRead.parens dimensionProduct_reader
 
 >dimension_divider_reader :: TRead.ReadPrec [Dimension]
 >dimension_divider_reader = do
@@ -953,17 +963,17 @@ order in the table is significant
 >        xr <- dimension_divider_reader
 >        return $! (x:xr)
 >  TRead.<++ (dimension_reader >>= \x -> return $! [x])
->  TRead.<++ TRead.parens dimension_product_reader
+>  TRead.<++ TRead.parens dimensionProduct_reader
 
 >dimension_reader :: TRead.ReadPrec Dimension
->dimension_reader = choose $ fmap (\ (d,s) -> (s,return d)) full_dimension_table
+>dimension_reader = choose $ fmap (\ (d,s) -> (s,return d)) fullDimensionTable
 
 >dimensionless :: Dimension
 >dimensionless = Dimension 0 0 0 0 0 0 0 
 
 
 >instance PpShow Dimension where
->   pp z@(Dimension a b c d e f g) = maybe (def z) id $ foldl check Nothing full_dimension_table
+>   pp z@(Dimension a b c d e f g) = maybe (def z) id $ foldl check Nothing fullDimensionTable
 >     where check Nothing (z'@(Dimension a' b' c' d' e' f' g'),p)
 >                    | (abs a >= abs a') && (signum a == signum a' || signum a' == 0)
 >                      && (abs b >= abs b') && (signum b == signum b'|| signum b' == 0)
@@ -976,12 +986,12 @@ order in the table is significant
 >                    | otherwise = Nothing
 >           check (Just x) _ = Just x                      
 >           def (Dimension 0 0 0 0 0 0 0) = Pretty.empty
->           def z = pp_dimension z
+>           def z = ppDimension z
 
->-- | pp_dimension prints dimension in a simple way without interpreting derived dimensions
->-- for example, @pp_dimension newton_dimension == pp "kg m s^-2"@
->pp_dimension :: Dimension -> Pretty.Doc
->pp_dimension (Dimension a b c d e f g) = def b "kg" Pretty.<+> def a "m"
+>-- | ppDimension prints dimension in a simple way without interpreting derived dimensions
+>-- for example, @ppDimension newtonDimension == pp "kg m s^-2"@
+>ppDimension :: Dimension -> Pretty.Doc
+>ppDimension (Dimension a b c d e f g) = def b "kg" Pretty.<+> def a "m"
 >                                           Pretty.<+> def c "s"
 >                                           Pretty.<+> def d "A"
 >                                           Pretty.<+> def e "K"
@@ -995,7 +1005,7 @@ order in the table is significant
 >           | otherwise = pp '{' <> pp z <> pp '}'
 
 >instance Show Dimension where
->  show z@(Dimension a b c d e f g) = maybe (def z) id $ foldl check Nothing full_dimension_table
+>  show z@(Dimension a b c d e f g) = maybe (def z) id $ foldl check Nothing fullDimensionTable
 >    where check Nothing (z'@(Dimension a' b' c' d' e' f' g'),p) 
 >                    | (abs a >= abs a') && (signum a == signum a' || signum a' == 0)
 >                      && (abs b >= abs b') && (signum b == signum b'|| signum b' == 0)
@@ -1011,144 +1021,144 @@ order in the table is significant
 >                    | otherwise = Nothing
 >          check (Just x) _ = Just x                      
 >          def (Dimension 0 0 0 0 0 0 0) = ""
->          def z = show_dimension z
+>          def z = showDimension z
 
->kelvin_dimension :: Dimension
->kelvin_dimension = Dimension 0 0 0 0 1 0 0 
+>kelvinDimension :: Dimension
+>kelvinDimension = Dimension 0 0 0 0 1 0 0 
 
->farad_dimension :: Dimension
->farad_dimension  = Dimension (-2) (-1) 4 2 0 0 0 
->ohm_dimension :: Dimension
->ohm_dimension    = Dimension 2 1 (-3) (-2) 0 0 0 
->sievert_dimension :: Dimension
->sievert_dimension = Dimension (-2) (-1) 3 2 0 0 0 
->volt_dimension :: Dimension
->volt_dimension    = Dimension 2 1 (-3) (-1) 0 0 0 
+>faradDimension :: Dimension
+>faradDimension  = Dimension (-2) (-1) 4 2 0 0 0 
+>ohmDimension :: Dimension
+>ohmDimension    = Dimension 2 1 (-3) (-2) 0 0 0 
+>sievertDimension :: Dimension
+>sievertDimension = Dimension (-2) (-1) 3 2 0 0 0 
+>voltDimension :: Dimension
+>voltDimension    = Dimension 2 1 (-3) (-1) 0 0 0 
 
->pascal_dimension :: Dimension
->pascal_dimension  = Dimension (-1) 1 (-2) 0 0 0 0 
+>pascalDimension :: Dimension
+>pascalDimension  = Dimension (-1) 1 (-2) 0 0 0 0 
 
->henry_dimension :: Dimension
->henry_dimension   = Dimension 2 1 (-2) (-2) 0 0 0 
+>henryDimension :: Dimension
+>henryDimension   = Dimension 2 1 (-2) (-2) 0 0 0 
 
->weber_dimension :: Dimension
->weber_dimension   = Dimension 2 1 (-2) (-1) 0 0 0 
+>weberDimension :: Dimension
+>weberDimension   = Dimension 2 1 (-2) (-1) 0 0 0 
 > 
->joule_dimension :: Dimension
->joule_dimension   = Dimension 2 1 (-2) 0 0 0 0 
+>jouleDimension :: Dimension
+>jouleDimension   = Dimension 2 1 (-2) 0 0 0 0 
 > 
->newton_dimension :: Dimension
->newton_dimension  = Dimension 1 1 (-2) 0 0 0 0 
+>newtonDimension :: Dimension
+>newtonDimension  = Dimension 1 1 (-2) 0 0 0 0 
 > 
->tesla_dimension :: Dimension
->tesla_dimension   = Dimension 0 1 (-2) (-1) 0 0 0 
+>teslaDimension :: Dimension
+>teslaDimension   = Dimension 0 1 (-2) (-1) 0 0 0 
 > 
->meter_dimension :: Dimension
->meter_dimension    = Dimension 1 0 0 0 0 0 0 
+>meterDimension :: Dimension
+>meterDimension    = Dimension 1 0 0 0 0 0 0 
 > 
->kilogram_dimension :: Dimension
->kilogram_dimension = Dimension 0 1 0 0 0 0 0 
+>kilogramDimension :: Dimension
+>kilogramDimension = Dimension 0 1 0 0 0 0 0 
 > 
->second_dimension :: Dimension
->second_dimension   = Dimension 0 0 1 0 0 0 0 
+>secondDimension :: Dimension
+>secondDimension   = Dimension 0 0 1 0 0 0 0 
 > 
->ampere_dimension :: Dimension
->ampere_dimension   = Dimension 0 0 0 1 0 0 0 
+>ampereDimension :: Dimension
+>ampereDimension   = Dimension 0 0 0 1 0 0 0 
 > 
->candela_dimension :: Dimension
->candela_dimension  = Dimension 0 0 0 0 0 1 0 
+>candelaDimension :: Dimension
+>candelaDimension  = Dimension 0 0 0 0 0 1 0 
 > 
->mol_dimension :: Dimension
->mol_dimension = Dimension 0 0 0 0 0 0 1  
+>molDimension :: Dimension
+>molDimension = Dimension 0 0 0 0 0 0 1  
 
->-- | radian_dimension is basically same as dimensionless, using separate name anyway
+>-- | radianDimension is basically same as dimensionless, using separate name anyway
 >-- to allow clients to distinguish. No checking for this distinction is implemented.
->radian_dimension :: Dimension
->radian_dimension = meter_dimension %- meter_dimension
+>radianDimension :: Dimension
+>radianDimension = meterDimension %- meterDimension
 >
->-- | steradian_dimension is basically same as dimensionless, redefining anyway
+>-- | steradianDimension is basically same as dimensionless, redefining anyway
 >-- to allow clients to distinguish steradians. No checking for this distinction is implemented.
->steradian_dimension :: Dimension
->steradian_dimension = (2 %* meter_dimension) %- (2 %* meter_dimension)
+>steradianDimension :: Dimension
+>steradianDimension = (2 %* meterDimension) %- (2 %* meterDimension)
 
 >steradian :: (Floating a) => Quantity a
->steradian = 1 @@ steradian_dimension
->becquerel_dimension :: Dimension
->becquerel_dimension = 0 %- second_dimension
+>steradian = 1 @@ steradianDimension
+>becquerelDimension :: Dimension
+>becquerelDimension = 0 %- secondDimension
 >becquerel :: (Floating a) => Quantity a
->becquerel = 1 @@ becquerel_dimension
->gray_dimension :: Dimension
->gray_dimension = (2 %* meter_dimension) %- (2 %* second_dimension)
+>becquerel = 1 @@ becquerelDimension
+>grayDimension :: Dimension
+>grayDimension = (2 %* meterDimension) %- (2 %* secondDimension)
 >gray :: (Floating a) => Quantity a
->gray = 1 @@ gray_dimension
->lux_dimension = candela_dimension %- (2 %* meter_dimension)
+>gray = 1 @@ grayDimension
+>luxDimension = candelaDimension %- (2 %* meterDimension)
 >lux :: (Floating a) => Quantity a
->lux = 1 @@ lux_dimension
+>lux = 1 @@ luxDimension
 
->lumen_dimension :: Dimension
->lumen_dimension = candela_dimension %+ steradian_dimension
+>lumenDimension :: Dimension
+>lumenDimension = candelaDimension %+ steradianDimension
 >lumen :: (Floating a) => Quantity a
->lumen = 1 @@ lumen_dimension
->kelvin_quantity :: (Floating a) => Quantity a
->kelvin_quantity = 1 @@ kelvin_dimension
+>lumen = 1 @@ lumenDimension
+>kelvinQuantity :: (Floating a) => Quantity a
+>kelvinQuantity = 1 @@ kelvinDimension
 
 >siemens :: (Floating a) => Quantity a
->siemens = 1 @@ siemens_dimension
+>siemens = 1 @@ siemensDimension
 
 >second :: (Floating a) => Quantity a
->second = 1.0 @@ second_dimension
+>second = 1.0 @@ secondDimension
 
 >meter :: (Floating a) => Quantity a
->meter = 1.0 @@ meter_dimension
+>meter = 1.0 @@ meterDimension
 >
 >kilogram :: (Floating a) => Quantity a
->kilogram = 1.0 @@ kilogram_dimension
+>kilogram = 1.0 @@ kilogramDimension
 >
 >gram :: (Floating a) => Quantity a
 >gram = milli kilogram
 > 
 >mole :: (Floating a) => Quantity a
->mole = 1.0 @@ mol_dimension
+>mole = 1.0 @@ molDimension
 >candela :: (Floating a) => Quantity a 
->candela = 1.0 @@ candela_dimension
+>candela = 1.0 @@ candelaDimension
 >kelvin :: (Floating a) => Quantity a
->kelvin = 1.0 @@ kelvin_dimension
+>kelvin = 1.0 @@ kelvinDimension
 >ampere :: (Floating a) => Quantity a
->ampere = 1.0 @@ ampere_dimension
+>ampere = 1.0 @@ ampereDimension
 >coulomb :: (Floating a) => Quantity a
->coulomb = 1.0 @@ coulomb_dimension
+>coulomb = 1.0 @@ coulombDimension
 >tesla :: (Floating a) => Quantity a
->tesla = 1.0 @@ tesla_dimension
+>tesla = 1.0 @@ teslaDimension
 
 >henry :: (Floating a) => Quantity a
->henry = 1.0 @@ henry_dimension
+>henry = 1.0 @@ henryDimension
 
 >newton :: (Floating a) => Quantity a
->newton = 1.0 @@ newton_dimension
+>newton = 1.0 @@ newtonDimension
 
 >pascal :: (Floating a) => Quantity a
->pascal = 1.0 @@ pascal_dimension
+>pascal = 1.0 @@ pascalDimension
 
 >joule :: (Floating a) => Quantity a
->joule = 1.0 @@ joule_dimension
+>joule = 1.0 @@ jouleDimension
 
 >weber :: (Floating a) => Quantity a
->weber = 1.0 @@ weber_dimension
+>weber = 1.0 @@ weberDimension
 
 >volt :: (Floating a) => Quantity a
->volt = 1.0 @@ volt_dimension
+>volt = 1.0 @@ voltDimension
 
 >sievert :: (Floating a) => Quantity a
->sievert = 1.0 @@ sievert_dimension
+>sievert = 1.0 @@ sievertDimension
 
 >ohm :: (Floating a) => Quantity a
->ohm = 1.0 @@ ohm_dimension
+>ohm = 1.0 @@ ohmDimension
 
 >farad :: (Floating a) => Quantity a
->farad = 1.0 @@ farad_dimension
+>farad = 1.0 @@ faradDimension
 
 >watt :: (Floating a) => Quantity a
->watt = 1.0 @@ watt_dimension
+>watt = 1.0 @@ wattDimension
 
 >minute :: (Floating a) => Quantity a
 >minute = 60 %* second
@@ -1170,62 +1180,68 @@ order in the table is significant
 >degree = fromDegreesAngle 1.0
 
 >radian :: (Floating a) => Quantity a
->radian = 1.0 @@ radian_dimension
->katal_dimension :: Dimension
->katal_dimension = mol_dimension %- second_dimension
+>radian = 1.0 @@ radianDimension
+>katalDimension :: Dimension
+>katalDimension = molDimension %- secondDimension
 >katal :: (Floating a) => Quantity a
->katal = 1.0 @@ katal_dimension
+>katal = 1.0 @@ katalDimension
 
 >-- | conversion from degrees celcius.
 >-- WARNING: produces degrees in kelvin, so computations intended
 >-- in degrees celcius should be done before conversion!
 >fromCelsius :: (Show a, Fractional a) => a -> Quantity a
->fromCelsius x = x @@ kelvin_dimension + (273.15 @@ kelvin_dimension)
+>fromCelsius x = x @@ kelvinDimension + (273.15 @@ kelvinDimension)
 
 >fromFahrenheit :: (Fractional a, Show a) => a -> Quantity a
->fromFahrenheit x = ((x + 459.67) * (5/9)) @@ kelvin_dimension
+>fromFahrenheit x = ((x + 459.67) * (5/9)) @@ kelvinDimension
+
+>fromRankine :: (Fractional a, Show a) => a -> Quantity a
+>fromRankine x = (x*(5/9)) @@ kelvinDimension
 
 >toFahrenheit :: (MonadFail m, Fractional a,VectorSpace a)
 > => Quantity a -> m a
 >toFahrenheit x
->   | dimension x == kelvin_dimension = return $! (amount x * (9/5)) - 459.67
+>   | dimension x == kelvinDimension = return $! (amount x * (9/5)) - 459.67
 >   | otherwise = fail "Cannot convert to fahrenheit"
 
->toCelsius :: (Fractional a, Show a, VectorSpace a) => Quantity a -> a
->toCelsius x = amount (x - 273.15 @@ kelvin_dimension)
+>toCelsius :: (Fractional a, Show a) => Quantity a -> a
+>toCelsius x = valueAmount (x - 273.15 @@ kelvinDimension)
+
+>toRankine :: (Fractional a, Show a) => Quantity a -> a
+>toRankine x = valueAmount x * 9 / 5
 
 >fromRadiansAngle :: (Floating a) => a -> Quantity a
->fromRadiansAngle r = r `As` radian_dimension
+>fromRadiansAngle r = r `As` radianDimension
 
 >-- | conversion from angle.
 >-- WARNING: produces degrees in radian, so computations intended
 >-- in degrees should be done before conversion!
 >fromDegreesAngle :: (Floating a) => a -> Quantity a
->fromDegreesAngle alfa = (alfa * pi / 180.0) `As` radian_dimension
+>fromDegreesAngle alfa = (alfa * pi / 180.0) `As` radianDimension
 
->hertz_dimension :: Dimension
->hertz_dimension = dimensionless %- second_dimension
+>hertzDimension :: Dimension
+>hertzDimension = dimensionless %- secondDimension
 >hertz :: (Floating a) => Quantity a
->hertz = 1.0 @@ hertz_dimension
+>hertz = 1.0 @@ hertzDimension
 
->squaremeter_dimension :: Dimension
->squaremeter_dimension = 2 %* meter_dimension
+>squaremeterDimension :: Dimension
+>squaremeterDimension = 2 %* meterDimension
 
 >squaremeter :: (Floating a) => Quantity a
->squaremeter = 1.0 @@ squaremeter_dimension
+>squaremeter = 1.0 @@ squaremeterDimension
 >
->cubicmeter_dimension :: Dimension
->cubicmeter_dimension = 3 %* meter_dimension
+>cubicmeterDimension :: Dimension
+>cubicmeterDimension = 3 %* meterDimension
 >cubicmeter :: (Floating a) => Quantity a
->cubicmeter = 1.0 @@ cubicmeter_dimension
+>cubicmeter = 1.0 @@ cubicmeterDimension
 
->watt_dimension :: Dimension
->watt_dimension = (kilogram_dimension %+ (2 %* meter_dimension) %- (3 %* second_dimension))
->coulomb_dimension :: Dimension
->coulomb_dimension = (second_dimension %+ ampere_dimension)
->siemens_dimension :: Dimension
->siemens_dimension = (3 %* second_dimension) %+ (2 %* ampere_dimension)
->                 %- (kilogram_dimension %+ squaremeter_dimension)
+>wattDimension :: Dimension
+>wattDimension = (kilogramDimension %+ (2 %* meterDimension) %- (3 %* secondDimension))
+>coulombDimension :: Dimension
+>coulombDimension = (secondDimension %+ ampereDimension)
+>siemensDimension :: Dimension
+>siemensDimension = (3 %* secondDimension) %+ (2 %* ampereDimension)
+>                 %- (kilogramDimension %+ squaremeterDimension)
 
 
 >-- | <https://en.wikipedia.org/wiki/Physical_constant>
@@ -1234,171 +1250,171 @@ order in the table is significant
 >
 >planck_mass :: (Floating a) => Quantity a
 >planck_mass = 2.1765113e-8 %* kilogram
->planck_time :: (Floating a) => Quantity a
->planck_time = 5.3910632e-44 %* second
->planck_charge :: (Floating a) => Quantity a
->planck_charge = 1.87554595641e-18 %* coulomb
->planck_temperature :: (Floating a) => Quantity a
->planck_temperature = 1.41683385e32 %* kelvin
+>planckTime :: (Floating a) => Quantity a
+>planckTime = 5.3910632e-44 %* second
+>planckCharge :: (Floating a) => Quantity a
+>planckCharge = 1.87554595641e-18 %* coulomb
+>planckTemperature :: (Floating a) => Quantity a
+>planckTemperature = 1.41683385e32 %* kelvin
 
 >-- | <https://en.wikipedia.org/wiki/Physical_constant>
 >--  <https://en.wikipedia.org/wiki/2019_redefinition_of_SI_base_units>
->-- Warning: don't confuse with stefan_boltzmann_constant.
+>-- Warning: don't confuse with stefan_boltzmannConstant.
 >-- Notice value is exact.
->boltzmann_constant :: (Floating a) => Quantity a
->boltzmann_constant = 1.380649e-23 @@ (joule_dimension %- kelvin_dimension)
+>boltzmannConstant :: (Floating a) => Quantity a
+>boltzmannConstant = 1.380649e-23 @@ (jouleDimension %- kelvinDimension)
 
 >-- | <https://en.wikipedia.org/wiki/Gravitational_constant>
->gravitational_constant :: (Floating a) => Quantity a
->gravitational_constant = 6.6740831e-11 @@ (3 %* meter_dimension %+ (negate 1) %* kilogram_dimension %+ (negate 2) %* second_dimension)
+>gravitationalConstant :: (Floating a) => Quantity a
+>gravitationalConstant = 6.6740831e-11 @@ (3 %* meterDimension %+ (negate 1) %* kilogramDimension %+ (negate 2) %* secondDimension)
 >
 >-- | <https://en.wikipedia.org/wiki/Physical_constant>
->standard_acceleration_of_gravity :: (Floating a) => Quantity a
->standard_acceleration_of_gravity = 9.80665 @@ (meter_dimension %- 2 %* second_dimension)
+>standardAccelerationOf_gravity :: (Floating a) => Quantity a
+>standardAccelerationOf_gravity = 9.80665 @@ (meterDimension %- 2 %* secondDimension)
 > 
 >-- | <https://en.wikipedia.org/wiki/Physical_constant>
->standard_atmosphere :: (Floating a) => Quantity a
->standard_atmosphere = 101325 %* pascal
+>standardAtmosphere :: (Floating a) => Quantity a
+>standardAtmosphere = 101325 %* pascal
 
 >-- | <https://en.wikipedia.org/wiki/Speed_of_light>
 >-- Note value is exact.
->speed_of_light :: (Floating a) => Quantity a
->speed_of_light = 299792458.0 @@ (meter_dimension %- second_dimension)
+>speedOf_light :: (Floating a) => Quantity a
+>speedOf_light = 299792458.0 @@ (meterDimension %- secondDimension)
 
 >-- | <https://en.wikipedia.org/wiki/Planck_constant>
 >-- <https://en.wikipedia.org/wiki/2019_redefinition_of_SI_base_units>
 >-- Note value is exact.
->planck_constant :: (Floating a) => Quantity a
->planck_constant = 6.62607015e-34 @@ (joule_dimension %+ second_dimension)
+>planckConstant :: (Floating a) => Quantity a
+>planckConstant = 6.62607015e-34 @@ (jouleDimension %+ secondDimension)
 
->reduced_planck_constant :: (Floating a) => Quantity a
->reduced_planck_constant = (1/(2*pi)) %* planck_constant
+>reducedPlanckConstant :: (Floating a) => Quantity a
+>reducedPlanckConstant = (1/(2*pi)) %* planckConstant
 
 >-- | <https://en.wikipedia.org/wiki/Electronvolt>
 >electronvolt :: (Floating a) => Quantity a
->electronvolt = 1.6021766208e-19 @@ joule_dimension
+>electronvolt = 1.6021766208e-19 @@ jouleDimension
 
 >-- | <https://en.wikipedia.org/wiki/Physical_constant>
->magnetic_constant :: (Floating a) => Quantity a
->magnetic_constant = (4*pi*1e-7) @@ (newton_dimension %- (2 %* ampere_dimension))
+>magneticConstant :: (Floating a) => Quantity a
+>magneticConstant = (4*pi*1e-7) @@ (newtonDimension %- (2 %* ampereDimension))
 >-- | <https://en.wikipedia.org/wiki/Physical_constant>
->electric_constant :: (Show a, Floating a) => Quantity a
->electric_constant = 1 / (magnetic_constant * speed_of_light * speed_of_light)
+>electricConstant :: (Show a, Floating a) => Quantity a
+>electricConstant = 1 / (magneticConstant * speedOf_light * speedOf_light)
 >-- | <https://en.wikipedia.org/wiki/Physical_constant>
->characteristic_impedance_of_vacuum :: (Floating a) => Quantity a
->characteristic_impedance_of_vacuum = 376.730313461 @@ ohm_dimension
+>characteristic_impedanceOfVacuum :: (Floating a) => Quantity a
+>characteristic_impedanceOfVacuum = 376.730313461 @@ ohmDimension
 >-- | <https://en.wikipedia.org/wiki/Physical_constant>
->coulombs_constant :: (Floating a) => Quantity a
->coulombs_constant = 8.9875517873681764e9 @@ (kilogram_dimension %+ (3 %* meter_dimension) %- (4 %* second_dimension) %- (2 %* ampere_dimension))
+>coulombsConstant :: (Floating a) => Quantity a
+>coulombsConstant = 8.9875517873681764e9 @@ (kilogramDimension %+ (3 %* meterDimension) %- (4 %* secondDimension) %- (2 %* ampereDimension))
 >-- | <https://en.wikipedia.org/wiki/Physical_constant>
 >--   <https://en.wikipedia.org/wiki/2019_redefinition_of_SI_base_units>
 >--   Notice value is exact.
->elementary_charge :: (Floating a) => Quantity a
->elementary_charge = 1.602176634e-19 @@ coulomb_dimension
+>elementaryCharge :: (Floating a) => Quantity a
+>elementaryCharge = 1.602176634e-19 @@ coulombDimension
 
 >-- | <https://en.wikipedia.org/wiki/Physical_constant>
 >bohr_magneton :: (Floating a) => Quantity a
->bohr_magneton = 9.27400999457e-24 @@ (joule_dimension %- tesla_dimension)
+>bohr_magneton = 9.27400999457e-24 @@ (jouleDimension %- teslaDimension)
 >-- | <https://en.wikipedia.org/wiki/Physical_constant>
->conductance_quantum :: (Floating a) => Quantity a
->conductance_quantum = 7.748091731018e-5 @@ sievert_dimension
+>conductanceQuantum :: (Floating a) => Quantity a
+>conductanceQuantum = 7.748091731018e-5 @@ sievertDimension
 >-- | <https://en.wikipedia.org/wiki/Physical_constant>
->inverse_conductance_quantum :: (Floating a) => Quantity a
->inverse_conductance_quantum = 12906.403727829 @@ ohm_dimension
+>inverseConductanceQuantum :: (Floating a) => Quantity a
+>inverseConductanceQuantum = 12906.403727829 @@ ohmDimension
 
 >-- | <https://en.wikipedia.org/wiki/Physical_constant>
->josephson_constant :: (Floating a) => Quantity a
->josephson_constant = 4.83597852530e14 @@ (hertz_dimension %- volt_dimension)
+>josephsonConstant :: (Floating a) => Quantity a
+>josephsonConstant = 4.83597852530e14 @@ (hertzDimension %- voltDimension)
 >-- | <https://en.wikipedia.org/wiki/Physical_constant>
->magnetic_flux_quantum :: (Floating a) => Quantity a
->magnetic_flux_quantum = 2.06783383113e-15 @@ weber_dimension
+>magneticFluxQuantum :: (Floating a) => Quantity a
+>magneticFluxQuantum = 2.06783383113e-15 @@ weberDimension
 >-- | <https://en.wikipedia.org/wiki/Physical_constant>
 >nuclear_magneton :: (Floating a) => Quantity a
->nuclear_magneton = 5.05078369931e-27 @@ (joule_dimension %- tesla_dimension)
+>nuclear_magneton = 5.05078369931e-27 @@ (jouleDimension %- teslaDimension)
 >-- | <https://en.wikipedia.org/wiki/Physical_constant>
->von_klitzing_constant :: (Floating a) => Quantity a
->von_klitzing_constant = 25812.807455559 @@ ohm_dimension
+>von_klitzingConstant :: (Floating a) => Quantity a
+>von_klitzingConstant = 25812.807455559 @@ ohmDimension
 >-- | <https://en.wikipedia.org/wiki/Physical_constant>
 >bohr_radius :: (Floating a) => Quantity a
->bohr_radius = 5.291722106712e-11 @@ meter_dimension
+>bohr_radius = 5.291722106712e-11 @@ meterDimension
 >-- | <https://en.wikipedia.org/wiki/Physical_constant>
 >classical_electron_radius :: (Floating a) => Quantity a
->classical_electron_radius = 2.817940322719e-15 @@ meter_dimension
+>classical_electron_radius = 2.817940322719e-15 @@ meterDimension
 >-- | <https://en.wikipedia.org/wiki/Physical_constant>
 >electron_mass :: (Floating a) => Quantity a
->electron_mass = 9.1093835611e-31 @@ kilogram_dimension
+>electron_mass = 9.1093835611e-31 @@ kilogramDimension
 >-- | <https://en.wikipedia.org/wiki/Physical_constant>
->fermi_coupling_constant :: (Show a,Floating a) => Quantity a
->fermi_coupling_constant = 1.16637876e-5 %* giga (1 / (electronvolt * electronvolt))
+>fermiCouplingConstant :: (Show a,Floating a) => Quantity a
+>fermiCouplingConstant = 1.16637876e-5 %* giga (1 / (electronvolt * electronvolt))
 >-- | <https://en.wikipedia.org/wiki/Physical_constant>
->fine_structure_constant :: (Floating a) => Quantity a
->fine_structure_constant = 7.297352566417e-3 @@ dimensionless
+>fineStructureConstant :: (Floating a) => Quantity a
+>fineStructureConstant = 7.297352566417e-3 @@ dimensionless
 
 >-- | <https://en.wikipedia.org/wiki/Physical_constant>
 >hartree_energy :: (Floating a) => Quantity a
->hartree_energy = 4.35974465054e-18 @@ joule_dimension
+>hartree_energy = 4.35974465054e-18 @@ jouleDimension
 
 >-- | <https://en.wikipedia.org/wiki/Physical_constant>
 >proton_mass :: (Floating a) => Quantity a
->proton_mass = 1.67262189821e-27 @@ kilogram_dimension
+>proton_mass = 1.67262189821e-27 @@ kilogramDimension
 >
 >-- | <https://en.wikipedia.org/wiki/Physical_constant>
->quantum_of_circulation :: (Floating a) => Quantity a
->quantum_of_circulation = 3.636947548617e-4 @@ (kilogram_dimension %+ kilogram_dimension %- second_dimension)
+>quantumOfCirculation :: (Floating a) => Quantity a
+>quantumOfCirculation = 3.636947548617e-4 @@ (kilogramDimension %+ kilogramDimension %- secondDimension)
 >-- | <https://en.wikipedia.org/wiki/Physical_constant>
->rydberg_constant :: (Floating a) => Quantity a
->rydberg_constant = 10973731.56850865 @@ ((negate 1) %* meter_dimension)
+>rydbergConstant :: (Floating a) => Quantity a
+>rydbergConstant = 10973731.56850865 @@ ((negate 1) %* meterDimension)
 >-- | <https://en.wikipedia.org/wiki/Physical_constant>
->thomson_cross_section :: (Floating a) => Quantity a
->thomson_cross_section = 6.652458715891e-29 @@ (2 %* meter_dimension)
+>thomsonCrossSection :: (Floating a) => Quantity a
+>thomsonCrossSection = 6.652458715891e-29 @@ (2 %* meterDimension)
 
 >-- <https://en.wikipedia.org/wiki/2019_redefinition_of_SI_base_units>
->ground_state_cesium_hyperfine_transition_frequency :: (Floating a) => Quantity a
->ground_state_cesium_hyperfine_transition_frequency = 9192631770 @@ hertz_dimension
+>groundStateCesiumHyperfineTransitionFrequency :: (Floating a) => Quantity a
+>groundStateCesiumHyperfineTransitionFrequency = 9192631770 @@ hertzDimension
 
 >-- | <https://en.wikipedia.org/wiki/Physical_constant>
->weak_mixing_angle :: (Floating a) => Quantity a
->weak_mixing_angle = 0.222321 @@ radian_dimension
+>weak_mixingAngle :: (Floating a) => Quantity a
+>weak_mixingAngle = 0.222321 @@ radianDimension
 
 >-- | <https://en.wikipedia.org/wiki/2019_redefinition_of_SI_base_units>
 >-- value is exact.
->luminous_efficacy_of_monochromatic_540e12_hertz_radiation :: (Floating a) => Quantity a
->luminous_efficacy_of_monochromatic_540e12_hertz_radiation = 683 @@ (lumen_dimension %- watt_dimension)
+>luminousEfficacyOfMonochromatic540e12HertzRadiation :: (Floating a) => Quantity a
+>luminousEfficacyOfMonochromatic540e12HertzRadiation = 683 @@ (lumenDimension %- wattDimension)
 
 >-- | <https://en.wikipedia.org/wiki/Avogadro_constant>
 >-- <https://en.wikipedia.org/wiki/2019_redefinition_of_SI_base_units>
 >-- Notice value is exact.
->avogadro_constant :: (Floating a) => Quantity a
->avogadro_constant = 6.02214076e23 @@ (negate $ mol_dimension)
+>avogadroConstant :: (Floating a) => Quantity a
+>avogadroConstant = 6.02214076e23 @@ (negate $ molDimension)
 >-- | <https://en.wikipedia.org/wiki/Physical_constant>
->atomic_mass_constant :: (Floating a) => Quantity a
->atomic_mass_constant = 1.66053904020e-27 %* kilogram
+>atomicMassConstant :: (Floating a) => Quantity a
+>atomicMassConstant = 1.66053904020e-27 %* kilogram
 
->faraday_constant :: (Floating a, Show a) => Quantity a
->faraday_constant = 96485.3328959 %* (coulomb / mole)
+>faradayConstant :: (Floating a, Show a) => Quantity a
+>faradayConstant = 96485.3328959 %* (coulomb / mole)
 
->first_radiation_constant :: (Floating a, Show a) => Quantity a
->first_radiation_constant = 1.19104295315e-16 %* (watt * meter * meter)
->loschmidt_constant :: (Floating a) => Quantity a
->loschmidt_constant = 2.686781115e25 @@ ((-3) %* meter_dimension)
->gas_constant :: (Floating a, Show a) => Quantity a
->gas_constant = 8.314459848 %* (joule / (mole * kelvin))
->molar_planck_constant :: (Floating a, Show a) => Quantity a
->molar_planck_constant = 3.990312711018e-10 %* (joule * second / mole)
->second_radiation_constant :: (Floating a, Show a) => Quantity a
->second_radiation_constant = 1.4387773683e-2 %* (meter * kelvin)
+>firstRadiationConstant :: (Floating a, Show a) => Quantity a
+>firstRadiationConstant = 1.19104295315e-16 %* (watt * meter * meter)
+>loschmidtConstant :: (Floating a) => Quantity a
+>loschmidtConstant = 2.686781115e25 @@ ((-3) %* meterDimension)
+>gasConstant :: (Floating a, Show a) => Quantity a
+>gasConstant = 8.314459848 %* (joule / (mole * kelvin))
+>molarPlanckConstant :: (Floating a, Show a) => Quantity a
+>molarPlanckConstant = 3.990312711018e-10 %* (joule * second / mole)
+>secondRadiationConstant :: (Floating a, Show a) => Quantity a
+>secondRadiationConstant = 1.4387773683e-2 %* (meter * kelvin)
 
 >-- | Warning: don't confuse with boltzmann_constant.
->stefan_boltzmann_constant :: (Floating a, Show a) => Quantity a
->stefan_boltzmann_constant = 5.67036713e-8 %* (watt / (meter^2 * kelvin^4))
+>stefanBoltzmannConstant :: (Floating a, Show a) => Quantity a
+>stefanBoltzmannConstant = 5.67036713e-8 %* (watt / (meter^2 * kelvin^4))
 
 >-- | <https://en.wikipedia.org/wiki/Physical_constant>
->efimov_factor :: (Floating a) => Quantity a 
->efimov_factor = 22.7 @@ dimensionless
+>efimovFactor :: (Floating a) => Quantity a 
+>efimovFactor = 22.7 @@ dimensionless
 >
 >-- | <https://en.wikipedia.org/wiki/Light-year>
 >lightyear :: (Num a) => Quantity a
->lightyear = 9460730472580800 @@ meter_dimension
+>lightyear = 9460730472580800 @@ meterDimension
 
 >-- | <https://en.wikipedia.org/wiki/Astronomical_unit>
 >astronomicalUnit :: (Floating a) => Quantity a
@@ -1414,44 +1430,44 @@ order in the table is significant
 
 >siDimensions :: [(String, Dimension)]
 >siDimensions = [
->  ("eV", joule_dimension),
->  ("m", meter_dimension),
->  ("rad", radian_dimension),
->  ("sr", steradian_dimension),
->  ("K", kelvin_dimension),
->  ("s", second_dimension),
->  ("kg", kilogram_dimension),
->  ("g", kilogram_dimension),
->  ("mol", mol_dimension),
->  ("cd", candela_dimension),
->  ("A", ampere_dimension),
->  ("C", coulomb_dimension),
->  ("T", tesla_dimension),
->  ("H", henry_dimension),
->  ("N", newton_dimension),
->  ("Pa", pascal_dimension),
->  ("J", joule_dimension),
->  ("Wb", weber_dimension),
->  ("V", volt_dimension),
->  ("Sv", sievert_dimension),
->  ("S", siemens_dimension),
->  ("Ω", ohm_dimension),
->  ("ohm", ohm_dimension),
->  ("F", farad_dimension),
->  ("W", watt_dimension),
->  ("°C", kelvin_dimension),
->  ("°F", kelvin_dimension),
->  ("°", radian_dimension),
->  ("lm", lumen_dimension),
->  ("lx", lux_dimension),
->  ("Bq", becquerel_dimension),
->  ("Gy", gray_dimension),
->  ("kat", katal_dimension),
->  ("Hz", hertz_dimension),
->  ("ly", meter_dimension),
->  ("AU", meter_dimension),
->  ("pc", meter_dimension),
->  ("l", 3 %* meter_dimension),
+>  ("eV", jouleDimension),
+>  ("m", meterDimension),
+>  ("rad", radianDimension),
+>  ("sr", steradianDimension),
+>  ("K", kelvinDimension),
+>  ("s", secondDimension),
+>  ("kg", kilogramDimension),
+>  ("g", kilogramDimension),
+>  ("mol", molDimension),
+>  ("cd", candelaDimension),
+>  ("A", ampereDimension),
+>  ("C", coulombDimension),
+>  ("T", teslaDimension),
+>  ("H", henryDimension),
+>  ("N", newtonDimension),
+>  ("Pa", pascalDimension),
+>  ("J", jouleDimension),
+>  ("Wb", weberDimension),
+>  ("V", voltDimension),
+>  ("Sv", sievertDimension),
+>  ("S", siemensDimension),
+>  ("Ω", ohmDimension),
+>  ("ohm", ohmDimension),
+>  ("F", faradDimension),
+>  ("W", wattDimension),
+>  ("°C", kelvinDimension),
+>  ("°F", kelvinDimension),
+>  ("°", radianDimension),
+>  ("lm", lumenDimension),
+>  ("lx", luxDimension),
+>  ("Bq", becquerelDimension),
+>  ("Gy", grayDimension),
+>  ("kat", katalDimension),
+>  ("Hz", hertzDimension),
+>  ("ly", meterDimension),
+>  ("AU", meterDimension),
+>  ("pc", meterDimension),
+>  ("l", 3 %* meterDimension),
 >  ("B", dimensionless),
 >  ("b", dimensionless)]
 

@@ -22,105 +22,105 @@
 >-- the list, e.g. for Integer type, the universe is
 >-- @[0,1,-1,2,-2,...]@.
 >class Universe a where
->   all_elements :: [a]
+>   allElements :: [a]
 
 >separator :: (Universe a, Eq b) => (a -> b) -> (a -> b) -> Bool
->separator f g = and [ f a == g a | a <- all_elements ]
+>separator f g = and [ f a == g a | a <- allElements ]
 
 >-- | <https://en.wikipedia.org/wiki/Equivalence_class>
->equivalence_class :: (Universe b) => (a -> b -> Bool) -> a -> [b]
->equivalence_class eq a = [b | b <- all_elements, a `eq` b]
+>equivalenceClass :: (Universe b) => (a -> b -> Bool) -> a -> [b]
+>equivalenceClass eq a = [b | b <- allElements, a `eq` b]
 
->different_elements :: (Universe a, Eq b) => (a -> b) -> (a -> b) -> [a]
->different_elements f g = [a | a <- all_elements, f a /= g a]
+>differentElements :: (Universe a, Eq b) => (a -> b) -> (a -> b) -> [a]
+>differentElements f g = [a | a <- allElements, f a /= g a]
 
 >isMonotone :: (Universe a, Ord a, Ord b) => (a -> b) -> Bool
->isMonotone f = and [if x >= y then f x >= f y else True | (x,y) <- all_elements]
+>isMonotone f = and [if x >= y then f x >= f y else True | (x,y) <- allElements]
 
 >domain :: (Universe a) => (a -> b) -> [a]
->domain f = [const x $! (f $! x) | x <- all_elements]
+>domain f = [const x $! (f $! x) | x <- allElements]
 
->instance Universe Integer where { all_elements = [0..] `interleave` (map negate [1..]) }
->instance Universe Int where { all_elements = all_nums }
->instance Universe Int8 where { all_elements = all_nums }
->instance Universe Int16 where { all_elements = all_nums }
->instance Universe Int32 where { all_elements = all_nums }
->instance Universe Int64 where { all_elements = all_nums }
->instance Universe Word where { all_elements = [minBound..maxBound] }
->instance Universe Word8 where { all_elements = [minBound..maxBound] }
->instance Universe Word16 where { all_elements = [minBound..maxBound] }
->instance Universe Word32 where { all_elements = [minBound..maxBound] }
->instance Universe Word64 where { all_elements = [minBound..maxBound] }
+>instance Universe Integer where { allElements = [0..] `interleave` (map negate [1..]) }
+>instance Universe Int where { allElements = allNums }
+>instance Universe Int8 where { allElements = allNums }
+>instance Universe Int16 where { allElements = allNums }
+>instance Universe Int32 where { allElements = allNums }
+>instance Universe Int64 where { allElements = allNums }
+>instance Universe Word where { allElements = [minBound..maxBound] }
+>instance Universe Word8 where { allElements = [minBound..maxBound] }
+>instance Universe Word16 where { allElements = [minBound..maxBound] }
+>instance Universe Word32 where { allElements = [minBound..maxBound] }
+>instance Universe Word64 where { allElements = [minBound..maxBound] }
 
 >-- | order here is chosen based on what numbers are more
 >-- likely in applications, so numbers close to zero occur first.
 
->all_nums :: (Num t, Bounded t, Enum t) => [t]
->all_nums = interleave [0 .. maxBound] [-1,-2..minBound]
+>allNums :: (Num t, Bounded t, Enum t) => [t]
+>allNums = interleave [0 .. maxBound] [-1,-2..minBound]
 
 >instance Universe () where
->   all_elements = [()]
+>   allElements = [()]
 
 >instance (Universe a) => Universe (Maybe a) where
->   all_elements = Nothing : map Just all_elements
+>   allElements = Nothing : map Just allElements
 
 >instance (Universe a, Universe b) => Universe (Either a b) where
->   all_elements = interleave (map Left all_elements) (map Right all_elements)
+>   allElements = interleave (map Left allElements) (map Right allElements)
 
 >instance Universe Bool where
->   all_elements = [True,False]
+>   allElements = [True,False]
 
 >instance Universe Ordering where
->   all_elements = [LT,EQ,GT]
+>   allElements = [LT,EQ,GT]
 
 >instance Universe Char where
->   all_elements = [minBound..maxBound]
+>   allElements = [minBound..maxBound]
 
 >instance (Universe b, Universe a, Eq a) => Universe (a -> b) where
->   all_elements = map table_to_function all_functions
+>   allElements = map tableToFunction allFunctions
 
 >instance (Universe a) => Universe [a] where
->   all_elements = all_lists all_elements
+>   allElements = allLists allElements
 
 >-- | All lists produces the infinite list of all lists.
 
->all_lists :: [a] -> [[a]]
->all_lists lst = [] : do lsts <- all_lists lst
->                        v <- lst
->                        return (v:lsts)
+>allLists :: [a] -> [[a]]
+>allLists lst = [] : do lsts <- allLists lst
+>                       v <- lst
+>                       return (v:lsts)
 
->table_to_function :: (Eq a) => [(a,b)] -> a -> b
->table_to_function lst x = let Just v = lookup x lst in v
+>tableToFunction :: (Eq a) => [(a,b)] -> a -> b
+>tableToFunction lst x = let Just v = lookup x lst in v
 
->all_functions :: (Universe d, Universe c) => [[(c,d)]]
->all_functions = all_functions_from all_elements all_elements
+>allFunctions :: (Universe d, Universe c) => [[(c,d)]]
+>allFunctions = allFunctionsFrom allElements allElements
 
->all_subsets :: [a] -> [[a]]
->all_subsets d = map (map fst . filter snd) (all_functions_with_domain d)
+>allSubsets :: [a] -> [[a]]
+>allSubsets d = map (map fst . filter snd) (allFunctionsWithDomain d)
 
->all_functions_with_domain :: (Universe c) => [d] -> [[(d,c)]]
->all_functions_with_domain dom = all_functions_from dom all_elements
+>allFunctionsWithDomain :: (Universe c) => [d] -> [[(d,c)]]
+>allFunctionsWithDomain dom = allFunctionsFrom dom allElements
 
 >-- | all_functions_from only produces any results if the domain list is finite.
 
->all_functions_from :: [c] -> [d] -> [[(c,d)]]
->all_functions_from [] _ = [[]]
->all_functions_from (d:dr) ls = concatMap gen_list ls
->   where gen_list c = map ((d,c):) mr
->         mr = all_functions_from dr ls 
+>allFunctionsFrom :: [c] -> [d] -> [[(c,d)]]
+>allFunctionsFrom [] _ = [[]]
+>allFunctionsFrom (d:dr) ls = concatMap genList ls
+>   where genList c = map ((d,c):) mr
+>         mr = allFunctionsFrom dr ls 
 
 >instance (Universe a, Universe b) => Universe (a,b) where
->   all_elements = concat $ functor_outer (,) all_elements all_elements
+>   allElements = concat $ functorOuter (,) allElements allElements
 
 >instance (Universe a, Universe b, Universe c) => Universe (a,b,c) where
->   all_elements = concat (map concat (outer3_functor (,,) all_elements all_elements all_elements))
+>   allElements = concatMap concat (outer3Functor (,,) allElements allElements allElements)
 
 >instance (Universe a, Eq a) => Universe (Endo a) where
->   all_elements = fmap Endo all_elements
+>   allElements = fmap Endo allElements
 
->all_sets :: (Ord a) => [a] -> [Set a]
->all_sets [] = [Set.empty]
->all_sets (c:cr) = Set.empty : map (Set.insert c) (all_sets cr)
+>allSets :: (Ord a) => [a] -> [Set a]
+>allSets [] = [Set.empty]
+>allSets (c:cr) = Set.empty : map (Set.insert c) (allSets cr)
 
 >instance (Universe a, Ord a) => Universe (Set a) where
->   all_elements = all_sets all_elements
+>   allElements = allSets allElements

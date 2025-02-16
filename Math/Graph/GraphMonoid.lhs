@@ -87,26 +87,25 @@ instance (Universe v, Universe e) => Universe (GraphElem v e) where
 >deriving instance (Typeable a) => Typeable (Three a a)
 >deriving instance (Data a) => Data (Three a a)
 
-
 >instance Cat.Category Three where
 >   id = TId
->   (.) = mappend_three
+>   (.) = mappendThree
 
 data Three = TId | TDom | TCod deriving (Eq,Show,Ord, Typeable, Data, Generic)
 
 >-- | intent is that g =~= F Bool, where F : 2^{op} -> Set. But opposite categories are difficult to represent.
->three_action :: (g -> g) -> (g -> g) -> (g -> g)
+>threeAction :: (g -> g) -> (g -> g) -> (g -> g)
 >   -> Three Bool Bool -> Endo g
->three_action a b c = \case
+>threeAction a b c = \case
 >  TId -> Endo a
 >  TDom -> Endo b
 >  TCod -> Endo c
 
 >-- | intent is that g =~= F Bool, where F : 2^{op} -> Set. But opposite categories are difficult to represent.
->three_action_arr :: (ArrowChoice arr) => arr g g -> arr g g -> arr g g -> Three Bool Bool -> arr g g
->three_action_arr a b c TId = proc i -> a -< i
->three_action_arr a b c TDom = proc i -> b -< i
->three_action_arr a b c TCod = proc i -> c -< i
+>threeActionArr :: (ArrowChoice arr) => arr g g -> arr g g -> arr g g -> Three Bool Bool -> arr g g
+>threeActionArr a b c TId = proc i -> a -< i
+>threeActionArr a b c TDom = proc i -> b -< i
+>threeActionArr a b c TCod = proc i -> c -< i
 
 
 >instance (Arrow arr) => MonoidArrow arr (Three Bool Bool) Bool where
@@ -115,7 +114,7 @@ data Three = TId | TDom | TCod deriving (Eq,Show,Ord, Typeable, Data, Generic)
 >   monoidA TCod = arr (const True)
 
 >instance Universe (Three a a) where
->  all_elements = [TId,TDom,TCod]
+>  allElements = [TId,TDom,TCod]
 > 
 >instance PpShow (Three a a) where
 >   pp TId = "id"
@@ -123,19 +122,19 @@ data Three = TId | TDom | TCod deriving (Eq,Show,Ord, Typeable, Data, Generic)
 >   pp TCod = "cod"
 
 >instance Semigroup (Three a a) where
->   (<>) = mappend_three
+>   (<>) = mappendThree
 
 >instance Monoid (Three a a) where
 >   mempty = TId
->   mappend = mappend_three
+>   mappend = mappendThree
 
->mappend_three :: Three b c -> Three a b -> Three a c
->mappend_three TId x = x
->mappend_three x TId = x
->mappend_three TDom TDom = TDom
->mappend_three TDom TCod = TDom
->mappend_three TCod TDom = TCod
->mappend_three TCod TCod = TCod
+>mappendThree :: Three b c -> Three a b -> Three a c
+>mappendThree TId x = x
+>mappendThree x TId = x
+>mappendThree TDom TDom = TDom
+>mappendThree TDom TCod = TDom
+>mappendThree TCod TDom = TCod
+>mappendThree TCod TCod = TCod
 
 >instance GraphMonoid Three Bool where
 >   gdom = TDom
@@ -156,20 +155,20 @@ data Three = TId | TDom | TCod deriving (Eq,Show,Ord, Typeable, Data, Generic)
 >data Restricted (g :: * -> Constraint) a b where
 >  Restricted :: (g a) => a -> Restricted g a a
 
->three_to_four :: Three a b -> Four a b
->three_to_four = \case { TId -> FId ;  TDom -> FDom ; TCod -> FCod }
+>threeToFour :: Three a b -> Four a b
+>threeToFour = \case { TId -> FId ;  TDom -> FDom ; TCod -> FCod }
 
 >-- | intent is that g =~= F2, where F : 2^{op} -> Set. But opposite categories are difficult to represent.
->four_action_arr :: (ArrowChoice arr)
+>fourActionArr :: (ArrowChoice arr)
 >  => arr g g -> arr g g -> arr g g -> arr g g -> Four Bool Bool -> arr g g
->four_action_arr aid adom acod anot FId = proc v -> aid -< v
->four_action_arr aid adom acod anot FDom = proc v -> adom -< v
->four_action_arr aid adom acod anot FCod = proc v -> acod -< v
->four_action_arr aid adom acod anot FNot = proc v -> anot -< v
+>fourActionArr aid adom acod anot FId = proc v -> aid -< v
+>fourActionArr aid adom acod anot FDom = proc v -> adom -< v
+>fourActionArr aid adom acod anot FCod = proc v -> acod -< v
+>fourActionArr aid adom acod anot FNot = proc v -> anot -< v
 
 >-- | intent is that g =~= F2, where F : 2^{op} -> Set. But opposite categories are difficult to represent.
->four_action :: (g -> g) -> (g -> g) -> (g -> g) -> (g -> g) -> Four Bool Bool -> Endo g
->four_action aid adom acod anot = \case
+>fourAction :: (g -> g) -> (g -> g) -> (g -> g) -> (g -> g) -> Four Bool Bool -> Endo g
+>fourAction aid adom acod anot = \case
 >  FId -> Endo aid
 >  FDom -> Endo adom
 >  FCod -> Endo acod
@@ -180,7 +179,7 @@ data Three = TId | TDom | TCod deriving (Eq,Show,Ord, Typeable, Data, Generic)
 >               | otherwise = (y,x)
 
 >instance Universe (Four a a) where 
->  all_elements = [FId,FDom, FCod,FNot]
+>  allElements = [FId,FDom, FCod,FNot]
 > 
 >instance PpShow (Four a a) where
 >   pp FId = "id"
@@ -188,35 +187,35 @@ data Three = TId | TDom | TCod deriving (Eq,Show,Ord, Typeable, Data, Generic)
 >   pp FCod = "cod"
 >   pp FNot = "not"
 
->instance MonoidArrow (->) (Four Bool Bool) Bool where
->   monoidA FId  = id
+>instance (Arrow arr) => MonoidArrow arr (Four Bool Bool) Bool where
+>   monoidA FId  = Cat.id
 >   monoidA FDom = arr (const False)
 >   monoidA FCod = arr (const True)
 >   monoidA FNot = arr not
 
 >instance Semigroup (Four Bool Bool) where
->   (<>) = mappend_four
+>   (<>) = mappendFour
 
 >instance Monoid (Four Bool Bool) where
 >   mempty = FId
->   mappend = mappend_four
+>   mappend = mappendFour
 >
 >instance Cat.Category Four where
 >   id = FId
->   (.) = mappend_four
+>   (.) = mappendFour
 
->mappend_four :: Four b c -> Four a b -> Four a c
->mappend_four FId x = x
->mappend_four x FId = x
->mappend_four FDom FDom = FDom
->mappend_four FDom FCod = FDom
->mappend_four FDom FNot = FDom
->mappend_four FCod FDom = FCod
->mappend_four FCod FCod = FCod
->mappend_four FCod FNot = FCod
->mappend_four FNot FDom = FCod
->mappend_four FNot FCod = FDom
->mappend_four FNot FNot = FId
+>mappendFour :: Four b c -> Four a b -> Four a c
+>mappendFour FId x = x
+>mappendFour x FId = x
+>mappendFour FDom FDom = FDom
+>mappendFour FDom FCod = FDom
+>mappendFour FDom FNot = FDom
+>mappendFour FCod FDom = FCod
+>mappendFour FCod FCod = FCod
+>mappendFour FCod FNot = FCod
+>mappendFour FNot FDom = FCod
+>mappendFour FNot FCod = FDom
+>mappendFour FNot FNot = FId
 
 >instance Group (Four Bool Bool) where
 >   ginvert FId = FId
@@ -341,7 +340,7 @@ data Three = TId | TDom | TCod deriving (Eq,Show,Ord, Typeable, Data, Generic)
 >  fmap (\((e1,e2), (v1,v2)) -> ((Edge e1, Edge e2), (Vertex v1, Vertex v2))) lst
 
 >reversibleEdgesEndo :: (Ord a) => [((a,a),(a,a))] -> Four Bool Bool -> Endo a
->reversibleEdgesEndo lst = four_action id domLookup codLookup negLookup
+>reversibleEdgesEndo lst = fourAction id domLookup codLookup negLookup
 >   where fwdSearch = map (\ ~(~(a,b),x) -> (a,(b,x))) lst
 >                  ++ map (\ ~(~(a,b),x) -> (b,(a,swap x))) lst
 >         domLookup a = maybe a (fst . snd) (lookup a fwdSearch)

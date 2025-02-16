@@ -48,12 +48,12 @@
 >  pp CloseParenthesis = pp ')'
 
 >tokenLexer :: t -> Int -> (t -> ParseM a) -> ParseM a
->tokenLexer tok len cont = ParseM $ \r li -> runParseM (cont tok) r (add_to_column len li)
+>tokenLexer tok len cont = ParseM $ \r li -> runParseM (cont tok) r (addToColumn len li)
 
 >lexer :: (Token -> ParseM a) -> ParseM a
 >lexer cont = ParseM $ \inp -> case uncons inp of
 >    Nothing -> tokenLexer EOF 0 cont `runParseM` Text.empty
->    Just ('\n',r) -> \line -> runParseM (cont Linefeed) r $! next_line line
+>    Just ('\n',r) -> \line -> runParseM (cont Linefeed) r $! nextLine line
 >    Just ('"',r) | (str,s') <- span (/= '"') r ->
 >          tokenLexer (StringLit str) (length str + 1) cont `runParseM` (Text.tail s')
 >    Just ('{',r) -> tokenLexer OpenBrace 1 cont `runParseM` r

@@ -52,7 +52,7 @@
 
 >-- | ddots
 >(⋱) ∷ (Diagonalizable m a) ⇒ (m :*: m) a -> m a
->(⋱) = diagonal_impl
+>(⋱) = diagonalImpl
 >
 >-- | oplus
 >(⊕) ∷ (VectorSpace v) ⇒ v → v → v
@@ -65,12 +65,12 @@
 
 >-- | Unicode for tensor product. ("CIRCLED TIMES" character)
 >(⊗) :: (Num a, Functor m, Functor n) => m a -> n a -> (m :*: n) a
->(⊗) = tensor_product
+>(⊗) = tensorProduct
 
 (⊗) :: (LinearTransform f g a, InnerProductSpace (v a),
    Linearizable LinearMap (:*:) f g a, Scalar (v a) ~ a)
  => f (v a) -> g (v a) -> f a :-> g a
-(⊗) = linear_outer_product
+(⊗) = linearOuterProduct
 
 >-- | otimes
 >(⊗⊗) ∷ (SupportsMatrixMultiplication g h f a) ⇒ (g :*: h) a → (h :*: f) a → (g :*: f) a

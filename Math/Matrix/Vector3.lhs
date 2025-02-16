@@ -38,6 +38,9 @@
 >import safe qualified Math.Number.StreamInterface as Stream
 >import safe Math.Number.StreamInterface (Limiting(..), Infinitesimal(..), Closed(..))
 
+>-- | Three element vector
+>data Vector3 s = Vector3 { xcoord3 :: !s, ycoord3 :: !s,  zcoord3 :: !s }
+
 >deriving instance (Eq a) => Eq (Vector3 a)
 >deriving instance (Typeable a) => Typeable (Vector3 a)
 >deriving instance (Data a) => Data (Vector3 a)
@@ -65,7 +68,7 @@
 >k3 = identity <!> (zcoord3,id)
 
 >instance Transposable Stream Vector3 a where
->   transpose_impl (Matrix (Pre v vr))
+>   transposeImpl (Matrix (Pre v vr))
 >     = Matrix (Vector3 (Pre (xcoord3 v) (fmap xcoord3 vr))
 >                       (Pre (ycoord3 v) (fmap ycoord3 vr))
 >                       (Pre (zcoord3 v) (fmap zcoord3 vr)))
@@ -78,7 +81,7 @@
 >   inverseRotate (Vector3 x y z) = Vector3 z x y
 
 >instance (Universe a) => Universe (Vector3 a) where
->   all_elements = Vector3 <$> all_elements <*> all_elements <*> all_elements
+>   allElements = Vector3 <$> allElements <*> allElements <*> allElements
 
 >instance Comonad Vector3 where
 >   extract (Vector3 x _ _) = x
@@ -126,25 +129,25 @@
 >setz3 :: s -> Vector3 s -> Vector3 s
 >setz3 z = \v -> v { zcoord3 = z }
 
->set_endo :: Vector3 s -> Vector3 (Mon.Endo (Vector3 s))
->set_endo = fmap Mon.Endo . set_vector_action
+>setEndo :: Vector3 s -> Vector3 (Mon.Endo (Vector3 s))
+>setEndo = fmap Mon.Endo . setVectorAction
 
->set_vector_action :: Vector3 s -> Vector3 (Vector3 s -> Vector3 s)
->set_vector_action (Vector3 x y z) = Vector3 (setx3 x) (sety3 y) (setz3 z)
+>setVectorAction :: Vector3 s -> Vector3 (Vector3 s -> Vector3 s)
+>setVectorAction (Vector3 x y z) = Vector3 (setx3 x) (sety3 y) (setz3 z)
 
 >-- | update_column3 v is a vector of all update operations that replace one row with 'v'
->update_row3 :: g a -> Vector3 ((Vector3 :*: g) a -> (Vector3 :*: g) a)
->update_row3 x = Vector3 (update_row setx3 x) (update_row sety3 x) (update_row setz3 x)
+>updateRow3 :: g a -> Vector3 ((Vector3 :*: g) a -> (Vector3 :*: g) a)
+>updateRow3 x = Vector3 (updateRow setx3 x) (updateRow sety3 x) (updateRow setz3 x)
 
 >-- | update_column3 v is a vector of all update operations that replace one column with 'v'
 >-- example use:
 >-- update_column3 (Vector3 3 4 5) `ycoord3` identity3 == [[1,3,0],[0,4,0],[0,5,1]].
->update_column3 :: (Applicative f) => f a -> Vector3 ((f :*: Vector3) a -> (f :*: Vector3) a)
->update_column3 x = Vector3 (update_column setx3 x) (update_column sety3 x) (update_column setz3 x)
+>updateColumn3 :: (Applicative f) => f a -> Vector3 ((f :*: Vector3) a -> (f :*: Vector3) a)
+>updateColumn3 x = Vector3 (updateColumn setx3 x) (updateColumn sety3 x) (updateColumn setz3 x)
 
 >instance UpdateableMatrixDimension Vector3 where
->  write_row = update_row3
->  write_column = update_column3
+>  writeRow = updateRow3
+>  writeColumn = updateColumn3
 
 >removex3 :: Vector3 a -> Vector2 a
 >removex3 (Vector3 _ y z) = Vector2 y z
@@ -163,17 +166,17 @@
 >   where app f g = Matrix $ f $ fmap g m
 
 >cofactor3 :: (Num a) => Matrix3 a -> Matrix3 a
->cofactor3 m = pure (*) <*> fmap fromIntegral signs3 <*> fmap determinant_impl (remove_index3 m)
+>cofactor3 m = pure (*) <*> fmap fromIntegral signs3 <*> fmap determinantImpl (remove_index3 m)
 
 >-- | <https://en.wikipedia.org/wiki/Adjugate_matrix>
 
 >adjucate3 :: (Num a) => Matrix3 a -> Matrix3 a
->adjucate3 = transpose_impl . cofactor3
+>adjucate3 = transposeImpl . cofactor3
 
 >-- | <https://en.wikipedia.org/wiki/Invertible_matrix>
 
 >inverse3 :: (Fractional a) => Matrix3 a -> Matrix3 a
->inverse3 m = (1 / determinant_impl m) %* adjucate3 m
+>inverse3 m = (1 / determinantImpl m) %* adjucate3 m
 
 >set3 :: Vector3 a -> Vector3 a -> (Vector3 :*: Vector3) a
 >set3 (Vector3 x y z) v = Matrix $ Vector3 (setx3 x v) (sety3 y v) (setz3 z v)
@@ -223,7 +226,7 @@
 >mul3Matrix = fmap functionMatrix . mul3
 
 >signs3 :: (Integral a) => Matrix3 a
->signs3 = fmap (\ (i,j) -> ((i+j+1) `mod` 2) * 2 - 1) matrix_indices3
+>signs3 = fmap (\ (i,j) -> ((i+j+1) `mod` 2) * 2 - 1) matrixIndices3
 
 >instance (Ord a) => Ord (Vector3 a) where
 >  (Vector3 x y z) <= (Vector3 x' y' z') = x <= x' && y <= y' && z <= z'
@@ -253,10 +256,10 @@
 >   traverse f (Vector3 x y z) = Vector3 <$> f x <*> f y <*> f z
 
 >instance (ShowPrecision s) => ShowPrecision (Vector3 s) where
->   show_at_precision (Vector3 x y z) p =
->     "(" ++ show_at_precision x p ++ "," ++
->            show_at_precision y p ++ "," ++
->            show_at_precision z p ++ ")"
+>   showAtPrecision (Vector3 x y z) p =
+>     "(" ++ showAtPrecision x p ++ "," ++
+>            showAtPrecision y p ++ "," ++
+>            showAtPrecision z p ++ ")"
 
 >instance (Show (f a)) => Show ((Vector3 :*: f) a) where
 >  show (Matrix (Vector3 a b c))
@@ -286,7 +289,7 @@
 >  pp (Vector3 x y z) = vcat $ liftA2 nest [0,25,50] (map pp [x,y,z])
 
 >instance PpShowVerticalF Vector3 where
->   ppf_vertical (Vector3 x y z) = pp '[' <> vcat [pp x,pp y, pp z] <> pp ']'
+>   ppfVertical (Vector3 x y z) = pp '[' <> vcat [pp x,pp y, pp z] <> pp ']'
 >instance PpShowF Vector3 where
 >   ppf (Vector3 x y z) = pp '[' Mon.<> (sep [pp x,pp ',', pp y, pp ',',pp z]) Mon.<> pp ']'
 
@@ -297,7 +300,7 @@ instance (PpShow (f a)) => PpShow ((Vector3 :*: f) a) where
 >  fmap f = \ (Vector3 x y z) -> Vector3 (f x) (f y) (f z)
 
 >instance Monad Vector3 where
->  return x = Vector3 x x x
+>  return = pure
 >  x >>= f = diagonal3 $ Matrix $ fmap f x
 
 >instance Control.Monad.Zip.MonadZip Vector3 where
@@ -310,7 +313,6 @@ instance (PpShow (f a)) => PpShow ((Vector3 :*: f) a) where
 
 >instance (Num s) => Mon.Monoid (Vector3 s) where
 >  mempty = vzero
->  mappend = (%+)
 >  
 >-- | see "Lawvere,Rosebrugh: Sets for mathematics", pg. 167.
 >instance (ConjugateSymmetric a, Num a) => Semigroup ((Vector3 :*: Vector3) a) where
@@ -320,13 +322,12 @@ instance (PpShow (f a)) => PpShow ((Vector3 :*: f) a) where
 >-- | see "Lawvere,Rosebrugh: Sets for mathematics", pg. 167.
 >instance (Num a, ConjugateSymmetric a) => Mon.Monoid ((Vector3 :*: Vector3) a) where
 >   mempty  = identity
->   mappend = (%*%)
 
 >instance (Num s) => Group (Vector3 s) where
 >   ginvert (Vector3 x y z) = Vector3 (negate x) (negate y) (negate z)
 
 >instance (Fractional a, ConjugateSymmetric a) => Group ((Vector3 :*: Vector3) a) where
->   ginvert = inverse_impl
+>   ginvert = inverseImpl
 
 
 approximations_vector3 :: Vector3 R -> Stream (Vector3 R)
@@ -373,11 +374,11 @@ approximations_vector3 (Vector3 x y z) = do
 
 >-- | <https://en.wikipedia.org/wiki/Conjugate_transpose>
 >instance (ConjugateSymmetric a, Num a) => ConjugateSymmetric ((Vector3 :*: Vector3) a) where
->   conj = fmap conj . transpose_impl
+>   conj = fmap conj . transposeImpl
 
 >instance (Floating a, ConjugateSymmetric a) => NormedSpace (Vector3 a) where
->  norm = innerproductspace_norm
->  norm_squared = innerproductspace_norm_squared
+>  norm = innerproductspaceNorm
+>  normSquared = innerproductspaceNormSquared
 
 >instance {-# OVERLAPPABLE #-} (ConjugateSymmetric a, Num a) => InnerProductSpace (Vector3 a) where
 >  (Vector3 x y z) %. (Vector3 x' y' z') = x * conj x' + y * conj y' + z * conj z'
@@ -395,44 +396,44 @@ approximations_vector3 (Vector3 x y z) = do
 >nth_norm3 n (Vector3 x y z) = (x**n + y**n + z**n)**(1/n)
 
 >instance (Num a) => Diagonalizable Vector3 a where
->  identity_impl _ = identity3
+>  identityImpl _ = identity3
 >  identity = identity3
->  diagonal_impl = diagonal3
->  diagonal_matrix_impl = diagonal_matrix3
+>  diagonalImpl = diagonal3
+>  diagonalMatrixImpl = diagonal_matrix3
 
 >instance (Num a) => Traceable Vector3 a where
->  trace_impl = trace3 
->  determinant_impl = determinant3 
+>  traceImpl = trace3 
+>  determinantImpl = determinant3 
 
 >instance Transposable Vector3 Vector2 a where
->  transpose_impl (Matrix (Vector3 (Vector2 x1 y1) (Vector2 x2 y2) (Vector2 x3 y3)))
+>  transposeImpl (Matrix (Vector3 (Vector2 x1 y1) (Vector2 x2 y2) (Vector2 x3 y3)))
 >    = Matrix $ Vector2 (Vector3 x1 x2 x3) (Vector3 y1 y2 y3)
 
 >instance Transposable Vector2 Vector3 a where
->  transpose_impl (Matrix (Vector2 (Vector3 x1 x2 x3) (Vector3 y1 y2 y3)))
+>  transposeImpl (Matrix (Vector2 (Vector3 x1 x2 x3) (Vector3 y1 y2 y3)))
 >    = Matrix $ Vector3 (Vector2 x1 y1) (Vector2 x2 y2) (Vector2 x3 y3)
 
 >instance Transposable Vector3 Vector1 a where
->  transpose_impl (Matrix x) = Matrix $ Vector1 (fmap vector_element x)
+>  transposeImpl (Matrix x) = Matrix $ Vector1 (fmap vectorElement x)
 
 >instance Transposable Vector1 Vector3 a where
->  transpose_impl (Matrix (Vector1 x)) = Matrix $ fmap Vector1 x
+>  transposeImpl (Matrix (Vector1 x)) = Matrix $ fmap Vector1 x
 
 >instance Transposable Vector3 Vector3 a where
->  transpose_impl = transpose3_impl
+>  transposeImpl = transpose3Impl
 
 >instance Transposable Vector3 ((->) row) a where
->   transpose_impl (Matrix (Vector3 x y z))
+>   transposeImpl (Matrix (Vector3 x y z))
 >     = Matrix $ \a -> Vector3 (x a) (y a) (z a)
 >instance Transposable ((->) row) Vector3 a where
->   transpose_impl (Matrix f)
+>   transposeImpl (Matrix f)
 >     = Matrix $ Vector3 (\a -> xcoord3 (f a))
 >                        (\a -> ycoord3 (f a))
 >                        (\a -> zcoord3 (f a))
 
 >instance {-# INCOHERENT #-} (Num a, ConjugateSymmetric a) => LinearTransform Vector3 Vector3 a where
->  (<*>>) = left_multiply3
->  (<<*>) = right_multiply3
+>  (<*>>) = leftMultiply3
+>  (<<*>) = rightMultiply3
 
 >instance (Num a) => CoordinateSpace (Vector3 a) where
 >  type Coordinate (Vector3 a) = Int
@@ -440,11 +441,11 @@ approximations_vector3 (Vector3 x y z) = do
 >  index 1 = ycoord3
 >  index 2 = zcoord3
 >  listVector = vector3
->  dimension_size _ = 3
+>  dimensionSize _ = 3
 >  coordinates _ = [0,1,2]
 
 >instance (Num a) => StandardBasis (Vector3 a) where
->  unit_vectors = [xid,yid,zid]
+>  unitVectors = [xid,yid,zid]
 
 
 >instance (Num a, ConjugateSymmetric a) => Num ((Vector3 :*: Vector3) a) where
@@ -454,11 +455,11 @@ approximations_vector3 (Vector3 x y z) = do
 >  negate (Matrix v) = Matrix (negate v)
 >  abs (Matrix v) = Matrix (abs v)
 >  signum (Matrix v) = Matrix (signum v)
->  fromInteger = diagonal_matrix_impl . constant3 . fromInteger
+>  fromInteger = diagonalMatrixImpl . constant3 . fromInteger
 
 >instance (Fractional a, ConjugateSymmetric a) => Fractional ((Vector3 :*: Vector3) a) where
->   recip = inverse_impl
->   fromRational = diagonal_matrix_impl . constant3 . fromRational
+>   recip = inverseImpl
+>   fromRational = diagonalMatrixImpl . constant3 . fromRational
 
 
 >instance (Num a) => Num (Vector3 a) where
@@ -474,7 +475,7 @@ approximations_vector3 (Vector3 x y z) = do
 >index3 = Vector3 xcoord3 ycoord3 zcoord3
 
 >mapBasis :: (Num a) => (Vector3 a -> Vector3 a) -> Vector3 a -> Vector3 a
->mapBasis f (Vector3 x y z) = x %* f i_vec + y %* f j_vec + z %* f k_vec
+>mapBasis f (Vector3 x y z) = x %* f iVec + y %* f jVec + z %* f kVec
 
 >functionMatrix3 :: (Num a) => (Vector3 a -> Vector3 a) -> Matrix3 a
 >functionMatrix3 f = Matrix $ Vector3 (f xid) (f yid) (f zid)
@@ -517,43 +518,43 @@ approximations_vector3 (Vector3 x y z) = do
 >identity3 = Matrix $ Vector3 xid yid zid
 
 
->matrix_power3 :: (ConjugateSymmetric a,Num a) => Matrix3 a -> Integer -> Matrix3 a
->matrix_power3 mat = \case
+>matrixPower3 :: (ConjugateSymmetric a,Num a) => Matrix3 a -> Integer -> Matrix3 a
+>matrixPower3 mat = \case
 >    0 -> identity3
->    i -> mat `matrix_multiply3` matrix_power3 mat (pred i)
+>    i -> mat `matrixMultiply3` matrixPower3 mat (pred i)
 
->vector_indices3 :: (Integral a) => Vector3 a
->vector_indices3 = Vector3 1 2 3
+>vectorIndices3 :: (Integral a) => Vector3 a
+>vectorIndices3 = Vector3 1 2 3
 
->matrix_indices3 :: (Integral a) => (Vector3 :*: Vector3) (a,a)
->matrix_indices3 = matrix (,) vector_indices3 vector_indices3
+>matrixIndices3 :: (Integral a) => (Vector3 :*: Vector3) (a,a)
+>matrixIndices3 = matrix (,) vectorIndices3 vectorIndices3
 
->matrix_multiply3 :: (ConjugateSymmetric a,Num a) => Matrix3 a -> Matrix3 a -> Matrix3 a
->matrix_multiply3 (Matrix m1) m2 
+>matrixMultiply3 :: (ConjugateSymmetric a,Num a) => Matrix3 a -> Matrix3 a -> Matrix3 a
+>matrixMultiply3 (Matrix m1) m2 
 >   | Matrix m2t <- transpose3 m2 = matrix (%.) m1 m2t
 
 >{-# INLINABLE dot3 #-}
 >dot3 :: (Num a, ConjugateSymmetric a) => Vector3 a -> Vector3 a -> a
 >dot3 x y = sum_coordinates3 $ liftA2 (*) x (fmap conj y)
 
->left_multiply3_gen :: (Functor f, Num a, ConjugateSymmetric a) => Vector3 a -> (f :*: Vector3) a -> f a
->left_multiply3_gen v (Matrix w) = (sum . (pure (*) <*> v <*>)) <$> fmap conj w
+>leftMultiply3Gen :: (Functor f, Num a, ConjugateSymmetric a) => Vector3 a -> (f :*: Vector3) a -> f a
+>leftMultiply3Gen v (Matrix w) = (sum . (pure (*) <*> v <*>)) <$> fmap conj w
 
->right_multiply3_gen :: (VectorSpace (f a), ConjugateSymmetric a, Scalar (f a) ~ a) => (Vector3 :*: f) a -> Vector3 a -> f a
->right_multiply3_gen (Matrix w) v = vsum $ liftA2 (\a fa -> a %* fa) (conj v) w
+>rightMultiply3Gen :: (VectorSpace (f a), ConjugateSymmetric a, Scalar (f a) ~ a) => (Vector3 :*: f) a -> Vector3 a -> f a
+>rightMultiply3Gen (Matrix w) v = vsum $ liftA2 (\a fa -> a %* fa) (conj v) w
 
->left_multiply3 :: (Num a, ConjugateSymmetric a) => Vector3 a -> Matrix3 a -> Vector3 a
->left_multiply3 v (Matrix m) = fmap (dot3 v) m
+>leftMultiply3 :: (Num a, ConjugateSymmetric a) => Vector3 a -> Matrix3 a -> Vector3 a
+>leftMultiply3 v (Matrix m) = fmap (dot3 v) m
 
->right_multiply3 :: (Num a, ConjugateSymmetric a) => Matrix3 a -> Vector3 a -> Vector3 a
->right_multiply3 (Matrix m) v = fmap (dot3 v) m
+>rightMultiply3 :: (Num a, ConjugateSymmetric a) => Matrix3 a -> Vector3 a -> Vector3 a
+>rightMultiply3 (Matrix m) v = fmap (dot3 v) m
              
 >transpose3 :: (Num a) => Matrix3 a -> Matrix3 a
 >transpose3 (Matrix m) = matrix runIndex diagonal_projections3 m
 
->{-# INLINABLE transpose3_impl #-}
->transpose3_impl :: Matrix3 a -> Matrix3 a
->transpose3_impl ~(Matrix ~(Vector3 ~(Vector3 x1 y1 z1)
+>{-# INLINABLE transpose3Impl #-}
+>transpose3Impl :: Matrix3 a -> Matrix3 a
+>transpose3Impl ~(Matrix ~(Vector3 ~(Vector3 x1 y1 z1)
 >                                   ~(Vector3 x2 y2 z2)
 >                                   ~(Vector3 x3 y3 z3)))
 >   = Matrix $ Vector3 (Vector3 x1 x2 x3)
@@ -615,21 +616,21 @@ approximations_vector3 (Vector3 x y z) = do
 
 >instance ProjectionSpace Vector3 Vector1 where
 >   data (Vector3 \\\ Vector1) a = S31Vector (Vector2 a)
->   project_first (Vector3 x _ _) = Vector1 x
->   project_second (Vector3 _ y z) = S31Vector $ Vector2 y z
->   join_vector (Vector1 x) (S31Vector (Vector2 y z)) = Vector3 x y z
+>   projectFirst (Vector3 x _ _) = Vector1 x
+>   projectSecond (Vector3 _ y z) = S31Vector $ Vector2 y z
+>   joinVector (Vector1 x) (S31Vector (Vector2 y z)) = Vector3 x y z
 
 >instance ProjectionSpace (Vector3 \\\ Vector1) Vector1 where
 >   data ((Vector3 \\\ Vector1) \\\ Vector1) a = S311Vector (Vector1 a)
->   project_first (S31Vector (Vector2 x _)) = Vector1 x
->   project_second (S31Vector (Vector2 _ y)) = S311Vector (Vector1 y)
->   join_vector (Vector1 x) (S311Vector (Vector1 y)) = S31Vector $ Vector2 x y
+>   projectFirst (S31Vector (Vector2 x _)) = Vector1 x
+>   projectSecond (S31Vector (Vector2 _ y)) = S311Vector (Vector1 y)
+>   joinVector (Vector1 x) (S311Vector (Vector1 y)) = S31Vector $ Vector2 x y
 
 >instance ProjectionSpace Vector3 Vector2 where
 >   data (Vector3 \\\ Vector2) a = S32Vector (Vector1 a)
->   project_first (Vector3 x y _) = Vector2 x y
->   project_second (Vector3 _ _ z) = S32Vector $ Vector1 z
->   join_vector (Vector2 x y) (S32Vector (Vector1 z)) = Vector3 x y z
+>   projectFirst (Vector3 x y _) = Vector2 x y
+>   projectSecond (Vector3 _ _ z) = S32Vector $ Vector1 z
+>   joinVector (Vector2 x y) (S32Vector (Vector1 z)) = Vector3 x y z
 
 >instance (Show a) => Show ((Vector3 \\\ Vector2) a) where
 >   show (S32Vector x) = show x
@@ -653,15 +654,15 @@ approximations_vector3 (Vector3 x y z) = do
 
 >instance CodiagonalMatrix Vector3 a where
 >   data Codiagonal Vector3 a = Codiagonal3 {
->      down_codiagonal3 :: Vector2 a,
->      right_codiagonal3 :: Vector2 a,
->      diagonal_codiagonal3 :: Codiagonal Vector2 a
+>      downCodiagonal3 :: Vector2 a,
+>      rightCodiagonal3 :: Vector2 a,
+>      diagonalCodiagonal3 :: Codiagonal Vector2 a
 >     }
 >   type (Vector3 \\ a) = Vector2 a
->   codiagonal_impl = codiag3
+>   codiagonalImpl = codiag3
 >   (|\|) = matrix3
->   down_project = down_codiagonal3
->   right_project = right_codiagonal3
+>   downProject = downCodiagonal3
+>   rightProject = rightCodiagonal3
 
 >instance (Show a) => Show (Codiagonal Vector3 a) where
 >   show (Codiagonal3 (Vector2 d1 d2) (Vector2 r1 r2)
@@ -682,8 +683,8 @@ deriving instance (Show a) => Show (Codiagonal Vector3 a)
 >     Codiagonal3 (f1 <*> x1) (f2 <*> x2) (fr <*> xr)
 
 >instance (Num a) => Indexable Vector3 a where
->  diagonal_projections = diagonal_projections3
->  indexable_indices = Vector3 0 1 2
+>  diagonalProjections = diagonal_projections3
+>  indexableIndices = Vector3 0 1 2
 
 >diagonal3 :: Matrix3 a -> Vector3 a
 >diagonal3 (Matrix m) = Vector3 (xcoord3 $ xcoord3 m) (ycoord3 $ ycoord3 m) (zcoord3 $ zcoord3 m)
@@ -694,24 +695,24 @@ deriving instance (Show a) => Show (Codiagonal Vector3 a)
 >                                (zcoord3 <!-!> \a -> Vector3 0 0 a)
 
 >diagonal3x :: (Num a) => Matrix3 a -> Vector3 a
->diagonal3x (Matrix x) = fmap unI $ fmap isomorphism_epimorphism diagonal_projections3 <*> x
+>diagonal3x (Matrix x) = fmap unI $ fmap isomorphismEpimorphism diagonal_projections3 <*> x
   
 >diagonal3y :: (Num a) => Matrix3 a -> Vector3 a
->diagonal3y (Matrix x) = fmap unI $ fmap isomorphism_epimorphism (rotate_coordinates3 diagonal_projections3) <*> x
+>diagonal3y (Matrix x) = fmap unI $ fmap isomorphismEpimorphism (rotate_coordinates3 diagonal_projections3) <*> x
   
 >diagonal3z :: (Num a) => Matrix3 a -> Vector3 a
->diagonal3z (Matrix x) = fmap unI $ fmap isomorphism_epimorphism (rotate_coordinates3 (rotate_coordinates3 diagonal_projections3)) <*> x
+>diagonal3z (Matrix x) = fmap unI $ fmap isomorphismEpimorphism (rotate_coordinates3 (rotate_coordinates3 diagonal_projections3)) <*> x
 
 >-- | algorithm from <http://en.wikipedia.org/wiki/Determinant>
 
 >determinant3 :: (Num a) => Matrix3 a -> a
 >determinant3 (Matrix z@(Vector3 (Vector3 a b c) _ _)) =
 >      a * det removex3 - b * det removey3 + c * det removez3
->  where det rc = determinant_impl (Matrix $ removex3 $ fmap rc z)
+>  where det rc = determinantImpl (Matrix $ removex3 $ fmap rc z)
 
 >determinant3_ :: (Num a) => Matrix3 a -> a
 >determinant3_ (Matrix m) = combine $ pure (*) <*> xcoord3 m <*> amv
->   where amv = fmap (determinant_impl . Matrix . removex3 . (`fmap` m)) remove3
+>   where amv = fmap (determinantImpl . Matrix . removex3 . (`fmap` m)) remove3
 >         combine (Vector3 a b c) = a - b + c         
 
 
@@ -720,16 +721,16 @@ deriving instance (Show a) => Show (Codiagonal Vector3 a)
 >  (Matrix (Vector1 m)) <<*> (Vector1 x) = conj x %* m
 
 >instance (Num a,ConjugateSymmetric a) => LinearTransform Vector3 Vector1 a where
->  (Vector1 x) <*>> (Matrix m) = x %* fmap (conj . vector_element) m
+>  (Vector1 x) <*>> (Matrix m) = x %* fmap (conj . vectorElement) m
 >  (Matrix (Vector3 (Vector1 x) (Vector1 y) (Vector1 z))) <<*> (Vector3 a b c) = Vector1 (x*conj a+y*conj b+z*conj c) 
 
 >instance (Num a, ConjugateSymmetric a) => LinearTransform Vector3 Vector2 a where
->  (<*>>) = left_multiply2_gen
->  (<<*>) = right_multiply3_gen
+>  (<*>>) = leftMultiply2Gen
+>  (<<*>) = rightMultiply3Gen
 
 >instance (Num a, ConjugateSymmetric a) => LinearTransform Vector2 Vector3 a where
->  (<*>>) = left_multiply3_gen
->  (<<*>) = right_multiply2_gen
+>  (<*>>) = leftMultiply3Gen
+>  (<<*>) = rightMultiply2Gen
 
 instance NumSpace (Vector3 (Complex R)) where
 instance FractionalSpace (Vector3 (Complex R)) where
@@ -781,10 +782,10 @@ instance FractionalSpace (Vector3 (Complex R)) where
 
 >instance {-# OVERLAPPING #-}
 >     (Floating a, ConjugateSymmetric a) => NormedSpace ((Vector3 :*: Vector3) a) where
->  norm = innerproductspace_norm
+>  norm = innerproductspaceNorm
 
 >instance (Floating a, ConjugateSymmetric a) => InnerProductSpace ((Vector3 :*: Vector3) a) where
->  x %. y = trace_impl (transpose_impl x %*% y)
+>  x %. y = traceImpl (transposeImpl x %*% y)
 
 >gram_schmidt3 :: (Fractional (Scalar a), Num a,
 >                  InnerProductSpace a, VectorSpace a)
@@ -799,20 +800,20 @@ instance FractionalSpace (Vector3 (Complex R)) where
 >--   Smith, Oliver K.: Eigenvalues of symmetric 3x3 matrix, 1961, Communications of the ACM., <doi:10.1145/355578.366316>
 >--  The algorithm works reasonably when the matrix is real and symmetric.
 >eigenvalue3 :: (Floating a, Ord a, ConjugateSymmetric a) => (Vector3 :*: Vector3) a -> Vector3 a
->eigenvalue3 m = if p1 == 0 then diagonal_impl m else Vector3 eig1 eig2 eig3
+>eigenvalue3 m = if p1 == 0 then diagonalImpl m else Vector3 eig1 eig2 eig3
 >   where eig1 = q + 2*p*cos(phi)
 >         eig3 = q + 2*p*cos(phi + 2*pi/3)
 >         eig2 = 3*q - eig1 - eig3
 >         pv = Vector3 (m <!> (xcoord3,ycoord3))
 >                      (m <!> (xcoord3,zcoord3))
 >                      (m <!> (ycoord3,zcoord3))
->         p1 = norm_squared pv
->         q = trace_impl m / 3
->         mdq = diagonal_impl m - return q
->         p2 = norm_squared mdq + 2 * p1
+>         p1 = normSquared pv
+>         q = traceImpl m / 3
+>         mdq = diagonalImpl m - return q
+>         p2 = normSquared mdq + 2 * p1
 >         p = sqrt (p2 / 6)
->         b = (1 / p) %* (m %- q %* identity_impl dim3)
->         r = determinant_impl b / 2
+>         b = (1 / p) %* (m %- q %* identityImpl dim3)
+>         r = determinantImpl b / 2
 >         phi | r <= -1   = pi / 3
 >             | r >= 1    = 0
 >             | otherwise = acos r / 3
@@ -822,13 +823,13 @@ instance FractionalSpace (Vector3 (Complex R)) where
 >   eigenvalues = eigenvalue3
 
 >instance (Fractional a) => Invertible Vector3 a where
->   cofactor_impl = cofactor3
->   adjucate_impl = adjucate3
->   inverse_impl = inverse3
+>   cofactorImpl = cofactor3
+>   adjucateImpl = adjucate3
+>   inverseImpl = inverse3
 >
 >-- | <https://en.wikipedia.org/wiki/Levi-Civita_symbol>
 >levi_civita3 :: ((Vector3 :*: Vector3) :*: Vector3) Int
->levi_civita3 = matrix m (matrix (,) indexable_indices indexable_indices) indexable_indices
+>levi_civita3 = matrix m (matrix (,) indexableIndices indexableIndices) indexableIndices
 >  where m (x,y) z | x == 0 && y == 1 && z == 2 = 1
 >                  | x == 1 && y == 2 && z == 0 = 1
 >                  | x == 2 && y == 0 && z == 1 = 1

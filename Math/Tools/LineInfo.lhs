@@ -9,9 +9,9 @@
 >import Math.Tools.PrettyP
 >import Math.Tools.Isomorphism
 
->data LineInfo = LineInfo { li_file :: !String,
->			    li_row  :: {-# UNPACK #-} !Int,
->			    li_column :: {-# UNPACK #-} !Int }
+>data LineInfo = LineInfo { liFile :: !String,
+>			    liRow  :: {-# UNPACK #-} !Int,
+>			    liColumn :: {-# UNPACK #-} !Int }
 >              | NoLineInfo
 >   deriving (Eq,Ord,Typeable)
 
@@ -27,17 +27,17 @@
 >         closeli (Right ()) = NoLineInfo
 
 >class Located e where
->   location_of :: e -> LineInfo
+>   locationOf :: e -> LineInfo
 
 >instance Located LineInfo where
->   location_of = id
+>   locationOf = id
 
 >instance Semigroup LineInfo where
->   (<>) = sum_lineinfo
+>   (<>) = sumLineinfo
 
 >instance Monoid LineInfo where
 >   mempty = emptyLineInfo
->   mappend = sum_lineinfo
+>   mappend = sumLineinfo
 
 >instance Show LineInfo where
 >   show NoLineInfo = ""
@@ -50,44 +50,44 @@
 >emptyLineInfo :: LineInfo
 >emptyLineInfo = NoLineInfo
 
->sum_lineinfo :: LineInfo -> LineInfo -> LineInfo
->sum_lineinfo NoLineInfo x = x
->sum_lineinfo x _ = x
+>sumLineinfo :: LineInfo -> LineInfo -> LineInfo
+>sumLineinfo NoLineInfo x = x
+>sumLineinfo x _ = x
 
->new_file :: String -> LineInfo -> LineInfo
->new_file f NoLineInfo = LineInfo { li_file = f, li_row = 1, li_column = 0 }
->new_file f li = li { li_file = f, li_row = 1, li_column = 0 }
+>newFile :: String -> LineInfo -> LineInfo
+>newFile f NoLineInfo = LineInfo { liFile = f, liRow = 1, liColumn = 0 }
+>newFile f li = li { liFile = f, liRow = 1, liColumn = 0 }
 
->next_line :: LineInfo -> LineInfo
->next_line li@(LineInfo {}) = li { li_row = li_row li + 1, li_column = 0 }
->next_line NoLineInfo = NoLineInfo
+>nextLine :: LineInfo -> LineInfo
+>nextLine li@(LineInfo {}) = li { liRow = liRow li + 1, liColumn = 0 }
+>nextLine NoLineInfo = NoLineInfo
 
->prev_line :: LineInfo -> LineInfo
->prev_line li@(LineInfo {}) = li { li_row = li_row li - 1, li_column = 0 }
->prev_line NoLineInfo = NoLineInfo
+>prevLine :: LineInfo -> LineInfo
+>prevLine li@(LineInfo {}) = li { liRow = liRow li - 1, liColumn = 0 }
+>prevLine NoLineInfo = NoLineInfo
 
 >nextlineIso :: Iso LineInfo (LineInfo,Int)
->nextlineIso = Iso (\li -> (next_line li, li_column li))
->                  (\ (li,c) -> li { li_row = li_row li - 1, li_column = c })
+>nextlineIso = Iso (\li -> (nextLine li, liColumn li))
+>                  (\ (li,c) -> li { liRow = liRow li - 1, liColumn = c })
 
->add_to_line :: Int -> LineInfo -> LineInfo
->add_to_line i li@(LineInfo{}) = li { li_row = li_row li + i, li_column = 0 }
->add_to_line i NoLineInfo = NoLineInfo
+>addToLine :: Int -> LineInfo -> LineInfo
+>addToLine i li@(LineInfo{}) = li { liRow = liRow li + i, liColumn = 0 }
+>addToLine i NoLineInfo = NoLineInfo
 
->next_column :: LineInfo -> LineInfo
->next_column li@(LineInfo {}) = li { li_column = li_column li + 1 }
->next_column NoLineInfo = NoLineInfo
+>nextColumn :: LineInfo -> LineInfo
+>nextColumn li@(LineInfo {}) = li { liColumn = liColumn li + 1 }
+>nextColumn NoLineInfo = NoLineInfo
 
->prev_column :: LineInfo -> LineInfo
->prev_column li@(LineInfo {}) = li { li_column = li_column li - 1 }
->prev_column NoLineInfo = NoLineInfo
+>prevColumn :: LineInfo -> LineInfo
+>prevColumn li@(LineInfo {}) = li { liColumn = liColumn li - 1 }
+>prevColumn NoLineInfo = NoLineInfo
 
 >nextColumnIso :: Iso LineInfo LineInfo
->nextColumnIso = Iso next_column prev_column
+>nextColumnIso = Iso nextColumn prevColumn
 
->add_to_column :: Int -> LineInfo -> LineInfo
->add_to_column x li@(LineInfo {}) = li { li_column = li_column li + x }
->add_to_column x NoLineInfo = NoLineInfo
+>addToColumn :: Int -> LineInfo -> LineInfo
+>addToColumn x li@(LineInfo {}) = li { liColumn = liColumn li + x }
+>addToColumn x NoLineInfo = NoLineInfo
 
->add_to_columnIso :: Int -> Iso LineInfo LineInfo
->add_to_columnIso i = Iso (add_to_column i) (add_to_column (negate i))
+>addToColumnIso :: Int -> Iso LineInfo LineInfo
+>addToColumnIso i = Iso (addToColumn i) (addToColumn (negate i))

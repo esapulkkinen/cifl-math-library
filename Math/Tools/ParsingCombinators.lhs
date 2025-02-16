@@ -71,7 +71,7 @@ instance ScopedFailureArrow ParsingA
 >nextColumn = ParsingA (mapLineInfo nextColumnIso)
 
 >readChar :: ParsingA () Char
->readChar = ParsingA (Iso readChar' showChar') >>> nextColumn
+>readChar = ParsingA (Iso readChar' showChar') >>> Math.Tools.ParsingCombinators.nextColumn
 >   where readChar' (Parsed (c:cr) li (Left ())) = okparse cr li c
 >         readChar' (Parsed [] li (Left ())) = syntaxerror [] li "Unexpected end of file"
 >         readChar' (Parsed lst li (Right d)) = syntaxerror lst li d
@@ -98,13 +98,13 @@ newline = (readChar <**> returnIso '\n') >>> equalIso
 >                                                    else okparse r newcol s
 >                 where (s,r) = span pred lst
 >                       err = "Unexpected character in input:" <> ch
->                       ch = if null r then "<eof>" else pp_list [head r]
->                       newcol = add_to_column (length s) li
+>                       ch = if null r then "<eof>" else ppList [head r]
+>                       newcol = addToColumn (length s) li
 >        showWhile' (Parsed [] li (Right err)) = syntaxerror [] li err
 >        showWhile' (Parsed z@(c:_) li (Right err)) 
 >                        | pred c = syntaxerror z li err
 >                        | otherwise = okparse z li ()
 >        showWhile' (Parsed r newcol (Left s)) = okparse (s++r) oldcol ()
->               where oldcol = add_to_column (negate (length s)) newcol
+>               where oldcol = addToColumn (negate (length s)) newcol
 
 

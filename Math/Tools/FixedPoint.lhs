@@ -61,7 +61,7 @@
 >   build z@(RecUnfold f) x = In $ fmap (build z) $ f x
 
 >instance (Universe (f (Rec f))) => Universe (Rec f) where
->   all_elements = fmap In all_elements
+>   allElements = fmap In allElements
 
 
 >fold_level :: Fold (Rec f) a -> Fold (Rec f) (f a)
