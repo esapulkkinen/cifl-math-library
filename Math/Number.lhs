@@ -9,6 +9,8 @@
 >   module Math.Number.R,
 >-- * infinite dimensional vector
 >   module Math.Number.Stream,
+>-- * stream interface
+>   module Math.Number.StreamInterface,
 >-- ** infinite dimensional vector to two directions
 >   module Math.Number.BiStream,
 >-- ** two dimensional transformation

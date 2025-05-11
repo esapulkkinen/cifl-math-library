@@ -20,6 +20,7 @@
 > import qualified Data.Text as Text
 > import qualified Data.Set as Set
 > import qualified Data.Map as Map
+> import Math.Tools.Universe
 
 > type Doc = Pretty.Doc
 
@@ -80,7 +81,9 @@ hang :: Doc -> Int -> Doc -> Doc
  
 > instance PpShowVerticalF [] where
 >   ppfVertical = verticalize
- 
+
+
+
 > ppList :: (PpShow a) => [a] -> Doc
 > ppList x = Pretty.brackets $ Pretty.nest 8 (Pretty.fsep (Pretty.punctuate (pp ',') (map pp x)))
   
@@ -192,3 +195,12 @@ instance PpShow [(Integer,Integer)] where
 
 > instance PpShow Stack.CallStack where
 >   pp s = pp (show s)
+
+> instance (Universe a) => PpShowVerticalF ((->) a) where
+>   ppfVertical f = Pretty.vcat $ (take 10 $ lst) ++ [if null (drop 10 lst) then Pretty.empty else pp (".." :: String)]
+>     where lst = [pp (f j) | j <- allElements]
+
+> instance (Universe a) => PpShowF ((->) a) where
+>   ppf f = Pretty.hsep (take 10 lst) <> if null lst2 then Pretty.empty else pp (".." :: String)
+>     where lst = [pp (f i) | i <- allElements]
+>           lst2 = drop 10 lst

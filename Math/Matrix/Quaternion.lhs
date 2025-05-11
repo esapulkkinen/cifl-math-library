@@ -65,7 +65,7 @@
 >qdotProduct p q = (1/2) * (qscalar $ conj p * q + conj q * p)
 
 
->instance (Fractional a) => InnerProductSpace (Quaternion a) where
+>instance (Fractional a, ConjugateSymmetric a) => InnerProductSpace (Quaternion a) where
 >   (%.) = qdotProduct
 
 >-- | <https://en.wikipedia.org/wiki/Quaternion>
@@ -90,7 +90,7 @@
 >                                        Quaternion (Vector4 0 x y z))
 
 >-- | <https://en.wikipedia.org/wiki/Quaternion>
->qexp :: (ConjugateSymmetric a,Floating a) => Quaternion a -> Quaternion a
+>qexp :: (ConjugateSymmetric a,Ord a, Floating a) => Quaternion a -> Quaternion a
 >qexp q = Quaternion $ exp (tcoord4 t) %* (cos nv %* t4 %+ (sin nv / nv) %* v)
 >    where (Quaternion t,Quaternion v) = split q
 >          nv = norm v
@@ -105,7 +105,7 @@
 >   recip = quarternionInverse
 >   fromRational q = Q4 (fromRational q) 0 0 0
 
->instance (Floating a, ConjugateSymmetric a) => Floating (Quaternion a) where
+>instance (Ord a, Floating a, ConjugateSymmetric a) => Floating (Quaternion a) where
 >   pi = pi %* qunit
 >   exp = qexp
 >   log = qlog

@@ -101,6 +101,9 @@ instance ProjectionDual Stream Math.Matrix.Linear.Dual a where
 >compose_powerSeries :: (Closed a, Num a) => Stream a -> Stream a -> Stream a
 >compose_powerSeries a b = ssum $ fmap (liftA2 (*) a) $ cells $ powerSeriesPowers b
 
+>compositions :: Stream (a -> a) -> Stream (a -> a)
+>compositions (Pre f fr) = Pre id $ fmap (f .) (compositions fr)
+
 >powerSeries_exp :: (Fractional a, Closed a) => Stream a -> Stream a
 >powerSeries_exp = compose_powerSeries exponentialStream
 
@@ -525,9 +528,11 @@ instance (Num a) => Matrix.VectorSpace ((Stream :*: Stream) a) where
 >   = Pre x $ streamDiagonalImpl $ Matrix $ fmap stail dr
 >
 
->instance (Matrix.ConjugateSymmetric a, Num a, Closed a)
->     => Matrix.InnerProductSpace (Stream a) where
+>instance (ConjugateSymmetric a, Num a, Closed a)
+>     => InnerProductSpace (Stream a) where
 >  x %. y = ssum $ do { (xa,ya) <- x <&> y ; return (xa* (conj ya)) }
+
+>instance (Num a, ConjugateSymmetric a, Closed a) => InnerProductSpaceFunctor Stream a
 
 >instance (Closed a, Matrix.ConjugateSymmetric a, Floating a)
 >    => Matrix.NormedSpace (Stream a) where
@@ -962,7 +967,7 @@ matrix_inverse :: (InnerProductSpace (f a), InnerProductSpace (h a),
 >matrix_inverse :: (       ConjugateSymmetric (g2 a),
 >                         LinearTransform (f2 :*: g1) (f2 :*: g1) (g2 a),
 >                         TArrow.FunctorArrow (f2 :*: g1) LinearMap LinearMap,
->                         InnerProductSpace (f2 (g2 a)), InnerProductSpace (g1 (g2 a)),
+>                         InnerProductSpaceFunctor g1 (g2 a), InnerProductSpaceFunctor f2 (g2 a),
 >                         Transposable f2 g1 (g2 a), Transposable g1 f2 (g2 a),
 >                         Linearizable LinearMap (:*:) g1 f2 (g2 a),
 >                         Linearizable LinearMap (:*:) f2 g1 (g2 a),

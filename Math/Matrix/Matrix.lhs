@@ -127,18 +127,20 @@ instance Comonad ((,) a :*: (->) a) where
 >mod_linear_map c = linear $ functionMatrix (`mod` c)
 
 
->modularExponentiation :: (SupportsMatrixMultiplication f f f a, a ~ f b,
->                          Linearizable LinearMap (:*:) f f a,
->                          Linearizable LinearMap (:*:) f f b,
->                          Diagonalizable f b, LinearTransform f f b,
+>modularExponentiation :: (SupportsMatrixMultiplication f f f (g b),
+>                          Scalar (f (g b)) ~ g b,
+>                          Linearizable LinearMap (:*:) f f (g b),
+>                          Linearizable LinearMap (:*:) g g b,
+>                          Diagonalizable g b, LinearTransform f f b,
 >                          FunctorArrow f LinearMap LinearMap,
->                          Integral b) => f a :-> f a -> Integer -> b -> f a :-> f a
+>                          Integral b) => f (g b) :-> f (g b) -> Integer -> b -> f (g b) :-> f (g b)
 >modularExponentiation m b c 
 >   | b == 0         = MatIdentity
 >   | b `mod` 2 == 1 = amap (linear (modmatrix c)) . 
 >                         (linearMatrixMultiply m $ modularExponentiation m (pred b) c)
 >   | otherwise = amap (linear (modmatrix c)) . (linearMatrixMultiply d d)
 >          where d = modularExponentiation m (b `div` 2) c
+>                modmatrix :: (Diagonalizable g b, Integral b) => b -> (g :*: g) b
 >                modmatrix c = functionMatrix (fmap (`mod` c))
 
 >isSymmetric :: (Eq (m (m a)), LinearTransform m m a, Linearizable LinearMap (:*:) m m a, Diagonalizable m a, Transposable m m a, Applicative m, Foldable m, Eq a)
@@ -189,25 +191,29 @@ instance Comonad ((,) a :*: (->) a) where
 
 
 
-matrix_commutator :: (Applicative h, Transposable h h, InnerProductSpace (h a), Scalar (h a) ~ a) => (h :*: h) a -> (h :*: h) a -> (h :*: h) a
+matrixCommutator :: (Applicative h, Transposable h h, InnerProductSpace (h a), Scalar (h a) ~ a) => (h :*: h) a -> (h :*: h) a -> (h :*: h) a
 
->matrix_commutator m n = m %*% n %- n %*% m
+>matrixCommutator :: (VectorSpace ((f :*: f) a),
+> InnerProductSpaceFunctor f a, ConjugateSymmetric a,
+> Transposable f f a, Num a)
+> => (f :*: f) a -> (f :*: f) a -> (f :*: f) a
+>matrixCommutator m n = m %*% n %- n %*% m
 
 >instance (Num a, ConjugateSymmetric a) => LieAlgebra ((Vector4 :*: Vector4) a) where
->   (%<>%) = matrix_commutator
+>   (%<>%) = matrixCommutator
 
 
 >instance (Num a, ConjugateSymmetric a) => LieAlgebra ((Vector3 :*: Vector3) a) where
->   (%<>%) = matrix_commutator
+>   (%<>%) = matrixCommutator
 
 
-matrix_commutator :: (Num a, Applicative h, Transposable h h a, Scalar a ~ a,
+matrixCommutator :: (Num a, Applicative h, Transposable h h a, Scalar a ~ a,
                       Scalar (h (h a)) ~ a,
                       InnerProductSpace (h a), VectorSpaceOver (h a) a)
                      => h a :-> h a -> h a :-> h a -> h a :-> h a
-matrix_commutator m n = alift2 (pure $ proc a -> returnA -< proc b -> returnA -< a - b) -!< (m %**% n,n %**% m)
+matrixCommutator m n = alift2 (pure $ proc a -> returnA -< proc b -> returnA -< a - b) -!< (m %**% n,n %**% m)
 
->matrix_anticommutator m n = m %*% n %+ n %*% m
+>matrixAnticommutator m n = m %*% n %+ n %*% m
 
 matrix_anticommutator :: (Num a, Applicative h, Transposable h h a,
                       InnerProductSpace (h a), VectorSpaceOver (h a) a)
@@ -221,7 +227,7 @@ normalized_anticommutator m n = liftA (/2) (matrix_anticommutator m n)
 
 normalized_anticommutator :: (LinearTransform h h a, Transposable h h a, InnerProductSpace (h a), Diagonalizable h a, Fractional a, VectorSpace (h a), a ~ Scalar a, a ~ Scalar (h a), a ~ Scalar (h (h a))) => h a :-> h a -> h a :-> h a -> h a :-> h a
 
->normalized_anticommutator m n = (1/2) %* matrix_anticommutator m n
+>normalizedAnticommutator m n = (1/2) %* matrixAnticommutator m n
 
 commute :: (Fractional a, Applicative f, Transposable f f a,
             InnerProductSpace (f a), VectorSpaceOver (f a) a) =>
@@ -229,8 +235,8 @@ commute :: (Fractional a, Applicative f, Transposable f f a,
 
 commute :: Complex (g a :-> g a) -> Complex (g a :-> g a) -> ((g :*: g) (Complex a)) :-> ((g :*: g) (Complex a))
 
->commute (x :+ y) (x' :+ y') = matrix (:+) (normalized_anticommutator x x')
->                                          (matrix_commutator y y')
+>commute (x :+ y) (x' :+ y') = matrix (:+) (normalizedAnticommutator x x')
+>                                          (matrixCommutator y y')
 
 
 >bind_diagonal :: (Monad m) => (m :*: m) a -> (a -> m b) -> m b

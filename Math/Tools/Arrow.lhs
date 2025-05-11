@@ -58,6 +58,26 @@
 >class (Category arr) => Groupoid arr where
 >     invertA :: arr a b -> arr b a
 
+>-- | <https://ncatlab.org/nlab/show/relative+monad>
+>class (Category arr) => RelativeMonad arr j m where
+>     relativeUnitA :: arr (j x) (m x)
+>     extA :: arr (j x) (m y) -> arr (m x) (m y)
+> -- laws: f == extA f . relativeUnitA
+> --       extA relativeUnitA == id
+> --       extA (extA g . f) == extA g . extA f
+
+>relativeBind :: (RelativeMonad arr j m, ArrowApply arr) => arr (m x, arr (j x) (m y)) (m y)
+>relativeBind = proc (x,f) -> extA f -<< x
+
+>relativeBind2 :: (RelativeMonad arr j m, RelativeMonad arr k m, ArrowApply arr) =>
+>   arr (j a, k b) (m c) -> arr (m a, m b) (m c)
+>relativeBind2 f = proc (x,y) ->
+>     relativeBind -< (x, proc a ->
+>         relativeBind -< (y, proc b ->
+>             f -< (a, b)))
+
+relativeBind2 f x y = relativeBind x $ \a -> relativeBind y $ \b -> f x y
+
 >class (Category arr, Category arr') => OpArrow p arr arr' where
 >   inverse_imageA :: arr a b -> arr' (p b) (p a)
 

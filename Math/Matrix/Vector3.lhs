@@ -2,7 +2,7 @@
 >{-# LANGUAGE FlexibleInstances, FlexibleContexts, TypeOperators #-}
 >{-# LANGUAGE TypeFamilies, PatternGuards, DataKinds, LambdaCase #-}
 >{-# LANGUAGE StandaloneDeriving, DeriveGeneric, DeriveDataTypeable #-}
->{-# LANGUAGE PatternSynonyms #-}
+>{-# LANGUAGE PatternSynonyms, UndecidableInstances #-}
 >module Math.Matrix.Vector3 where
 >import safe Text.PrettyPrint (sep,vcat,nest, Doc)
 >import safe Control.Applicative
@@ -45,6 +45,11 @@
 >deriving instance (Typeable a) => Typeable (Vector3 a)
 >deriving instance (Data a) => Data (Vector3 a)
 >deriving instance (Generic a) => Generic (Vector3 a)
+
+>instance (MetricSpace a, Floating (Distance a)) => MetricSpace (Vector3 a) where
+>   type Distance (Vector3 a) = Distance a
+>   distance (Vector3 x y z) (Vector3 x' y' z') =
+>     sqrt ((distance x x')^2 + (distance y y')^2 + (distance z z')^2)
 
 >instance (Binary s) => Binary (Vector3 s) where
 >   put (Vector3 x y z) = put x >> put y >> put z
@@ -315,18 +320,18 @@ instance (PpShow (f a)) => PpShow ((Vector3 :*: f) a) where
 >  mempty = vzero
 >  
 >-- | see "Lawvere,Rosebrugh: Sets for mathematics", pg. 167.
->instance (ConjugateSymmetric a, Num a) => Semigroup ((Vector3 :*: Vector3) a) where
+>instance (Ord a, ConjugateSymmetric a, Num a) => Semigroup ((Vector3 :*: Vector3) a) where
 >   (<>) = (%*%)
 
 
 >-- | see "Lawvere,Rosebrugh: Sets for mathematics", pg. 167.
->instance (Num a, ConjugateSymmetric a) => Mon.Monoid ((Vector3 :*: Vector3) a) where
+>instance (Ord a, Num a, ConjugateSymmetric a) => Mon.Monoid ((Vector3 :*: Vector3) a) where
 >   mempty  = identity
 
 >instance (Num s) => Group (Vector3 s) where
 >   ginvert (Vector3 x y z) = Vector3 (negate x) (negate y) (negate z)
 
->instance (Fractional a, ConjugateSymmetric a) => Group ((Vector3 :*: Vector3) a) where
+>instance (Ord a, Fractional a, ConjugateSymmetric a) => Group ((Vector3 :*: Vector3) a) where
 >   ginvert = inverseImpl
 
 
@@ -376,7 +381,7 @@ approximations_vector3 (Vector3 x y z) = do
 >instance (ConjugateSymmetric a, Num a) => ConjugateSymmetric ((Vector3 :*: Vector3) a) where
 >   conj = fmap conj . transposeImpl
 
->instance (Floating a, ConjugateSymmetric a) => NormedSpace (Vector3 a) where
+>instance (Ord a, Floating a, ConjugateSymmetric a) => NormedSpace (Vector3 a) where
 >  norm = innerproductspaceNorm
 >  normSquared = innerproductspaceNormSquared
 
@@ -448,7 +453,7 @@ approximations_vector3 (Vector3 x y z) = do
 >  unitVectors = [xid,yid,zid]
 
 
->instance (Num a, ConjugateSymmetric a) => Num ((Vector3 :*: Vector3) a) where
+>instance (Ord a, Num a, ConjugateSymmetric a) => Num ((Vector3 :*: Vector3) a) where
 >  (Matrix v) + (Matrix v') = Matrix $ liftA2 (liftA2 (+)) v v'
 >  (Matrix v) - (Matrix v') = Matrix $ liftA2 (liftA2 subtract) v v'
 >  (*) = (%*%)
@@ -457,7 +462,7 @@ approximations_vector3 (Vector3 x y z) = do
 >  signum (Matrix v) = Matrix (signum v)
 >  fromInteger = diagonalMatrixImpl . constant3 . fromInteger
 
->instance (Fractional a, ConjugateSymmetric a) => Fractional ((Vector3 :*: Vector3) a) where
+>instance (Ord a, Fractional a, ConjugateSymmetric a) => Fractional ((Vector3 :*: Vector3) a) where
 >   recip = inverseImpl
 >   fromRational = diagonalMatrixImpl . constant3 . fromRational
 
@@ -518,7 +523,7 @@ approximations_vector3 (Vector3 x y z) = do
 >identity3 = Matrix $ Vector3 xid yid zid
 
 
->matrixPower3 :: (ConjugateSymmetric a,Num a) => Matrix3 a -> Integer -> Matrix3 a
+>matrixPower3 :: (Ord a, ConjugateSymmetric a,Num a) => Matrix3 a -> Integer -> Matrix3 a
 >matrixPower3 mat = \case
 >    0 -> identity3
 >    i -> mat `matrixMultiply3` matrixPower3 mat (pred i)
@@ -529,7 +534,7 @@ approximations_vector3 (Vector3 x y z) = do
 >matrixIndices3 :: (Integral a) => (Vector3 :*: Vector3) (a,a)
 >matrixIndices3 = matrix (,) vectorIndices3 vectorIndices3
 
->matrixMultiply3 :: (ConjugateSymmetric a,Num a) => Matrix3 a -> Matrix3 a -> Matrix3 a
+>matrixMultiply3 :: (Ord a, ConjugateSymmetric a,Num a) => Matrix3 a -> Matrix3 a -> Matrix3 a
 >matrixMultiply3 (Matrix m1) m2 
 >   | Matrix m2t <- transpose3 m2 = matrix (%.) m1 m2t
 
@@ -716,7 +721,7 @@ deriving instance (Show a) => Show (Codiagonal Vector3 a)
 >         combine (Vector3 a b c) = a - b + c         
 
 
->instance (Num a, ConjugateSymmetric a) => LinearTransform Vector1 Vector3 a where
+>instance (Num a, Ord a, ConjugateSymmetric a) => LinearTransform Vector1 Vector3 a where
 >  x <*>> (Matrix (Vector1 m)) = Vector1 $ x %. m
 >  (Matrix (Vector1 m)) <<*> (Vector1 x) = conj x %* m
 
@@ -781,11 +786,14 @@ instance FractionalSpace (Vector3 (Complex R)) where
 >  (Matrix x) %+ (Matrix y) = Matrix $ x %+ y
 
 >instance {-# OVERLAPPING #-}
->     (Floating a, ConjugateSymmetric a) => NormedSpace ((Vector3 :*: Vector3) a) where
+>     (Ord a,Floating a, ConjugateSymmetric a) => NormedSpace ((Vector3 :*: Vector3) a) where
 >  norm = innerproductspaceNorm
 
->instance (Floating a, ConjugateSymmetric a) => InnerProductSpace ((Vector3 :*: Vector3) a) where
+>instance (Floating a, ConjugateSymmetric a)
+> => InnerProductSpace ((Vector3 :*: Vector3) a) where
 >  x %. y = traceImpl (transposeImpl x %*% y)
+
+>instance (ConjugateSymmetric a, Num a) => InnerProductSpaceFunctor Vector3 a
 
 >gram_schmidt3 :: (Fractional (Scalar a), Num a,
 >                  InnerProductSpace a, VectorSpace a)

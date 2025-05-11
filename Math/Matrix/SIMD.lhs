@@ -1354,6 +1354,11 @@
 >                ++ show (svec16_15 v) ++ "," ++ show (svec16_16 v) ++
 >                ")"
 
+>instance ConjugateSymmetric Int64 where { conj = id }
+>instance ConjugateSymmetric Int32 where { conj = id }
+>instance ConjugateSymmetric Int16 where { conj = id }
+>instance ConjugateSymmetric Int8 where { conj = id }
+
 >instance InnerProductSpace (SIMDVec 16 Int8) where
 >   a %. b = sum_coordinates16Int (a * b)
 >instance InnerProductSpace (SIMDVec 8 Int16) where

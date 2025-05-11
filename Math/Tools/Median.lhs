@@ -65,6 +65,9 @@
 >data Interval a = Interval { interval_startpoint :: a,
 >                             interval_endpoint   :: a }
 
+>instance (Eq a) => Eq (Interval a) where
+>   (Interval a b) == (Interval a' b') = a == a' && b == b'
+
 >instance (Show a) => Show (Interval a) where
 >  show (Interval a b) = show (a,b)
 
@@ -91,12 +94,12 @@
 >  (Interval x y) %+ (Interval x' y') = Interval (x + x') (y + y')
 >  x %* (Interval a b) = Interval (x * a) (x * b)
 
->instance (Num a) => NormedSpace (Interval a) where
+>instance (Num a, ConjugateSymmetric a) => NormedSpace (Interval a) where
 >  norm (Interval a b) = abs (b - a)
->  normSquared (Interval a b) = let d = b - a in d*d
+>  normSquared (Interval a b) = let d = b - a in d * conj d
 
->instance (Num a) => InnerProductSpace (Interval a) where
->  (Interval a b) %. (Interval a' b') = (b-a)*(b'-a')
+>instance (Num a, Ord a, ConjugateSymmetric a) => InnerProductSpace (Interval a) where
+>  (Interval a b) %. (Interval a' b') = (b-a) * conj (b'-a')
 
 >inInterval :: (Eq a, MedianAlgebra a) => a -> Interval a -> Bool
 >inInterval x (Interval u v) = x == med x u v

@@ -127,7 +127,7 @@
 >convergenceRatioTest :: (Fractional a, Ord a, Closed a) => Stream a -> Bool
 >convergenceRatioTest str = (accumulationPoint $ limit $ abs <$> streamQuotients str) < 1
 
->averageConvergenceRatio :: (MetricSpace a, Fractional (Scalar a)) => Stream a -> Stream (Scalar a)
+>averageConvergenceRatio :: (MetricSpace a, Fractional (Distance a)) => Stream a -> Stream (Distance a)
 >averageConvergenceRatio = fmap listAverage . cauchy
 
 >listAverage :: (Fractional a) => [a] -> a
@@ -136,7 +136,7 @@
 maxConvergenceRatio :: (MetricSpace a) => Stream a -> Stream R
 maxConvergenceRatio = fmap (foldl1 max) . cauchy
 
->cauchy :: (MetricSpace a) => Stream a -> Stream [Scalar a]
+>cauchy :: (MetricSpace a) => Stream a -> Stream [Distance a]
 >cauchy s = codiagonals $ matrix distance s s
 
 >cseqDifferenceMatrix :: (Functor m, Functor n, Diagonalizable m a, LinearTransform m n a, Num a)
@@ -199,7 +199,7 @@ maxConvergenceRatio = fmap (foldl1 max) . cauchy
 >cseqEquivalence_list :: (Closed a, ConjugateSymmetric a, Num a, Infinitesimal Stream eps) => (eps -> Integer) -> Stream a -> Stream a -> Stream [a]
 >cseqEquivalence_list modulus x y = codiagonals $ cseqEquivalenceMatrix modulus x y
 
->converges :: (MetricSpace a) => Stream a -> a -> Stream [Scalar a]
+>converges :: (MetricSpace a) => Stream a -> a -> Stream [Distance a]
 >converges s p = codiagonals $ matrix distance s (constant p)
 >
 >instance NormedSpace R where
@@ -212,9 +212,11 @@ maxConvergenceRatio = fmap (foldl1 max) . cauchy
 >   epsilonStream = fmap (1 /) $ Stream.power 10
 
 >instance MetricSpace R where
+>  type Distance R = R
 >  distance x y = abs (x-y)
 
 >instance MetricSpace (Stream R) where
+>  type Distance (Stream R) = R
 >  distance x y = accumulationPoint $ limit $ do 
 >                    (xn,yn,n) <- fzip3 x y naturals
 >                    let d = abs (xn-yn)
@@ -331,6 +333,7 @@ instance MedianAlgebra R where
 
 
 >instance MetricSpace (Closure Stream R) where
+>   type Distance (Closure Stream R) = R
 >   distance (RClosure a) (RClosure b) = distance a b
 
 >instance Closed R where
@@ -934,10 +937,6 @@ mandelbrotStream c = iterateStream (mandelbrotPolynomial c) 0
 mandelbrot :: Complex R -> Closure (Complex R)
 mandelbrot c = limit (mandelbrotStream c)
 
->instance MetricSpace (Ratio Integer) where
->   distance x y = abs (x - y)
->instance MetricSpace Integer where { distance x y = abs (x - y) }
->instance MetricSpace Int where { distance x y = abs (x - y) }
 
 >approximateSumsModulus :: Modulus -> Modulus -> Modulus
 >approximateSumsModulus ((Limit x) `Modulus` f) ((Limit y) `Modulus` g)

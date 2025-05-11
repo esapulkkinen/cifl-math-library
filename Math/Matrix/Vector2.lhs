@@ -1,4 +1,5 @@
 >{-# LANGUAGE Safe, FlexibleInstances, MultiParamTypeClasses, FlexibleContexts, TypeOperators, TypeFamilies, PatternGuards, ScopedTypeVariables, StandaloneDeriving, DeriveGeneric, DeriveDataTypeable, IncoherentInstances #-}
+>{-# LANGUAGE UndecidableInstances #-}
 >module Math.Matrix.Vector2 where
 >import safe qualified Text.PrettyPrint as Pretty
 >import safe Text.PrettyPrint (vcat,nest,(<+>))
@@ -31,6 +32,10 @@
 >import safe qualified Control.Monad.Zip
 
 >data Vector2 s = Vector2 { xcoord2 :: !s, ycoord2 :: !s }
+
+>instance (MetricSpace a, Floating (Distance a)) => MetricSpace (Vector2 a) where
+>  type Distance (Vector2 a) = Distance a
+>  distance (Vector2 x y) (Vector2 x' y') = sqrt ((distance x x')^2 + (distance y y')^2)
 
 >deriving instance (Eq a) => Eq (Vector2 a)
 >deriving instance (Typeable a) => Typeable (Vector2 a)
@@ -254,12 +259,14 @@ deriving instance (Show a) => Show (Codiagonal Vector2 a)
 >  mempty = vzero
 >  mappend = (%+)
 
+>instance (Num a, ConjugateSymmetric a) => InnerProductSpaceFunctor Vector2 a
+
 >-- | see "Lawvere,Rosebrugh: Sets for mathematics", pg. 167.
->instance (Num a, ConjugateSymmetric a) => Semigroup ((Vector2 :*: Vector2) a) where
+>instance (Num a, Ord a, ConjugateSymmetric a) => Semigroup ((Vector2 :*: Vector2) a) where
 >   (<>) = (%*%)
 
 >-- | see "Lawvere,Rosebrugh: Sets for mathematics", pg. 167.
->instance (Num a, ConjugateSymmetric a) => Monoid ((Vector2 :*: Vector2) a) where
+>instance (Num a, Ord a, ConjugateSymmetric a) => Monoid ((Vector2 :*: Vector2) a) where
 >   mempty = identityImpl (Vector2 0 1)
 >   mappend = (%*%)
 
@@ -286,7 +293,7 @@ deriving instance (Show a) => Show (Codiagonal Vector2 a)
 >instance (Show a) => Show (Vector2 a) where
 >  show (Vector2 x y) = "[" ++ show x ++ "," ++ show y ++ "]"
 
->instance (Fractional a, ConjugateSymmetric a) => Group ((Vector2 :*: Vector2) a) where
+>instance (Fractional a, Ord a, ConjugateSymmetric a) => Group ((Vector2 :*: Vector2) a) where
 >   ginvert = inverse2
 
 >instance (Num a) => CoordinateSpace (Vector2 a) where
@@ -340,7 +347,7 @@ deriving instance (Show a) => Show (Codiagonal Vector2 a)
 >signs2 :: (Vector2 :*: Vector2) Integer
 >signs2 = fmap (\ (i,j) -> ((i+j+1) `mod` 2) * 2 - 1) matrix_indices2
 
->instance (Num a, ConjugateSymmetric a) => Num ((Vector2 :*: Vector2) a) where
+>instance (Num a, Ord a, ConjugateSymmetric a) => Num ((Vector2 :*: Vector2) a) where
 >   (Matrix v) + (Matrix v') = Matrix $ v + v'
 >   (Matrix v) - (Matrix v') = Matrix $ v - v'
 >   (*) = (%*%)

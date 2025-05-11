@@ -1,4 +1,5 @@
 >{-# LANGUAGE Safe,FlexibleInstances, MultiParamTypeClasses,FlexibleContexts, TypeOperators, TypeFamilies, NoMonomorphismRestriction, StandaloneDeriving, DeriveGeneric, DeriveDataTypeable, LambdaCase, RankNTypes #-}
+>{-# LANGUAGE UndecidableInstances #-}
 >module Math.Matrix.Vector4 where
 >import safe qualified Data.Monoid as Mon
 >import safe qualified Text.PrettyPrint as Pretty
@@ -31,6 +32,11 @@ import Math.Matrix.Dimension
 >import safe qualified Control.Monad.Zip
 
 >data Vector4 s = Vector4 { tcoord4 :: !s, xcoord4 :: !s, ycoord4 :: !s, zcoord4 :: !s }
+
+>instance (MetricSpace a, Floating (Distance a)) => MetricSpace (Vector4 a) where
+>  type Distance (Vector4 a) = Distance a
+>  distance (Vector4 t x y z) (Vector4 t' x' y' z') =
+>    sqrt ((distance t t')^2 + (distance x x')^2 + (distance y y')^2 + (distance z z')^2)
 
 >deriving instance (Eq a) => Eq (Vector4 a)
 >deriving instance (Typeable a) => Typeable (Vector4 a)
@@ -279,14 +285,15 @@ instance FractionalSpace (Vector4 (Complex R))
 >instance (Num s) => Monoid (Vector4 s) where
 >  mempty = vzero
 
->instance (Num a, ConjugateSymmetric a) => Semigroup ((Vector4 :*: Vector4) a) where
+>instance (SupportsMatrixMultiplication Vector4 Vector4 Vector4 a)
+> => Semigroup ((Vector4 :*: Vector4) a) where
 >   (<>) = (%*%)
 
 >dim4 :: Vector4 Integer
 >dim4 = Vector4 0 1 2 3
 
 >-- | see "Lawvere,Rosebrugh: Sets for mathematics", pg. 167.
->instance (Num a, ConjugateSymmetric a) => Monoid ((Vector4 :*: Vector4) a) where
+>instance (SupportsMatrixMultiplication Vector4 Vector4 Vector4 a) => Monoid ((Vector4 :*: Vector4) a) where
 >   mempty = identity
 
 >instance (Monad str, Limiting str a) => Limiting str (Vector4 a) where
@@ -349,7 +356,7 @@ instance FractionalSpace (Vector4 (Complex R))
 >   (<<*>) = rightMultiply4Gen
 
 
->instance (Num a, ConjugateSymmetric a) => LinearTransform Vector1 Vector4 a where
+>instance (Ord a, Num a, ConjugateSymmetric a) => LinearTransform Vector1 Vector4 a where
 >   x <*>> (Matrix (Vector1 m)) = Vector1 $ x %. m
 >   (Matrix (Vector1 m)) <<*> (Vector1 x) = conj x %* m
 
@@ -359,17 +366,18 @@ instance FractionalSpace (Vector4 (Complex R))
 >      = Vector1 (t*conj t'+x*conj x'+y*conj y'+z*conj z')
 
 
->instance (Floating a, ConjugateSymmetric a) => NormedSpace (Vector4 a) where
+>instance (Ord a, Floating a, ConjugateSymmetric a) => NormedSpace (Vector4 a) where
 >  norm = innerproductspaceNorm
 >  normSquared = innerproductspaceNormSquared
 
 >instance {-# OVERLAPPABLE #-} (Num a, ConjugateSymmetric a) => InnerProductSpace (Vector4 a) where
 >  v %. w = sumCoordinates4 $ pure (*) <*> v <*> (conj <$> w)
 
->versor :: (Floating a, ConjugateSymmetric a) => Vector4 a -> Vector4 a
+>versor :: (Ord a, Floating a, ConjugateSymmetric a) => Vector4 a -> Vector4 a
 >versor q = (1 / norm q) %* q
 
->instance (Num a, ConjugateSymmetric a) => Num ((Vector4 :*: Vector4) a) where
+>instance (SupportsMatrixMultiplication Vector4 Vector4 Vector4 a)
+> => Num ((Vector4 :*: Vector4) a) where
 >   (Matrix v) + (Matrix v') = Matrix $ liftA2 (liftA2 (+)) v v'
 >   (Matrix v) - (Matrix v') = Matrix $ liftA2 (liftA2 (-)) v v'
 >   (*) = (%*%)
@@ -545,6 +553,8 @@ instance FractionalSpace (Vector4 (Complex R))
 >instance (Floating a, ConjugateSymmetric a) => InnerProductSpace ((Vector4 :*: Vector4) a) where
 >  x %. y = traceImpl (transposeImpl x %*% y)
 
+>instance (ConjugateSymmetric a, Num a) => InnerProductSpaceFunctor Vector4 a
+
 >instance (Num a) => Diagonalizable Vector4 a where
 >  identityImpl _ = identity4
 >  identity = identity4
@@ -621,7 +631,8 @@ instance FractionalSpace (Vector4 (Complex R))
 >inverse4 :: (Fractional a) => Matrix4 a -> Matrix4 a
 >inverse4 m = (1 / determinantImpl m) %* adjucate4 m
 
->instance (Fractional a, ConjugateSymmetric a) => Group ((Vector4 :*: Vector4) a) where
+>instance (SupportsMatrixMultiplication Vector4 Vector4 Vector4 a, Fractional a)
+> => Group ((Vector4 :*: Vector4) a) where
 >   ginvert = inverse4
 
 >-- | Generalization of cross product to four dimensions

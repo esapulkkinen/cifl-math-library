@@ -72,6 +72,8 @@
 >instance Foldable Vector1 where
 >   foldMap f (Vector1 x) = f x
 
+>instance (Num a, ConjugateSymmetric a) => InnerProductSpaceFunctor Vector1 a
+
 >instance Traversable Vector1 where
 >   traverse f (Vector1 x) = Vector1 <$> f x
 
@@ -234,12 +236,16 @@ http://en.wikipedia.org/wiki/Bra%E2%80%93ket_notation
 >  x %* (Vector1 e) = Vector1 (x * e)
 >  (Vector1 a) %+ (Vector1 b) = Vector1 (a + b)
 
->instance (Floating a, ConjugateSymmetric a) => NormedSpace (Vector1 a) where
+>instance (Floating a, Ord a, ConjugateSymmetric a) => NormedSpace (Vector1 a) where
 >  norm x = sqrt (x %. x)
 >  normSquared x = x %. x
 
 >instance (Num a, ConjugateSymmetric a) => InnerProductSpace (Vector1 a) where
 >  (Vector1 x) %. (Vector1 y) = x * conj y
+>
+>instance (MetricSpace a) => MetricSpace (Vector1 a) where
+>  type Distance (Vector1 a) = Distance a
+>  distance (Vector1 a) (Vector1 b) = distance a b
 
 >instance (Num a) => Traceable Vector1 a where
 >   traceImpl (Matrix (Vector1 (Vector1 a))) = a

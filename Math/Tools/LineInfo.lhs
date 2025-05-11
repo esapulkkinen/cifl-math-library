@@ -37,7 +37,7 @@
 
 >instance Monoid LineInfo where
 >   mempty = emptyLineInfo
->   mappend = sumLineinfo
+>   mappend = (<>)
 
 >instance Show LineInfo where
 >   show NoLineInfo = ""

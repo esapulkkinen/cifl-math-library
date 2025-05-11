@@ -21,6 +21,8 @@
 >import safe Data.Complex
 >import safe Data.Foldable
 >import safe Data.List (intersperse)
+>import safe Data.Word
+>import safe Data.Int
 >import safe qualified Data.Set
 >import safe Prelude hiding (id,(.))
 >import safe Control.Category
@@ -96,6 +98,35 @@ cellsLinear = cells . fromLinear
 >rightInverseMatrix f x y = Matrix $ flip fmap x $ \a ->
 >                                      flip inverseImage y $ \b -> f a b
 
+>-- | From "Kenneth Foner: Functional Pearl: Getting a Quick Fix on Comonads"
+>-- <https://raw.githubusercontent.com/plaidfinch/GQFC-1.pdf>
+>loeb :: (Functor f) => f (f a -> a) -> f a
+>loeb ffs = fix (\fa -> fmap ($ fa) ffs)
+
+>loebM :: (Monad m) => m a -> (a -> m (m b -> b)) -> m b
+>loebM m f = loeb (m >>= f)
+
+>loebloeb :: (Functor f) => f (f (f a -> a) -> f a -> a) -> f a
+>loebloeb = loeb . loeb
+
+>-- | construct a matrix where each element may refer to other elements
+>-- for computation.
+>spreadsheetMatrix :: (Functor f, Functor g) => (a -> b -> (f :*: g) c -> c)
+>  -> f a -> g b -> (f :*: g) c
+>spreadsheetMatrix f x y = loeb $ matrix f x y
+
+>mapWithSelf :: (Functor f) => (f b -> a -> b) -> f a -> f b
+>mapWithSelf f = loeb . fmap (flip f)
+
+>selfM :: (Monad m) => (m a -> a) -> m a
+>selfM = loeb . return
+
+>selfJoinM :: (Monad m) => m (m (m a -> a)) -> m a
+>selfJoinM = loeb . (>>= id)
+
+>spreadsheet :: (Functor f, Functor g) => (f :*: g) ((f :*: g) a -> a) -> (f :*: g) a
+>spreadsheet = loeb . Matrix . cells
+
 >inverseFix :: (Contravariant p) => (a -> a) -> p a
 >inverseFix f = let x = x |>> f in x
 
@@ -109,7 +140,7 @@ cellsLinear = cells . fromLinear
 >matrixCompose = matrix (<<<)
 
 >tensorProduct :: (Num a, Functor m, Functor n) => m a -> n a -> (m :*: n) a
->tensorProduct x = \y -> matrix (*) x y
+>tensorProduct = matrix (*)
 
 >tensorProductLin :: (Linearizable arr (:*:) f g a, Num a, Functor f, Functor g)
 > => f a -> g a -> arr (f a) (g a)
@@ -133,7 +164,7 @@ cellsLinear = cells . fromLinear
 >bilinearImpl :: (VectorSpace (g c), Scalar (g c) ~ c,
 > Indexable f c, Indexable g c, Integral c, VectorSpace ((f :*: g) c))
 >  => (f c -> f c -> g c) -> f c -> f c -> (f :*: g) c
->bilinearImpl f a b = (asplit a b) %+ (bsplit a b)
+>bilinearImpl f a b = asplit a b %+ bsplit a b
 >  where asplit a' b' = Matrix $ fmap (\p -> p `indexProject` a' %* f (basisVector p) b') diagonalProjections
 >        bsplit a' b' = Matrix $ fmap (\q -> q `indexProject` b' %* f a' (basisVector q)) diagonalProjections
 
@@ -173,17 +204,8 @@ bilinear f (x,y) = linear $ bilinear_impl f (fromLinear x) (fromLinear y)
 >type Linear a b = (VectorSpace a, VectorSpace b, Scalar a ~ Scalar b)
 >type LinearInnerProductSpace a b = (Linear a b, InnerProductSpace a, InnerProductSpace b)
 
->type SupportsMatrixMultiplication f g h a = (VectorSpace (f a), VectorSpace (h a), InnerProductSpace (g a),
->                                             Scalar (f a) ~ a, Scalar (h a) ~ a, Scalar (g a) ~ a,
->                                             Num a, ConjugateSymmetric a,
->                                             Functor f,  Transposable g h a)
-
-type SupportsMatrixMultiplication f g h a =
-    (Diagonalizable h a, Diagonalizable g a, ConjugateSymmetric a, Num a,
-    LinearIso g h a, LinearIso g f a, LinearIso h f a,
-    Transposable h f a, Transposable g h a, Transposable g f a,
-     InnerProductSpace (h a), InnerProductSpace (f a),
-     a ~ (Scalar (h a)))
+>type SupportsMatrixMultiplication f g h a = (InnerProductSpaceFunctor g a, ConjugateSymmetric a,
+>                                             Transposable g h a, Functor f, Num a)
 
 >type LinearIso f g a = (LinearTransform f g a, LinearTransform g f a)
 
@@ -194,18 +216,42 @@ type SupportsMatrixMultiplication f g h a =
 >-- | <https://en.wikipedia.org/wiki/Outer_product>
 >class (VectorSpace m) => InnerProductSpace m where
 >  (%.) :: m -> m -> Scalar m
+>  areOrthogonal :: (Eq (Scalar m)) => m -> m -> Bool
+>  areOrthogonal a b = a %. b == 0
+>  canonicalNorm :: (Floating (Scalar m)) => m -> Scalar m
+>  canonicalNorm x = sqrt(x %. x)
+
+>class (InnerProductSpace (f a), a ~ Scalar (f a))
+> => InnerProductSpaceFunctor f a where
+>  innerProductF :: f a -> f a -> a
+>
+>  default innerProductF :: (Scalar (f a) ~ a) => f a -> f a -> a
+>  innerProductF = (%.)
 
 >outer :: (InnerProductSpace m, Scalar m ~ Scalar v, VectorSpace v)
 > => m -> v -> (m -> v)
->outer a b = \x -> (a %. x) %* b
+>outer a b x = (a %. x) %* b
 
 
 >-- | <https://en.wikipedia.org/wiki/Lie_algebra>
 >class (VectorSpace m) => LieAlgebra m where
 >  (%<>%) ::  m -> m -> m  -- [x,y]
 
->class (VectorSpace s) => MetricSpace s where
->   distance :: s -> s -> Scalar s
+>class MetricSpace s where
+>   type Distance s
+>   distance :: s -> s -> Distance s
+
+>class (MetricSpace s, (Floating (Distance s)))
+> => DifferentialMetricSpace s where
+>   convergeTo :: (Monad m) => s -> (s -> m u) -> m u
+
+>metricSpaceDerivative ::
+>   (DifferentialMetricSpace a, MetricSpace b, Distance a ~ Distance b, Fractional (Distance b), Monad m)
+>   => (a -> b) -> a -> m (Distance b)
+>metricSpaceDerivative f x = 
+>  convergeTo x $ \x' ->
+>    return $ distance (f x') (f x) / distance x' x
+
 
 compose_matrix_with :: (Diagonalizable m c, Diagonalizable g b, LinearIso g n b, LinearTransform m f a, LinearTransform m n c, Num c, Scalar c ~ Scalar (f a), Transposable g n b, Diagonalizable n b, Diagonalizable m a, Scalar (n c) ~ Scalar (m (f a))) =>
  (f a -> g b -> c) -> m a :-> f a -> g b :-> n b -> m c :-> n c
@@ -230,6 +276,12 @@ lie_compose m1 m2 = linmatrix (bilinear (%<>%)) (cells_linear m1, (cells_linear 
 >matrix_norm :: (Functor f, NormedSpace (g a), NormedSpace (f (Scalar (g a))))
 >  => (f :*: g) a -> Scalar (f (Scalar (g a)))
 >matrix_norm = norm . fmap norm . cells
+
+>normedSpaceDerivate :: (NormedSpace t, VectorSpace v,
+> Fractional (Scalar v), Scalar t ~ Scalar v)
+>   => (t -> v) -> (t, t) -> v
+>normedSpaceDerivate f (x, dx) = (recip (norm dx)) %* (f (x %+ dx) %- f x)
+
 
 >class CompleteSpace m where
 
@@ -481,7 +533,7 @@ is_unitary m = conj -!< m == inverse m
 >   finite :: arr ((d :*: d) v) (i v)
 
 >class HasIdentityLinear v arr where
->   matIdentity :: (Num a, ConjugateSymmetric a) => arr (v a) (v a)
+>   matIdentity :: (Ord a, Num a, ConjugateSymmetric a) => arr (v a) (v a)
 
 >class (VectorSpace v) => Dualizable v d where
 >  covector :: (v -> Scalar v) -> d v
@@ -563,8 +615,7 @@ eigenvectors_generic m a = Matrix $ fmap (fix . (a %/)) (eigenvalues m)
 >              / (norm x * norm y)
 
 >-- | <https://en.wikipedia.org/wiki/Angle>
->angle :: (InnerProductSpace m, Floating (Scalar m))
->      => m -> m -> Scalar m
+>angle :: (InnerProductSpace m, Floating (Scalar m)) => m -> m -> Scalar m
 >angle x y = acos (innerproductspaceCosAngle x y)
 
 -- | <https://en.wikipedia.org/wiki/Cross_product>
@@ -665,13 +716,14 @@ index2 (row,col) (C e) = index col (index row e)
 >-- see <http://en.wikipedia.org/wiki/Matrix_multiplication>
 
 >{-# INLINABLE (%*%) #-}
->(%*%) :: (SupportsMatrixMultiplication f g h a) => (f :*: g) a -> (g :*: h) a -> (f :*: h) (Scalar (g a))
+>(%*%) :: (SupportsMatrixMultiplication f g h a) => (f :*: g) a -> (g :*: h) a -> (f :*: h) a
 >(%*%) (Matrix m1) m2 = matrix (%.) m1 (cells $ transposeImpl m2)
 
 >(%**%) :: (SupportsMatrixMultiplication f g h a,
->        Linearizable arr (:*:) f h a, Linearizable arr (:*:) f g a,
+>        Linearizable arr (:*:) f h (Scalar (g a)), Linearizable arr (:*:) f g a,
 >        Linearizable arr (:*:) g h a)
->    => arr (f a) (g a) -> arr (g a) (h a) -> arr (f a) (h a)
+>    => arr (f a) (g a) -> arr (g a) (h a)
+>    -> arr (f (Scalar (g a))) (h (Scalar (g a)))
 >(%**%) a b = linear (fromLinear a %*% fromLinear b)
 
 (%*%) :: (SupportsMatrixMultiplication f g h a) => (g a) :-> (h a) -> (h a) :-> (f a) -> (g a) :-> (f a)
@@ -685,7 +737,7 @@ m1 %**% m2 = linmatrix (bilinear (%.))
   (cells_linear m1, (cells_linear $ transpose m2))
 
 >type MatrixNorm arr h m a = (LinearTraceable arr m (Scalar (h a)), 
->      InnerProductSpace (h a), 
+>      InnerProductSpaceFunctor h a, 
 >      ConjugateSymmetric a, 
 >      Transposable h m a)
 
@@ -711,7 +763,7 @@ linear_power :: (Diagonalizable h (h b), Diagonalizable h b) => h b :-> h b -> I
 linear_power (LinearMap p f) 0 = LinearMap Refl $ identity_impl (vector_dimension $ cells f)
 linear_power f i = f . linear_power f (i-1)
 
->(%^%) :: (SupportsMatrixMultiplication f f f a, Diagonalizable f (f a), Diagonalizable f a) => (f :*: f) a -> Integer -> (f :*: f) a
+>(%^%) :: (a ~ Scalar (f a), SupportsMatrixMultiplication f f f a, Diagonalizable f (f a), Diagonalizable f a) => (f :*: f) a -> Integer -> (f :*: f) a
 >x %^% 0 = identity
 >x %^% i = x %*% (x %^% (i-1))
 
@@ -762,10 +814,28 @@ x %^% i = x %*% (x %^% (i-1))
 
 >instance (ConjugateSymmetric a, ConjugateSymmetric b) => ConjugateSymmetric (a,b) where
 >   conj (a,b) = (conj a, conj b)
+
+
 >instance (ConjugateSymmetric a, ConjugateSymmetric b, ConjugateSymmetric c) => ConjugateSymmetric (a,b,c) where
 >   conj (a,b,c) = (conj a, conj b, conj c)
 >instance (ConjugateSymmetric a, ConjugateSymmetric b, ConjugateSymmetric c, ConjugateSymmetric d) => ConjugateSymmetric (a,b,c,d) where
 >   conj (a,b,c,d) = (conj a, conj b,conj c, conj d)
+
+>-- | <https://ncatlab.org/nlab/show/Cayley-Dickson+construction>
+>data CD a = CD a a
+>   deriving (Show, Eq)
+>
+>instance (ConjugateSymmetric a, Num a) => ConjugateSymmetric (CD a) where
+>  conj (CD a b) = CD (conj a) (negate b)
+
+>instance (ConjugateSymmetric a, Num a) => Num (CD a) where
+>  (CD a b) + (CD c d) = CD (a + c) (b + d)
+>  (CD a b) - (CD c d) = CD (a - c) (b - d)
+>  negate (CD a b) = CD (negate a) (negate b)
+>  abs (CD a b) = CD (abs a) (abs b)
+>  signum (CD a b) = CD (signum a) (signum b)
+>  (CD a b) * (CD c d) = CD (a*c - d*conj b) (conj a * d + c*b)
+>  fromInteger i = CD (fromInteger i) 0
 
 >-- | <https://en.wikipedia.org/wiki/Convex_combination>
 >-- This computes \[f([a_0,a_1,...,a_n], [{\mathbf b}_0,{\mathbf b}_1,...,{\mathbf b}_n]) = {{\sum_{j=0}^n{a_j{\mathbf b}_j}} \over \sum_{i=0}^n{a_i}}\]
@@ -848,6 +918,11 @@ instance Diagonalizable Stream Integer where
 >   (a,b) %+ (a',b') = (a %+ a', b %+ b')
 >   a %* (b,c) = (a %* b, a %* c)
 
+>instance (MetricSpace a, MetricSpace b, Distance a ~ Distance b, Floating (Distance b))
+>  => MetricSpace (a,b) where
+>   type Distance (a,b) = Distance a
+>   distance (x,y) (x',y') = sqrt( (distance x x')^2 + (distance y y')^2)
+
 >-- | Note: Scalar (Complex a) = Complex a
 >instance (RealFloat a) => VectorSpace (Complex a) where
 >   type Scalar (Complex a) = Complex a
@@ -860,11 +935,17 @@ instance Diagonalizable Stream Integer where
 >instance {-# OVERLAPPABLE #-} (RealFloat a) => InnerProductSpace (Complex a) where
 >   a %. b = a * conj b
 
+>isPositiveDefiniteInnerProductSpace m
+> | m /= (0 :+ 0) = realPart (m %. m) > 0
+> | otherwise = True
+
+
 >instance {-# OVERLAPPABLE #-} (RealFloat a) => NormedSpace (Complex a) where
 >   norm x = sqrt (x %. x)
 >   normSquared x = x %. x
 
 >instance (RealFloat a) => MetricSpace (Complex a) where
+>   type Distance (Complex a) = Scalar (Complex a)
 >   distance a b = norm (b - a)
 
 >instance (Num a) => StandardBasis (Complex a) where
@@ -934,8 +1015,10 @@ instance (Floating a) => NormedSpace [a] where
 >   a %* (Product x) = Product (x ** a)
 >   (Product x) %+ (Product y) = Product (x * y)
 
->instance (Floating a) => InnerProductSpace (Product a) where
+>instance (Floating a, ConjugateSymmetric a) => InnerProductSpace (Product a) where
 >  (Product x) %. (Product y) = x ** y
+>
+>instance (Floating a, ConjugateSymmetric a) => InnerProductSpaceFunctor Product a
 
 >instance (Num a) => VectorSpace (Sum a) where
 >   type Scalar (Sum a) = a
@@ -944,12 +1027,13 @@ instance (Floating a) => NormedSpace [a] where
 >   a %* (Sum x) = Sum (a * x)
 >   (Sum x) %+ (Sum y) = Sum (x + y)
 
-
 >instance (Floating a, ConjugateSymmetric a) => NormedSpace (Sum a) where
 >   normSquared x = x %. x
 
->instance (ConjugateSymmetric a,Num a) => InnerProductSpace (Sum a) where
+>instance (ConjugateSymmetric a, Num a) => InnerProductSpace (Sum a) where
 >   (Sum x) %. (Sum y) = x * conj y
+
+>instance (ConjugateSymmetric a, Num a) => InnerProductSpaceFunctor Sum a
 
 >instance (Num a) => VectorSpace (First a) where
 >   type Scalar (First a) = a
@@ -960,11 +1044,11 @@ instance (Floating a) => NormedSpace [a] where
 >   (First Nothing) %+ (First m) = First m
 >   (First m) %+ (First Nothing) = First m
 
->instance (Floating a) => NormedSpace (First a) where
+>instance (Floating a, ConjugateSymmetric a) => NormedSpace (First a) where
 >   normSquared x = x %. x
 
->instance (Num a) => InnerProductSpace (First a) where
->   (First (Just x)) %. (First (Just y)) = x * y
+>instance (Num a, ConjugateSymmetric a) => InnerProductSpace (First a) where
+>   (First (Just x)) %. (First (Just y)) = x * conj y
 >   (First Nothing) %. (First (Just y))  = y
 >   (First (Just x)) %. (First Nothing)  = x
 >   (First Nothing) %. (First Nothing)   = 0
@@ -981,7 +1065,7 @@ instance (Floating a) => NormedSpace [a] where
 >instance (Floating a) => LieAlgebra (Product a) where
 >   f %<>% g = (f <> g) %- (g <> f)
 
->instance (LinearInnerProductSpace v w, Num (Scalar w)) => InnerProductSpace (v,w) where
+>instance (LinearInnerProductSpace v w, Eq v, Eq w, Num (Scalar w), Ord (Scalar w)) => InnerProductSpace (v,w) where
 >   (a,b) %. (c,d) = a %. c + b %. d
 
 >-- | <https://en.wikipedia.org/wiki/Lie_algebra>
@@ -995,19 +1079,29 @@ instance (Floating a) => NormedSpace [a] where
 >   a %* (x,y,z) = (a %* x, a %* y,a %* z)
 >   (x,y,z) %+ (x',y',z') = (x %+ x', y %+ y',z %+ z')
 
+>instance (MetricSpace v, MetricSpace w, MetricSpace u, Distance v ~ Distance w,
+>  Distance w ~ Distance u, Floating (Distance v))
+> => MetricSpace (v,w,u) where
+>   type Distance (v,w,u) = Distance v
+>   distance (x,y,z) (x',y',z') = sqrt((distance x x')^2+(distance y y')^2 + (distance z z')^2)
+
 >instance (LieAlgebra v, LieAlgebra w, LieAlgebra u, Scalar v ~ Scalar w, Scalar w ~ Scalar u)
 >  => LieAlgebra (v,w,u) where
 >   (a,b,c) %<>% (a',b',c') = (a %<>% a', b %<>% b', c %<>% c')
 
->instance (LinearInnerProductSpace v w, LinearInnerProductSpace w u, Num (Scalar w))
+>instance (Ord (Scalar u), Eq v, Eq w, Eq u,
+> LinearInnerProductSpace v w,
+> LinearInnerProductSpace w u,
+> Num (Scalar w))
 >  => InnerProductSpace (v,w,u) where
 >    (a,b,c) %. (d,e,f) = a %. d + b %. e + c %. f
 
 >-- | <https://en.wikipedia.org/wiki/Dot_product>
->instance (Universe a, Num b)
+>instance (Universe a, Num b, ConjugateSymmetric b)
 > => InnerProductSpace (a -> b) where
->   f %. g = sum [f i * (g i) | i <- allElements]
+>   f %. g = sum [f i * conj (g i) | i <- allElements]
 
+>instance (Num b, ConjugateSymmetric b, Universe a) => InnerProductSpaceFunctor ((->) a) b
 
 this function is identically zero for hilbert spaces.
 
@@ -1204,3 +1298,64 @@ example use: m <!> (xcoord3,ycoord3)
 >   vnegate (Endo f) = Endo $ negate . f
 >   a %* (Endo f) = Endo $ \x -> a * f x
 >   (Endo f) %+ (Endo g) = Endo $ \x -> f x + g x
+
+>instance (Num a) => VectorSpace (((->) row :*: (->) col) a) where
+>   type Scalar (((->) row :*: (->) col) a) = a
+>   vzero = Matrix $ const $ const 0
+>   vnegate (Matrix m) = Matrix $ \i j -> negate (m i j)
+>   (Matrix m) %+ (Matrix n) = Matrix $ \i j -> m i j + n i j
+>   a %* (Matrix m) = Matrix $ \i j -> a * m i j
+
+>instance (Num a, Universe row, Universe col) => LinearTransform ((->) row) ((->) col) a where
+>   colv <*>> (Matrix m) = \i -> sum [colv j * m i j | j <- allElements]
+>   (Matrix m) <<*> rowv = \j -> sum [m i j * rowv i | i <- allElements]
+
+>instance (Floating b, Universe a, ConjugateSymmetric b) => NormedSpace (a -> b) where
+>   norm f = sqrt (f %. f)
+>   normSquared f = f %. f
+
+>-- | <https://en.wikipedia.org/wiki/Frobenius_inner_product>
+>instance (Integral col, Integral row, Universe row, Universe col, Floating a, ConjugateSymmetric a)
+> => InnerProductSpace (((->) row :*: (->) col) a) where
+>   (Matrix m) %. (Matrix n) = sum $
+>      [conj (m i j) * (n i j) | i <- allElements, j <- allElements]
+
+>instance (Integral row, Integral col, Floating a, Universe row, Universe col, ConjugateSymmetric a)
+> => NormedSpace (((->) row :*: (->) col) a) where
+>   norm m = sqrt (m %. m)
+>   normSquared m = m %. m
+
+>instance MetricSpace (Ratio Integer) where
+>   type Distance (Ratio Integer) = Ratio Integer
+>   distance x y = abs (x - y)
+>instance MetricSpace Integer where
+>   type Distance Integer = Integer
+>   distance x y = abs (x - y)
+> 
+>instance MetricSpace Int where
+>   type Distance Int = Word
+>   distance x y = fromIntegral $ abs (x - y)
+
+>instance MetricSpace Int8 where
+>   type Distance Int8 = Word8
+>   distance x y = fromIntegral $ abs (x - y)
+
+>instance MetricSpace Int16 where
+>   type Distance Int16 = Word16
+>   distance x y = fromIntegral $ abs (x - y)
+
+>instance MetricSpace Int32 where
+>   type Distance Int32 = Word32
+>   distance x y = fromIntegral $ abs (x - y)
+
+>instance MetricSpace Int64 where
+>   type Distance Int64 = Word64
+>   distance x y = fromIntegral $ abs (x - y)
+
+>instance MetricSpace Double where
+>  type Distance Double = Double
+>  distance x y = abs(x - y)
+>  
+>instance MetricSpace Float where
+>  type Distance Float = Float
+>  distance x y = abs(x - y)

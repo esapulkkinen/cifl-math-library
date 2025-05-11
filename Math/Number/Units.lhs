@@ -113,7 +113,6 @@
 
 >mapAmount2 :: (LiteralUnit a) => (Scalar a -> Scalar a -> Scalar a) -> a -> a -> a
 >mapAmount2 f x y = fromAmount (f (amount x) (amount y))
->
 
 >-- | Conversion from "Quantity a" to a unit-specific type.
 >-- The second argument is the constructor for the newtype specific to the unit.
@@ -225,6 +224,11 @@
 >newtype Dimensionless a = Dimensionless { dimensionlessValue :: a }
 > deriving (Eq,Ord, Typeable, Data, Generic)
 > deriving newtype (Binary, Num, Fractional, Real, RealFrac, Floating, RealFloat)
+>
+>instance (MetricSpace a) => MetricSpace (Dimensionless a) where
+>   type Distance (Dimensionless a) = Dimensionless (Distance a)
+>   distance (Dimensionless x) (Dimensionless y) = Dimensionless (distance x y)
+> 
 >instance (Num a, Show a) => Show (Dimensionless a) where { show = showUnit }
 >instance (Show a, Read a) => Read (Dimensionless a) where
 >   readPrec = readPrec >>= (return . Dimensionless)
@@ -909,6 +913,48 @@
 >  k %* (Degrees a) = Degrees $ k * a
 
 #if __GLASGOW_HASKELL__ >= 806
+
+>deriving via (Dimensionless a) instance (MetricSpace a) => MetricSpace (Resistance a)
+>deriving via (Dimensionless a) instance (MetricSpace a) => MetricSpace (Information a)
+>deriving via (Dimensionless a) instance (MetricSpace a) => MetricSpace (Inductance a)
+>deriving via (Dimensionless a) instance (MetricSpace a) => MetricSpace (EquivalentDose a)
+>deriving via (Dimensionless a) instance (MetricSpace a) => MetricSpace (Conductance a)
+>deriving via (Dimensionless a) instance (MetricSpace a) => MetricSpace (CatalyticActivity a)
+>deriving via (Dimensionless a) instance (MetricSpace a) => MetricSpace (Radioactivity a)
+>deriving via (Dimensionless a) instance (MetricSpace a) => MetricSpace (Illuminance a)
+>deriving via (Dimensionless a) instance (MetricSpace a) => MetricSpace (AbsorbedDose a)
+>deriving via (Dimensionless a) instance (MetricSpace a) => MetricSpace (FluxDensity a)
+>deriving via (Dimensionless a) instance (MetricSpace a) => MetricSpace (Flux a)
+>deriving via (Dimensionless a) instance (MetricSpace a) => MetricSpace (LuminousFlux a)
+>deriving via (Dimensionless a) instance (MetricSpace a) => MetricSpace (Capacitance a)
+>deriving via (Dimensionless a) instance (MetricSpace a) => MetricSpace (Charge a)
+>deriving via (Dimensionless a) instance (MetricSpace a) => MetricSpace (Power a)
+>deriving via (Dimensionless a) instance (MetricSpace a) => MetricSpace (Voltage a)
+>deriving via (Dimensionless a) instance (MetricSpace a) => MetricSpace (Energy a)
+>deriving via (Dimensionless a) instance (MetricSpace a) => MetricSpace (Pressure a)
+>deriving via (Dimensionless a) instance (MetricSpace a) => MetricSpace (Force a)
+>deriving via (Dimensionless a) instance (MetricSpace a) => MetricSpace (Intensity a)
+>deriving via (Dimensionless a) instance (MetricSpace a) => MetricSpace (Substance a)
+>deriving via (Dimensionless a) instance (MetricSpace a) => MetricSpace (Temperature a)
+>deriving via (Dimensionless a) instance (MetricSpace a) => MetricSpace (Frequency a)
+>deriving via (Dimensionless a) instance (MetricSpace a) => MetricSpace (SolidAngle a)
+>deriving via (Dimensionless a) instance (MetricSpace a) => MetricSpace (DegreesTemperature a)
+>deriving via (Dimensionless a) instance (MetricSpace a) => MetricSpace (Current a)
+>deriving via (Dimensionless a) instance (MetricSpace a) => MetricSpace (DegreesFahrenheit a)
+>deriving via (Dimensionless a) instance (MetricSpace a) => MetricSpace (DegreesRankine a)
+>deriving via (Dimensionless a) instance (MetricSpace a) => MetricSpace (Percentage a)
+>deriving via (Dimensionless a) instance (MetricSpace a) => MetricSpace (Time a)
+>deriving via (Dimensionless a) instance (MetricSpace a) => MetricSpace (Length a)
+>deriving via (Dimensionless a) instance (MetricSpace a) => MetricSpace (Mass a)
+>deriving via (Dimensionless a) instance (MetricSpace a) => MetricSpace (SquareLength a)
+>deriving via (Dimensionless a) instance (MetricSpace a) => MetricSpace (CubicLength a)
+>deriving via (Dimensionless a) instance (MetricSpace a) => MetricSpace (Acceleration a)
+>deriving via (Dimensionless a) instance (MetricSpace a) => MetricSpace (Velocity a)
+>deriving via (Dimensionless a) instance (MetricSpace a) => MetricSpace (Torque a)
+
+
+----
+
 
 >deriving via (Dimensionless a) instance (Num a) => VectorSpace (Resistance a)
 >deriving via (Dimensionless a) instance (Num a) => VectorSpace (Information a)

@@ -425,7 +425,7 @@ deriving instance (Show a) => Show ((NumExpr v :*: Var) a)
 >   pp (FromInteger a) = pp a
 >   pp (InnerProduct a b) = pp '<' <> pp a <> pp '|' <> pp b <> pp '>'
 
->instance InnerProductSpace (VectorSpaceExpr v a) where
+>instance (Eq a, Show a) => InnerProductSpace (VectorSpaceExpr v a) where
 >     x %. y = InnerProduct x y
 
 >instance (Eq a, Show a) => ConjugateSymmetric (NumExpr v a) where

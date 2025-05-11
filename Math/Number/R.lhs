@@ -393,6 +393,11 @@ closure_less_eq x y =
 >   (Limit f) %+ (Limit g) = real $ \eps -> f `appEndo` eps + g `appEndo` eps
 >   x %* (Limit f) = real $ \df -> x %* f `appEndo` df
 
+>instance MetricSpace R where
+>   type Distance R = R
+>   distance x y = abs (x - y)
+
+
 >-- | This lifts a rational function to a real function.
 >-- This computes accuracy using the formula \(dx = df / f'(x)\).
 >-- The accuracy behaves badly when \(f'(x) = 0\) due to divide-by-zero.
@@ -412,7 +417,7 @@ closure_less_eq x y =
 >-- | computes derivate. \[{{df}\over{dt}} = \lim_{\epsilon\rightarrow 0}{{f(t+\epsilon)-f(t)}\over{\epsilon}}\]
 >{-# INLINEABLE derivateR #-}
 >derivateR :: (R -> R) -> R -> R
->derivateR f = \ xx@(Limit x) -> let !fx = f xx in real $ \ !eps ->
+>derivateR f xx@(Limit x) = let !fx = f xx in real $ \ !eps ->
 >    ((f (real $ \eps' -> x `appEndo` eps' + eps) - fx)
 >     `approximate` eps)/eps
 >        -- computing fx separately is an optimization that should allow

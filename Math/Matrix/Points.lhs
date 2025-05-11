@@ -209,6 +209,21 @@ to map indices.
 >instance Universe SevenD where
 >   allElements=[SevenD0, SevenD1, SevenD2, SevenD3, SevenD4, SevenD5, SevenD6]
 
+>instance (Eq a) => Eq (SevenD -> a) where
+>  x == y = map x allElements == map y allElements
+>instance (Eq a) => Eq (SixD -> a) where
+>  x == y = map x allElements == map y allElements
+>instance (Eq a) => Eq (FiveD -> a) where
+>  x == y = map x allElements == map y allElements
+>instance (Eq a) => Eq (FourD -> a) where
+>  x == y = map x allElements == map y allElements
+>instance (Eq a) => Eq (ThreeD -> a) where
+>  x == y = map x allElements == map y allElements
+>instance (Eq a) => Eq (TwoD -> a) where
+>  x == y = map x allElements == map y allElements
+>instance (Eq a) => Eq (OneD -> a) where
+>  x == y = map x allElements == map y allElements
+
 >instance Real OneD where
 >   toRational = toRational . toInt1
 >instance Real TwoD where

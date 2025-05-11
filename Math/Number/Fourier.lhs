@@ -12,7 +12,7 @@
 >dft (nums :: [Complex a]) = [func (fromIntegral k) | k <- [0.. pred len]]
 >  where len = length nums
 >        len' = fromIntegral len
->        coeff = 0 :+ (-2*pi)
+>        coeff = 0 :+ (-(2*pi))
 >        facts = factors len'
 >        func k = Prelude.sum $ do
 >           ~(xn,factor) <- zip nums facts
@@ -21,14 +21,14 @@
 >factors :: (Fractional a) => Integer -> [a]
 >factors len = [fromRational (fromIntegral k % fromIntegral len) | k <- [0..pred len]]
 
->inverse_dft :: (RealFloat a) => [Complex a] -> [Complex a]
->inverse_dft lst = factor %* (map swap $ dft $ map swap lst)
+>inverseDft :: (RealFloat a) => [Complex a] -> [Complex a]
+>inverseDft lst = factor %* map swap (dft $ map swap lst)
 >   where swap (a:+b) = b:+a
 >         factor = 1 / fromIntegral (length lst)
 
->root_of_unity :: (RealFloat a) => Int -> Complex a
->root_of_unity n = exp (0 :+ (-2*pi/fromIntegral n))
+>rootOfUnity :: (RealFloat a) => Int -> Complex a
+>rootOfUnity n = exp (0 :+ (-(2*pi/fromIntegral n)))
 
->dft_matrix :: (RealFloat a) => Int -> ([] :*: []) (Complex a)
->dft_matrix n = matrix (\i j -> rou ^ (i %. j)) [0..n-1] [0..n-1]
->  where rou = root_of_unity n
+>dftMatrix :: (RealFloat a) => Int -> ([] :*: []) (Complex a)
+>dftMatrix n = matrix (\i j -> rou ^ (i %. j)) [0..n-1] [0..n-1]
+>  where rou = rootOfUnity n

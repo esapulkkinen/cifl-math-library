@@ -149,11 +149,11 @@
 >                     edges <- runInGraphM edgesM
 >                     let edgedata = Set.map (\e -> ((e,action g e gnot), (action g e gdom, action g e gcod))) edges
 >                     return $ fst $ includeExcludeEdges edgedata
->    where includeExcludeEdges s = Set.fold (\ ((e,re),(x,y)) (include,exclude) 
+>    where includeExcludeEdges = Set.fold (\ ((e,re),(x,y)) (include,exclude) 
 >                                          -> if not $ e `Set.member` exclude then
 >                                               (Set.insert ((e,re),(x,y)) include,
 >                                                Set.insert re exclude)
->                                              else (include,Set.insert re exclude)) (Set.empty,Set.empty) s
+>                                              else (include,Set.insert re exclude)) (Set.empty,Set.empty)
 
 >sourceM :: (GraphMonoid mon Bool, Monad m) => e -> InGraphM mon e m e
 >sourceM e = e `actM` gdom
@@ -223,19 +223,6 @@
 >        => e -> InGraphM mon e m Bool
 >isBandM edge = inverseM edge >>= \ie -> return (ie /= edge)
 
->instance (Ord a, GraphMonoid m Bool) => Visitor (Graph m a) where
->   data Fold (Graph m a) b = GraphFold {
->     graphfold_initial :: b,
->     graphfold_vertex  :: a -> b -> b,
->     graphfold_edge    :: a -> a -> a -> b -> b
->   }
->   visit z g = unI $ g `inGraphM` do
->                   let esf = SetFold (\ (a,b,c) r -> graphfold_edge z a b c r) (graphfold_initial z)
->                   edges <- linksM
->                   let eres = visit esf edges
->                   let vsf = SetFold (\ v r -> graphfold_vertex z v r) eres
->                   vertices  <- verticesM
->                   return $ visit vsf vertices
 
 liftStateGraph :: (Monad m) => InGraphM mon e m a -> StateT (Graph mon e) m a
 liftStateGraph m = ask >>= \g -> lift (inGraphM g m)
@@ -244,17 +231,4 @@ liftStateGraph m = ask >>= \g -> lift (inGraphM g m)
 >                => InGraphM mon e m a -> t m a
 >liftReaderGraph m = ask >>= \g -> lift (inGraphM g m)
 
->instance (Monad m, Ord e, GraphMonoid mon Bool) => GraphMonad (ReaderT (Graph mon e) m) e where
->   gisVertex e = liftReaderGraph (gisVertex e)
->   gsource e = liftReaderGraph (gsource e)
->   gtarget e = liftReaderGraph (gtarget e)
->   gelements = liftReaderGraph gelements
->   gvertices = liftReaderGraph gvertices
->   gedges = liftReaderGraph gedges
->   gedgesStartingFrom = liftReaderGraph . gedgesStartingFrom
->   gedgesEndingTo = liftReaderGraph . gedgesEndingTo
->   glinks = liftReaderGraph glinks
 
->instance (Monad m, Ord e, ReversibleGraphMonoid mon Bool) => ReversibleGraphMonad (ReaderT (Graph mon e) m) e where
->   ginverse = liftReaderGraph . ginverse
->   greversibleLinks = liftReaderGraph greversibleLinks

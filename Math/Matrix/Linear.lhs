@@ -50,15 +50,17 @@
 >   Mat42 :: (Num a, ConjugateSymmetric a) => (Vector4 :*: Vector2) a -> LinearMap (Vector4 a) (Vector2 a)
 >   Mat43 :: (Num a, ConjugateSymmetric a) => (Vector4 :*: Vector3) a -> LinearMap (Vector4 a) (Vector3 a)
 >   Mat44 :: (Num a, ConjugateSymmetric a) => (Vector4 :*: Vector4) a -> LinearMap (Vector4 a) (Vector4 a)
->   MatInd :: (Num a,ConjugateSymmetric a,Universe row, Universe col) => ((->) row :*: (->) col) a -> LinearMap (row -> a) (col -> a)
->   MatInd1 :: (Num a,ConjugateSymmetric a,Universe row) => ((->) row :*: Vector1) a -> LinearMap (row -> a) (Vector1 a)
->   MatInd2 :: (Num a,ConjugateSymmetric a,Universe row) => ((->) row :*: Vector2) a -> LinearMap (row -> a) (Vector2 a)
->   MatInd3 :: (Num a,ConjugateSymmetric a,Universe row) => ((->) row :*: Vector3) a -> LinearMap (row -> a) (Vector3 a)
->   MatInd4 :: (Num a,ConjugateSymmetric a, Universe row) => ((->) row :*: Vector4) a -> LinearMap (row -> a) (Vector4 a)
->   Mat1Ind :: (Num a,ConjugateSymmetric a,Universe col) => (Vector1 :*: (->) col) a -> LinearMap (Vector1 a) (col -> a)
->   Mat2Ind :: (Num a,ConjugateSymmetric a,Universe col) => (Vector2 :*: (->) col) a -> LinearMap (Vector2 a) (col -> a)
->   Mat3Ind :: (Num a,ConjugateSymmetric a,Universe col) => (Vector3 :*: (->) col) a -> LinearMap (Vector3 a) (col -> a)
->   Mat4Ind :: (Num a,ConjugateSymmetric a,Universe col) => (Vector4 :*: (->) col) a -> LinearMap (Vector4 a) (col -> a)
+>   MatInd :: (InnerProductSpaceFunctor ((->) col) a,InnerProductSpaceFunctor ((->) row) a,
+>            ConjugateSymmetric a,
+>            Universe row, Universe col) => ((->) row :*: (->) col) a -> LinearMap (row -> a) (col -> a)
+>   MatInd1 :: (InnerProductSpaceFunctor ((->) row) a,ConjugateSymmetric a,Universe row) => ((->) row :*: Vector1) a -> LinearMap (row -> a) (Vector1 a)
+>   MatInd2 :: (InnerProductSpaceFunctor ((->) row) a,ConjugateSymmetric a,Universe row) => ((->) row :*: Vector2) a -> LinearMap (row -> a) (Vector2 a)
+>   MatInd3 :: (InnerProductSpaceFunctor ((->) row) a,ConjugateSymmetric a,Universe row) => ((->) row :*: Vector3) a -> LinearMap (row -> a) (Vector3 a)
+>   MatInd4 :: (InnerProductSpaceFunctor ((->) row) a,ConjugateSymmetric a, Universe row) => ((->) row :*: Vector4) a -> LinearMap (row -> a) (Vector4 a)
+>   Mat1Ind :: (InnerProductSpaceFunctor ((->) col) a,ConjugateSymmetric a,Universe col) => (Vector1 :*: (->) col) a -> LinearMap (Vector1 a) (col -> a)
+>   Mat2Ind :: (InnerProductSpaceFunctor ((->) col) a,ConjugateSymmetric a,Universe col) => (Vector2 :*: (->) col) a -> LinearMap (Vector2 a) (col -> a)
+>   Mat3Ind :: (InnerProductSpaceFunctor ((->) col) a,ConjugateSymmetric a,Universe col) => (Vector3 :*: (->) col) a -> LinearMap (Vector3 a) (col -> a)
+>   Mat4Ind :: (InnerProductSpaceFunctor ((->) col) a,ConjugateSymmetric a,Universe col) => (Vector4 :*: (->) col) a -> LinearMap (Vector4 a) (col -> a)
 >   Mat1D :: (Num a, ConjugateSymmetric a) => (Vector1 :*: Dual) (f a) -> LinearMap (Vector1 (f a)) (Dual (f a))
 >   Mat2D :: (Num a, ConjugateSymmetric a) => (Vector2 :*: Dual) (f a) -> LinearMap (Vector2 (f a)) (Dual (f a))
 >   Mat3D :: (Num a, ConjugateSymmetric a) => (Vector3 :*: Dual) (f a) -> LinearMap (Vector3 (f a)) (Dual (f a))
@@ -68,15 +70,15 @@
 >   MatD3 :: (Scalar a ~ a, Num a, ConjugateSymmetric a) => (Dual :*: Vector3) a -> LinearMap (Dual a) (Vector3 a)
 >   MatD4 :: (Scalar a ~ a, Num a, ConjugateSymmetric a) => (Dual :*: Vector4) a -> LinearMap (Dual a) (Vector4 a)
 >   MatDD :: (Scalar (f a) ~ f a,Num a, ConjugateSymmetric a) => (Dual :*: Dual) (f a) -> LinearMap (Dual (f a)) (Dual (f a))
->   MatSS :: (Num a, ConjugateSymmetric a, InnerProductSpace (Stream a)) =>(Stream :*: Stream) a -> LinearMap (Stream a) (Stream a) -- Schauder basis
->   MatS1 :: (Num a, ConjugateSymmetric a, InnerProductSpace (Stream a)) =>(Stream :*: Vector1) a -> LinearMap (Stream a) (Vector1 a)
->   MatS2 :: (Num a, ConjugateSymmetric a, InnerProductSpace (Stream a)) =>(Stream :*: Vector2) a -> LinearMap (Stream a) (Vector2 a)
->   MatS3 :: (Num a, ConjugateSymmetric a, InnerProductSpace (Stream a)) =>(Stream :*: Vector3) a -> LinearMap (Stream a) (Vector3 a)
->   MatS4 :: (Num a, ConjugateSymmetric a, InnerProductSpace (Stream a)) =>(Stream :*: Vector4) a -> LinearMap (Stream a) (Vector4 a)
->   Mat1S :: (Num a, ConjugateSymmetric a, InnerProductSpace (Stream a)) =>(Vector1 :*: Stream) a -> LinearMap (Vector1 a) (Stream a)
->   Mat2S :: (Num a, ConjugateSymmetric a, InnerProductSpace (Stream a)) =>(Vector2 :*: Stream) a -> LinearMap (Vector2 a) (Stream a)
->   Mat3S :: (Num a, ConjugateSymmetric a, InnerProductSpace (Stream a)) =>(Vector3 :*: Stream) a -> LinearMap (Vector3 a) (Stream a)
->   Mat4S :: (Num a, ConjugateSymmetric a, InnerProductSpace (Stream a)) =>(Vector4 :*: Stream) a -> LinearMap (Vector4 a) (Stream a)
+>   MatSS :: (Num a, ConjugateSymmetric a, InnerProductSpaceFunctor Stream a) =>(Stream :*: Stream) a -> LinearMap (Stream a) (Stream a) -- Schauder basis
+>   MatS1 :: (Num a, ConjugateSymmetric a, InnerProductSpaceFunctor Stream a) =>(Stream :*: Vector1) a -> LinearMap (Stream a) (Vector1 a)
+>   MatS2 :: (Num a, ConjugateSymmetric a, InnerProductSpaceFunctor Stream a) =>(Stream :*: Vector2) a -> LinearMap (Stream a) (Vector2 a)
+>   MatS3 :: (Num a, ConjugateSymmetric a, InnerProductSpaceFunctor Stream a) =>(Stream :*: Vector3) a -> LinearMap (Stream a) (Vector3 a)
+>   MatS4 :: (Num a, ConjugateSymmetric a, InnerProductSpaceFunctor Stream a) =>(Stream :*: Vector4) a -> LinearMap (Stream a) (Vector4 a)
+>   Mat1S :: (Num a, ConjugateSymmetric a, InnerProductSpaceFunctor Stream a) =>(Vector1 :*: Stream) a -> LinearMap (Vector1 a) (Stream a)
+>   Mat2S :: (Num a, ConjugateSymmetric a, InnerProductSpaceFunctor Stream a) =>(Vector2 :*: Stream) a -> LinearMap (Vector2 a) (Stream a)
+>   Mat3S :: (Num a, ConjugateSymmetric a, InnerProductSpaceFunctor Stream a) =>(Vector3 :*: Stream) a -> LinearMap (Vector3 a) (Stream a)
+>   Mat4S :: (Num a, ConjugateSymmetric a, InnerProductSpaceFunctor Stream a) =>(Vector4 :*: Stream) a -> LinearMap (Vector4 a) (Stream a)
 
 >-- | Specialization of 'linear' from Linearizable class to LinearMap.
 >-- converts from matrix representation to linear map representation.
@@ -161,15 +163,20 @@ tensor (a,b) = Tensor $ matrix (,) a b
 >instance (Num a, ConjugateSymmetric a) => Linearizable LinearMap (:*:) Vector4 Vector2 a where { fromLinear (Mat42 x) = x ; linear = Mat42 }
 >instance (Num a, ConjugateSymmetric a) => Linearizable LinearMap (:*:) Vector4 Vector3 a where { fromLinear (Mat43 x) = x ; linear = Mat43 }
 >instance (Num a, ConjugateSymmetric a) => Linearizable LinearMap (:*:) Vector4 Vector4 a where { fromLinear (Mat44 x) = x ; fromLinear MatIdentity = identity ; linear = Mat44 }
->instance (Diagonalizable ((->) row) a, Num a,ConjugateSymmetric a,Universe row, Universe col) => Linearizable LinearMap (:*:) ((->) row) ((->) col) a where { fromLinear (MatInd x) = x; fromLinear MatIdentity = identity ; linear = MatInd }
->instance (Num a,ConjugateSymmetric a,Universe col) => Linearizable LinearMap (:*:) Vector1 ((->) col) a where { fromLinear (Mat1Ind x) = x ; linear = Mat1Ind }
->instance (Num a,ConjugateSymmetric a,Universe col) => Linearizable LinearMap (:*:) Vector2 ((->) col) a where { fromLinear (Mat2Ind x) = x ; linear = Mat2Ind }
->instance (Num a,ConjugateSymmetric a,Universe col) => Linearizable LinearMap (:*:) Vector3 ((->) col) a where { fromLinear (Mat3Ind x) = x ; linear = Mat3Ind }
->instance (Num a,ConjugateSymmetric a,Universe col) =>Linearizable LinearMap (:*:) Vector4 ((->) col) a where { fromLinear (Mat4Ind x) = x ; linear = Mat4Ind }
->instance (Num a, ConjugateSymmetric a, Universe row) => Linearizable LinearMap (:*:) ((->) row) Vector1 a where { fromLinear (MatInd1 x) = x ; linear = MatInd1 }
->instance (Num a, ConjugateSymmetric a, Universe row) => Linearizable LinearMap (:*:) ((->) row) Vector2 a where { fromLinear (MatInd2 x) = x ; linear = MatInd2 }
->instance (Num a, ConjugateSymmetric a, Universe row) => Linearizable LinearMap (:*:) ((->) row) Vector3 a where { fromLinear (MatInd3 x) = x ; linear = MatInd3 }
->instance (Num a, ConjugateSymmetric a, Universe row) => Linearizable LinearMap (:*:) ((->) row) Vector4 a where { fromLinear (MatInd4 x) = x ; linear = MatInd4 }
+>instance (InnerProductSpaceFunctor ((->) row) a, InnerProductSpaceFunctor ((->) col) a,
+>         ConjugateSymmetric a,Diagonalizable ((->) row) a, Universe row, Universe col)
+>  => Linearizable LinearMap (:*:) ((->) row) ((->) col) a where
+>   fromLinear (MatInd x) = x
+>   fromLinear MatIdentity = identity
+>   linear = MatInd
+>instance (InnerProductSpaceFunctor ((->) col) a,ConjugateSymmetric a,Universe col) => Linearizable LinearMap (:*:) Vector1 ((->) col) a where { fromLinear (Mat1Ind x) = x ; linear = Mat1Ind }
+>instance (InnerProductSpaceFunctor ((->) col) a,ConjugateSymmetric a,Universe col) => Linearizable LinearMap (:*:) Vector2 ((->) col) a where { fromLinear (Mat2Ind x) = x ; linear = Mat2Ind }
+>instance (InnerProductSpaceFunctor ((->) col) a,ConjugateSymmetric a,Universe col) => Linearizable LinearMap (:*:) Vector3 ((->) col) a where { fromLinear (Mat3Ind x) = x ; linear = Mat3Ind }
+>instance (InnerProductSpaceFunctor ((->) col) a,ConjugateSymmetric a,Universe col) =>Linearizable LinearMap (:*:) Vector4 ((->) col) a where { fromLinear (Mat4Ind x) = x ; linear = Mat4Ind }
+>instance (InnerProductSpaceFunctor ((->) row) a,ConjugateSymmetric a,Universe row) => Linearizable LinearMap (:*:) ((->) row) Vector1 a where { fromLinear (MatInd1 x) = x ; linear = MatInd1 }
+>instance (InnerProductSpaceFunctor ((->) row) a, ConjugateSymmetric a,Universe row) => Linearizable LinearMap (:*:) ((->) row) Vector2 a where { fromLinear (MatInd2 x) = x ; linear = MatInd2 }
+>instance (InnerProductSpaceFunctor ((->) row) a, ConjugateSymmetric a,Universe row) => Linearizable LinearMap (:*:) ((->) row) Vector3 a where { fromLinear (MatInd3 x) = x ; linear = MatInd3 }
+>instance (InnerProductSpaceFunctor ((->) row) a, ConjugateSymmetric a,Universe row) => Linearizable LinearMap (:*:) ((->) row) Vector4 a where { fromLinear (MatInd4 x) = x ; linear = MatInd4 }
 >instance (Scalar a ~ a, Num a, ConjugateSymmetric a) => Linearizable LinearMap (:*:) Dual Vector1 a where { fromLinear (MatD1 x) = x ; linear = MatD1 }
 >instance (Scalar a ~ a, Num a, ConjugateSymmetric a) => Linearizable LinearMap (:*:) Dual Vector2 a where { fromLinear (MatD2 x) = x ; linear = MatD2 }
 >instance (Scalar a ~ a, Num a, ConjugateSymmetric a) => Linearizable LinearMap (:*:) Dual Vector3 a where { fromLinear (MatD3 x) = x ; linear = MatD3 }
@@ -179,15 +186,15 @@ tensor (a,b) = Tensor $ matrix (,) a b
 >instance (Num a, ConjugateSymmetric a) => Linearizable LinearMap (:*:) Vector3 Dual (f a) where { fromLinear (Mat3D x) = x ; linear = Mat3D }
 >instance (Num a, ConjugateSymmetric a) => Linearizable LinearMap (:*:) Vector4 Dual (f a) where { fromLinear (Mat4D x) = x ; linear = Mat4D }
 >instance (Scalar (f a) ~ f a, Num a, ConjugateSymmetric a, Diagonalizable Dual (f a)) => Linearizable LinearMap (:*:) Dual Dual (f a) where { fromLinear (MatDD x) = x ; fromLinear MatIdentity = identity ; linear = MatDD }
->instance (Num a, ConjugateSymmetric a, Diagonalizable Stream a, InnerProductSpace (Stream a)) => Linearizable LinearMap (:*:) Stream Stream a where { fromLinear (MatSS x) = x ; fromLinear MatIdentity = identity ; linear = MatSS }
->instance (Num a, ConjugateSymmetric a,InnerProductSpace (Stream a)) => Linearizable LinearMap (:*:) Stream Vector1 a where { fromLinear (MatS1 x) = x ; linear = MatS1 }
->instance (Num a, ConjugateSymmetric a,InnerProductSpace (Stream a)) => Linearizable LinearMap (:*:) Stream Vector2 a where { fromLinear (MatS2 x) = x ; linear = MatS2 }
->instance (Num a, ConjugateSymmetric a,InnerProductSpace (Stream a)) => Linearizable LinearMap (:*:) Stream Vector3 a where { fromLinear (MatS3 x) = x ; linear = MatS3 }
->instance (Num a, ConjugateSymmetric a,InnerProductSpace (Stream a)) => Linearizable LinearMap (:*:) Stream Vector4 a where { fromLinear (MatS4 x) = x ; linear = MatS4 }
->instance (Num a, ConjugateSymmetric a,InnerProductSpace (Stream a)) => Linearizable LinearMap (:*:) Vector1 Stream a where { fromLinear (Mat1S x) = x ; linear = Mat1S }
->instance (Num a, ConjugateSymmetric a,InnerProductSpace (Stream a)) => Linearizable LinearMap (:*:) Vector2 Stream a where { fromLinear (Mat2S x) = x ; linear = Mat2S }
->instance (Num a, ConjugateSymmetric a,InnerProductSpace (Stream a)) => Linearizable LinearMap (:*:) Vector3 Stream a where { fromLinear (Mat3S x) = x ; linear = Mat3S }
->instance (Num a, ConjugateSymmetric a,InnerProductSpace (Stream a)) => Linearizable LinearMap (:*:) Vector4 Stream a where { fromLinear (Mat4S x) = x ; linear = Mat4S }
+>instance (Num a, ConjugateSymmetric a, Diagonalizable Stream a, InnerProductSpaceFunctor Stream a) => Linearizable LinearMap (:*:) Stream Stream a where { fromLinear (MatSS x) = x ; fromLinear MatIdentity = identity ; linear = MatSS }
+>instance (Num a, ConjugateSymmetric a,InnerProductSpaceFunctor Stream a) => Linearizable LinearMap (:*:) Stream Vector1 a where { fromLinear (MatS1 x) = x ; linear = MatS1 }
+>instance (Num a, ConjugateSymmetric a,InnerProductSpaceFunctor Stream a) => Linearizable LinearMap (:*:) Stream Vector2 a where { fromLinear (MatS2 x) = x ; linear = MatS2 }
+>instance (Num a, ConjugateSymmetric a,InnerProductSpaceFunctor Stream a) => Linearizable LinearMap (:*:) Stream Vector3 a where { fromLinear (MatS3 x) = x ; linear = MatS3 }
+>instance (Num a, ConjugateSymmetric a,InnerProductSpaceFunctor Stream a) => Linearizable LinearMap (:*:) Stream Vector4 a where { fromLinear (MatS4 x) = x ; linear = MatS4 }
+>instance (Num a, ConjugateSymmetric a,InnerProductSpaceFunctor Stream a) => Linearizable LinearMap (:*:) Vector1 Stream a where { fromLinear (Mat1S x) = x ; linear = Mat1S }
+>instance (Num a, ConjugateSymmetric a,InnerProductSpaceFunctor Stream a) => Linearizable LinearMap (:*:) Vector2 Stream a where { fromLinear (Mat2S x) = x ; linear = Mat2S }
+>instance (Num a, ConjugateSymmetric a,InnerProductSpaceFunctor Stream a) => Linearizable LinearMap (:*:) Vector3 Stream a where { fromLinear (Mat3S x) = x ; linear = Mat3S }
+>instance (Num a, ConjugateSymmetric a,InnerProductSpaceFunctor Stream a) => Linearizable LinearMap (:*:) Vector4 Stream a where { fromLinear (Mat4S x) = x ; linear = Mat4S }
 
 >-- | Data type for dual vectors. <https://en.wikipedia.org/wiki/Dual_space>
 >data Dual v where
@@ -261,147 +268,147 @@ tensor (a,b) = Tensor $ matrix (,) a b
 >  id = id :<->: id
 >  (f :<->: finv) . (g :<->: ginv) = (f . g) :<->: (ginv . finv)
 
->compose_linear :: v :-> w -> u :-> v -> u :-> w
->compose_linear MatIdentity f = f
->compose_linear f MatIdentity = f
->compose_linear (Mat11 a) (Mat11 b) = Mat11 (b %*% a)
->compose_linear (Mat12 a) (Mat11 b) = Mat12 (b %*% a)
->compose_linear (Mat13 a) (Mat11 b) = Mat13 (b %*% a)
->compose_linear (Mat14 a) (Mat11 b) = Mat14 (b %*% a)
->compose_linear (Mat11 a) (Mat21 b) = Mat21 (b %*% a)
->compose_linear (Mat12 a) (Mat21 b) = Mat22 (b %*% a)
->compose_linear (Mat13 a) (Mat21 b) = Mat23 (b %*% a)
->compose_linear (Mat14 a) (Mat21 b) = Mat24 (b %*% a)
->compose_linear (Mat11 a) (Mat31 b) = Mat31 (b %*% a)
->compose_linear (Mat12 a) (Mat31 b) = Mat32 (b %*% a)
->compose_linear (Mat13 a) (Mat31 b) = Mat33 (b %*% a)
->compose_linear (Mat14 a) (Mat31 b) = Mat34 (b %*% a)
->compose_linear (Mat11 a) (Mat41 b) = Mat41 (b %*% a)
->compose_linear (Mat12 a) (Mat41 b) = Mat42 (b %*% a)
->compose_linear (Mat13 a) (Mat41 b) = Mat43 (b %*% a)
->compose_linear (Mat14 a) (Mat41 b) = Mat44 (b %*% a)
+>composeLinear :: v :-> w -> u :-> v -> u :-> w
+>composeLinear MatIdentity f = f
+>composeLinear f MatIdentity = f
+>composeLinear (Mat11 a) (Mat11 b) = Mat11 (b %*% a)
+>composeLinear (Mat12 a) (Mat11 b) = Mat12 (b %*% a)
+>composeLinear (Mat13 a) (Mat11 b) = Mat13 (b %*% a)
+>composeLinear (Mat14 a) (Mat11 b) = Mat14 (b %*% a)
+>composeLinear (Mat11 a) (Mat21 b) = Mat21 (b %*% a)
+>composeLinear (Mat12 a) (Mat21 b) = Mat22 (b %*% a)
+>composeLinear (Mat13 a) (Mat21 b) = Mat23 (b %*% a)
+>composeLinear (Mat14 a) (Mat21 b) = Mat24 (b %*% a)
+>composeLinear (Mat11 a) (Mat31 b) = Mat31 (b %*% a)
+>composeLinear (Mat12 a) (Mat31 b) = Mat32 (b %*% a)
+>composeLinear (Mat13 a) (Mat31 b) = Mat33 (b %*% a)
+>composeLinear (Mat14 a) (Mat31 b) = Mat34 (b %*% a)
+>composeLinear (Mat11 a) (Mat41 b) = Mat41 (b %*% a)
+>composeLinear (Mat12 a) (Mat41 b) = Mat42 (b %*% a)
+>composeLinear (Mat13 a) (Mat41 b) = Mat43 (b %*% a)
+>composeLinear (Mat14 a) (Mat41 b) = Mat44 (b %*% a)
 
->compose_linear (Mat21 a) (Mat12 b) = Mat11 (b %*% a)
->compose_linear (Mat22 a) (Mat12 b) = Mat12 (b %*% a)
->compose_linear (Mat23 a) (Mat12 b) = Mat13 (b %*% a)
->compose_linear (Mat24 a) (Mat12 b) = Mat14 (b %*% a)
->compose_linear (Mat21 a) (Mat22 b) = Mat21 (b %*% a)
->compose_linear (Mat22 a) (Mat22 b) = Mat22 (b %*% a)
->compose_linear (Mat23 a) (Mat22 b) = Mat23 (b %*% a)
->compose_linear (Mat24 a) (Mat22 b) = Mat24 (b %*% a)
->compose_linear (Mat21 a) (Mat32 b) = Mat31 (b %*% a)
->compose_linear (Mat22 a) (Mat32 b) = Mat32 (b %*% a)
->compose_linear (Mat23 a) (Mat32 b) = Mat33 (b %*% a)
->compose_linear (Mat24 a) (Mat32 b) = Mat34 (b %*% a)
->compose_linear (Mat21 a) (Mat42 b) = Mat41 (b %*% a)
->compose_linear (Mat22 a) (Mat42 b) = Mat42 (b %*% a)
->compose_linear (Mat23 a) (Mat42 b) = Mat43 (b %*% a)
->compose_linear (Mat24 a) (Mat42 b) = Mat44 (b %*% a)
+>composeLinear (Mat21 a) (Mat12 b) = Mat11 (b %*% a)
+>composeLinear (Mat22 a) (Mat12 b) = Mat12 (b %*% a)
+>composeLinear (Mat23 a) (Mat12 b) = Mat13 (b %*% a)
+>composeLinear (Mat24 a) (Mat12 b) = Mat14 (b %*% a)
+>composeLinear (Mat21 a) (Mat22 b) = Mat21 (b %*% a)
+>composeLinear (Mat22 a) (Mat22 b) = Mat22 (b %*% a)
+>composeLinear (Mat23 a) (Mat22 b) = Mat23 (b %*% a)
+>composeLinear (Mat24 a) (Mat22 b) = Mat24 (b %*% a)
+>composeLinear (Mat21 a) (Mat32 b) = Mat31 (b %*% a)
+>composeLinear (Mat22 a) (Mat32 b) = Mat32 (b %*% a)
+>composeLinear (Mat23 a) (Mat32 b) = Mat33 (b %*% a)
+>composeLinear (Mat24 a) (Mat32 b) = Mat34 (b %*% a)
+>composeLinear (Mat21 a) (Mat42 b) = Mat41 (b %*% a)
+>composeLinear (Mat22 a) (Mat42 b) = Mat42 (b %*% a)
+>composeLinear (Mat23 a) (Mat42 b) = Mat43 (b %*% a)
+>composeLinear (Mat24 a) (Mat42 b) = Mat44 (b %*% a)
 
->compose_linear (Mat31 a) (Mat13 b) = Mat11 (b %*% a)
->compose_linear (Mat32 a) (Mat13 b) = Mat12 (b %*% a)
->compose_linear (Mat33 a) (Mat13 b) = Mat13 (b %*% a)
->compose_linear (Mat34 a) (Mat13 b) = Mat14 (b %*% a)
->compose_linear (Mat31 a) (Mat23 b) = Mat21 (b %*% a)
->compose_linear (Mat32 a) (Mat23 b) = Mat22 (b %*% a)
->compose_linear (Mat33 a) (Mat23 b) = Mat23 (b %*% a)
->compose_linear (Mat34 a) (Mat23 b) = Mat24 (b %*% a)
->compose_linear (Mat31 a) (Mat33 b) = Mat31 (b %*% a)
->compose_linear (Mat32 a) (Mat33 b) = Mat32 (b %*% a)
->compose_linear (Mat33 a) (Mat33 b) = Mat33 (b %*% a)
->compose_linear (Mat34 a) (Mat33 b) = Mat34 (b %*% a)
->compose_linear (Mat31 a) (Mat43 b) = Mat41 (b %*% a)
->compose_linear (Mat32 a) (Mat43 b) = Mat42 (b %*% a)
->compose_linear (Mat33 a) (Mat43 b) = Mat43 (b %*% a)
->compose_linear (Mat34 a) (Mat43 b) = Mat44 (b %*% a)
+>composeLinear (Mat31 a) (Mat13 b) = Mat11 (b %*% a)
+>composeLinear (Mat32 a) (Mat13 b) = Mat12 (b %*% a)
+>composeLinear (Mat33 a) (Mat13 b) = Mat13 (b %*% a)
+>composeLinear (Mat34 a) (Mat13 b) = Mat14 (b %*% a)
+>composeLinear (Mat31 a) (Mat23 b) = Mat21 (b %*% a)
+>composeLinear (Mat32 a) (Mat23 b) = Mat22 (b %*% a)
+>composeLinear (Mat33 a) (Mat23 b) = Mat23 (b %*% a)
+>composeLinear (Mat34 a) (Mat23 b) = Mat24 (b %*% a)
+>composeLinear (Mat31 a) (Mat33 b) = Mat31 (b %*% a)
+>composeLinear (Mat32 a) (Mat33 b) = Mat32 (b %*% a)
+>composeLinear (Mat33 a) (Mat33 b) = Mat33 (b %*% a)
+>composeLinear (Mat34 a) (Mat33 b) = Mat34 (b %*% a)
+>composeLinear (Mat31 a) (Mat43 b) = Mat41 (b %*% a)
+>composeLinear (Mat32 a) (Mat43 b) = Mat42 (b %*% a)
+>composeLinear (Mat33 a) (Mat43 b) = Mat43 (b %*% a)
+>composeLinear (Mat34 a) (Mat43 b) = Mat44 (b %*% a)
 
->compose_linear (Mat41 a) (Mat14 b) = Mat11 (b %*% a)
->compose_linear (Mat42 a) (Mat14 b) = Mat12 (b %*% a)
->compose_linear (Mat43 a) (Mat14 b) = Mat13 (b %*% a)
->compose_linear (Mat44 a) (Mat14 b) = Mat14 (b %*% a)
->compose_linear (Mat41 a) (Mat24 b) = Mat21 (b %*% a)
->compose_linear (Mat42 a) (Mat24 b) = Mat22 (b %*% a)
->compose_linear (Mat43 a) (Mat24 b) = Mat23 (b %*% a)
->compose_linear (Mat44 a) (Mat24 b) = Mat24 (b %*% a)
->compose_linear (Mat41 a) (Mat34 b) = Mat31 (b %*% a)
->compose_linear (Mat42 a) (Mat34 b) = Mat32 (b %*% a)
->compose_linear (Mat43 a) (Mat34 b) = Mat33 (b %*% a)
->compose_linear (Mat44 a) (Mat34 b) = Mat34 (b %*% a)
->compose_linear (Mat41 a) (Mat44 b) = Mat41 (b %*% a)
->compose_linear (Mat42 a) (Mat44 b) = Mat42 (b %*% a)
->compose_linear (Mat43 a) (Mat44 b) = Mat43 (b %*% a)
->compose_linear (Mat44 a) (Mat44 b) = Mat44 (b %*% a)
->compose_linear (MatInd a) (MatInd b) = MatInd (b %*% a)
->compose_linear (Mat1Ind a) (MatInd1 b) = MatInd (b %*% a)
->compose_linear (Mat2Ind a) (MatInd2 b) = MatInd (b %*% a)
->compose_linear (Mat3Ind a) (MatInd3 b) = MatInd (b %*% a)
->compose_linear (Mat4Ind a) (MatInd4 b) = MatInd (b %*% a)
->compose_linear (MatInd a) (Mat1Ind b) = Mat1Ind (b %*% a)
->compose_linear (MatInd1 a) (Mat1Ind b) = Mat11 (b %*% a)
->compose_linear (MatInd1 a) (Mat2Ind b) = Mat21 (b %*% a)
->compose_linear (MatSS a) (MatSS b) = MatSS (b %*% a)
->compose_linear (MatS1 a) (Mat1S b) = Mat11 (b %*% a)
->compose_linear (MatS1 a) (Mat2S b) = Mat21 (b %*% a)
->compose_linear (MatS1 a) (Mat3S b) = Mat31 (b %*% a)
->compose_linear (MatS1 a) (Mat4S b) = Mat41 (b %*% a)
->compose_linear (MatS2 a) (Mat1S b) = Mat12 (b %*% a)
->compose_linear (MatS2 a) (Mat2S b) = Mat22 (b %*% a)
->compose_linear (MatS2 a) (Mat3S b) = Mat32 (b %*% a)
->compose_linear (MatS2 a) (Mat4S b) = Mat42 (b %*% a)
->compose_linear (MatS3 a) (Mat1S b) = Mat13 (b %*% a)
->compose_linear (MatS3 a) (Mat2S b) = Mat23 (b %*% a)
->compose_linear (MatS3 a) (Mat3S b) = Mat33 (b %*% a)
->compose_linear (MatS3 a) (Mat4S b) = Mat43 (b %*% a)
->compose_linear (MatS4 a) (Mat1S b) = Mat14 (b %*% a)
->compose_linear (MatS4 a) (Mat2S b) = Mat24 (b %*% a)
->compose_linear (MatS4 a) (Mat3S b) = Mat34 (b %*% a)
->compose_linear (MatS4 a) (Mat4S b) = Mat44 (b %*% a)
+>composeLinear (Mat41 a) (Mat14 b) = Mat11 (b %*% a)
+>composeLinear (Mat42 a) (Mat14 b) = Mat12 (b %*% a)
+>composeLinear (Mat43 a) (Mat14 b) = Mat13 (b %*% a)
+>composeLinear (Mat44 a) (Mat14 b) = Mat14 (b %*% a)
+>composeLinear (Mat41 a) (Mat24 b) = Mat21 (b %*% a)
+>composeLinear (Mat42 a) (Mat24 b) = Mat22 (b %*% a)
+>composeLinear (Mat43 a) (Mat24 b) = Mat23 (b %*% a)
+>composeLinear (Mat44 a) (Mat24 b) = Mat24 (b %*% a)
+>composeLinear (Mat41 a) (Mat34 b) = Mat31 (b %*% a)
+>composeLinear (Mat42 a) (Mat34 b) = Mat32 (b %*% a)
+>composeLinear (Mat43 a) (Mat34 b) = Mat33 (b %*% a)
+>composeLinear (Mat44 a) (Mat34 b) = Mat34 (b %*% a)
+>composeLinear (Mat41 a) (Mat44 b) = Mat41 (b %*% a)
+>composeLinear (Mat42 a) (Mat44 b) = Mat42 (b %*% a)
+>composeLinear (Mat43 a) (Mat44 b) = Mat43 (b %*% a)
+>composeLinear (Mat44 a) (Mat44 b) = Mat44 (b %*% a)
+>composeLinear (MatInd a) (MatInd b) = MatInd (b %*% a)
+>composeLinear (Mat1Ind a) (MatInd1 b) = MatInd (b %*% a)
+>composeLinear (Mat2Ind a) (MatInd2 b) = MatInd (b %*% a)
+>composeLinear (Mat3Ind a) (MatInd3 b) = MatInd (b %*% a)
+>composeLinear (Mat4Ind a) (MatInd4 b) = MatInd (b %*% a)
+>composeLinear (MatInd a) (Mat1Ind b) = Mat1Ind (b %*% a)
+>composeLinear (MatInd1 a) (Mat1Ind b) = Mat11 (b %*% a)
+>composeLinear (MatInd1 a) (Mat2Ind b) = Mat21 (b %*% a)
+>composeLinear (MatSS a) (MatSS b) = MatSS (b %*% a)
+>composeLinear (MatS1 a) (Mat1S b) = Mat11 (b %*% a)
+>composeLinear (MatS1 a) (Mat2S b) = Mat21 (b %*% a)
+>composeLinear (MatS1 a) (Mat3S b) = Mat31 (b %*% a)
+>composeLinear (MatS1 a) (Mat4S b) = Mat41 (b %*% a)
+>composeLinear (MatS2 a) (Mat1S b) = Mat12 (b %*% a)
+>composeLinear (MatS2 a) (Mat2S b) = Mat22 (b %*% a)
+>composeLinear (MatS2 a) (Mat3S b) = Mat32 (b %*% a)
+>composeLinear (MatS2 a) (Mat4S b) = Mat42 (b %*% a)
+>composeLinear (MatS3 a) (Mat1S b) = Mat13 (b %*% a)
+>composeLinear (MatS3 a) (Mat2S b) = Mat23 (b %*% a)
+>composeLinear (MatS3 a) (Mat3S b) = Mat33 (b %*% a)
+>composeLinear (MatS3 a) (Mat4S b) = Mat43 (b %*% a)
+>composeLinear (MatS4 a) (Mat1S b) = Mat14 (b %*% a)
+>composeLinear (MatS4 a) (Mat2S b) = Mat24 (b %*% a)
+>composeLinear (MatS4 a) (Mat3S b) = Mat34 (b %*% a)
+>composeLinear (MatS4 a) (Mat4S b) = Mat44 (b %*% a)
 
 >instance Category LinearMap where
 >  id = MatIdentity
->  (.) = compose_linear
+>  (.) = composeLinear
 
 >appLinear :: (LinearTransform f g a) => f a :-> g b -> f a -> g b
->appLinear MatIdentity = \x -> x
->appLinear (Mat11 f) = \x -> f <<*> x
->appLinear (Mat12 f) = \x -> f <<*> x
->appLinear (Mat13 f) = \x -> f <<*> x
->appLinear (Mat14 f) = \x -> f <<*> x
->appLinear (Mat21 f) = \x -> f <<*> x
->appLinear (Mat22 f) = \x -> f <<*> x
->appLinear (Mat23 f) = \x -> f <<*> x
->appLinear (Mat24 f) = \x -> f <<*> x
->appLinear (Mat31 f) = \x -> f <<*> x
->appLinear (Mat32 f) = \x -> f <<*> x
->appLinear (Mat33 f) = \x -> f <<*> x
->appLinear (Mat34 f) = \x -> f <<*> x
->appLinear (Mat41 f) = \x -> f <<*> x
->appLinear (Mat42 f) = \x -> f <<*> x
->appLinear (Mat43 f) = \x -> f <<*> x
->appLinear (Mat44 f) = \x -> f <<*> x
->appLinear (MatInd f) = \x -> f <<*> x
->appLinear (MatInd1 f) = \x -> f <<*> x
->appLinear (MatInd2 f) = \x -> f <<*> x
->appLinear (MatInd3 f) = \x -> f <<*> x
->appLinear (MatInd4 f) = \x -> f <<*> x
->appLinear (Mat1Ind f) = \x -> f <<*> x
->appLinear (Mat2Ind f) = \x -> f <<*> x
->appLinear (Mat3Ind f) = \x -> f <<*> x
->appLinear (Mat4Ind f) = \x -> f <<*> x
->appLinear (MatD1 f) = \x -> f <<*> x
->appLinear (MatD2 f) = \x -> f <<*> x
->appLinear (MatD3 f) = \x -> f <<*> x
->appLinear (MatD4 f) = \x -> f <<*> x
->appLinear (MatDD f) = \x -> f <<*> x
->appLinear (MatSS f) = \x -> f <<*> x
->appLinear (MatS1 f) = \x -> f <<*> x
->appLinear (MatS2 f) = \x -> f <<*> x
->appLinear (MatS3 f) = \x -> f <<*> x
->appLinear (MatS4 f) = \x -> f <<*> x
->appLinear (Mat1S f) = \x -> f <<*> x
->appLinear (Mat2S f) = \x -> f <<*> x
->appLinear (Mat3S f) = \x -> f <<*> x
->appLinear (Mat4S f) = \x -> f <<*> x
+>appLinear MatIdentity = id
+>appLinear (Mat11 f) = (f <<*>)
+>appLinear (Mat12 f) = (f <<*>)
+>appLinear (Mat13 f) = (f <<*>)
+>appLinear (Mat14 f) = (f <<*>)
+>appLinear (Mat21 f) = (f <<*>)
+>appLinear (Mat22 f) = (f <<*>)
+>appLinear (Mat23 f) = (f <<*>)
+>appLinear (Mat24 f) = (f <<*>)
+>appLinear (Mat31 f) = (f <<*>)
+>appLinear (Mat32 f) = (f <<*>)
+>appLinear (Mat33 f) = (f <<*>)
+>appLinear (Mat34 f) = (f <<*>)
+>appLinear (Mat41 f) = (f <<*>)
+>appLinear (Mat42 f) = (f <<*>)
+>appLinear (Mat43 f) = (f <<*>)
+>appLinear (Mat44 f) = (f <<*>)
+>appLinear (MatInd f) = (f <<*>)
+>appLinear (MatInd1 f) = (f <<*>)
+>appLinear (MatInd2 f) = (f <<*>)
+>appLinear (MatInd3 f) = (f <<*>)
+>appLinear (MatInd4 f) = (f <<*>)
+>appLinear (Mat1Ind f) = (f <<*>)
+>appLinear (Mat2Ind f) = (f <<*>)
+>appLinear (Mat3Ind f) = (f <<*>)
+>appLinear (Mat4Ind f) = (f <<*>)
+>appLinear (MatD1 f) = (f <<*>)
+>appLinear (MatD2 f) = (f <<*>)
+>appLinear (MatD3 f) = (f <<*>)
+>appLinear (MatD4 f) = (f <<*>)
+>appLinear (MatDD f) = (f <<*>)
+>appLinear (MatSS f) = (f <<*>)
+>appLinear (MatS1 f) = (f <<*>)
+>appLinear (MatS2 f) = (f <<*>)
+>appLinear (MatS3 f) = (f <<*>)
+>appLinear (MatS4 f) = (f <<*>)
+>appLinear (Mat1S f) = (f <<*>)
+>appLinear (Mat2S f) = (f <<*>)
+>appLinear (Mat3S f) = (f <<*>)
+>appLinear (Mat4S f) = (f <<*>)
 
 instance (forall b. VectorSpace (g b), forall b. VectorSpace (f b), Indexable f a, Num a, Scalar (g a) ~ a, Indexable g a, Scalar (f a) ~ Scalar (g a), LinearTransform f g a)
  => VectorSpace (f a :-> g a) where
@@ -411,23 +418,23 @@ instance (forall b. VectorSpace (g b), forall b. VectorSpace (f b), Indexable f 
    a %* (LinearMap p f) = LinearMap p $ a %* f
    (LinearMap p f) %+ (LinearMap q g) = LinearMap (vec2_cast p q) $ f %+ g
 
->instance (Fractional a, ConjugateSymmetric a) => Fractional ((Vector2 :*: Vector2) a) where
+>instance (Ord a, Fractional a, ConjugateSymmetric a) => Fractional ((Vector2 :*: Vector2) a) where
 >   recip = inverseImpl
 >   fromRational = diagonalMatrixImpl . constant2 . fromRational
 
->instance (ConjugateSymmetric a, Fractional a) => LinearInvertible LinearMap Vector2 a
->instance (ConjugateSymmetric a, Fractional a) => LinearInvertible LinearMap Vector3 a
->instance (ConjugateSymmetric a, Fractional a) => LinearInvertible LinearMap Vector4 a
->instance (ConjugateSymmetric a, Num a) => LinearTraceable LinearMap Vector1 a
->instance (ConjugateSymmetric a, Num a) => LinearTraceable LinearMap Vector2 a
->instance (ConjugateSymmetric a, Num a) => LinearTraceable LinearMap Vector3 a
->instance (ConjugateSymmetric a, Num a) => LinearTraceable LinearMap Vector4 a
+>instance (ConjugateSymmetric a, Fractional a, Ord a) => LinearInvertible LinearMap Vector2 a
+>instance (ConjugateSymmetric a, Fractional a, Ord a) => LinearInvertible LinearMap Vector3 a
+>instance (ConjugateSymmetric a, Fractional a, Ord a) => LinearInvertible LinearMap Vector4 a
+>instance (ConjugateSymmetric a, Num a, Ord a) => LinearTraceable LinearMap Vector1 a
+>instance (ConjugateSymmetric a, Num a, Ord a) => LinearTraceable LinearMap Vector2 a
+>instance (ConjugateSymmetric a, Num a, Ord a) => LinearTraceable LinearMap Vector3 a
+>instance (ConjugateSymmetric a, Num a, Ord a) => LinearTraceable LinearMap Vector4 a
 
 >linearMatrixMultiply :: (SupportsMatrixMultiplication g h f a,
 >    Linearizable LinearMap (:*:) h f a,
 >    Linearizable LinearMap (:*:) g h a,
->    Linearizable LinearMap (:*:) g f a
-> ) => g a :-> h a -> h a :-> f a -> g a :-> f a
+>    Linearizable LinearMap (:*:) g f (Scalar (h a))
+> ) => g a :-> h a -> h a :-> f a -> g (Scalar (h a)) :-> f (Scalar (h a))
 >linearMatrixMultiply f g = linear (fromLinear f %*% fromLinear g)
 
 >isInvertibleMatrix :: (Eq a, Num a,Traceable m a, LinearTraceable LinearMap m a)
@@ -644,14 +651,12 @@ dual_lin_apply f (Matrix g) = matrixLin (-!!<) (fmap bracketMap f) g
 linear_identity_indexable :: (Num a, LinearTransform f f a, Diagonalizable f a, Indexable f a) => f a :-> f a
 linear_identity_indexable = linear $ identityImpl indexable_indices
 
->matrix_equalizer :: (Eq (Scalar (h a)), Eq (g (f a)),
+>matrix_equalizer :: (Eq (Scalar (h a)), Eq (g (f (Scalar (f a)))),
 >   Linearizable LinearMap (:*:) h f a,
 >   Linearizable LinearMap (:*:) g h a,
 >  SupportsMatrixMultiplication g h f a,
 >                     Applicative g, Applicative f,
->                     Foldable g, Foldable f  -- ,
->                --     Scalar (f a) ~ Scalar (g (f a)),
->                --     Scalar (g (h a)) ~ Scalar (g (f a))
+>                     Foldable g, Foldable f  
 >               )
 >                 => (g a :-> h a) -> (g a :-> h a) -> Prop (h a :-> f a)
 >matrix_equalizer a b = Characteristic $ \v -> let
@@ -678,6 +683,7 @@ instance (Num a, a ~ Scalar a) => FiniteDimensional (Vector1 a) Dual I LinearMap
 >   divergence f = partialDerivate1x (covector (vectorElement . (-!<) f))
 >   grad f = arrLinear $ \z -> Vector1 (partialDerivate1x f `bracket` z)
 >   directionalDerivative = directionalDerivativeImpl
+
 
 >-- | <https://en.wikipedia.org/wiki/Directional_derivative>
 >-- Note: the direction v is not guaranteed to be normalized.
@@ -741,11 +747,13 @@ instance StandardBasis ((Dual :*: Vector1) a) where
   unitVectors = [Matrix (Covector $ linear $ Matrix $ Covector $ id_linear Proxy)]
 
 >-- | see "Lawvere,Rosebrugh: Sets for mathematics", pg. 167.
->instance (Num a, ConjugateSymmetric a) => Monoid (Vector1 a :-> Vector1 a) where
+>instance (SupportsMatrixMultiplication Vector1 Vector1 Vector1 a)
+> => Monoid (Vector1 a :-> Vector1 a) where
 >   mempty = linear identity
 >   mappend a b = linear $ fromLinear a %*% fromLinear b
 
->instance (Num a, ConjugateSymmetric a) => Semigroup (Vector1 a :-> Vector1 a) where
+>instance (SupportsMatrixMultiplication Vector1 Vector1 Vector1 a)
+> => Semigroup (Vector1 a :-> Vector1 a) where
 >   a <> b = linear $ fromLinear a %*% fromLinear b
 
 >partialDerivate1x :: (Closed a, Num a, ConjugateSymmetric a)
@@ -801,10 +809,10 @@ instance (Num a) => FiniteDimensional (Vector2 a) Dual Vector1 LinearMap where
 >
 >instance (Infinitesimal Stream a, Closed a) => VectorLaplacian (Vector2 a) LinearMap
 
->cov3 :: (Num a, ConjugateSymmetric a) => Vector3 (Dual (Vector3 a))
+>cov3 :: (Num a, Ord a, ConjugateSymmetric a) => Vector3 (Dual (Vector3 a))
 >cov3 = Vector3 (covector xcoord3) (covector ycoord3) (covector zcoord3)
 
->instance (Num a, ConjugateSymmetric a) => ProjectionDual Vector3 Dual a where
+>instance (Num a, Ord a, ConjugateSymmetric a) => ProjectionDual Vector3 Dual a where
 >   projectionDual = cov3
 
 >-- | <https://en.wikipedia.org/wiki/Dual_space#Injection_into_the_double-dual>
@@ -842,10 +850,10 @@ instance (Num a, LinearTransform Dual Vector1 (Vector3 a), ConjugateSymmetric a)
 >  grad = grad3
 >  directionalDerivative = directionalDerivativeImpl
 
->instance (Closed a, Num a, ConjugateSymmetric a) => VectorCrossProduct (Vector3 a) LinearMap where
+>instance (Ord a, Closed a, Num a, ConjugateSymmetric a) => VectorCrossProduct (Vector3 a) LinearMap where
 >  curl = curl3
 
->instance (Closed a, Num a, ConjugateSymmetric a) => VectorLaplacian (Vector3 a) LinearMap where
+>instance (Ord a, Closed a, Num a, ConjugateSymmetric a) => VectorLaplacian (Vector3 a) LinearMap where
 >  vectorLaplace = vectorLaplace3
 
 >defaultVectorLaplace :: (VectorDerivative v Dual arr, VectorCrossProduct v arr,
@@ -885,7 +893,7 @@ instance (Num a, LinearTransform Dual Vector1 (Vector3 a), ConjugateSymmetric a)
 
 >-- | <https://en.wikipedia.org/wiki/Curl_(mathematics)>
 
->curl3 :: (ConjugateSymmetric a,Num a, Closed a) => (Vector3 a) :-> (Vector3 a)  -> (Vector3 a) :-> (Vector3 a)
+>curl3 :: (ConjugateSymmetric a,Num a, Ord a, Closed a) => (Vector3 a) :-> (Vector3 a)  -> (Vector3 a) :-> (Vector3 a)
 >curl3 f = arrLinear $ \z -> Vector3 ((partialDerivate3y fz %- partialDerivate3z fy)
 >                       `bracket` z)
 >                    ((partialDerivate3z fx %- partialDerivate3x fz)
@@ -1017,8 +1025,10 @@ instance (Num a, LinearTransform Dual Vector1 (Vector3 a), ConjugateSymmetric a)
 >  => f a :-> g a -> (g a -> f b :-> h b) -> f b :-> h b
 >linBind m f = linear $ matBind (fromLinear m) (fromLinear . f)
 
->covectorImpl :: (Linearizable LinearMap (:*:) f Vector1 b, Scalar (f b) ~ b, Diagonalizable f b) => (f b -> b) -> Dual (f b)
->covectorImpl f = Covector (arrLinear (Vector1 . f))
+>covectorImpl :: (Linearizable LinearMap (:*:) f Vector1 b,
+> Scalar (f b) ~ b, Diagonalizable f b)
+> => (f b -> b) -> Dual (f b)
+>covectorImpl f = Covector $ arrLinear $ Vector1 . f
 
 >linearOuterProduct_ a b = arrLinear (Math.Matrix.Interface.outer a b)
 

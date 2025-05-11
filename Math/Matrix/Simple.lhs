@@ -70,14 +70,9 @@
 >type InfMatrix elem = (Integer :&: Integer) elem
 >type RatioMatrix elem = (Rational :&: Rational) elem
 
->instance (Universe a) => PpShowF ((->) a) where
->   ppf f = (hsep $ take 10 lst) <> if null lst2 then Pretty.empty else pp ".." 
->     where lst = [pp (f i) | i <- allElements]
->           lst2 = drop 10 lst
-
 >mapDimensions :: (Universe a, Universe b, Integral a, ConjugateSymmetric c, Num c)
 > => (->) a :~> f -> (->) b :~> g -> (a :&: b) c -> (f :*: g) c
->mapDimensions col row = \m -> Matrix $ nattransComponent col $
+>mapDimensions col row m = Matrix $ nattransComponent col $
 >    fmap (nattransComponent row) $ cells $ fromLinear m
 
 >simpleMatrix :: (Integral a, Universe b, Universe a, ConjugateSymmetric c, Num c,Functor m, Functor n) =>
@@ -90,9 +85,6 @@ dimensionFlip :: (Integral a, Functor m, Functor n) =>
  (a :&: b) (c -> d) -> m a -> n c -> (m :*: n) (b -> d)
 dimensionFlip m = fromLinear m <!> (matrix,flip)
 
->instance (Universe a) => PpShowVerticalF ((->) a) where
->   ppfVertical f = vcat $ (take 10 $ lst) ++ [if null (drop 10 lst) then Pretty.empty else pp ".."]
->     where lst = [pp (f j) | j <- allElements]
 
 instance (Universe row, Universe col, PpShow elem) => Show ((row :&: col) elem) where
    show m = render $ ppf_vertical (fmap ppf $ m)
@@ -103,19 +95,13 @@ instance (Universe row, Universe col, Universe dep, PpShow elem) => Show (Matrix
 instance (Universe row, Universe col, Universe dep, Universe tim, PpShow elem) => Show (Matrix4S row col dep tim elem) where
    show m = render $ ppf_vertical $ m
 
->instance (Num a) => VectorSpace (((->) row :*: (->) col) a) where
->   type Scalar (((->) row :*: (->) col) a) = a
->   vzero = Matrix $ const $ const 0
->   vnegate (Matrix m) = Matrix $ \i j -> negate (m i j)
->   (Matrix m) %+ (Matrix n) = Matrix $ \i j -> m i j + n i j
->   a %* (Matrix m) = Matrix $ \i j -> a * m i j
-
 >instance (Num a) => VectorSpace (((->) row :*: Vector1) a) where
 >   type Scalar (((->) row :*: Vector1) a) = a
 >   vzero = Matrix $ const $ vzero
 >   vnegate (Matrix m) = Matrix $ \i -> vnegate (m i)
 >   (Matrix m) %+ (Matrix n) = Matrix $ \i -> m i %+ n i
 >   a %* (Matrix m) = Matrix $ \i -> a %* m i
+
 >instance (Num a) => VectorSpace (((->) row :*: Vector2) a) where
 >   type Scalar (((->) row :*: Vector2) a) = a
 >   vzero = Matrix $ const $ vzero
@@ -155,6 +141,7 @@ instance (Universe row, Universe col, Universe dep, Universe tim, PpShow elem) =
 >                                                       (negate . o)
 >   (Matrix m) %+ (Matrix n) = Matrix $ liftA2 (liftA2 (+)) m n
 >   a %* (Matrix (Vector3 x y z)) = Matrix $ Vector3 (a %* x) (a %* y) (a %* z)
+> 
 >instance (Num a) => VectorSpace ((Vector4 :*: (->) col) a) where
 >   type Scalar ((Vector4 :*: (->) col) a) = a
 >   vzero = Matrix $ Vector4 vzero vzero vzero vzero
@@ -164,11 +151,6 @@ instance (Universe row, Universe col, Universe dep, Universe tim, PpShow elem) =
 >                                                         (negate . p)
 >   (Matrix m) %+ (Matrix n) = Matrix $ liftA2 (liftA2 (+)) m n
 >   a %* (Matrix (Vector4 t x y z)) = Matrix $ Vector4 (a %* t) (a %* x) (a %* y) (a %* z)
-
-
->instance (Num a, Universe row, Universe col) => LinearTransform ((->) row) ((->) col) a where
->   colv <*>> (Matrix m) = \i -> sum [colv j * m i j | j <- allElements]
->   (Matrix m) <<*> rowv = \j -> sum [m i j * rowv i | i <- allElements]
 
 >instance (Num a, Universe col) => LinearTransform Vector1 ((->) col) a where
 >   f <*>> (Matrix (Vector1 n)) = Vector1 $ sum [f j * n j | j <- allElements]
@@ -215,16 +197,11 @@ instance (Universe row, Universe col, Universe dep, Universe tim, PpShow elem) =
 >                               (sum [f i * ycoord4 (m i) | i <- allElements])
 >                               (sum [f i * zcoord4 (m i) | i <- allElements])
 
->
->instance (Floating b, Universe a) => NormedSpace (a -> b) where
->   norm f = sqrt (f %. f)
->   normSquared f = f %. f
-
 instance Transposable ((->) row) ((->) col) a where
    transposeImpl (Matrix f) = Matrix $ \i j -> f j i
 
 >indexDelta :: (Eq ind, Num a) => ind -> a -> (ind -> a) -> (ind -> a)
->indexDelta ind eps v = \ind' -> if ind == ind' then eps + v ind else v ind
+>indexDelta ind eps v ind' = if ind == ind' then eps + v ind else v ind
 
 >partialDerivateInd :: (Integral ind, Universe ind, Eq ind, ConjugateSymmetric a, Closed a, Infinitesimal Stream a) => ind -> Dual (ind -> a) -> Dual (ind -> a)
 >partialDerivateInd ind' (Covector f) = Covector $ arrLinear $ Vector1 . partialDerivate (indexDelta ind') (vectorElement . appLinear f)
@@ -234,6 +211,7 @@ instance Transposable ((->) row) ((->) col) a where
 
 >instance (Integral a, Universe a, Num b, ConjugateSymmetric b) => Dualizable (a -> b) Dual where
 >  covector = covectorImpl
+>  bracket = bracketImpl
 
 >divergenceIndex :: (ConjugateSymmetric b, Closed b, Infinitesimal Stream b, Integral ind, Eq ind, Universe a, Universe ind)
 > => (ind -> b) :-> (a -> b) -> Dual (ind -> b)
@@ -271,42 +249,35 @@ instance Transposable ((->) row) ((->) col) a where
 >  f + g = \i -> f i + g i
 >  f - g = \i -> f i - g i
 >  f * g = \i -> f i * g i
->  negate f = \i -> negate (f i)
->  abs f = \i -> abs (f i)
->  signum f = \i -> signum (f i)
+>  negate f = negate . f
+>  abs f = abs . f
+>  signum f = signum . f
 >  fromInteger j = error "fromInteger: FourD -> a requires 4 components"
 >instance (Num a) => Num (ThreeD -> a) where
 >  f + g = \i -> f i + g i
 >  f - g = \i -> f i - g i
 >  f * g = \i -> f i * g i
->  negate f = \i -> negate (f i)
->  abs f = \i -> abs (f i)
->  signum f = \i -> signum (f i)
+>  negate f = negate . f
+>  abs f = abs . f
+>  signum f = signum . f
 >  fromInteger j = error "fromInteger: FourD -> a requires 3 components"
 >instance (Num a) => Num (TwoD -> a) where
 >  f + g = \i -> f i + g i
 >  f - g = \i -> f i - g i
 >  f * g = \i -> f i * g i
->  negate f = \i -> negate (f i)
->  abs f = \i -> abs (f i)
->  signum f = \i -> signum (f i)
+>  negate f = negate . f
+>  abs f = abs . f
+>  signum f = signum . f
 >  fromInteger j = error "fromInteger: FourD -> a requires 2 components"
 
 >instance (Num a) => Num (OneD -> a) where
 >  f + g = \i -> f i + g i
 >  f - g = \i -> f i - g i
 >  f * g = \i -> f i * g i
->  negate f = \i -> negate (f i)
->  abs f = \i -> abs (f i)
->  signum f = \i -> signum (f i)
->  fromInteger j = \_ -> fromInteger j
-
->-- | <https://en.wikipedia.org/wiki/Frobenius_inner_product>
-
->instance (Integral col, Integral row, Universe row, Universe col, Num a, ConjugateSymmetric a)
-> => InnerProductSpace (((->) row :*: (->) col) a) where
->   (Matrix m) %. (Matrix n) = sum $
->      [(m i j) * conj (n i j) | i <- allElements, j <- allElements]
+>  negate f = negate . f
+>  abs f = abs . f
+>  signum f = signum . f
+>  fromInteger j _ = fromInteger j
 
 >sumS :: (Num b, Universe a) => (a -> b) -> b
 >sumS f = sum [f i | i <- allElements]
@@ -317,11 +288,6 @@ instance Transposable ((->) row) ((->) col) a where
 >covIndex :: (Integral a, Universe a, Num (Scalar a), ConjugateSymmetric (Scalar a))
 >  => a -> Dual (a -> Scalar a)
 >covIndex x = covectorImpl $ \f -> f x
-
->instance (Integral row, Integral col, Floating a, Universe row, Universe col, ConjugateSymmetric a)
-> => NormedSpace (((->) row :*: (->) col) a) where
->   norm m = sqrt (m %. m)
->   normSquared m = m %. m
 
 >instance (VectorSpace a, Integral col, Integral row, Universe row, ConjugateSymmetric a, Universe col, Floating a, Integral row, Scalar (col -> a) ~ a) => NormedSpace ((row :&: col) a) where
 >   norm m = norm (fromLinear m)
@@ -334,7 +300,7 @@ instance Transposable ((->) row) ((->) col) a where
 >instance (Num a, Eq dim, Integral dim) => Diagonalizable ((->) dim) a where
 >   identity = Matrix kroneckerDelta
 >   identityImpl = const (Matrix kroneckerDelta)
->   diagonalImpl (Matrix f) = \i -> f i i
+>   diagonalImpl (Matrix f) i = f i i
 >   diagonalMatrixImpl f = Matrix $ \i j -> if i == j then f i else 0
 >
 >instance (Integral row, Universe row, SupportsMatrixMultiplication ((->) row) ((->) row) ((->) row) a)
@@ -387,15 +353,15 @@ leviCivita4S :: (VectorSpace a, Fractional (Scalar a), ConjugateSymmetric a, Num
 
 >-- | <https://en.wikipedia.org/wiki/Levi-Civita_symbol>
 >leviCivitaS :: (Num b, Enum a, Universe a) => (a -> b) -> b
->leviCivitaS = \f -> product [signum ((f aj) - (f ai))
->                            | aj <- allElements,
->                              ai <- map toEnum $ [0..fromEnum aj-1]]
+>leviCivitaS f = product [signum ((f aj) - (f ai))
+>                        | aj <- allElements,
+>                          ai <- map toEnum $ [0..fromEnum aj-1]]
 
 >-- | <https://en.wikipedia.org/wiki/Levi-Civita_symbol>
 >-- Note indices are from 0..(n-1).
 >leviCivita :: (Num a) => [a] -> a
->leviCivita = \lst -> product [signum ((lst !! aj) - (lst !! ai))
->                             | aj <- [0..length lst-1], ai <- [0..aj-1]]
+>leviCivita lst = product [signum ((lst !! aj) - (lst !! ai))
+>                         | aj <- [0..length lst-1], ai <- [0..aj-1]]
 
 >-- | <https://en.wikipedia.org/wiki/Cross_product>
 >crossProductS :: (Integral a, Num b, Universe a) => (a -> b) -> (a -> b) -> a -> b
@@ -412,15 +378,15 @@ leviCivita4S :: (VectorSpace a, Fractional (Scalar a), ConjugateSymmetric a, Num
 >                    | i <- [0..fromIntegral (length u-1)]]
   
 
->instance (Eq dim,Num dim, Integral dim, Universe dim, CoFactorDimension dim, ConjugateSymmetric a,Num a)
+>instance (Eq dim,Num dim, Integral dim, Universe dim, CoFactorDimension dim, ConjugateSymmetric a,Num a, Eq a)
 > => Traceable ((->) dim) a where
 >   traceImpl m = sum [f i i | i <- allElements]
 >     where (Matrix f) = m
 >   determinantImpl = sdeterminant . linear
 
 >instance (Num a, Integral row) => Indexable ((->) row) a where
->   diagonalProjections = \i -> (\fi -> I (fi i)) <-> (\ (I v) j -> v)
->   indexableIndices = \i -> fromIntegral i
+>   diagonalProjections i = (\fi -> I (fi i)) <-> (\ (I v) j -> v)
+>   indexableIndices i = fromIntegral i
 >
 
 instance (Universe a, Integral a, InnerProductSpace b) => CoordinateSpace (a -> b) where
@@ -455,13 +421,15 @@ instance (elem ~ Scalar ((row :&: col) elem), Integral row, ConjugateSymmetric e
    f %+ g = linear $ Matrix $ \i j -> cells (fromLinear f) i j + cells (fromLinear g) i j
    x %* f = linear $ Matrix $ \i j -> x * cells (fromLinear f) i j
 
->smatrix :: (Universe col, Integral row, Universe row, ConjugateSymmetric c,Num c) => (a -> b -> c) -> (row -> a) -> (col -> b) -> (row :&: col) c
+>smatrix :: (Universe col, Integral row, Universe row,
+> Linearizable LinearMap (:*:) ((->) row) ((->) col) c
+> ) => (a -> b -> c) -> (row -> a) -> (col -> b) -> (row :&: col) c
 >smatrix f a b = linear $ Matrix $ \i j -> f (a i) (b j)
 
->swapRows :: (Num a, ConjugateSymmetric a,Eq row, Integral row, Universe row, Universe col) => row -> row -> (row :&: col) a -> (row :&: col) a
+>swapRows :: (Floating a, ConjugateSymmetric a, Eq row, Integral row, Universe row, Universe col) => row -> row -> (row :&: col) a -> (row :&: col) a
 >swapRows i1 i2 m = smatrix (\x y -> (m # (x,y))) (swapIndex i1 i2) id
 
->mulRow :: (Eq row, ConjugateSymmetric a,Num a, Integral row, Universe row, Universe col) => a -> row -> (row :&: col) a -> (row :&: col) a
+>mulRow :: (Eq row, ConjugateSymmetric a,Floating a, Integral row, Universe row, Universe col) => a -> row -> (row :&: col) a -> (row :&: col) a
 >mulRow k r m = linear $ Matrix $ \i j -> if i == r then k * (m # (i,j))
 >                                          else m # (i,j)
 
@@ -481,10 +449,11 @@ instance (elem ~ Scalar ((row :&: col) elem), Integral row, ConjugateSymmetric e
 >         -> ((->) row :*: ((->) col :*: (->) depth)) d
 >smatrix3 f a b c = Matrix $ \i -> Matrix $ \j k -> f (a i) (b j) (c k)
 
->function_smatrix :: (Universe a, Universe b, Integral a, ConjugateSymmetric c,Num c) => (a -> b -> c) -> (a :&: b) c
+>function_smatrix :: (Universe a, Universe b, Integral a, ConjugateSymmetric c,Floating c) => (a -> b -> c) -> (a :&: b) c
 >function_smatrix f = smatrix f id id
 >
->smatrix_inverse_image :: (ConjugateSymmetric a,Num a, Integral row, Integral row', Universe col', Universe row',Universe row, Universe col)
+>smatrix_inverse_image :: (ConjugateSymmetric a,Floating a, Integral row, Integral row', Universe col', Universe row',Universe row, Universe col
+> )
 > => ((row,col) -> (row',col'))
 > -> (row' :&: col') a -> (row :&: col) a
 >smatrix_inverse_image f m | Matrix m' <- fromLinear m = linear $ Matrix $ \i j -> let (i',j') = f (i,j)
@@ -503,10 +472,11 @@ index_function_matrix :: (Universe col, Integral row, Universe row, Num (a -> c)
 index_function_matrix = smatrix (.)
 
 >
->sapply :: (Integral (a -> b), ConjugateSymmetric b,Num b, Eq a, Universe a, Universe b) => ((a -> b) :&: a) b
+>sapply :: (Integral (a -> b), ConjugateSymmetric b,Floating b, Eq a, Universe a, Universe b) => ((a -> b) :&: a) b
 >sapply = smatrix id id id
 >
->(#) :: (ConjugateSymmetric a, Integral row, Num a, Universe row, Universe col) => (row :&: col) a -> (row,col) -> a
+>(#) :: (Linearizable LinearMap (:*:) ((->) row) ((->) col) a)
+> => (row :&: col) a -> (row,col) -> a
 >f # (i,j) = fromLinear f `cells` i $ j
 
 index3S :: Matrix3S row col dep elem -> (row,col,dep) -> elem
@@ -570,7 +540,7 @@ index4S m (i,j,k,t) = m `cells2` i `cells2` j `cells2` k $ t
 >instance CoFactorDimension FourD where
 >   cofactorDim = cofactorDim4
 
->sdeterminant :: (ConjugateSymmetric a, Num a, Integral dim, Universe dim, CoFactorDimension dim)
+>sdeterminant :: (Num a, ConjugateSymmetric a, Integral dim, Universe dim, CoFactorDimension dim)
 >             => (dim :&: dim) a -> a
 >sdeterminant m = sum $
 >  map (\i -> m # (i,0) * cofactorDim i m) $ allElements
@@ -620,7 +590,8 @@ determinantS f = leviCivita jlst * product [f <!> (i,j) | i <- allElements]
 
 >
 >
->srotate_x :: (Floating a, ConjugateSymmetric a) => a -> SMatrix3 a
+>srotate_x :: (Floating a, ConjugateSymmetric a)
+> => a -> SMatrix3 a
 >srotate_x alfa = linear $ Matrix $ svec3 (svec3 1 0 0)
 >                                (svec3 0 (cos alfa) (-sin alfa))
 >                                (svec3 0 (sin alfa) (cos alfa))

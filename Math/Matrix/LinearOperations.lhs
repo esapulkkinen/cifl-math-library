@@ -128,7 +128,7 @@
 >laplace4 :: (Closed a, ConjugateSymmetric a) => Covector.Dual (Vector4 a) -> Covector.Dual (Vector4 a)
 >laplace4 f = divergence4 (grad4 f)
 
->instance (Closed a, ConjugateSymmetric a, LinearTransform Vector4 Vector1 a)
+>instance (Closed a, Ord a, ConjugateSymmetric a, LinearTransform Vector4 Vector1 a)
 > => VectorLaplacian (Vector4 a) LinearMap where
 >  vectorLaplace = vectorLaplace4
 

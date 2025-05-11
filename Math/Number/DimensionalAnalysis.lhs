@@ -897,7 +897,10 @@
 >instance (Num r, NormedSpace r) => NormedSpace (Quantity r) where
 >   norm (x `As` _) = x
 
-
+>instance (Show r, MetricSpace r) => MetricSpace (Quantity r) where
+>   type Distance (Quantity r) = Quantity (Distance r)
+>   distance (x `As` d) (y `As` d') | d == d' = distance x y `As` d
+>                              | otherwise = invalidDimensions "distance" d d' (show x) (show y)
 
 >showDimension :: Dimension -> String
 >showDimension (Dimension a b c d e f g) = if str /= "" then take (length str - 1) str else ""

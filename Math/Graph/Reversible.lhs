@@ -1,6 +1,7 @@
 >{-# LANGUAGE Safe,FlexibleContexts, FlexibleInstances, MultiParamTypeClasses, FunctionalDependencies, TypeOperators, TypeFamilies, DeriveGeneric, DeriveDataTypeable #-}
 >{-# LANGUAGE OverloadedStrings, UndecidableInstances #-}
 >{-# LANGUAGE GADTs, LambdaCase, Arrows #-}
+>{-# LANGUAGE ScopedTypeVariables #-}
 >-- | Graph representation as a set with action of a monoid.
 >-- See Lawvere,Rosebrugh: Sets for Mathematics for details.
 >--
@@ -19,6 +20,8 @@
 >import Data.Set (Set)
 >import Data.Text (Text)
 >import Data.Tree
+>import Data.Binary
+>import Data.Set (Set)
 >import Prelude hiding (id,(.))
 >import Control.Category
 >import Control.Arrow hiding ((<+>))
@@ -38,13 +41,14 @@
 >import Math.Tools.Universe
 >import Math.Tools.Median
 >import Math.Tools.Isomorphism
+>import Math.Tools.Visitor
 >import Math.Graph.GraphMonoid
 >import Math.Graph.Interface
 >import qualified Math.Graph.Action as Action
 >import Math.Graph.Action ((:<-:))
 
 >import Math.Number.Group
-
+>import Math.Graph.Show
 >import Math.Matrix.Interface
 >import Text.PrettyPrint ((<+>))
 >import Math.Tools.PrettyP (PpShow,pp, pPrint)
@@ -69,19 +73,28 @@
 >elements (Graph v e _) = Set.union v e
 
 >action :: Graph m a -> a -> m Bool Bool -> a
->action g x = \m -> action_endomorphism g m `appEndo` x
+>action g x m = action_endomorphism g m `appEndo` x
+
+>domAction :: (GraphMonoid m Bool) => Graph m a -> a -> a
+>domAction g a = action g a gdom
+
+>codAction :: (GraphMonoid m Bool) => Graph m a -> a -> a
+>codAction g a = action g a gcod
+
+>invAction :: (ReversibleGraphMonoid m Bool) => Graph m a -> a -> a
+>invAction g a = action g a gnot
 
 >setAction :: (Ord a) => Graph m a -> Set a -> m Bool Bool -> Set a
->setAction g s = \m -> Set.map (\x -> action g x m) s
+>setAction g s m = Set.map (\x -> action g x m) s
 
 >listAction :: (Ord a) => Graph m a -> [a] -> m Bool Bool -> [a]
->listAction g s = \m -> map (\x -> action g x m) s
+>listAction g s m = map (\x -> action g x m) s
 
 >action_rep :: Graph m a -> Endo a :<-: m Bool Bool
 >action_rep = Action.Action . action_endomorphism 
 
 >inverseImageG :: (m Bool Bool -> n Bool Bool) -> Graph n a -> Graph m a
->inverseImageG f = \(Graph v e act) -> Graph v e (act . f)
+>inverseImageG f (Graph v e act) = Graph v e (act . f)
 
 >instance (Eq a, Universe (m Bool Bool)) => Eq (Graph m a) where
 >  g@(Graph v e _) == g'@(Graph v' e' _) = v == v' && e == e' &&
@@ -158,7 +171,7 @@ outerG (Graph e act) (Graph e' act') = Graph ee ract
 
 >instance (Ord a, Show a, Show (m Bool Bool)) => Monoid (Graph m a) where
 >   mempty = emptyG
->   mappend = unionG
+>   mappend = (<>)
 
 >instance (Ord a, Show a, Show (m Bool Bool), ReversibleGraphMonoid m Bool) => SetLike (Graph m a) where
 >   sintersection = intersectionG
@@ -269,3 +282,70 @@ outerG (Graph e act) (Graph e' act') = Graph ee ract
 >                                    (("leave","enter"),("in","out")),
 >                                    (("foray","foray"),("in","in"))]
 
+
+>instance (Binary a, Ord a) => Binary (Graph Three a) where
+>  put g = do
+>    let lnks = Set.map (\e -> (e,g `domAction` e, g `codAction` e)) $ edges g
+>    put (vertices g)
+>    put lnks
+>  get = do
+>    (vertices :: Set a) <- get
+>    (edges :: Set (a,a,a)) <- get
+>    return $ edgesG $ map (\ (a,b,c) -> (a,(b,c))) $ Set.toList edges
+
+
+>instance (Ord a, PpShow a) => Show (Graph Three a) where { show = pPrint }
+>instance (Ord a, PpShow a) => Show (Graph Four a) where { show = pPrint }
+
+>instance (Ord a, PpShow a) => PpShow (Graph Three a) where
+>  pp g = maybe base veprint $ let
+>           v = vertices g
+>           e = edges g
+>           lnks = Set.map (\e -> (e,g `domAction` e, g `codAction` e)) e
+>         in return $ (Set.toList v, map eprint $ Set.toList lnks)
+
+>instance (Ord a, PpShow a) => PpShow (Graph Four a) where
+>  pp g = maybe base veprint $ return $ (Set.toList v, map bidirectionalEprint $ Set.toList lnks)
+>   where v = vertices g
+>         lnks = Set.map (\e -> ((e,g `invAction` e),(g `domAction` e, g `codAction` e))) $ edges g
+>         lnks' = fst $ includeExcludeEdges lnks
+>         includeExcludeEdges = Set.fold (\ ((e,re),(x,y)) (include,exclude) 
+>                                          -> if not $ e `Set.member` exclude then
+>                                               (Set.insert ((e,re),(x,y)) include,
+>                                                Set.insert re exclude)
+>                                              else (include,Set.insert re exclude)) (Set.empty,Set.empty)
+
+>instance (Monad m, Ord e, GraphMonoid mon Bool) => GraphMonad (ReaderT (Graph mon e) m) e where
+>   gisVertex e = ask >>= \g -> return $ e == g `codAction` e
+>   gsource e = ask >>= \g -> return $ g `domAction` e
+>   gtarget e = ask >>= \g -> return $ g `codAction` e
+>   gelements = ask >>= \g -> return $ elements g
+>   gvertices = ask >>= \g -> return $ vertices g
+>   gedges = ask >>= \g -> return $ edges g
+>   gedgesStartingFrom x = ask >>= \g -> return $ Set.filter (\e -> g `domAction` e == x) $ edges g
+>   gedgesEndingTo x = ask >>= \g -> return $ Set.filter (\e -> g `codAction` e == x) $ edges g
+>   glinks = ask >>= \g -> return $ Set.map (\e -> (e,g `domAction` e, g `codAction` e)) $ edges g
+
+>instance (Monad m, Ord e, ReversibleGraphMonoid mon Bool) => ReversibleGraphMonad (ReaderT (Graph mon e) m) e where
+>   ginverse e = ask >>= \g -> return $ g `invAction` e
+>   greversibleLinks = ask >>= \g -> return $ fst $ includeExcludeEdges $ edgedata g
+>     where edgedata g = Set.map (\e -> ((e,g `invAction` e), (g `domAction` e, g `codAction` e))) $ edges g
+>           includeExcludeEdges = Set.fold (\ ((e,re),(x,y)) (include,exclude) 
+>                                          -> if not $ e `Set.member` exclude then
+>                                               (Set.insert ((e,re),(x,y)) include,
+>                                                Set.insert re exclude)
+>                                              else (include,Set.insert re exclude)) (Set.empty,Set.empty)
+
+>instance (Ord a, GraphMonoid m Bool) => Visitor (Graph m a) where
+>   data Fold (Graph m a) b = GraphFold {
+>     graphfold_initial :: b,
+>     graphfold_vertex  :: a -> b -> b,
+>     graphfold_edge    :: a -> a -> a -> b -> b
+>   }
+>   visit z g = let
+>      e = Set.map (\e -> (e,g `domAction` e, g `codAction` e)) (edges g)
+>      v = vertices g
+>      esf = SetFold (\ (a,b,c) r -> graphfold_edge z a b c r) (graphfold_initial z)
+>      eres = visit esf e
+>      vsf = SetFold (graphfold_vertex z) eres
+>    in visit vsf v
