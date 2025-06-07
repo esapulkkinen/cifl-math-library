@@ -1,5 +1,6 @@
 >{-# LANGUAGE Safe,FlexibleInstances, MultiParamTypeClasses, TypeOperators, TypeFamilies, Arrows, LambdaCase, DeriveAnyClass, ExistentialQuantification, ScopedTypeVariables, FlexibleContexts, UndecidableInstances #-}
 >{-# LANGUAGE QuantifiedConstraints, LambdaCase #-}
+>{-# LANGUAGE FunctionalDependencies #-}
 >-- | This module provides matrices with indices.
 >-- Matrices are constructed using smatrix and svec operations, example:
 >-- 
@@ -69,6 +70,12 @@
 >type SMatrix4 elem = (FourD :&: FourD) elem
 >type InfMatrix elem = (Integer :&: Integer) elem
 >type RatioMatrix elem = (Rational :&: Rational) elem
+
+>-- | 'cofree' is right adjoint to 'Scalar'
+>class (VectorSpace v) => DecomposableVectorSpace v cofree | v -> cofree where
+>   decompose :: (Scalar v -> res) -> v -> cofree res
+>   project   :: v -> cofree (Scalar v)
+>   project = decompose id
 
 >mapDimensions :: (Universe a, Universe b, Integral a, ConjugateSymmetric c, Num c)
 > => (->) a :~> f -> (->) b :~> g -> (a :&: b) c -> (f :*: g) c
@@ -299,9 +306,8 @@ instance Transposable ((->) row) ((->) col) a where
 
 >instance (Num a, Eq dim, Integral dim) => Diagonalizable ((->) dim) a where
 >   identity = Matrix kroneckerDelta
->   identityImpl = const (Matrix kroneckerDelta)
 >   diagonalImpl (Matrix f) i = f i i
->   diagonalMatrixImpl f = Matrix $ \i j -> if i == j then f i else 0
+>   diagonalMatrixImpl f (Matrix m) = Matrix $ \i j -> if i == j then f i else m i j
 >
 >instance (Integral row, Universe row, SupportsMatrixMultiplication ((->) row) ((->) row) ((->) row) a)
 > => LieAlgebra ((row :&: row) a) where
@@ -370,7 +376,7 @@ leviCivita4S :: (VectorSpace a, Fractional (Scalar a), ConjugateSymmetric a, Num
 >                            k <- allElements]
 
 >-- | <https://en.wikipedia.org/wiki/Cross_product>
->crossProduct :: (Integral a, Monoid a) => [a] -> [a] -> [a]
+>crossProduct :: (Indexable [] a, Integral a, Monoid a) => [a] -> [a] -> [a]
 >crossProduct u v = [sum [leviCivita [i,j `indexProject` indexableIndices,k `indexProject` indexableIndices]
 >                    * j `indexProject` u * k `indexProject` v
 >                    | k <- take (length v) diagonalProjections,
@@ -385,7 +391,7 @@ leviCivita4S :: (VectorSpace a, Fractional (Scalar a), ConjugateSymmetric a, Num
 >   determinantImpl = sdeterminant . linear
 
 >instance (Num a, Integral row) => Indexable ((->) row) a where
->   diagonalProjections i = (\fi -> I (fi i)) <-> (\ (I v) j -> v)
+>   diagonalProjections i = MakeIndex (\fi -> (fi i)) (\a fi j -> if i == j then a else fi j) 
 >   indexableIndices i = fromIntegral i
 >
 
@@ -567,29 +573,7 @@ determinantS f = leviCivita jlst * product [f <!> (i,j) | i <- allElements]
 >svec_inf :: Stream a -> Integer -> a
 >svec_inf ~(Pre x xr) = \case { 0 -> x ; i -> svec_inf xr (pred i) }
 > 
->instance Comonad ((->) TwoD) where
->   extract f = f TwoD0
->   duplicate f = \a b -> f (a + b)
->
->instance Comonad ((->) ThreeD) where
->   extract f = f ThreeD0
->   duplicate f = \a b -> f (a + b)
->
->instance Comonad ((->) FourD) where
->   extract f = f FourD0
->   duplicate f = \a b -> f (a + b)
 
->instance Comonad ((->) FiveD) where
->   extract f = f FiveD0
->   duplicate f = \a b -> f (a + b)
->
->instance Comonad ((->) SixD) where
->   extract f = f SixD0
->   duplicate f = \a b -> f (a + b)
-
-
->
->
 >srotate_x :: (Floating a, ConjugateSymmetric a)
 > => a -> SMatrix3 a
 >srotate_x alfa = linear $ Matrix $ svec3 (svec3 1 0 0)

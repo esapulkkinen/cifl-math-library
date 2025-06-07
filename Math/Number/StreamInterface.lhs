@@ -40,9 +40,18 @@
 >class (Applicative str) => StreamBuilder str where
 >  pre :: a -> str a -> str a
 
+>class (StreamBuilder str) => StreamBuilder2 str where
+>  pre2 :: str a -> (str :*: str) a -> (str :*: str) a -> (str :*: str) a
+
 >class (Applicative str) => StreamObserver str where
 >  shead :: str a -> a
 >  stail :: str a -> str a
+
+>class (StreamObserver str) => StreamObserver2 str where
+>  stail2 :: str a -> str a
+
+>class (StreamObserver str) => StreamObserver3 str where
+>  stail3 :: str a -> str a
 
 >infixr 5 `Pre`
 
@@ -183,7 +192,7 @@
 >streamCodiagonalImpl (Matrix (Pre (Pre _ x) yr))
 > = Pre (x,fmap shead yr) (streamCodiagonalImpl $ Matrix $ fmap stail yr)
 
->instance (Num a) => CodiagonalMatrix Stream a where
+>instance CodiagonalMatrix Stream a where
 >   data Codiagonal Stream a = CodiagonalStream { codiagonalSubstreams :: Stream (Stream a, Stream a) }
 >   type (Stream \\ a) = Stream a
 >   codiagonalImpl = CodiagonalStream . streamCodiagonalImpl
@@ -191,7 +200,7 @@
 >   downProject (CodiagonalStream ~(Pre ~(x,_) _)) = x
 >   rightProject (CodiagonalStream ~(Pre ~(_,y) _)) = y
 
->instance (Num a) => Transposable Stream Stream a where
+>instance Transposable Stream Stream a where
 >  transposeImpl x = streamMatrixImpl (streamDiagonalImpl x)
 >                     (fmap swap $ codiagonalSubstreams $ codiagonalImpl x)
 >    where swap (a,b) = (b,a)

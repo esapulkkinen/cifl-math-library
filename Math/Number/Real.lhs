@@ -807,7 +807,7 @@ decodeInBase base p x = iter start
 
 >goldenRatio :: R
 >goldenRatio = Limit $ Stream.drop 4 
->                     $ streamQuotients (fmap fromIntegral fib)
+>                     $ streamQuotients (fmap fromIntegral (fib :: Stream Integer))
 
 >slowGoldenRatio :: R
 >slowGoldenRatio = (1 + sqrt 5) / 2

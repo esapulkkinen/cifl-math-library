@@ -185,8 +185,12 @@ tensor (a,b) = Tensor $ matrix (,) a b
 >instance (Num a, ConjugateSymmetric a) => Linearizable LinearMap (:*:) Vector2 Dual (f a) where { fromLinear (Mat2D x) = x ; linear = Mat2D }
 >instance (Num a, ConjugateSymmetric a) => Linearizable LinearMap (:*:) Vector3 Dual (f a) where { fromLinear (Mat3D x) = x ; linear = Mat3D }
 >instance (Num a, ConjugateSymmetric a) => Linearizable LinearMap (:*:) Vector4 Dual (f a) where { fromLinear (Mat4D x) = x ; linear = Mat4D }
->instance (Scalar (f a) ~ f a, Num a, ConjugateSymmetric a, Diagonalizable Dual (f a)) => Linearizable LinearMap (:*:) Dual Dual (f a) where { fromLinear (MatDD x) = x ; fromLinear MatIdentity = identity ; linear = MatDD }
->instance (Num a, ConjugateSymmetric a, Diagonalizable Stream a, InnerProductSpaceFunctor Stream a) => Linearizable LinearMap (:*:) Stream Stream a where { fromLinear (MatSS x) = x ; fromLinear MatIdentity = identity ; linear = MatSS }
+>instance (Scalar (f a) ~ f a, Num a, Num (f a), ConjugateSymmetric a, Diagonalizable Dual (f a)) => Linearizable LinearMap (:*:) Dual Dual (f a) where { fromLinear (MatDD x) = x ; fromLinear MatIdentity = identity ; linear = MatDD }
+>instance (Num a, ConjugateSymmetric a, Diagonalizable Stream a, InnerProductSpaceFunctor Stream a)
+> => Linearizable LinearMap (:*:) Stream Stream a where
+>   fromLinear (MatSS x) = x
+>   fromLinear MatIdentity = identity
+>   linear = MatSS 
 >instance (Num a, ConjugateSymmetric a,InnerProductSpaceFunctor Stream a) => Linearizable LinearMap (:*:) Stream Vector1 a where { fromLinear (MatS1 x) = x ; linear = MatS1 }
 >instance (Num a, ConjugateSymmetric a,InnerProductSpaceFunctor Stream a) => Linearizable LinearMap (:*:) Stream Vector2 a where { fromLinear (MatS2 x) = x ; linear = MatS2 }
 >instance (Num a, ConjugateSymmetric a,InnerProductSpaceFunctor Stream a) => Linearizable LinearMap (:*:) Stream Vector3 a where { fromLinear (MatS3 x) = x ; linear = MatS3 }
@@ -216,7 +220,7 @@ tensor (a,b) = Tensor $ matrix (,) a b
 >   foldMap f g = foldMap (f . g) allElements
 
 >-- | Foldable instance requires input 'f a' of 'LinearMap (f a)' to be finite.
->instance (Foldable f,Diagonalizable f a) => Foldable (LinearMap (f a)) where
+>instance (Num a, Foldable f,Diagonalizable f a) => Foldable (LinearMap (f a)) where
 >   foldMap f (MatIdentity :: LinearMap (f a) b) =
 >     Data.Foldable.foldMap f (cells identity)
 >   foldMap f (Mat11 (Matrix m)) = foldMap f m
@@ -420,7 +424,7 @@ instance (forall b. VectorSpace (g b), forall b. VectorSpace (f b), Indexable f 
 
 >instance (Ord a, Fractional a, ConjugateSymmetric a) => Fractional ((Vector2 :*: Vector2) a) where
 >   recip = inverseImpl
->   fromRational = diagonalMatrixImpl . constant2 . fromRational
+>   fromRational x = diagonalMatrixImpl (constant2 $ fromRational x) vzero
 
 >instance (ConjugateSymmetric a, Fractional a, Ord a) => LinearInvertible LinearMap Vector2 a
 >instance (ConjugateSymmetric a, Fractional a, Ord a) => LinearInvertible LinearMap Vector3 a
@@ -447,10 +451,9 @@ instance (forall b. VectorSpace (g b), forall b. VectorSpace (f b), Indexable f 
 >invertMatrix m | isInvertibleMatrix m = Just (inverse m)
 >                | otherwise = Nothing
 
->diagonalMatrix :: (Transposable m m a, LinearTransform m m a, Diagonalizable m a,
-> Linearizable LinearMap (:*:) m m a
-> ) => m a -> m a :-> m a
->diagonalMatrix = linear . diagonalMatrixImpl
+>diagonalMatrix :: (Diagonalizable m a, Linearizable LinearMap (:*:) m m a)
+> => m a -> m a :-> m a -> m a :-> m a
+>diagonalMatrix v m = linear $ diagonalMatrixImpl v (fromLinear m)
 
 >linearInverseImpl :: (Linearizable LinearMap (:*:) f g a, Linearizable LinearMap (:*:) g f a,
 > Transposable f g a
@@ -458,7 +461,7 @@ instance (forall b. VectorSpace (g b), forall b. VectorSpace (f b), Indexable f 
 >linearInverseImpl m = linear $ transposeImpl m
 
 >linOuter :: (Linearizable LinearMap (:*:) f g a, Diagonalizable f a,
->      InnerProductSpace (f a), VectorSpace (g a),
+>      InnerProductSpace (f a), VectorSpace (g a),Num a,
 >      Scalar (f a) ~ Scalar (g a))
 >  => f a -> g a -> f a :-> g a
 >linOuter x y = arrLinear (outer x y)
@@ -481,7 +484,7 @@ instance (forall b. VectorSpace (g b), forall b. VectorSpace (f b), Indexable f 
 >    returnA -< Matrix res
 
 >-- | <https://en.wikipedia.org/wiki/Bilinear_map>
->bilinear :: (VectorSpace ((f :*: g) a), VectorSpace (g a), a ~ Scalar (g a), Indexable f a, Indexable g a, Integral a,
+>bilinear :: (VectorSpace ((f :*: g) a), VectorSpace (g a), VectorSpace (f a), a ~ Scalar (g a), Indexable f a, Indexable g a, Integral a,
 >  Linearizable LinearMap (:*:) f g a)
 >   => (f a -> f a -> g a) -> f a -> f a -> f a :-> g a
 >bilinear f a b = linear (bilinearImpl f a b)
@@ -569,7 +572,7 @@ dual_lin_apply f (Matrix g) = matrixLin (-!!<) (fmap bracketMap f) g
 >(-!<) :: (LinearTransform f g a) => f a :-> g a -> f a -> g a
 >(-!<) = appLinear
 
->fromLinearImpl :: (Diagonalizable f a) => f a :-> g a -> (f :*: g) a
+>fromLinearImpl :: (Diagonalizable f a, Num a) => f a :-> g a -> (f :*: g) a
 >fromLinearImpl MatIdentity = identity
 >fromLinearImpl (Mat11 x) = x
 >fromLinearImpl (Mat12 x) = x
@@ -651,7 +654,7 @@ dual_lin_apply f (Matrix g) = matrixLin (-!!<) (fmap bracketMap f) g
 linear_identity_indexable :: (Num a, LinearTransform f f a, Diagonalizable f a, Indexable f a) => f a :-> f a
 linear_identity_indexable = linear $ identityImpl indexable_indices
 
->matrix_equalizer :: (Eq (Scalar (h a)), Eq (g (f (Scalar (f a)))),
+>matrix_equalizer :: (Eq (g (f a)),
 >   Linearizable LinearMap (:*:) h f a,
 >   Linearizable LinearMap (:*:) g h a,
 >  SupportsMatrixMultiplication g h f a,
@@ -721,7 +724,7 @@ instance (Num a, a ~ Scalar a) => FiniteDimensional (Vector1 a) Dual I LinearMap
 
 >vectorDirectionalDerivative ::
 >  (Linearizable LinearMap (:*:) f g a, LinearTransform f g a, 
->   Diagonalizable f a, Closed (g a),
+>   Diagonalizable f a, Closed (g a), Num a,
 >   VectorSpace (g a), VectorSpace (f a),
 >   Infinitesimal Stream (Scalar (f a)))
 >   => f a -> f a :-> g a -> f a :-> g a
@@ -981,9 +984,9 @@ instance (Num a, LinearTransform Dual Vector1 (Vector3 a), ConjugateSymmetric a)
 >                                         (partial3_3 ff x y z)
 >  where ff a b c = f (Vector3 a b c)
 
->partialDerivateVector3 :: (Infinitesimal s (Scalar a)
-> , VectorSpace a, Num a, Limiting s a)
->   => (Vector3 (Scalar a) -> a) -> Vector3 (Scalar a) -> Closure s (Vector3 a)
+>partialDerivateVector3 :: (Infinitesimal Stream (Scalar a)
+> , VectorSpace a, Num a, Limiting Stream a)
+>   => (Vector3 (Scalar a) -> a) -> Vector3 (Scalar a) -> Closure Stream (Vector3 a)
 >partialDerivateVector3 f (Vector3 x y z) = Vector3Closure $
 >      Vector3 (pd1 (callf f) x y z)
 >              (pd2 (callf f) x y z)
@@ -1026,17 +1029,17 @@ instance (Num a, LinearTransform Dual Vector1 (Vector3 a), ConjugateSymmetric a)
 >linBind m f = linear $ matBind (fromLinear m) (fromLinear . f)
 
 >covectorImpl :: (Linearizable LinearMap (:*:) f Vector1 b,
-> Scalar (f b) ~ b, Diagonalizable f b)
+> Scalar (f b) ~ b, Diagonalizable f b, Num b)
 > => (f b -> b) -> Dual (f b)
 >covectorImpl f = Covector $ arrLinear $ Vector1 . f
 
 >linearOuterProduct_ a b = arrLinear (Math.Matrix.Interface.outer a b)
 
->arrLinear :: (Linearizable arr (:*:) f g a, Diagonalizable f a)
+>arrLinear :: (Linearizable arr (:*:) f g a, Diagonalizable f a, Num a)
 >  => (f a -> g a) -> arr (f a) (g a)
 >arrLinear f = linear $ functionMatrix f
 >
->arrNatural :: (Linearizable arr (:*:) f g a, Diagonalizable f a) => f :~> g -> arr (f a) (g a)
+>arrNatural :: (Linearizable arr (:*:) f g a, Diagonalizable f a, Num a) => f :~> g -> arr (f a) (g a)
 >arrNatural (NatTrans m) = arrLinear m
 
 >bracketMap :: Dual (f a) -> f a :-> Vector1 (Scalar (f a))

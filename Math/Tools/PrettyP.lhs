@@ -77,12 +77,12 @@ hang :: Doc -> Int -> Doc -> Doc
  
 > class (PpShowF f) => PpShowVerticalF f where
 >   ppfVertical :: (PpShow a) => f a -> Doc
-  
- 
+
 > instance PpShowVerticalF [] where
 >   ppfVertical = verticalize
 
-
+> instance PpShowVerticalF Complex where
+>   ppfVertical (x :+ y) = pp x Pretty.$$ ":+" Pretty.<+> pp y
 
 > ppList :: (PpShow a) => [a] -> Doc
 > ppList x = Pretty.brackets $ Pretty.nest 8 (Pretty.fsep (Pretty.punctuate (pp ',') (map pp x)))

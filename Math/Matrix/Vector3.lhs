@@ -166,6 +166,11 @@
 >remove3 :: Vector3 (Vector3 a -> Vector2 a)
 >remove3 = Vector3 removex3 removey3 removez3
 
+>determinancett3 :: (Num a) => Determinance Vector3 Vector3 Vector2 Vector2 Vector2 a a a
+>determinancett3 = Determinance remove3 remove3 xcoord3 xcoord3 combine3 determinantImpl
+>  where combine3 (Vector3 a b c) = a - b + c
+
+
 >remove_index3 :: Matrix3 a -> Matrix3 (Matrix2 a)
 >remove_index3 (Matrix m) = matrix app remove3 remove3
 >   where app f g = Matrix $ f $ fmap g m
@@ -400,8 +405,7 @@ approximations_vector3 (Vector3 x y z) = do
 >nth_norm3 :: (Floating a) => a -> Vector3 a -> a
 >nth_norm3 n (Vector3 x y z) = (x**n + y**n + z**n)**(1/n)
 
->instance (Num a) => Diagonalizable Vector3 a where
->  identityImpl _ = identity3
+>instance Diagonalizable Vector3 a where
 >  identity = identity3
 >  diagonalImpl = diagonal3
 >  diagonalMatrixImpl = diagonal_matrix3
@@ -449,22 +453,22 @@ approximations_vector3 (Vector3 x y z) = do
 >  dimensionSize _ = 3
 >  coordinates _ = [0,1,2]
 
->instance (Num a) => StandardBasis (Vector3 a) where
+>instance (Numeric a) => StandardBasis (Vector3 a) where
 >  unitVectors = [xid,yid,zid]
 
 
->instance (Ord a, Num a, ConjugateSymmetric a) => Num ((Vector3 :*: Vector3) a) where
+>instance (Ord a, Numeric a, ConjugateSymmetric a) => Num ((Vector3 :*: Vector3) a) where
 >  (Matrix v) + (Matrix v') = Matrix $ liftA2 (liftA2 (+)) v v'
 >  (Matrix v) - (Matrix v') = Matrix $ liftA2 (liftA2 subtract) v v'
 >  (*) = (%*%)
 >  negate (Matrix v) = Matrix (negate v)
 >  abs (Matrix v) = Matrix (abs v)
 >  signum (Matrix v) = Matrix (signum v)
->  fromInteger = diagonalMatrixImpl . constant3 . fromInteger
+>  fromInteger x = diagonalMatrixImpl (constant3 $ fromInteger x) vzero
 
->instance (Ord a, Fractional a, ConjugateSymmetric a) => Fractional ((Vector3 :*: Vector3) a) where
+>instance (Ord a, NumFractional a, ConjugateSymmetric a) => Fractional ((Vector3 :*: Vector3) a) where
 >   recip = inverseImpl
->   fromRational = diagonalMatrixImpl . constant3 . fromRational
+>   fromRational x = diagonalMatrixImpl (constant3 $ fromRational x) vzero
 
 
 >instance (Num a) => Num (Vector3 a) where
@@ -479,10 +483,10 @@ approximations_vector3 (Vector3 x y z) = do
 >index3 :: Vector3 (Vector3 a -> a)
 >index3 = Vector3 xcoord3 ycoord3 zcoord3
 
->mapBasis :: (Num a) => (Vector3 a -> Vector3 a) -> Vector3 a -> Vector3 a
+>mapBasis :: (Numeric a) => (Vector3 a -> Vector3 a) -> Vector3 a -> Vector3 a
 >mapBasis f (Vector3 x y z) = x %* f iVec + y %* f jVec + z %* f kVec
 
->functionMatrix3 :: (Num a) => (Vector3 a -> Vector3 a) -> Matrix3 a
+>functionMatrix3 :: (Numeric a) => (Vector3 a -> Vector3 a) -> Matrix3 a
 >functionMatrix3 f = Matrix $ Vector3 (f xid) (f yid) (f zid)
 
 >splitx,splity,splitz :: Vector3 s -> (Vector2 s, Vector1 s)
@@ -523,7 +527,7 @@ approximations_vector3 (Vector3 x y z) = do
 >identity3 = Matrix $ Vector3 xid yid zid
 
 
->matrixPower3 :: (Ord a, ConjugateSymmetric a,Num a) => Matrix3 a -> Integer -> Matrix3 a
+>matrixPower3 :: (Ord a, ConjugateSymmetric a,Numeric a) => Matrix3 a -> Integer -> Matrix3 a
 >matrixPower3 mat = \case
 >    0 -> identity3
 >    i -> mat `matrixMultiply3` matrixPower3 mat (pred i)
@@ -594,8 +598,8 @@ approximations_vector3 (Vector3 x y z) = do
 >zero_codiagonal3 :: (Num a) => Codiagonal Vector3 a
 >zero_codiagonal3 = Codiagonal3 vzero vzero zero_codiagonal2
 
->diagonal_matrix3 :: (Num a) => Vector3 a -> (Vector3 :*: Vector3) a
->diagonal_matrix3 v = matrix3 v zero_codiagonal3
+>diagonal_matrix3 :: Vector3 a -> (Vector3 :*: Vector3) a -> (Vector3 :*: Vector3) a
+>diagonal_matrix3 v m = matrix3 v (codiag3 m)
 
 >matrix3 :: Vector3 a -> Codiagonal Vector3 a -> (Vector3 :*: Vector3) a
 >matrix3 (Vector3 d1 d2 d3) (Codiagonal3 (Vector2 a' a'') (Vector2 a b)
@@ -687,26 +691,26 @@ deriving instance (Show a) => Show (Codiagonal Vector3 a)
 >   (Codiagonal3 f1 f2 fr) <*> (Codiagonal3 x1 x2 xr) =
 >     Codiagonal3 (f1 <*> x1) (f2 <*> x2) (fr <*> xr)
 
->instance (Num a) => Indexable Vector3 a where
+>instance Indexable Vector3 a where
 >  diagonalProjections = diagonal_projections3
 >  indexableIndices = Vector3 0 1 2
 
 >diagonal3 :: Matrix3 a -> Vector3 a
 >diagonal3 (Matrix m) = Vector3 (xcoord3 $ xcoord3 m) (ycoord3 $ ycoord3 m) (zcoord3 $ zcoord3 m)
 
->diagonal_projections3 :: (Num a) => Vector3 (Index Vector3 a)
->diagonal_projections3 = Vector3 (xcoord3 <!-!> \a -> Vector3 a 0 0)
->                                (ycoord3 <!-!> \a -> Vector3 0 a 0)
->                                (zcoord3 <!-!> \a -> Vector3 0 0 a)
+>diagonal_projections3 :: Vector3 (Index Vector3 a)
+>diagonal_projections3 = Vector3 (xcoord3 <!-!> setx3)
+>                                (ycoord3 <!-!> sety3)
+>                                (zcoord3 <!-!> setz3)
 
 >diagonal3x :: (Num a) => Matrix3 a -> Vector3 a
->diagonal3x (Matrix x) = fmap unI $ fmap isomorphismEpimorphism diagonal_projections3 <*> x
+>diagonal3x (Matrix x) = fmap scalarProjection diagonal_projections3 <*> x
   
 >diagonal3y :: (Num a) => Matrix3 a -> Vector3 a
->diagonal3y (Matrix x) = fmap unI $ fmap isomorphismEpimorphism (rotate_coordinates3 diagonal_projections3) <*> x
+>diagonal3y (Matrix x) = fmap scalarProjection (rotate_coordinates3 diagonal_projections3) <*> x
   
 >diagonal3z :: (Num a) => Matrix3 a -> Vector3 a
->diagonal3z (Matrix x) = fmap unI $ fmap isomorphismEpimorphism (rotate_coordinates3 (rotate_coordinates3 diagonal_projections3)) <*> x
+>diagonal3z (Matrix x) = fmap scalarProjection (rotate_coordinates3 (rotate_coordinates3 diagonal_projections3)) <*> x
 
 >-- | algorithm from <http://en.wikipedia.org/wiki/Determinant>
 
@@ -786,10 +790,11 @@ instance FractionalSpace (Vector3 (Complex R)) where
 >  (Matrix x) %+ (Matrix y) = Matrix $ x %+ y
 
 >instance {-# OVERLAPPING #-}
->     (Ord a,Floating a, ConjugateSymmetric a) => NormedSpace ((Vector3 :*: Vector3) a) where
+>     (Floating a, ConjugateSymmetric a, AdditiveIdentity a, MultiplicativeIdentity a)
+> => NormedSpace ((Vector3 :*: Vector3) a) where
 >  norm = innerproductspaceNorm
 
->instance (Floating a, ConjugateSymmetric a)
+>instance (SupportsMatrixMultiplication Vector3 Vector3 Vector3 a)
 > => InnerProductSpace ((Vector3 :*: Vector3) a) where
 >  x %. y = traceImpl (transposeImpl x %*% y)
 
@@ -820,14 +825,15 @@ instance FractionalSpace (Vector3 (Complex R)) where
 >         mdq = diagonalImpl m - return q
 >         p2 = normSquared mdq + 2 * p1
 >         p = sqrt (p2 / 6)
->         b = (1 / p) %* (m %- q %* identityImpl dim3)
+>         b = (1 / p) %* (m %- q %* identity)
 >         r = determinantImpl b / 2
 >         phi | r <= -1   = pi / 3
 >             | r >= 1    = 0
 >             | otherwise = acos r / 3
 
 
->instance (Floating a, Ord a, ConjugateSymmetric a) => EigenDecomposable Vector3 a where
+>instance (Floating a, Ord a,ConjugateSymmetric a)
+> => EigenDecomposable Vector3 a where
 >   eigenvalues = eigenvalue3
 
 >instance (Fractional a) => Invertible Vector3 a where
@@ -846,8 +852,8 @@ instance FractionalSpace (Vector3 (Complex R)) where
 >                  | x == 1 && y == 0 && z == 2 = negate 1
 >                  | x == y || y == z || z == x = 0
 
->instance (Monad str,Limiting str a) => Limiting str (Vector3 a) where
->  data Closure str (Vector3 a) = Vector3Closure (Vector3 (Closure str a))
+>instance (Limiting Stream a) => Limiting Stream (Vector3 a) where
+>  data Closure Stream (Vector3 a) = Vector3Closure (Vector3 (Closure Stream a))
 >  limit str = Vector3Closure $ Vector3
 >                      (limit $ fmap xcoord3 str)
 >                      (limit $ fmap ycoord3 str)
@@ -858,10 +864,10 @@ instance FractionalSpace (Vector3 (Complex R)) where
 >                         (approximations c)
 >     return $! Vector3 a' b' c'
 
->instance (Show a, Monad str, Limiting str a) => Show (Closure str (Vector3 a)) where
+>instance (Show a, Limiting Stream a) => Show (Closure Stream (Vector3 a)) where
 >   showsPrec _ v = shows $ shead $ approximations v
 
->instance (Monad str, PpShow a, Limiting str a) => PpShow (Closure str (Vector3 a)) where
+>instance (PpShow a, Limiting Stream a) => PpShow (Closure Stream (Vector3 a)) where
 >   pp v = pp $ shead $ approximations v
 
 >cycle3 :: (StreamBuilder str) => Vector3 a -> str a

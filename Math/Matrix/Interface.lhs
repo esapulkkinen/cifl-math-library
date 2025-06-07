@@ -161,12 +161,12 @@ cellsLinear = cells . fromLinear
 >--    \[f (a, b + c) = f(a, b) + f(a,c)\]
 >--    \[f (a, k c) = k f(a, c)\]
 >-- <https://en.wikipedia.org/wiki/Bilinear_map>
->bilinearImpl :: (VectorSpace (g c), Scalar (g c) ~ c,
+>bilinearImpl :: (VectorSpace (g c), VectorSpace (f c), Scalar (g c) ~ c,
 > Indexable f c, Indexable g c, Integral c, VectorSpace ((f :*: g) c))
 >  => (f c -> f c -> g c) -> f c -> f c -> (f :*: g) c
 >bilinearImpl f a b = asplit a b %+ bsplit a b
->  where asplit a' b' = Matrix $ fmap (\p -> p `indexProject` a' %* f (basisVector p) b') diagonalProjections
->        bsplit a' b' = Matrix $ fmap (\q -> q `indexProject` b' %* f a' (basisVector q)) diagonalProjections
+>  where asplit a' b' = Matrix $ fmap (\p -> p `indexProject` a' %* f (basisVector p 1 vzero) b') diagonalProjections
+>        bsplit a' b' = Matrix $ fmap (\q -> q `indexProject` b' %* f a' (basisVector q 1 vzero)) diagonalProjections
 
 
 
@@ -192,12 +192,10 @@ bilinear f (x,y) = linear $ bilinear_impl f (fromLinear x) (fromLinear y)
 >  (%+)  :: v -> v -> v -- sum
 >  (%*)  :: Scalar v -> v -> v -- scalar product
 
->-- | 'cofree' is right adjoint to 'Scalar'
->class (VectorSpace v) => DecomposableVectorSpace v cofree | v -> cofree where
->   decompose :: (Scalar v -> res) -> v -> cofree res
->   project   :: v -> cofree (Scalar v)
->   project = decompose id
-
+>type NumIdentities a = (AdditiveIdentity a, MultiplicativeIdentity a)
+>type Numeric a = (Num a, NumIdentities a)
+>type NumFractional a = (Fractional a, NumIdentities a)
+>type NumFloating a = (Floating a, NumIdentities a)
 >type VectorSpaceOver v a = (VectorSpace v, Scalar v ~ a)
 >type PrimitiveSpace v = (v ~ Scalar v, VectorSpace v)
 >type ComplexVectorSpace v a = VectorSpaceOver v (Complex a)
@@ -296,7 +294,7 @@ lie_compose m1 m2 = linmatrix (bilinear (%<>%)) (cells_linear m1, (cells_linear 
 >data Lin b c where
 >  Lin :: (f :*: g) a -> Lin (f a) (g a)
 
->class (Functor m, Functor n, Scalar (m a) ~ Scalar (n a)) => Transposable m n a where
+>class (Functor m, Functor n) => Transposable m n a where
 >  transposeImpl :: (m :*: n) a -> (n :*: m) a
 
 >instance Transposable ((->) row) ((->) col) a where
@@ -325,7 +323,7 @@ transpose :: (Diagonalizable n a, LinearTransform n m a, LinearTransform m n a, 
 >transpose :: (Transposable g f a, Linearizable arr (:*:) f g a, Linearizable arr (:*:) g f a) => arr (g a) (f a) -> arr (f a) (g a)
 >transpose x = linear $ transposeImpl $ fromLinear x
 
->indexableTranspose :: (Functor n, Indexable m a) => (n :*: m) a -> (m :*: n) a
+>indexableTranspose :: (Functor n, Num a, Indexable m a) => (n :*: m) a -> (m :*: n) a
 >indexableTranspose (Matrix m) = matrix runIndex diagonalProjections m
 
 >updateColumn :: (Applicative h) => (a -> f b -> g c) -> h a -> (h :*: f) b -> (h :*: g) c
@@ -355,36 +353,42 @@ transpose :: (Diagonalizable n a, LinearTransform n m a, LinearTransform m n a, 
 >solveMatrix m b = fmap (\f -> mdetinverse * determinantImpl (f m)) (writeColumn b)
 >  where mdetinverse = 1 / determinantImpl m
 
->(<!-!>) :: (m a -> a) -> (a -> m a) -> Index m a
->f <!-!> finv = (I . f) <-> (finv . unI)
+>(<!-!>) :: (m a -> a) -> (a -> m a -> m a) -> Index m a
+>f <!-!> finv = MakeIndex f finv
 
 >runIndex :: Index m a -> m a -> a
->runIndex f = \ x -> unI (f =< x)
+>runIndex (MakeIndex f _) x = f x
 
 >appIndex :: (Applicative f) => f (Index m a) -> f (m a) -> f a
->appIndex f = \x -> fmap unI $ appIso f =< x
+>appIndex = liftA2 scalarProjection
 
->type Index m a = m a :==: I a
+>data Index m a = MakeIndex {
+>   scalarProjection :: m a -> a,
+>   modifyVector :: a -> m a -> m a -- element to insert, vector to use to fill rest of dimensions
+> }
 
->class (Applicative m, Num a) => Indexable m a where
+>class (Applicative m) => Indexable m a where
 >  {-# MINIMAL diagonalProjections, indexableIndices #-}
 >  diagonalProjections :: m (Index m a)
->  basisVector :: Index m a -> m a
+>  basisVector :: Index m a -> a -> m a -> m a
 >  indexProject :: Index m a -> m a -> a
->  indexableIndices :: m a
->  basisVector ind = isomorphismSection ind (I 1)
->  indexProject ind = unI . isomorphismEpimorphism ind
+>  indexableIndices :: (Integral a) => m a
+>  basisVector = modifyVector
+>  indexProject = scalarProjection
+
+>class AdditiveIdentity a where
+>  additiveIdentity :: a
+>
+>class MultiplicativeIdentity a where
+>  multiplicativeIdentity :: a
 
 >-- | <https://en.wikipedia.org/wiki/Square_matrix>
->class (Num a, Indexable m a, Transposable m m a) => Diagonalizable m a where
->  identityImpl :: m Integer -> (m :*: m) a
->  -- ^ argument to identityImpl is dimension of the matrix
->  identity :: (m :*: m) a
+>class (Indexable m a, Transposable m m a) => Diagonalizable m a where
+>  identity :: (Num a) => (m :*: m) a
 >  diagonalImpl :: (m :*: m) a -> m a
->  diagonalMatrixImpl :: m a -> (m :*: m) a
->  identityImpl = const identity
+>  diagonalMatrixImpl :: m a -> (m :*: m) a -> (m :*: m) a
 
->basis :: (Diagonalizable m a) => m (m a)
+>basis :: (Num a, Diagonalizable m a) => m (m a)
 >basis = cells identity
 
 >coefficients :: (Foldable m, Applicative m, VectorSpace v) => m (Scalar v) -> m v -> v
@@ -393,15 +397,15 @@ transpose :: (Diagonalizable n a, LinearTransform n m a, LinearTransform m n a, 
 bilinear_map :: (Foldable m, VectorSpace a, Diagonalizable m b, Diagonalizable m c)
   => (m b -> m c -> a) -> m (Scalar a) -> m (Scalar a) -> a
 
->bilinearMap :: (VectorSpace a, Foldable m, Foldable n, Diagonalizable m b, Diagonalizable n c)
+>bilinearMap :: (Num c, Num b, VectorSpace a, Foldable m, Foldable n, Diagonalizable m b, Diagonalizable n c)
 >  => (m b -> n c -> a) -> m (Scalar a) -> n (Scalar a) -> a
 >bilinearMap f x y = coefficients x $ fmap (coefficients y) $ cells $ matrix f basis basis
 
 >-- | <https://en.wikipedia.org/wiki/Linear_map#Matrices>
->linearMap_ :: (Foldable m, Diagonalizable m a, VectorSpace b) => (m a -> b) -> m (Scalar b) -> b
+>linearMap_ :: (Num a, Foldable m, Diagonalizable m a, VectorSpace b) => (m a -> b) -> m (Scalar b) -> b
 >linearMap_ f x = coefficients x $ fmap f basis
 
->linearMap' :: (b ~ Scalar (n b), Foldable m, Diagonalizable m a, VectorSpace (n b))
+>linearMap' :: (Num a,b ~ Scalar (n b), Foldable m, Diagonalizable m a, VectorSpace (n b))
 >  => (m a -> n b) -> m b -> n b
 >linearMap' = linearMap_
 
@@ -411,7 +415,7 @@ bilinear_map :: (Foldable m, VectorSpace a, Diagonalizable m b, Diagonalizable m
 linear_id = linear_map id
 
 
->linearIdentity :: (Linearizable arr (:*:) m m a, LinearTransform m m a, Diagonalizable m a) => arr (m a) (m a)
+>linearIdentity :: (Linearizable arr (:*:) m m a, LinearTransform m m a, Diagonalizable m a, Num a) => arr (m a) (m a)
 >linearIdentity = linear identity
 
 diagonal :: (LinearTransform m m a, Diagonalizable m a) => m a :-> m a -> m a
@@ -451,6 +455,7 @@ codiagonal = codiagonal_impl . fromLinear
 >  traceImpl :: (m :*: m) a -> a
 >  determinantImpl :: (m :*: m) a -> a
 >  vectorDimension :: m a -> a
+>  default vectorDimension :: (Num a) => m a -> a
 >  vectorDimension (f :: m a) = traceImpl (identity :: (m :*: m) a)
 
 >class (Category arr,Traceable m a) => LinearTraceable arr m a | m a -> arr where
@@ -763,7 +768,8 @@ linear_power :: (Diagonalizable h (h b), Diagonalizable h b) => h b :-> h b -> I
 linear_power (LinearMap p f) 0 = LinearMap Refl $ identity_impl (vector_dimension $ cells f)
 linear_power f i = f . linear_power f (i-1)
 
->(%^%) :: (a ~ Scalar (f a), SupportsMatrixMultiplication f f f a, Diagonalizable f (f a), Diagonalizable f a) => (f :*: f) a -> Integer -> (f :*: f) a
+>(%^%) :: (a ~ Scalar (f a), SupportsMatrixMultiplication f f f a, AdditiveIdentity a, MultiplicativeIdentity a, Diagonalizable f (f a), Diagonalizable f a)
+> => (f :*: f) a -> Integer -> (f :*: f) a
 >x %^% 0 = identity
 >x %^% i = x %*% (x %^% (i-1))
 
@@ -796,7 +802,7 @@ x %^% i = x %*% (x %^% (i-1))
 
 >-- | This is the linearity condition:
 
->functionMatrix :: (Diagonalizable f b) => (f b -> g b) -> (f :*: g) b
+>functionMatrix :: (Diagonalizable f b, Num b) => (f b -> g b) -> (f :*: g) b
 >functionMatrix f = Matrix $ fmap f $ cells $ identity
 
 >instance (Show v) => Show (Basis v) where
@@ -861,7 +867,6 @@ x %^% i = x %*% (x %^% (i-1))
 >   vnegate (Basis lst) = Basis (map vnegate lst)
 >   n %* (Basis lst) = Basis (map (n %*) lst)
 >   (Basis lst) %+ (Basis lst') = Basis (lst ++ lst')
-
 
 >instance (Num a) => VectorSpace [a] where
 >   type Scalar [a] = a
@@ -1027,7 +1032,7 @@ instance (Floating a) => NormedSpace [a] where
 >   a %* (Sum x) = Sum (a * x)
 >   (Sum x) %+ (Sum y) = Sum (x + y)
 
->instance (Floating a, ConjugateSymmetric a) => NormedSpace (Sum a) where
+>instance (NumFloating a, ConjugateSymmetric a) => NormedSpace (Sum a) where
 >   normSquared x = x %. x
 
 >instance (ConjugateSymmetric a, Num a) => InnerProductSpace (Sum a) where
@@ -1128,15 +1133,6 @@ instance (Functor m) => Unital (:*:) m where
   leftId = matrixLeftId
   rightId = matrixRightId
 
->instance (Num a, Monoid a) => Indexable [] a where
->   diagonalProjections = diagonalProjectionsList -- (head <-> ) : map (. tail) diagonalProjections
->   indexableIndices = 0 : map (+1) indexableIndices
-
->diagonalProjectionsList :: (Monoid a) => [Index [] a]
->diagonalProjectionsList = ((I . head) <-> \ (I a) -> a:zeroList)
->                            : map (\i -> i . (tail <-> \lst -> (mempty:lst))) diagonalProjectionsList
->   where zeroList = mempty : zeroList
-
 >-- | <https://en.wikipedia.org/wiki/Norm_(mathematics)>
 >isOnUnitCircle :: (NormedSpace v, Eq (Scalar v)) => v -> Bool
 >isOnUnitCircle v = normSquared v == 1
@@ -1152,12 +1148,10 @@ instance VectorSpace (f (Complex a)) => VectorSpace ((f :*: Complex) a) where
   (Matrix v) %+ (Matrix w) = Matrix (v %+ w)
   c %* (Matrix v) = Matrix (c %* v)
 
->instance {-# OVERLAPPING #-} (Indexable f a, Diagonalizable f a, Functor f, Scalar (f a) ~ Complex a, Num a)
-> => Transposable f Complex a where
+>instance {-# OVERLAPPING #-} (Functor f) => Transposable f Complex a where
 >  transposeImpl (Matrix m) = Matrix $ fmap realPart m :+ fmap imagPart m
 
->instance {-# OVERLAPPING #-} (LinearTransform f Complex a, Diagonalizable Complex a, Applicative f, Num a)
-> => Transposable Complex f a where
+>instance {-# OVERLAPPING #-} (Applicative f) => Transposable Complex f a where
 >  transposeImpl (Matrix (m :+ n)) = Matrix $ liftA2 (:+) m n
 
 >-- | notice matrix of two complex numbers has special properties as matrix.
@@ -1172,13 +1166,11 @@ instance VectorSpace (f (Complex a)) => VectorSpace ((f :*: Complex) a) where
 >instance (Num a) => Diagonalizable Complex a where
 >  identity = Matrix $ (1 :+ 0) :+ (0 :+ 1)
 >  diagonalImpl (Matrix ((a :+ b) :+ (c :+ d))) = (a-d) :+ (b+c)
->  diagonalMatrixImpl (a :+ b) = Matrix $ (a :+ 0) :+ (0 :+ negate b)
+>  diagonalMatrixImpl (a :+ b) m = Matrix $ (a :+ imagPart (realPart (cells m)))
+>                                        :+ (realPart (imagPart (cells m)) :+ negate b)
 
 >instance (Show (f a)) => Show ((Complex :*: f) a) where
 >  show (Matrix (a :+ b)) = show a ++ " :+ " ++ show b
-
->instance PpShowVerticalF Complex where
->  ppfVertical (x :+ y) = pp x $$ ":+" <+> pp y
 
 >instance (Num a) => VectorSpace (I a) where
 >  type Scalar (I a) = a
@@ -1232,9 +1224,9 @@ instance {-# OVERLAPPING #-}
 >  diagonalProjections = diagonalProjectionsComplex
 >  indexableIndices = 0 :+ 1
 
->diagonalProjectionsComplex :: (Num a) => Complex (Index Complex a)
->diagonalProjectionsComplex = ((I . realPart) <-> \ (I a) -> a :+ 0)
->                               :+ ((I . imagPart) <-> \ (I a) -> 0 :+ a)
+>diagonalProjectionsComplex :: Complex (Index Complex a)
+>diagonalProjectionsComplex =  (MakeIndex realPart (\a c -> (a :+ imagPart c)))
+>                           :+ (MakeIndex imagPart (\a c -> (realPart c :+ a)))
 
 example use: m <!> (xcoord3,ycoord3)
 
@@ -1252,7 +1244,6 @@ example use: m <!> (xcoord3,ycoord3)
 >sumCoordinates = Data.Foldable.foldr (+) 0
 
 >instance (Monad f, Monad g, forall b. Transposable g f b) => Monad (f :*: g) where
->   return = Matrix . return . return
 >   v >>= f = joinMatrix $ fmap f v
 
 >instance (forall b. Transposable g f b, MonadFail f, MonadFail g) => MonadFail (f :*: g) where
@@ -1359,3 +1350,15 @@ example use: m <!> (xcoord3,ycoord3)
 >instance MetricSpace Float where
 >  type Distance Float = Float
 >  distance x y = abs(x - y)
+
+>instance AdditiveIdentity Integer where { additiveIdentity = 0 }
+>instance AdditiveIdentity Int where { additiveIdentity = 0 }
+>instance AdditiveIdentity Word where { additiveIdentity = 0 }
+>instance AdditiveIdentity Float where { additiveIdentity = 0 }
+>instance AdditiveIdentity Double where { additiveIdentity = 0 }
+
+>instance MultiplicativeIdentity Integer where { multiplicativeIdentity = 1 }
+>instance MultiplicativeIdentity Int where { multiplicativeIdentity = 1 }
+>instance MultiplicativeIdentity Word where { multiplicativeIdentity = 1 }
+>instance MultiplicativeIdentity Float where { multiplicativeIdentity = 1 }
+>instance MultiplicativeIdentity Double where { multiplicativeIdentity = 1 }

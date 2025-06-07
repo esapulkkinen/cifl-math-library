@@ -3,6 +3,8 @@
 >import Data.Ratio
 >import Math.Tools.Adjunction (swap)
 >import Math.Matrix.Interface
+>import qualified Data.List.NonEmpty as NEList
+>import Data.List.NonEmpty ( NonEmpty( (:|) ))
 
 >-- | Rules expected of MedianAlgebra.
 >--
@@ -35,6 +37,9 @@
 
 >median :: (Ord a) => a -> a -> a -> a
 >median x y z = (x `min` y) `max` (y `min` z) `max` (x `min` z)
+
+>instance (MedianAlgebra a) => MedianAlgebra (NEList.NonEmpty a) where
+>   med (c :| cr) (d :| dr) (e :| er) = med c d e :| med cr dr er
 
 >instance (MedianAlgebra a) => MedianAlgebra [a] where
 >   med a  [] []= []

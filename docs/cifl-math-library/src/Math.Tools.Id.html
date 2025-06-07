@@ -23,17 +23,17 @@
 </span><span id="line-19"></span><span>
 </span><span id="line-20"></span><span> </span><span class="annot"><a href="Math.Tools.Id.html#newId"><span class="hs-identifier hs-type">newId</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">String</span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="Math.Tools.Id.html#Id"><span class="hs-identifier hs-type">Id</span></a></span><span>
 </span><span id="line-21"></span><span> </span><span id="newId"><span class="annot"><span class="annottext">newId :: [Char] -&gt; Id
-</span><a href="Math.Tools.Id.html#newId"><span class="hs-identifier hs-var hs-var">newId</span></a></span></span><span> </span><span id="local-6989586621681203912"><span class="annot"><span class="annottext">[Char]
-</span><a href="#local-6989586621681203912"><span class="hs-identifier hs-var">x</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">[Char] -&gt; LineInfo -&gt; Id
+</span><a href="Math.Tools.Id.html#newId"><span class="hs-identifier hs-var hs-var">newId</span></a></span></span><span> </span><span id="local-6989586621681258996"><span class="annot"><span class="annottext">[Char]
+</span><a href="#local-6989586621681258996"><span class="hs-identifier hs-var">x</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">[Char] -&gt; LineInfo -&gt; Id
 </span><a href="Math.Tools.Id.html#mkId"><span class="hs-identifier hs-var">mkId</span></a></span><span> </span><span class="annot"><span class="annottext">[Char]
-</span><a href="#local-6989586621681203912"><span class="hs-identifier hs-var">x</span></a></span><span> </span><span class="annot"><span class="annottext">LineInfo
+</span><a href="#local-6989586621681258996"><span class="hs-identifier hs-var">x</span></a></span><span> </span><span class="annot"><span class="annottext">LineInfo
 </span><a href="Math.Tools.LineInfo.html#emptyLineInfo"><span class="hs-identifier hs-var">emptyLineInfo</span></a></span><span>
 </span><span id="line-22"></span><span>
 </span><span id="line-23"></span><span> </span><span class="annot"><a href="Math.Tools.Id.html#allIds"><span class="hs-identifier hs-type">allIds</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="hs-special">[</span><span class="annot"><a href="Math.Tools.Id.html#Id"><span class="hs-identifier hs-type">Id</span></a></span><span class="hs-special">]</span><span>
 </span><span id="line-24"></span><span> </span><span id="allIds"><span class="annot"><span class="annottext">allIds :: [Id]
 </span><a href="Math.Tools.Id.html#allIds"><span class="hs-identifier hs-var hs-var">allIds</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="hs-keyword">do</span><span>
-</span><span id="line-25"></span><span>   </span><span id="local-6989586621681203915"><span class="annot"><span class="annottext">Integer
-</span><a href="#local-6989586621681203915"><span class="hs-identifier hs-var">i</span></a></span></span><span> </span><span class="hs-glyph">&lt;-</span><span> </span><span class="hs-special">(</span><span class="hs-special">[</span><span class="annot"><span class="annottext">Integer
+</span><span id="line-25"></span><span>   </span><span id="local-6989586621681258999"><span class="annot"><span class="annottext">Integer
+</span><a href="#local-6989586621681258999"><span class="hs-identifier hs-var">i</span></a></span></span><span> </span><span class="hs-glyph">&lt;-</span><span> </span><span class="hs-special">(</span><span class="hs-special">[</span><span class="annot"><span class="annottext">Integer
 </span><span class="hs-number">0</span></span><span class="hs-glyph">..</span><span class="hs-special">]</span><span> </span><span class="hs-glyph">::</span><span> </span><span class="hs-special">[</span><span class="annot"><span class="hs-identifier hs-type">Integer</span></span><span class="hs-special">]</span><span class="hs-special">)</span><span>
 </span><span id="line-26"></span><span>   </span><span class="annot"><span class="annottext">Id -&gt; [Id]
 forall a. a -&gt; [a]
@@ -47,73 +47,73 @@ forall a. [a] -&gt; [a] -&gt; [a]
 </span><span class="hs-operator hs-var">++</span></span><span> </span><span class="annot"><span class="annottext">Integer -&gt; [Char]
 forall a. Show a =&gt; a -&gt; [Char]
 </span><span class="hs-identifier hs-var">show</span></span><span> </span><span class="annot"><span class="annottext">Integer
-</span><a href="#local-6989586621681203915"><span class="hs-identifier hs-var">i</span></a></span><span class="hs-special">)</span><span>
+</span><a href="#local-6989586621681258999"><span class="hs-identifier hs-var">i</span></a></span><span class="hs-special">)</span><span>
 </span><span id="line-27"></span><span> </span><span>
 </span><span id="line-28"></span><span> </span><span class="hs-keyword">instance</span><span> </span><span class="annot"><a href="Math.Tools.Universe.html#Universe"><span class="hs-identifier hs-type">Universe</span></a></span><span> </span><span class="annot"><a href="Math.Tools.Id.html#Id"><span class="hs-identifier hs-type">Id</span></a></span><span> </span><span class="hs-keyword">where</span><span>
-</span><span id="line-29"></span><span>    </span><span id="local-6989586621681203920"><span class="annot"><span class="annottext">allElements :: [Id]
-</span><a href="#local-6989586621681203920"><span class="hs-identifier hs-var hs-var hs-var hs-var">allElements</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">[Id]
+</span><span id="line-29"></span><span>    </span><span id="local-6989586621681259004"><span class="annot"><span class="annottext">allElements :: [Id]
+</span><a href="#local-6989586621681259004"><span class="hs-identifier hs-var hs-var hs-var hs-var">allElements</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">[Id]
 </span><a href="Math.Tools.Id.html#allIds"><span class="hs-identifier hs-var">allIds</span></a></span><span>
 </span><span id="line-30"></span><span>
 </span><span id="line-31"></span><span> </span><span class="hs-keyword">instance</span><span> </span><span class="annot"><a href="Math.Tools.LineInfo.html#Located"><span class="hs-identifier hs-type">Located</span></a></span><span> </span><span class="annot"><a href="Math.Tools.Id.html#Id"><span class="hs-identifier hs-type">Id</span></a></span><span> </span><span class="hs-keyword">where</span><span>
-</span><span id="line-32"></span><span>    </span><span id="local-6989586621681203924"><span class="annot"><span class="annottext">locationOf :: Id -&gt; LineInfo
-</span><a href="#local-6989586621681203924"><span class="hs-identifier hs-var hs-var hs-var hs-var">locationOf</span></a></span></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="Math.Tools.Id.html#MkId"><span class="hs-identifier hs-type">MkId</span></a></span><span> </span><span class="annot"><span class="annottext">[Char]
-</span><span class="hs-identifier">_</span></span><span> </span><span id="local-6989586621681203926"><span class="annot"><span class="annottext">LineInfo
-</span><a href="#local-6989586621681203926"><span class="hs-identifier hs-var">li</span></a></span></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">LineInfo
-</span><a href="#local-6989586621681203926"><span class="hs-identifier hs-var">li</span></a></span><span>
+</span><span id="line-32"></span><span>    </span><span id="local-6989586621681259008"><span class="annot"><span class="annottext">locationOf :: Id -&gt; LineInfo
+</span><a href="#local-6989586621681259008"><span class="hs-identifier hs-var hs-var hs-var hs-var">locationOf</span></a></span></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="Math.Tools.Id.html#MkId"><span class="hs-identifier hs-type">MkId</span></a></span><span> </span><span class="annot"><span class="annottext">[Char]
+</span><span class="hs-identifier">_</span></span><span> </span><span id="local-6989586621681259010"><span class="annot"><span class="annottext">LineInfo
+</span><a href="#local-6989586621681259010"><span class="hs-identifier hs-var">li</span></a></span></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">LineInfo
+</span><a href="#local-6989586621681259010"><span class="hs-identifier hs-var">li</span></a></span><span>
 </span><span id="line-33"></span><span>
-</span><span id="line-34"></span><span> </span><span class="hs-keyword">instance</span><span> </span><span id="local-6989586621681203929"><span id="local-6989586621681203933"><span class="annot"><span class="hs-identifier hs-type">Show</span></span><span> </span><span class="annot"><a href="Math.Tools.Id.html#Id"><span class="hs-identifier hs-type">Id</span></a></span></span></span><span> </span><span class="hs-keyword">where</span><span>
-</span><span id="line-35"></span><span>    </span><span id="local-6989586621681203936"><span class="annot"><span class="annottext">showsPrec :: Int -&gt; Id -&gt; [Char] -&gt; [Char]
-</span><a href="#local-6989586621681203936"><span class="hs-identifier hs-var hs-var hs-var hs-var">showsPrec</span></a></span></span><span> </span><span class="annot"><span class="annottext">Int
-</span><span class="hs-identifier">_</span></span><span> </span><span id="local-6989586621681203938"><span class="annot"><span class="annottext">Id
-</span><a href="#local-6989586621681203938"><span class="hs-identifier hs-var">z</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">[Char] -&gt; [Char] -&gt; [Char]
+</span><span id="line-34"></span><span> </span><span class="hs-keyword">instance</span><span> </span><span id="local-6989586621681259013"><span id="local-6989586621681259017"><span class="annot"><span class="hs-identifier hs-type">Show</span></span><span> </span><span class="annot"><a href="Math.Tools.Id.html#Id"><span class="hs-identifier hs-type">Id</span></a></span></span></span><span> </span><span class="hs-keyword">where</span><span>
+</span><span id="line-35"></span><span>    </span><span id="local-6989586621681259020"><span class="annot"><span class="annottext">showsPrec :: Int -&gt; Id -&gt; [Char] -&gt; [Char]
+</span><a href="#local-6989586621681259020"><span class="hs-identifier hs-var hs-var hs-var hs-var">showsPrec</span></a></span></span><span> </span><span class="annot"><span class="annottext">Int
+</span><span class="hs-identifier">_</span></span><span> </span><span id="local-6989586621681259022"><span class="annot"><span class="annottext">Id
+</span><a href="#local-6989586621681259022"><span class="hs-identifier hs-var">z</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">[Char] -&gt; [Char] -&gt; [Char]
 </span><span class="hs-identifier hs-var">showString</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">Id -&gt; [Char]
 </span><a href="Math.Tools.Id.html#idName"><span class="hs-identifier hs-var">idName</span></a></span><span> </span><span class="annot"><span class="annottext">Id
-</span><a href="#local-6989586621681203938"><span class="hs-identifier hs-var">z</span></a></span><span class="hs-special">)</span><span> </span><span class="hs-comment">{- . showChar '@' . shows (idInfo z) -}</span><span>
+</span><a href="#local-6989586621681259022"><span class="hs-identifier hs-var">z</span></a></span><span class="hs-special">)</span><span> </span><span class="hs-comment">{- . showChar '@' . shows (idInfo z) -}</span><span>
 </span><span id="line-36"></span><span>
 </span><span id="line-37"></span><span> </span><span class="hs-keyword">instance</span><span> </span><span class="annot"><a href="Math.Tools.PrettyP.html#PpShow"><span class="hs-identifier hs-type">PpShow</span></a></span><span> </span><span class="annot"><a href="Math.Tools.Id.html#Id"><span class="hs-identifier hs-type">Id</span></a></span><span> </span><span class="hs-keyword">where</span><span>
-</span><span id="line-38"></span><span> 	  </span><span id="local-6989586621681203945"><span class="annot"><span class="annottext">pp :: Id -&gt; Doc
-</span><a href="#local-6989586621681203945"><span class="hs-identifier hs-var hs-var hs-var hs-var">pp</span></a></span></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="Math.Tools.Id.html#MkId"><span class="hs-identifier hs-type">MkId</span></a></span><span> </span><span id="local-6989586621681203947"><span class="annot"><span class="annottext">[Char]
-</span><a href="#local-6989586621681203947"><span class="hs-identifier hs-var">n</span></a></span></span><span> </span><span class="annot"><span class="annottext">LineInfo
+</span><span id="line-38"></span><span> 	  </span><span id="local-6989586621681259029"><span class="annot"><span class="annottext">pp :: Id -&gt; Doc
+</span><a href="#local-6989586621681259029"><span class="hs-identifier hs-var hs-var hs-var hs-var">pp</span></a></span></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="Math.Tools.Id.html#MkId"><span class="hs-identifier hs-type">MkId</span></a></span><span> </span><span id="local-6989586621681259031"><span class="annot"><span class="annottext">[Char]
+</span><a href="#local-6989586621681259031"><span class="hs-identifier hs-var">n</span></a></span></span><span> </span><span class="annot"><span class="annottext">LineInfo
 </span><span class="hs-identifier">_</span></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">[Char] -&gt; Doc
 forall a. PpShow a =&gt; a -&gt; Doc
 </span><a href="Math.Tools.PrettyP.html#pp"><span class="hs-identifier hs-var">pp</span></a></span><span> </span><span class="annot"><span class="annottext">[Char]
-</span><a href="#local-6989586621681203947"><span class="hs-identifier hs-var">n</span></a></span><span>
+</span><a href="#local-6989586621681259031"><span class="hs-identifier hs-var">n</span></a></span><span>
 </span><span id="line-39"></span><span>
-</span><span id="line-40"></span><span> </span><span class="hs-keyword">instance</span><span> </span><span id="local-6989586621681203950"><span class="annot"><span class="hs-identifier hs-type">Eq</span></span><span> </span><span class="annot"><a href="Math.Tools.Id.html#Id"><span class="hs-identifier hs-type">Id</span></a></span></span><span> </span><span class="hs-keyword">where</span><span>
-</span><span id="line-41"></span><span> 	  </span><span class="hs-special">(</span><span class="annot"><a href="Math.Tools.Id.html#MkId"><span class="hs-identifier hs-type">MkId</span></a></span><span> </span><span id="local-6989586621681203958"><span class="annot"><span class="annottext">[Char]
-</span><a href="#local-6989586621681203958"><span class="hs-identifier hs-var">n</span></a></span></span><span> </span><span class="annot"><span class="annottext">LineInfo
-</span><span class="hs-identifier">_</span></span><span class="hs-special">)</span><span> </span><span id="local-6989586621681203959"><span class="annot"><span class="annottext">== :: Id -&gt; Id -&gt; Bool
-</span><span class="hs-operator hs-var hs-var hs-var hs-var">==</span></span></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="Math.Tools.Id.html#MkId"><span class="hs-identifier hs-type">MkId</span></a></span><span> </span><span id="local-6989586621681203960"><span class="annot"><span class="annottext">[Char]
-</span><a href="#local-6989586621681203960"><span class="hs-identifier hs-var">n'</span></a></span></span><span> </span><span class="annot"><span class="annottext">LineInfo
+</span><span id="line-40"></span><span> </span><span class="hs-keyword">instance</span><span> </span><span id="local-6989586621681259034"><span class="annot"><span class="hs-identifier hs-type">Eq</span></span><span> </span><span class="annot"><a href="Math.Tools.Id.html#Id"><span class="hs-identifier hs-type">Id</span></a></span></span><span> </span><span class="hs-keyword">where</span><span>
+</span><span id="line-41"></span><span> 	  </span><span class="hs-special">(</span><span class="annot"><a href="Math.Tools.Id.html#MkId"><span class="hs-identifier hs-type">MkId</span></a></span><span> </span><span id="local-6989586621681259042"><span class="annot"><span class="annottext">[Char]
+</span><a href="#local-6989586621681259042"><span class="hs-identifier hs-var">n</span></a></span></span><span> </span><span class="annot"><span class="annottext">LineInfo
+</span><span class="hs-identifier">_</span></span><span class="hs-special">)</span><span> </span><span id="local-6989586621681259043"><span class="annot"><span class="annottext">== :: Id -&gt; Id -&gt; Bool
+</span><span class="hs-operator hs-var hs-var hs-var hs-var">==</span></span></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="Math.Tools.Id.html#MkId"><span class="hs-identifier hs-type">MkId</span></a></span><span> </span><span id="local-6989586621681259044"><span class="annot"><span class="annottext">[Char]
+</span><a href="#local-6989586621681259044"><span class="hs-identifier hs-var">n'</span></a></span></span><span> </span><span class="annot"><span class="annottext">LineInfo
 </span><span class="hs-identifier">_</span></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">[Char]
-</span><a href="#local-6989586621681203958"><span class="hs-identifier hs-var">n</span></a></span><span> </span><span class="annot"><span class="annottext">[Char] -&gt; [Char] -&gt; Bool
+</span><a href="#local-6989586621681259042"><span class="hs-identifier hs-var">n</span></a></span><span> </span><span class="annot"><span class="annottext">[Char] -&gt; [Char] -&gt; Bool
 forall a. Eq a =&gt; a -&gt; a -&gt; Bool
 </span><span class="hs-operator hs-var">==</span></span><span> </span><span class="annot"><span class="annottext">[Char]
-</span><a href="#local-6989586621681203960"><span class="hs-identifier hs-var">n'</span></a></span><span>
+</span><a href="#local-6989586621681259044"><span class="hs-identifier hs-var">n'</span></a></span><span>
 </span><span id="line-42"></span><span>
-</span><span id="line-43"></span><span> </span><span class="hs-keyword">instance</span><span> </span><span id="local-6989586621681203964"><span id="local-6989586621681203968"><span id="local-6989586621681203972"><span id="local-6989586621681203975"><span id="local-6989586621681203978"><span id="local-6989586621681203981"><span class="annot"><span class="hs-identifier hs-type">Ord</span></span><span> </span><span class="annot"><a href="Math.Tools.Id.html#Id"><span class="hs-identifier hs-type">Id</span></a></span></span></span></span></span></span></span><span> </span><span class="hs-keyword">where</span><span>
-</span><span id="line-44"></span><span> 	  </span><span class="hs-special">(</span><span class="annot"><a href="Math.Tools.Id.html#MkId"><span class="hs-identifier hs-type">MkId</span></a></span><span> </span><span id="local-6989586621681203988"><span class="annot"><span class="annottext">[Char]
-</span><a href="#local-6989586621681203988"><span class="hs-identifier hs-var">x</span></a></span></span><span> </span><span class="annot"><span class="annottext">LineInfo
-</span><span class="hs-identifier">_</span></span><span class="hs-special">)</span><span> </span><span id="local-6989586621681203989"><span class="annot"><span class="annottext">&lt;= :: Id -&gt; Id -&gt; Bool
-</span><a href="#local-6989586621681203989"><span class="hs-operator hs-var hs-var hs-var hs-var">&lt;=</span></a></span></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="Math.Tools.Id.html#MkId"><span class="hs-identifier hs-type">MkId</span></a></span><span> </span><span id="local-6989586621681203991"><span class="annot"><span class="annottext">[Char]
-</span><a href="#local-6989586621681203991"><span class="hs-identifier hs-var">y</span></a></span></span><span> </span><span class="annot"><span class="annottext">LineInfo
+</span><span id="line-43"></span><span> </span><span class="hs-keyword">instance</span><span> </span><span id="local-6989586621681259048"><span id="local-6989586621681259052"><span id="local-6989586621681259056"><span id="local-6989586621681259059"><span id="local-6989586621681259062"><span id="local-6989586621681259065"><span class="annot"><span class="hs-identifier hs-type">Ord</span></span><span> </span><span class="annot"><a href="Math.Tools.Id.html#Id"><span class="hs-identifier hs-type">Id</span></a></span></span></span></span></span></span></span><span> </span><span class="hs-keyword">where</span><span>
+</span><span id="line-44"></span><span> 	  </span><span class="hs-special">(</span><span class="annot"><a href="Math.Tools.Id.html#MkId"><span class="hs-identifier hs-type">MkId</span></a></span><span> </span><span id="local-6989586621681259072"><span class="annot"><span class="annottext">[Char]
+</span><a href="#local-6989586621681259072"><span class="hs-identifier hs-var">x</span></a></span></span><span> </span><span class="annot"><span class="annottext">LineInfo
+</span><span class="hs-identifier">_</span></span><span class="hs-special">)</span><span> </span><span id="local-6989586621681259073"><span class="annot"><span class="annottext">&lt;= :: Id -&gt; Id -&gt; Bool
+</span><a href="#local-6989586621681259073"><span class="hs-operator hs-var hs-var hs-var hs-var">&lt;=</span></a></span></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="Math.Tools.Id.html#MkId"><span class="hs-identifier hs-type">MkId</span></a></span><span> </span><span id="local-6989586621681259075"><span class="annot"><span class="annottext">[Char]
+</span><a href="#local-6989586621681259075"><span class="hs-identifier hs-var">y</span></a></span></span><span> </span><span class="annot"><span class="annottext">LineInfo
 </span><span class="hs-identifier">_</span></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">[Char]
-</span><a href="#local-6989586621681203988"><span class="hs-identifier hs-var">x</span></a></span><span> </span><span class="annot"><span class="annottext">[Char] -&gt; [Char] -&gt; Bool
+</span><a href="#local-6989586621681259072"><span class="hs-identifier hs-var">x</span></a></span><span> </span><span class="annot"><span class="annottext">[Char] -&gt; [Char] -&gt; Bool
 forall a. Ord a =&gt; a -&gt; a -&gt; Bool
 </span><span class="hs-operator hs-var">&lt;=</span></span><span> </span><span class="annot"><span class="annottext">[Char]
-</span><a href="#local-6989586621681203991"><span class="hs-identifier hs-var">y</span></a></span><span>
+</span><a href="#local-6989586621681259075"><span class="hs-identifier hs-var">y</span></a></span><span>
 </span><span id="line-45"></span><span>
 </span><span id="line-46"></span><span> </span><span class="annot"><a href="Math.Tools.Id.html#lineDesc"><span class="hs-identifier hs-type">lineDesc</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="Math.Tools.Id.html#Id"><span class="hs-identifier hs-type">Id</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Pretty.Doc</span></span><span>
 </span><span id="line-47"></span><span> </span><span id="lineDesc"><span class="annot"><span class="annottext">lineDesc :: Id -&gt; Doc
-</span><a href="Math.Tools.Id.html#lineDesc"><span class="hs-identifier hs-var hs-var">lineDesc</span></a></span></span><span> </span><span id="local-6989586621681203993"><span class="annot"><span class="annottext">Id
-</span><a href="#local-6989586621681203993"><span class="hs-identifier hs-var">i</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Doc
+</span><a href="Math.Tools.Id.html#lineDesc"><span class="hs-identifier hs-var hs-var">lineDesc</span></a></span></span><span> </span><span id="local-6989586621681259077"><span class="annot"><span class="annottext">Id
+</span><a href="#local-6989586621681259077"><span class="hs-identifier hs-var">i</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Doc
 </span><span class="hs-string">&quot;Line&quot;</span></span><span> </span><span class="annot"><span class="annottext">Doc -&gt; Doc -&gt; Doc
 </span><span class="hs-operator hs-var">&lt;+&gt;</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">LineInfo -&gt; Doc
 forall a. PpShow a =&gt; a -&gt; Doc
 </span><a href="Math.Tools.PrettyP.html#pp"><span class="hs-identifier hs-var">pp</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">Id -&gt; LineInfo
 forall e. Located e =&gt; e -&gt; LineInfo
 </span><a href="Math.Tools.LineInfo.html#locationOf"><span class="hs-identifier hs-var">locationOf</span></a></span><span> </span><span class="annot"><span class="annottext">Id
-</span><a href="#local-6989586621681203993"><span class="hs-identifier hs-var">i</span></a></span><span class="hs-special">)</span><span> </span><span class="annot"><span class="annottext">Doc -&gt; Doc -&gt; Doc
+</span><a href="#local-6989586621681259077"><span class="hs-identifier hs-var">i</span></a></span><span class="hs-special">)</span><span> </span><span class="annot"><span class="annottext">Doc -&gt; Doc -&gt; Doc
 forall a. Semigroup a =&gt; a -&gt; a -&gt; a
 </span><span class="hs-operator hs-var">&lt;&gt;</span></span><span> </span><span class="annot"><span class="annottext">Doc
 </span><span class="hs-string">&quot;:&quot;</span></span><span class="hs-special">)</span><span>

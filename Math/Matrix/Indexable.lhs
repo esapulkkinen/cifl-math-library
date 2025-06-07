@@ -13,14 +13,12 @@
 >import Math.Tools.Isomorphism
 >import Math.Tools.Arrow
 
->instance (Num a) => Indexable I a where
->  diagonalProjections = I id
+>instance Indexable I a where
+>  diagonalProjections = I (MakeIndex unI (\x (I _) -> I x))
 >  indexableIndices = I 0
 
->instance (Integral a, Indexable f a, Indexable g a) => Indexable (f :*: g) a where
->  diagonalProjections = matrix (\x y -> (I . (<!> (indexProject x,indexProject y))) <->
->                                           (\ a' -> matrix (*) (isomorphismSection x $ a') (isomorphismSection y $ a'))) 
->                                diagonalProjections diagonalProjections
+>instance {-# OVERLAPPABLE #-} (forall b. Indexable f b, forall c. Indexable g c) => Indexable (f :*: g) a where
+>  diagonalProjections = indexableMatrixProjections
 >  indexableIndices = matrix (\x y -> (x+y)*(x+y+1)`div` 2 + x) indexableIndices indexableIndices
 
 indexable_diagonal :: (Indexable f) => (f :*: f) a -> a -> f a
@@ -40,11 +38,16 @@ indexable_matrix_projections ::
    a -> a -> (m :*: I) (m a :==: I a)
 
 >indexableMatrixProjections ::
->  (Indexable m (n a), Indexable n a)
+>  (forall b. Indexable m b, forall c. Indexable n c)
 > => (m :*: n) (Index (m :*: n) a)
->indexableMatrixProjections = matrix (\f g -> (unI <-> I) . amap g . f . (cells <-> Matrix))
->       diagonalProjections
->       diagonalProjections
+>indexableMatrixProjections = matrix comp diagonalProjections diagonalProjections
+>  where comp f g = MakeIndex (scalarProjection g . scalarProjection f . cells)
+>                             (\ a (Matrix v) -> Matrix $ modifyVector f (modifyVector g a (scalarProjection f v)) v)
+
+
+ matrix (\f g -> (unI <-> I) . amap g . f . (cells <-> Matrix))
+       diagonalProjections
+       diagonalProjections
 
 transposedIndices :: (Indexable f, Indexable g) => a -> b -> (g :*: f) (Index (f :*: g) a)
 transposedIndices a b = fmap (. (cells <-> Matrix)) $ matrix (.) (diagonal_projections a) (diagonal_projections b)
@@ -62,14 +65,14 @@ join_matrix m = cells (fmap cells m)
 >applyIndex :: (Indexable m a) => Index m a -> m a -> a
 >applyIndex = indexProject
 
->with :: (Indexable f a) => (Index f a -> b) -> f b
+>with :: (Indexable f a, Num a) => (Index f a -> b) -> f b
 >with f = liftA f $ diagonalProjections
  
->with2 :: (Indexable f a, Indexable g b)
+>with2 :: (Indexable f a, Indexable g b, Num a, Num b)
 >      => (Index f a -> Index g b -> c) -> (f :*: g) c
 >with2 f = Matrix $ with $ \i -> with $ \j -> f i j
 
->with3 :: (Indexable f a, Indexable g b, Indexable h c)
+>with3 :: (Indexable f a, Indexable g b, Indexable h c, Num a, Num b, Num c)
 >      => (Index f a -> Index g b -> Index h c -> d)-> (f :*: (g :*: h)) d
 >with3 f = Matrix $ with $ \i -> Matrix $
 >                   with $ \j ->

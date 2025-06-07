@@ -30,6 +30,7 @@
 >import safe Math.Number.StreamInterface
 >import safe Math.Tools.I
 >import safe qualified Control.Monad.Zip
+>import safe Math.Matrix.Indexable
 
 >data Vector2 s = Vector2 { xcoord2 :: !s, ycoord2 :: !s }
 
@@ -87,10 +88,10 @@
 >   conj = fmap conj . transposeImpl
 
 >i2 :: (Num a) => Vector2 a
->i2 = identityImpl (Vector2 0 1) <!> (xcoord2,id)
+>i2 = identity <!> (xcoord2,id)
 
 >j2 :: (Num a) => Vector2 a
->j2 = identityImpl (Vector2 0 1) <!> (ycoord2,id)
+>j2 = identity <!> (ycoord2,id)
 
 >vector2Iso :: Vector2 a :==: Complex a
 >vector2Iso = (\ (Vector2 a b) -> a :+ b) <-> (\(a :+ b) -> Vector2 a b)
@@ -152,6 +153,9 @@
 >   (Codiagonal2 f1 f2) <*> (Codiagonal2 x1 x2) =
 >     Codiagonal2 (f1 <*> x1) (f2 <*> x2)
 
+>instance (AdditiveIdentity a) => AdditiveIdentity (Vector2 a) where
+>  additiveIdentity = Vector2 additiveIdentity additiveIdentity
+
 >instance (Show a) => Show (Codiagonal Vector2 a) where
 >   show (Codiagonal2 down right) = "* " ++ show (vectorElement right) ++ "\n"
 >                                   ++ show (vectorElement down) ++ " *"
@@ -159,7 +163,7 @@
 deriving instance (Show a) => Show (Codiagonal Vector2 a)
 
 >zero_codiagonal2 :: (Num a) => Codiagonal Vector2 a
->zero_codiagonal2 = Codiagonal2 vzero vzero
+>zero_codiagonal2 = Codiagonal2 0 0
 
 >constant2 :: a -> Vector2 a
 >constant2 x = Vector2 x x
@@ -184,8 +188,8 @@ deriving instance (Show a) => Show (Codiagonal Vector2 a)
 >instance DifferentialOperator Vector2 where
 >   partial = delPartial2
 
->diagonalMatrix2 :: (Num a) => Vector2 a -> (Vector2 :*: Vector2) a
->diagonalMatrix2 v = v |\| zero_codiagonal2
+>diagonalMatrix2 :: Vector2 a -> (Vector2 :*: Vector2) a -> (Vector2 :*: Vector2) a
+>diagonalMatrix2 v m = v |\| (codiagonal2 m)
 
 >sumCoordinates2 :: (Num a) => Vector2 a -> a
 >sumCoordinates2 (Vector2 x y) = x + y
@@ -234,8 +238,8 @@ deriving instance (Show a) => Show (Codiagonal Vector2 a)
 >instance (Ord a) => Ord (Vector2 a) where
 >   (Vector2 x y) <= (Vector2 x' y') = x <= x' && y <= y'
 
->instance (Limiting str a, Monad str) => Limiting str (Vector2 a) where
->   data Closure str (Vector2 a) = Vector2Closure (Vector2 (Closure str a))
+>instance (Limiting Stream a) => Limiting Stream (Vector2 a) where
+>   data Closure Stream (Vector2 a) = Vector2Closure (Vector2 (Closure Stream a))
 >   limit str = Vector2Closure $ Vector2 
 >                       (limit $ fmap xcoord2 str)
 >                       (limit $ fmap ycoord2 str)
@@ -262,12 +266,12 @@ deriving instance (Show a) => Show (Codiagonal Vector2 a)
 >instance (Num a, ConjugateSymmetric a) => InnerProductSpaceFunctor Vector2 a
 
 >-- | see "Lawvere,Rosebrugh: Sets for mathematics", pg. 167.
->instance (Num a, Ord a, ConjugateSymmetric a) => Semigroup ((Vector2 :*: Vector2) a) where
+>instance (SupportsMatrixMultiplication Vector2 Vector2 Vector2 a) => Semigroup ((Vector2 :*: Vector2) a) where
 >   (<>) = (%*%)
 
 >-- | see "Lawvere,Rosebrugh: Sets for mathematics", pg. 167.
->instance (Num a, Ord a, ConjugateSymmetric a) => Monoid ((Vector2 :*: Vector2) a) where
->   mempty = identityImpl (Vector2 0 1)
+>instance (Ord a,SupportsMatrixMultiplication Vector2 Vector2 Vector2 a) => Monoid ((Vector2 :*: Vector2) a) where
+>   mempty = identity
 >   mappend = (%*%)
 
 >instance Applicative Vector2 where
@@ -293,7 +297,8 @@ deriving instance (Show a) => Show (Codiagonal Vector2 a)
 >instance (Show a) => Show (Vector2 a) where
 >  show (Vector2 x y) = "[" ++ show x ++ "," ++ show y ++ "]"
 
->instance (Fractional a, Ord a, ConjugateSymmetric a) => Group ((Vector2 :*: Vector2) a) where
+>instance (Fractional a, Ord a, ConjugateSymmetric a, NumIdentities a)
+> => Group ((Vector2 :*: Vector2) a) where
 >   ginvert = inverse2
 
 >instance (Num a) => CoordinateSpace (Vector2 a) where
@@ -347,14 +352,19 @@ deriving instance (Show a) => Show (Codiagonal Vector2 a)
 >signs2 :: (Vector2 :*: Vector2) Integer
 >signs2 = fmap (\ (i,j) -> ((i+j+1) `mod` 2) * 2 - 1) matrix_indices2
 
->instance (Num a, Ord a, ConjugateSymmetric a) => Num ((Vector2 :*: Vector2) a) where
+>determinancett2 :: (Num a) => Determinance Vector2 Vector2 Vector1 Vector1 Vector1 a a a
+>determinancett2 = Determinance remove2 remove2 xcoord2 xcoord2 combine2 determinantImpl
+>  where combine2 (Vector2 a b) = a - b
+
+
+>instance (SupportsMatrixMultiplication Vector2 Vector2 Vector2 a) => Num ((Vector2 :*: Vector2) a) where
 >   (Matrix v) + (Matrix v') = Matrix $ v + v'
 >   (Matrix v) - (Matrix v') = Matrix $ v - v'
 >   (*) = (%*%)
 >   negate (Matrix v) = Matrix $ negate v
 >   abs (Matrix v) = Matrix (abs v)
 >   signum (Matrix v) = Matrix $ signum v
->   fromInteger = diagonalMatrix2 . constant2 . fromInteger
+>   fromInteger x = diagonalMatrix2 (constant2 $ fromInteger x) vzero
 
 instance (Num a, ConjugateSymmetric a) => LieAlgebra ((Vector2 :*: Vector2) a) where
    (%<>%) = matrix_commutator
@@ -365,10 +375,12 @@ instance (Num a, ConjugateSymmetric a) => LieAlgebra ((Vector2 :*: Vector2) a) w
 >vector_vector2 [x,y] = Vector2 x y
 >vector_vector2 _ = error "vector2: Invalid number of elements in vector"
 
->diagonal2 :: (Num a) => Matrix2 a -> Vector2 a
->diagonal2 (Matrix m) = appIndex diagonalProjections2 m
+>diagonal2 :: Matrix2 a -> Vector2 a
+>diagonal2 ~(Matrix ~(Vector2
+> ~(Vector2 x _)
+> ~(Vector2 _ y))) = Vector2 x y
 
->instance (Num a) => Indexable Vector2 a where
+>instance Indexable Vector2 a where
 >   diagonalProjections = diagonalProjections2
 >   indexableIndices = Vector2 0 1
 
@@ -377,21 +389,16 @@ instance (Num a, ConjugateSymmetric a) => LieAlgebra ((Vector2 :*: Vector2) a) w
 >                 <-> (Matrix . runIsoInverse f . amap (runIsoInverse g) . cells)
 
 
->instance (Num a) => Indexable (Vector2 :*: Vector2) a where
->   indexableIndices = Matrix $ Vector2 (Vector2 0 1) (Vector2 3 4)
->   diagonalProjections =
->      matrix (\x y -> x . amap ((unI <-> I) . y) . (cells <-> Matrix))
->                 (diagonalProjections :: Vector2 (Index Vector2 a))
->                 (diagonalProjections :: Vector2 (Index Vector2 a))
+>instance {-# OVERLAPPING #-} Indexable (Vector2 :*: Vector2) a where
+>   indexableIndices = Matrix $ Vector2 (Vector2 0 1) (Vector2 2 3)
+>   diagonalProjections = indexableMatrixProjections
 
->diagonalProjections2 ::  (Num a) => Vector2 (Index Vector2 a)
->diagonalProjections2 = Vector2 ((I . xcoord2) <-> xcoord2inv)
->                                  ((I . ycoord2) <-> ycoord2inv)
->   where xcoord2inv (I a) = Vector2 a 0
->         ycoord2inv (I a) = Vector2 0 a
+>diagonalProjections2 ::  Vector2 (Index Vector2 a)
+>diagonalProjections2 = Vector2 (MakeIndex xcoord2 (\x (Vector2 _ y) -> Vector2 x y))
+>                               (MakeIndex ycoord2 (\y (Vector2 x _) -> Vector2 x y))
 
->transpose2 :: (Num a) => Matrix2 a -> Matrix2 a
->transpose2 (Matrix m) = matrix indexProject diagonalProjections2 m
+>transpose2 :: Matrix2 a -> Matrix2 a
+>transpose2 = transpose2Impl
 
 >transpose2Impl :: Matrix2 a -> Matrix2 a
 >transpose2Impl ~(Matrix ~(Vector2 ~(Vector2 x1 y1) ~(Vector2 x2 y2))) =
@@ -485,9 +492,8 @@ instance (Num a, ConjugateSymmetric a) => LieAlgebra ((Vector2 :*: Vector2) a) w
 >instance {-# INCOHERENT #-} (Num a, ConjugateSymmetric a) => InnerProductSpace (Vector2 a) where
 >  (Vector2 x y) %. (Vector2 x' y') = x*conj x' + y*conj y'
 
->instance (Num a) => Diagonalizable Vector2 a where
+>instance Diagonalizable Vector2 a where
 >  diagonalImpl = diagonal2 
->  identityImpl _ = identity2
 >  diagonalMatrixImpl = diagonalMatrix2
 >  identity = identity2
 
@@ -541,7 +547,7 @@ instance (Num a, ConjugateSymmetric a) => LieAlgebra ((Vector2 :*: Vector2) a) w
 
 >identity2 :: (Num a) => Matrix2 a
 >identity2 = Matrix $ Vector2 (Vector2 1 0)
->                        (Vector2 0 1)
+>                             (Vector2 0 1)
 
 
 >determinant2 :: (Num a) => Matrix2 a -> a
@@ -576,12 +582,12 @@ instance (Num a, ConjugateSymmetric a) => LieAlgebra ((Vector2 :*: Vector2) a) w
 
 >-- | <https://en.wikipedia.org/wiki/Eigenvalue_algorithm>
 
->eigenvalue2 :: (Floating a) => (Vector2 :*: Vector2) a -> Vector2 a
+>eigenvalue2 :: (Floating a, AdditiveIdentity a, MultiplicativeIdentity a) => (Vector2 :*: Vector2) a -> Vector2 a
 >eigenvalue2 a = Vector2 ((tra + m) / 2) ((tra - m) / 2)
 >  where m = sqrt(tra * tra - 4 * determinantImpl a)
 >        tra = traceImpl a
 
->instance (Floating a) => EigenDecomposable Vector2 a where
+>instance (Floating a, AdditiveIdentity a, MultiplicativeIdentity a) => EigenDecomposable Vector2 a where
 >   eigenvalues = eigenvalue2
 
 >instance (Num a) => VectorSpace ((Vector2 :*: Vector2) a) where

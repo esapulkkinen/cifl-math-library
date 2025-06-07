@@ -6,13 +6,14 @@
 >import Math.Tools.Isomorphism
 >import Math.Tools.NaturalTransformation
 >import Data.Set (Set)
+>import Data.Kind
 >import Control.Category 
 >import Math.Graph.Reversible
 >import Control.Arrow
 >import Math.Tools.Arrow
 >import Math.Graph.GraphMonoid
 > 
->data GraphMap (m :: * -> * -> *) a b = GraphMap {
+>data GraphMap (m :: Type -> Type -> Type) a b = GraphMap {
 >   runGraphMap :: Graph m a -> Graph m b
 > }
 >

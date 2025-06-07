@@ -480,3 +480,23 @@ foldListIso f g h = let self = listIso >>> ((iso f <**> self) <||> iso g) >>> is
 
 >instance (Category arr) => Groupoid (IsomorphismA arr) where
 >   invertA (IsoA f g) = IsoA g f
+
+>exponentialsIso :: (ArrowApply arr) => arr (a,b) c :==: arr a (arr b c)
+>exponentialsIso = (\f -> proc x -> returnA -< proc b -> f -<< (x,b))
+>         <-> (\f -> proc (x,y) -> do { f' <- f -< x ; f' -<< y } )
+
+>binaryProductIso :: (Arrow arr) => (arr c a, arr c b) :==: arr c (a,b)
+>binaryProductIso = (\ (f,s) -> proc c -> do
+>    a <- f -< c ; b <- s -< c ; returnA -< (a,b))
+>  <-> (\ p -> (proc c -> do { p' <- p -< c ; returnA -< fst p' },
+>              proc c -> do { p' <- p -< c ; returnA -< snd p' }))
+
+>data ProdT arr c t where
+>  PPre :: arr c a -> ProdT arr c t -> ProdT arr c (a,t)
+>  PTerminal :: arr c () -> ProdT arr c ()
+
+>data EitherT arr t c where
+>  PEither :: arr a c -> EitherT arr t c -> EitherT arr (Either a t) c
+>  PInitial :: arr Zero c -> EitherT arr Zero c
+
+>newtype Zero = Zero Bot

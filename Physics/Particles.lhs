@@ -3,6 +3,7 @@
 >import Data.Ratio
 >import GHC.Real
 >import qualified Math.Number.Stream as Stream
+>import Math.Number.Stream (s_z, s_z2)
 >import qualified Math.Number.StreamInterface as StreamI
 > 
 >-- | <https://en.wikipedia.org/wiki/Particle_zoo>

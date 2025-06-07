@@ -147,15 +147,15 @@
 > LinearTransform (Vec n) (Vec n) a,
 > Transposable (Vec n) (Vec n) a, Num a) => Diagonalizable (Vec n) a where
 >   identity = Matrix videntity
->   diagonalMatrixImpl x = Matrix (vdiagonal_matrix x)
+>   diagonalMatrixImpl a (Matrix m) = Matrix (vdiagonal_matrix a m)
 >   diagonalImpl (Matrix x) = vdiagonal x
 
 >class DiagonalizableVector n where
->   vnull :: (Num a) => Vec n a
+>   vnull :: (AdditiveIdentity a) => Vec n a
 >   vdimension :: Vec n a -> Vec n Integer
 >   vdiagonal :: Vec n (Vec n a) -> Vec n a
 >   videntity :: (Num a) => Vec n (Vec n a)
->   vdiagonal_matrix :: (Num a) => Vec n a -> Vec n (Vec n a)
+>   vdiagonal_matrix :: (Num a) => Vec n a -> Vec n (Vec n a) -> Vec n (Vec n a)
 >   vlist :: Vec n a -> [a]
 
 >instance DiagonalizableVector 0 where
@@ -163,7 +163,7 @@
 >   vdimension Empty = Empty
 >   vdiagonal Empty = Empty
 >   videntity = Empty
->   vdiagonal_matrix Empty = Empty
+>   vdiagonal_matrix Empty _ = Empty
 >   vlist _ = []
 
 >instance PpShowVerticalF (Vec n) where

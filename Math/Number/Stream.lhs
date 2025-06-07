@@ -1,4 +1,5 @@
 >{-# LANGUAGE Safe,UndecidableInstances, ExistentialQuantification, FlexibleInstances, MultiParamTypeClasses, MagicHash, TypeOperators, FlexibleContexts, Arrows, TypeFamilies, ScopedTypeVariables, DeriveGeneric, DeriveDataTypeable, BangPatterns, Rank2Types, StandaloneDeriving, TypeApplications, LinearTypes #-}
+>{-# LANGUAGE StandaloneKindSignatures, ConstraintKinds #-}
 >{-# OPTIONS_GHC -Wall #-}
 >-- |
 >--  Module: Math.Number.Stream
@@ -23,11 +24,12 @@
 >module Math.Number.Stream where
 >import safe Data.Monoid
 >import safe Data.Complex
+>import safe Data.Kind
 >import safe qualified Data.Foldable
 >import safe qualified Control.Category as C
 >import safe Control.Applicative
 >import safe qualified Prelude as P
->import safe Prelude hiding (zip,unzip, zipWith,cycle,take,filter,drop,zipWith3,sin,cos,either,takeWhile,dropWhile,span,splitAt)
+>import safe Prelude hiding (zip,unzip, zipWith,cycle,take,filter,drop,zipWith3,either,takeWhile,dropWhile,span,splitAt)
 >import safe Math.Tools.Functor
 >import safe qualified Math.Tools.Arrow as TArrow
 >import safe Math.Tools.Visitor
@@ -83,6 +85,12 @@ instance ProjectionDual Stream Math.Matrix.Linear.Dual a where
 >(!) s = \i -> shead (drop i s)
 
 >{-# SPECIALIZE iterateStream :: (a -> a) -> a -> Stream a #-}
+
+>type RealClosure :: (Type -> Type) -> Type -> Constraint
+>type RealClosure str a = (Ord a, Num a, Limiting str a, Real (Closure str a))
+
+>type RealClosure2 :: (Type -> Type) -> Type -> Constraint
+>type RealClosure2 str a = (RealClosure str a, Limiting (str :*: str) a, Real (Closure (str :*: str) a))
 
 >stailStream :: Stream a -> Stream a
 >stailStream (Pre _ xr) = xr
@@ -145,6 +153,63 @@ instance (Num a) => FiniteDimensional a Math.Matrix.Linear.Dual Stream LinearMap
 >   approximations BoolClosureStreamTrue = constant True
 >   approximations BoolClosureStreamFalse = constant False
 
+>instance StreamBuilder (Stream :*: Stream) where
+>   pre x r = from_triangular_matrices (pre x (diagonalImpl r)) r' r''
+>     where r' = lowerTriangleImpl r
+>           r'' = upperTriangleImpl r
+
+>instance StreamBuilder2 Stream where
+>   pre2 = from_triangular_matrices
+
+>instance StreamObserver (Stream :*: Stream) where
+>   shead = shead . diagonalImpl
+>   stail = lowerTriangleImpl
+>
+>instance StreamObserver2 (Stream :*: Stream) where
+>   stail2 = upperTriangleImpl
+
+>instance (Num a, Limiting Stream a) => Limiting (Stream :*: Stream) a where
+>   data Closure (Stream :*: Stream) a = InfiniteMatrixClosure {
+>     diagonal_limit :: Closure Stream a,
+>     lower_triangle_limit :: Closure (Stream :*: Stream) a,
+>     upper_triangle_limit :: Closure (Stream :*: Stream) a
+>   }
+>   limit z = InfiniteMatrixClosure diagLimit lowerLimit upperLimit
+>     where diagLimit = limit $ diagonalImpl z
+>           lowerLimit = limit $ lowerTriangleImpl z
+>           upperLimit = limit $ upperTriangleImpl z
+>   approximations (InfiniteMatrixClosure diag low up) = from_triangular_matrices diag' low' up'
+>     where diag' = approximations diag
+>           low' = approximations low
+>           up' = approximations up
+
+>instance (Num (Closure Stream a)) => Num (Closure (Stream :*: Stream) a) where
+>  (InfiniteMatrixClosure d l u) + (InfiniteMatrixClosure d' l' u')
+>    = InfiniteMatrixClosure (d + d') (l + l') (u + u')
+>  (InfiniteMatrixClosure d l u) - (InfiniteMatrixClosure d' l' u')
+>    = InfiniteMatrixClosure (d - d') (l - l') (u - u')
+>  (InfiniteMatrixClosure d l u) * (InfiniteMatrixClosure d' l' u')
+>    = InfiniteMatrixClosure (d*d') (l*l') (u*u')
+>  negate (InfiniteMatrixClosure d l u) = InfiniteMatrixClosure (negate d) (negate l) (negate u)
+>  abs (InfiniteMatrixClosure d l u) = InfiniteMatrixClosure (abs d) (abs l) (abs u)
+>  signum (InfiniteMatrixClosure d l u) = InfiniteMatrixClosure (signum d) (signum l) (signum u)
+>  fromInteger i = InfiniteMatrixClosure (fromInteger i) (fromInteger i) (fromInteger i)
+
+
+>instance (Eq (Closure Stream a)) => Eq (Closure (Stream :*: Stream) a) where
+>   (InfiniteMatrixClosure d l u) == (InfiniteMatrixClosure d' l' u') =
+>     d == d' && l == l' && u == u'
+
+>instance (Ord (Closure Stream a)) => Ord (Closure (Stream :*: Stream) a) where
+>   compare (InfiniteMatrixClosure d l u) (InfiniteMatrixClosure d' l' u') =
+>     compare d d' `mappend` compare l l' `mappend` compare u u'
+
+>instance (RealClosure Stream a) => Real (Closure (Stream :*: Stream) a) where
+>   toRational z = toRational $ diagonal_limit z
+
+>instance Real (Stream Rational) where
+>   toRational s = toRational $ limit s
+
 >instance Limiting Stream Rational where
 >   data Closure Stream Rational = FiniteRational (Stream Rational)
 >                   | MinusInfiniteRational
@@ -159,6 +224,32 @@ instance (Num a) => FiniteDimensional a Math.Matrix.Linear.Dual Stream LinearMap
 
 >instance Infinitary (Closure Stream Integer) where
 >   infinite = InfiniteInteger
+
+>instance Eq (Closure Stream Rational) where
+>   MinusInfiniteRational == MinusInfiniteRational = True
+>   InfiniteRational == InfiniteRational = True
+>   MinusInfiniteRational == _ = False
+>   InfiniteRational == _ = False
+>   _ == MinusInfiniteRational = False
+>   _ == InfiniteRational = False
+>   (FiniteRational s) == (FiniteRational s') = s == s'
+
+>instance Ord (Closure Stream Rational) where
+>   compare MinusInfiniteRational MinusInfiniteRational = EQ
+>   compare InfiniteRational InfiniteRational = EQ
+>   compare MinusInfiniteRational _ = LT
+>   compare InfiniteRational _ = GT
+>   compare _ MinusInfiniteRational = GT
+>   compare _ InfiniteRational = LT
+>   compare (FiniteRational s) (FiniteRational s') = compare s s'
+
+>instance Real (Closure Stream Rational) where
+>   toRational MinusInfiniteRational = (-1) % 0
+>   toRational InfiniteRational = 1 % 0
+>   toRational (FiniteRational (Pre x z@(Pre y yr)))
+>     | abs(y - x) < 1 % 10000000 = y
+>     | otherwise = toRational z
+
 
 >instance Fractional (Closure Stream Rational) where
 >   (FiniteRational x) / (FiniteRational y) = FiniteRational $ liftA2 (/) x y
@@ -212,6 +303,29 @@ instance (Num a) => FiniteDimensional a Math.Matrix.Linear.Dual Stream LinearMap
 >   approximations MinusInfiniteInteger = fmap negate $ powerIntegral 10
 >   approximations InfiniteInteger = powerIntegral 10
 
+>instance Limiting Stream (Closure Stream Integer) where
+>   data Closure Stream (Closure Stream Integer) = FiniteIntegerClosure { integer_closureMatrix :: ((Stream :*: Stream) Integer) }
+>                                 | MinusInfiniteClosureMatrix
+>                                 | InfiniteClosureMatrix
+>   limit s = FiniteIntegerClosure $ Matrix $ fmap approximations s
+>   approximations (FiniteIntegerClosure m) = fmap FiniteInteger $ cells m
+>   approximations MinusInfiniteClosureMatrix = constant MinusInfiniteInteger
+>   approximations InfiniteClosureMatrix = constant InfiniteInteger
+
+>instance Ord (Closure Stream Integer) where
+>   compare InfiniteInteger InfiniteInteger = EQ
+>   compare MinusInfiniteInteger MinusInfiniteInteger = EQ
+>   compare InfiniteInteger _ = GT
+>   compare _ InfiniteInteger = LT
+>   compare MinusInfiniteInteger _ = LT
+>   compare _ MinusInfiniteInteger = GT
+>   compare (FiniteInteger s) (FiniteInteger s') = compare s s'
+>
+>instance Real (Closure Stream Integer) where
+>   toRational InfiniteInteger = 1 % 0
+>   toRational MinusInfiniteInteger = (-1) % 0
+>   toRational (FiniteInteger str) = 1 % shead (1 `div` str)
+
 >instance (Num (Closure Stream Integer)) where
 >   InfiniteInteger + InfiniteInteger = InfiniteInteger
 >   MinusInfiniteInteger + InfiniteInteger = error "undefined inf - inf"
@@ -263,6 +377,51 @@ instance (Num a) => FiniteDimensional a Math.Matrix.Linear.Dual Stream LinearMap
 >   show MinusInfiniteRational = "-INF"
 >   show (FiniteRational s) = " ... " ++ concat (List.intersperse "," (map show $ take 10 s)) ++ " ... "
 
+>instance Real (Closure Stream Float) where
+>   toRational (FloatClosure s) = 1 / (toRational $ shead (1 / s))
+
+>instance Real (Closure Stream Double) where
+>   toRational (DoubleClosure s) = 1 / (toRational $ shead (1 / s))
+
+>instance Num (Closure Stream Float) where
+>   (FloatClosure s) + (FloatClosure s') = FloatClosure (s + s')
+>   (FloatClosure s) - (FloatClosure s') = FloatClosure (s - s')
+>   (FloatClosure s) * (FloatClosure s') = FloatClosure (s*s')
+>   negate (FloatClosure s) = FloatClosure (negate s)
+>   abs (FloatClosure s) = FloatClosure (abs s)
+>   signum (FloatClosure s) = FloatClosure (signum s)
+>   fromInteger i = FloatClosure (fromInteger i)
+
+
+>instance Num (Closure Stream Double) where
+>   (DoubleClosure s) + (DoubleClosure s') = DoubleClosure (s + s')
+>   (DoubleClosure s) - (DoubleClosure s') = DoubleClosure (s - s')
+>   (DoubleClosure s) * (DoubleClosure s') = DoubleClosure (s*s')
+>   negate (DoubleClosure s) = DoubleClosure (negate s)
+>   abs (DoubleClosure s) = DoubleClosure (abs s)
+>   signum (DoubleClosure s) = DoubleClosure (signum s)
+>   fromInteger i = DoubleClosure (fromInteger i)
+
+>instance Ord (Closure Stream Double) where
+>   compare InfiniteDouble InfiniteDouble = EQ
+>   compare MinusInfiniteDouble MinusInfiniteDouble = EQ
+>   compare NegativeZeroDouble NegativeZeroDouble = EQ
+>   compare NaNDouble NaNDouble = EQ -- not really, but Ordering can't express
+>   compare DenormalizedDouble DenormalizedDouble = EQ
+>   compare InfiniteDouble _ = GT
+>   compare _ InfiniteDouble = LT
+>   compare MinusInfiniteDouble _ = LT
+>   compare _ MinusInfiniteDouble = GT
+>   compare NaNDouble _ = LT
+>   compare _ NaNDouble = GT
+>   compare DenormalizedDouble _ = LT
+>   compare _ DenormalizedDouble = GT
+>   compare (DoubleClosure s) (DoubleClosure s') = compare s s'
+
+>deriving instance Eq (Closure Stream Double)
+>deriving instance Eq (Closure Stream Float)
+>deriving instance Eq (Closure Stream Integer)
+
 >instance Limiting Stream Double where
 >   data Closure Stream Double = DoubleClosure (Stream Double)
 >                        | InfiniteDouble
@@ -278,6 +437,22 @@ instance (Num a) => FiniteDimensional a Math.Matrix.Linear.Dual Stream LinearMap
 >   approximations NegativeZeroDouble = fmap negate $ fmap (1/) $ power 10
 >   approximations NaNDouble = error "NaN double"
 
+>instance Ord (Closure Stream Float) where
+>   compare InfiniteFloat InfiniteFloat = EQ
+>   compare MinusInfiniteFloat MinusInfiniteFloat = EQ
+>   compare NegativeZeroFloat NegativeZeroFloat = EQ
+>   compare NaNFloat NaNFloat = EQ
+>   compare DenormalizedFloat DenormalizedFloat = EQ
+>   compare InfiniteFloat _ = GT
+>   compare _ InfiniteFloat = LT
+>   compare MinusInfiniteFloat _ = LT
+>   compare _ MinusInfiniteFloat = GT
+>   compare NaNFloat _ = error "comparing NaN"
+>   compare _ NaNFloat = error "comparing NaN"
+>   compare DenormalizedFloat _ = LT
+>   compare _ DenormalizedFloat = GT
+>   compare (FloatClosure s) (FloatClosure s') = compare s s'
+
 >instance Limiting Stream Float where
 >   data Closure Stream Float = FloatClosure (Stream Float)
 >                        | InfiniteFloat
@@ -292,6 +467,7 @@ instance (Num a) => FiniteDimensional a Math.Matrix.Linear.Dual Stream LinearMap
 >   approximations MinusInfiniteFloat = fmap negate $ power 10
 >   approximations NegativeZeroFloat = fmap negate $ fmap (1/) $ power 10
 >   approximations NaNFloat = error "NaN float"
+
 
 >instance Show (Closure Stream Double) where
 >  show (DoubleClosure x) = show x
@@ -395,6 +571,19 @@ stream_dot_product a b = limit $ ssum $
 >instance Traversable Stream where
 >   traverse f ~(Pre x xr) = Pre <$> f x <*> traverse f xr
 
+>instance Num (Closure Stream a) => Num (Closure Stream (Stream a)) where
+> (SClosure s sl) + (SClosure s' sl') = SClosure (s + s') (sl + sl')
+> (SClosure s sl) - (SClosure s' sl') = SClosure (s - s') (sl - sl')
+> (SClosure s sl) * (SClosure s' sl') = SClosure (s*s') (sl * sl')
+> negate (SClosure s sl) = SClosure (negate s) (negate sl)
+> abs (SClosure s sl) = SClosure (abs s) (abs sl)
+> signum (SClosure s sl) = SClosure (signum s) (signum sl)
+> fromInteger i = SClosure (fromInteger i) (fromInteger i)
+
+
+>instance (RealClosure Stream a) => Real (Closure Stream (Stream a)) where
+>   toRational x = toRational $ stream_limit x
+
 >instance (Limiting Stream a) => Limiting Stream (Stream a) where
 >   data Closure Stream (Stream a) = SClosure {
 >     runSClosure :: Stream (Closure Stream a),
@@ -403,6 +592,14 @@ stream_dot_product a b = limit $ ssum $
 >                      (limit $ streamDiagonalImpl $ Matrix $ x)
 >   approximations = sequenceA . fmap approximations . runSClosure
 
+>instance (Eq (Closure Stream a)) => Eq (Closure Stream (Stream a)) where
+>   s == s' = stream_limit s == stream_limit s'
+>        && runSClosure s == runSClosure s'
+
+>instance (Ord (Closure Stream a)) => Ord (Closure Stream (Stream a)) where
+>   compare s s' = compare (stream_limit s) (stream_limit s')
+>           `mappend` compare (runSClosure s) (runSClosure s')
+
 >instance (Show (Closure Stream a)) => Show (Closure Stream (Stream a)) where
 >   show (SClosure str l) = "lim[" ++ show (take 10 str) ++ "...] = " ++ show l
 
@@ -410,11 +607,10 @@ stream_dot_product a b = limit $ ssum $
 >   accumulationPoint = approximations . stream_limit
 
 >instance (Applicative f, Traversable f,
-> Traversable str,
 > Applicative g, Traversable g,
-> Limiting str a) => Limiting str ((f :*: g) a) where
->   data Closure str ((f :*: g) a) = MatrixClosure {
->      runMatrixClosure :: (f :*: g) (Closure str a) }
+> Limiting Stream a) => Limiting Stream ((f :*: g) a) where
+>   data Closure Stream ((f :*: g) a) = MatrixClosure {
+>      runMatrixClosure :: (f :*: g) (Closure Stream a) }
 >   limit zz = MatrixClosure $ fmap limit $ sequenceA zz
 >   approximations = sequenceA . fmap approximations . runMatrixClosure
 
@@ -505,10 +701,9 @@ instance (Num a) => Matrix.VectorSpace ((Stream :*: Stream) a) where
   (Matrix x) %+ (Matrix y) = Matrix $ liftA2 (liftA2 (+)) x y 
 
 >-- | square matrix implementation for streams.
->instance (Num a) => Matrix.Diagonalizable Stream a where
+>instance Matrix.Diagonalizable Stream a where
 >  identity = streamMatrixImpl (constant 1) $ codiag
 >     where codiag = (zero,zero) `Pre` codiag
->  identityImpl dim = identity
 >  diagonalImpl = streamDiagonalImpl
 >  diagonalMatrixImpl = streamDiagonalMatrix
 
@@ -516,14 +711,14 @@ instance (Num a) => Matrix.VectorSpace ((Stream :*: Stream) a) where
 >-- Integral constraint.
 >-- it is not as efficient as 'identity', but is implemented using
 >-- generating functions.
->stream_identityMatrix :: (Integral a) => (Stream :*: Stream) a
+>stream_identityMatrix :: (Integral a, RealClosure2 Stream a) => (Stream :*: Stream) a
 >stream_identityMatrix = Matrix $ 1 `div` (1 - s_z*s_z2)
 
 >-- | stream_diagonal is the "depth-first" traversal over two-dimensional streams,
 >-- where the choice always goes to diagonal elements.
 >--
 >-- stream_diagonal (matrix f x y) == liftA2 f x y
->streamDiagonal :: (Closed a, ConjugateSymmetric a, Num a) => Stream a :-> Stream a -> Stream a
+>streamDiagonal :: (Linearizable LinearMap (:*:) Stream Stream a) => Stream a :-> Stream a -> Stream a
 >streamDiagonal xx | ~(Matrix ~(Pre ~(Pre x _) dr)) <- fromLinear xx
 >   = Pre x $ streamDiagonalImpl $ Matrix $ fmap stail dr
 >
@@ -786,7 +981,7 @@ instance (Num a) => Matrix.VectorSpace ((Stream :*: Stream) a) where
 >   negate x = linear $ fmap negate $ fromLinear x
 >   abs x = linear $ fmap abs $ fromLinear x
 >   signum x = linear $ fmap signum $ fromLinear x
->   fromInteger i = diagonalMatrix (fromInteger i)
+>   fromInteger i = diagonalMatrix (fromInteger i) vzero
 
 and_convolution :: Stream Bool -> Stream Bool -> Stream Bool
 and_convolution x y = fmap or $ codiagonalsSeq $ linmatrix (bilinear (&&)) (x, y)
@@ -856,12 +1051,13 @@ and_convolution x y = fmap or $ codiagonalsSeq $ linmatrix (bilinear (&&)) (x, y
 > --     where diff = fmap P.subtract q p
 >   -- TODO: missing functions
 
->instance (Num a, Ord a, Real a) => Real (Stream a) where
->   toRational ~(Pre x _) = toRational x
+>instance {-# OVERLAPPABLE #-} (RealClosure Stream a) => Real (Stream a) where
+>   toRational s = toRational $ limit s
+
 
 >-- | Integral instance is based on interpretation of
 >-- a stream as generating function.
->instance (Integral a) => Integral (Stream a) where
+>instance (Integral a, RealClosure Stream a) => Integral (Stream a) where
 >   quot x y = x * quotientInvert y
 >   div x y = x * inversion y
 >   rem x y = x - ((x * inversion y)*y)
@@ -972,6 +1168,7 @@ matrix_inverse :: (InnerProductSpace (f a), InnerProductSpace (h a),
 >                         Linearizable LinearMap (:*:) g1 f2 (g2 a),
 >                         Linearizable LinearMap (:*:) f2 g1 (g2 a),
 >                         Linearizable LinearMap (:*:) f2 g1 (g2 a),
+>                         Num a,
 >                         VectorSpace ((:*:) f2 g1 (g2 a)), Scalar (f2 (g2 a)) ~ g2 a,
 >                         Scalar (g1 (g2 a)) ~ g2 a, Linearizable LinearMap (:*:) g2 g2 a,
 >                         VectorSpace ((:*:) g2 g2 a), Diagonalizable g2 a
@@ -1021,7 +1218,7 @@ matrix_inverse :: (InnerProductSpace (f a), InnerProductSpace (h a),
 >vsumStream :: (VectorSpace a) => Stream a -> Stream a
 >vsumStream = liftStream2 (%+)
 
->sumStreamIntegral :: (Integral a) => Stream a -> Stream a
+>sumStreamIntegral :: (RealClosure Stream a, Integral a) => Stream a -> Stream a
 >sumStreamIntegral s = s `div` (1 - s_z)
 
 >sumStreamFractional :: (Fractional a) => Stream a -> Stream a
@@ -1048,19 +1245,19 @@ existential = fmap or . codiagonalsSeq
 
 >-- | Everything but a diagonal
 
->streamCodiagonal :: (ConjugateSymmetric a, Num a, Closed a) => Stream a :-> Stream a -> Stream (Stream a, Stream a)
+>streamCodiagonal :: (Linearizable LinearMap (:*:) Stream Stream a) => Stream a :-> Stream a -> Stream (Stream a, Stream a)
 >streamCodiagonal x | z <- fromLinear x = streamCodiagonalImpl z
 
 
->zeroCodiagonal :: (Num a) => Codiagonal Stream a
->zeroCodiagonal = CodiagonalStream $ constant (constant 0, constant 0)
+>zeroCodiagonal :: a -> Codiagonal Stream a
+>zeroCodiagonal zero = CodiagonalStream $ constant (constant zero, constant zero)
 
->streamDiagonalMatrix :: (Num a) => Stream a -> (Stream :*: Stream) a
->streamDiagonalMatrix m = m |\| zeroCodiagonal
+>streamDiagonalMatrix :: Stream a -> (Stream :*: Stream) a -> (Stream :*: Stream) a
+>streamDiagonalMatrix v m = v |\| codiagonalImpl m
 
 >-- | streamMatrix creates matrix from a diagonal and a codiagonal
 
->streamMatrix :: (ConjugateSymmetric a, Num a, Closed a) => Stream a -> Stream (Stream a, Stream a) -> Stream a :-> Stream a
+>streamMatrix :: (Linearizable LinearMap (:*:) Stream Stream a) => Stream a -> Stream (Stream a, Stream a) -> Stream a :-> Stream a
 >streamMatrix x y = linear $ streamMatrixImpl x y
 
 >-- | this surprising function builds a two-dimensional infinite matrix
@@ -1072,12 +1269,12 @@ existential = fmap or . codiagonalsSeq
 >-- It's even more surprising once it's realised that two-dimensional
 >-- infinite matrices can be bijectively described as an infinite binary tree
 >-- of one-dimensional streams.
->from_triangular_matrices :: (Num a) => Stream a -> (Stream :*: Stream) a -> (Stream :*: Stream) a -> (Stream :*: Stream) a
+>from_triangular_matrices :: Stream a -> (Stream :*: Stream) a -> (Stream :*: Stream) a -> (Stream :*: Stream) a
 >from_triangular_matrices diag upper lower =
 >  streamMatrixImpl diag (liftA2 (,) (cells upper) (cells lower))
 
 >-- | isomorphism of infinite matrices that splits along diagonal.
->triangularMatrix_iso :: (Num a) => (Stream :*: Stream) a :==: ((Stream :*: Stream) a, Stream a, (Stream :*: Stream) a)
+>triangularMatrix_iso :: (Stream :*: Stream) a :==: ((Stream :*: Stream) a, Stream a, (Stream :*: Stream) a)
 >triangularMatrix_iso = fwd TArrow.<-> bck
 >  where -- fwd :: (Stream :*: Stream) a -> ((Stream :*: Stream) a, Stream a, (Stream :*: Stream) a)
 >        fwd m = (lowerTriangleImpl m, diagonalImpl m, upperTriangleImpl m)
@@ -1134,13 +1331,16 @@ triangular_pairMatrix = from_triangular_matrices (constant (0,0))
 >joinWith :: (a -> b -> c) -> Stream a -> Stream b -> Stream c
 >joinWith f x y = cojoin $ matrix f x y
 
->sheadIndex :: Stream a :==: I a
->sheadIndex = (I . shead) TArrow.<-> (constant . unI)
+>sheadIndex :: Index Stream a
+>sheadIndex = MakeIndex shead (\x (Pre _ xr) -> Pre x xr)
 
->stailIndex :: (Num a) => Stream a :==: I a -> Stream a :==: I a
->stailIndex ind = (I . indexProject ind . stail) TArrow.<-> (\ (I a) -> Pre a (isomorphismSection ind (I a)))
+>stailIndex :: Index Stream a -> Index Stream a
+>stailIndex ind = MakeIndex (indexProject ind . stail)
+>                           (\ a ~(Pre x xr) -> Pre x $ basisVector ind a xr)
 
->instance (Num a) => Indexable Stream a where
+ (I . indexProject ind . stail) TArrow.<-> (\ (I a) -> Pre a (isomorphismSection ind (I a)))
+
+>instance Indexable Stream a where
 >   diagonalProjections = Pre sheadIndex $ fmap stailIndex diagonalProjections
 >   indexableIndices = fmap fromIntegral (naturals :: Stream Integer)
 
@@ -1257,7 +1457,7 @@ codiagonalsSeq_linear = linear . Matrix . codiagonalsSeq . fromLinear
 >--     ...@
 >--
 >-- <https://en.wikipedia.org/wiki/Formal_power_series>                        
->uncodiagonals :: (ConjugateSymmetric a, Closed a, Num a) => Stream [a] -> Stream a :-> Stream a
+>uncodiagonals :: (Linearizable LinearMap (:*:) Stream Stream a) => Stream [a] -> Stream a :-> Stream a
 >uncodiagonals (Pre [!d] (Pre [!x,!y] re)) = streamMatrix diag codiag
 > where codiaghead = (x `Pre` fmap head re,y `Pre` fmap last re)
 >       codiag = codiaghead `Pre` streamCodiagonal next
@@ -1265,7 +1465,7 @@ codiagonalsSeq_linear = linear . Matrix . codiagonalsSeq . fromLinear
 >       next = uncodiagonals $ fmap (\lst -> P.take (length lst - 2) (tail lst)) re
 >uncodiagonals _ = error "form requirements for input to uncodiagonals not satisfied."
 
->uncodiagonalsImpl :: (Num a) => Stream [a] -> (Stream :*: Stream) a
+>uncodiagonalsImpl :: Stream [a] -> (Stream :*: Stream) a
 >uncodiagonalsImpl (Pre [!d] (Pre [!x,!y] re)) = streamMatrixImpl diag codiag
 > where codiaghead = (x `Pre` fmap head re,y `Pre` fmap last re)
 >       codiag = codiaghead `Pre` streamCodiagonalImpl next
@@ -1290,17 +1490,17 @@ codiagonalsIsoMatrix :: (Closed a, Num a, TArrow.BiArrow arr) => arr (Stream a :
 codiagonalsIsoMatrix = codiagonalsIso >>> ((linear . Matrix) TArrow.<-> cells_linear)
 
 >-- | lowerTriangle takes lower half of a two-dimensional stream split at diagonal.
->lowerTriangle :: (ConjugateSymmetric a, Num a, Closed a) => Stream a :-> Stream a -> Stream a :-> Stream a
+>lowerTriangle :: (Linearizable LinearMap (:*:) Stream Stream a) => Stream a :-> Stream a -> Stream a :-> Stream a
 >lowerTriangle = uncodiagonals . liftA2 take nonzeroNaturals . cells . fromLinear
 
->lowerTriangleImpl :: (Num a) => (Stream :*: Stream) a -> (Stream :*: Stream) a
+>lowerTriangleImpl :: (Stream :*: Stream) a -> (Stream :*: Stream) a
 >lowerTriangleImpl = uncodiagonalsImpl . liftA2 take nonzeroNaturals . cells
 
 >-- | upperTriangle takes upper half of a two-dimensional stream split at diagonal.
->upperTriangle :: (ConjugateSymmetric a, Num a, Closed a) => Stream a :-> Stream a -> Stream a :-> Stream a
+>upperTriangle :: (Linearizable LinearMap (:*:) Stream Stream a) => Stream a :-> Stream a -> Stream a :-> Stream a
 >upperTriangle = lowerTriangle . transpose
 
->upperTriangleImpl :: (Num a) => (Stream :*: Stream) a -> (Stream :*: Stream) a
+>upperTriangleImpl :: (Stream :*: Stream) a -> (Stream :*: Stream) a
 >upperTriangleImpl = lowerTriangleImpl . transposeImpl
 
 >pairingMatrix :: (Fractional a) => (Stream :*: Stream) a
@@ -1431,10 +1631,10 @@ codiagonals3 = codiagonals . linear . Matrix . fmap codiagonals . cells_linear
 >nonzeroNaturals :: (Num a) => Stream a
 >nonzeroNaturals = fmap (+ 1) naturals
 
->integral_nonzeroNaturals :: (Integral a) => Stream a
+>integral_nonzeroNaturals :: (Num a, Integral (Stream a)) => Stream a
 >integral_nonzeroNaturals = 1 `div` (1 - 2*s_z + s_z*s_z)
 
->integral_naturals :: (Integral a) => Stream a
+>integral_naturals :: (Num a, Integral (Stream a)) => Stream a
 >integral_naturals = Pre 0 integral_nonzeroNaturals
 
 >-- | This is the variable used in generating functions.  Note that in
@@ -1485,7 +1685,7 @@ codiagonals3 = codiagonals . linear . Matrix . fmap codiagonals . cells_linear
 >exponentialStream :: (Fractional a) => Stream a
 >exponentialStream = fmap (1/) factorial
 
->exponential :: (ConjugateSymmetric a, Closed a, Eq a, Fractional a) => Stream a -> Stream a
+>exponential :: (ConjugateSymmetric a, Eq a, Fractional a) => Stream a -> Stream a
 >exponential = compose exponentialStream
 
 >logGeneratingFunction :: (Fractional a) => Stream a
@@ -1793,7 +1993,7 @@ power i = 1 / (1 - (fromInteger i * s_z))
 >-- | The elements of pascal triangle are binomial coefficients.
 >--
 >-- <http://en.wikipedia.org/wiki/Binomial_coefficient>
->binomialCoefficient :: (Integral a) => Integer -> Integer -> a
+>binomialCoefficient :: (Integral a, RealClosure2 Stream a) => Integer -> Integer -> a
 >binomialCoefficient i j = pascalTriangle <!> (streamindex i,streamindex j)
 
 -- Problem: (Closed Rational) =>
@@ -1803,7 +2003,7 @@ generating_sqrt xplus1 = (`subst` x) $ fmap (binomial (1%2)) naturals
 
 
 >-- | <http://en.wikipedia.org/wiki/Catalan_number>
->catalanNumbers :: (Integral a) => Stream a
+>catalanNumbers :: (Integral a, RealClosure Stream a) => Stream a
 >catalanNumbers = fmap coeff naturals
 >   where coeff n = binomialCoefficient (2*n) n 
 >                    `div` (fromInteger n + 1)
@@ -1815,23 +2015,23 @@ generating_sqrt xplus1 = (`subst` x) $ fmap (binomial (1%2)) naturals
 >-- | pascal triangle, elements are binomial coefficients.
 >-- <https://en.wikipedia.org/wiki/Pascal%27s_triangle>
 >-- this expands "down" (leaving zero elements)
->pascalTriangle :: (Integral a) => (Stream :*: Stream) a
+>pascalTriangle :: (Integral a, RealClosure2 Stream a) => (Stream :*: Stream) a
 >pascalTriangle = Matrix $ 1 `div` (1 - s_z - s_z2*s_z)
 
 >-- | pascal triangle which expands towards the diagonal
->pascalTriangleDiag :: (Integral a) => (Stream :*: Stream) a
+>pascalTriangleDiag :: (Integral a, RealClosure2 Stream a) => (Stream :*: Stream) a
 >pascalTriangleDiag = Matrix $ 1 `div` (1 - s_z - s_z2)
 
 >pascalTriangleDiagFractional :: (Fractional a) => (Stream :*: Stream) a
 >pascalTriangleDiagFractional = Matrix $ 1 / (1 - s_z - s_z2)
 
->binomialCoefficients :: (Integral a) => Stream [a]
+>binomialCoefficients :: (Integral a, RealClosure2 Stream a) => Stream [a]
 >binomialCoefficients = codiagonals $ pascalTriangleDiag
 
->binomialCoefficientsSeq :: (Integral a) => Stream (Seq.Seq a)
+>binomialCoefficientsSeq :: (Integral a, RealClosure2 Stream a) => Stream (Seq.Seq a)
 >binomialCoefficientsSeq = codiagonalsSeq $ pascalTriangleDiag
 
->expApprox :: (Fractional a) => a -> Stream a
+>expApprox :: (Fractional a, RealClosure2 Stream a) => a -> Stream a
 >expApprox x = fmap (\ ~(j,lst) -> let m = x / fromInteger j in 
 >       sum $ map (\ ~(i,c :: Integer) -> fromInteger c * m^^i) lst) $
 >       liftA2 (,) naturals $ fmap (List.zip [(0 :: Integer)..]) $ binomialCoefficients
@@ -1840,7 +2040,7 @@ generating_sqrt xplus1 = (`subst` x) $ fmap (binomial (1%2)) naturals
 >--   Hint: use 'z' in one of the argument.
 >--   @pascalTriangle == Matrix $ polynomial_powers 1 z@
 >--   Note: stream_powers can sometimes be a more efficient alternative.
->polynomialPowers :: (Integral a) => a -> a -> Stream a
+>polynomialPowers :: (Integral a, RealClosure2 Stream a) => a -> a -> Stream a
 >polynomialPowers a b = fmap sum coeffs
 >   where mapper k ~(a' :: Integer,b' :: Integer) = k * (a ^ a') * (b ^ b')
 >         coeffs = codiagonals $ liftA2 mapper pascalTriangleDiag
@@ -1857,15 +2057,15 @@ generating_sqrt xplus1 = (`subst` x) $ fmap (binomial (1%2)) naturals
 >-- | a stream of fibonacci numbers,
 >-- each element is a sum of two previous elements.
 >-- @1,1,2,3,5,8,13,21,34,55,...@
->fib :: (Integral a) => Stream a
+>fib :: (Integral a, RealClosure Stream a) => Stream a
 >fib = 1 `div` (1 - s_z - s_z*s_z)
 
 >-- | Triangular numbers. <https://en.wikipedia.org/wiki/Generating_function>
 >-- @1,3,6,10,15,21,28,36,...@
->triangularNumbers :: (Integral a) => Stream a
+>triangularNumbers :: (Integral a, RealClosure Stream a) => Stream a
 >triangularNumbers = 1 `div` (1 - s_z)^(3 :: Int)
 
->squares :: (Integral a) => Stream a
+>squares :: (Num a, Integral (Stream a)) => Stream a
 >squares = s_z*(s_z+1)`div` (1-s_z)^(3 :: Int)
 
 >-- | @1.0,-1.0,1.0,-1.0,...@
@@ -1883,7 +2083,7 @@ generating_sqrt xplus1 = (`subst` x) $ fmap (binomial (1%2)) naturals
 >oddIntegers :: (Integral a) => Stream a
 >oddIntegers = filter odd naturals
 
->oddIntegers_ :: (Integral a) => Stream a
+>oddIntegers_ :: (Num a, Integral (Stream a)) => Stream a
 >oddIntegers_ = 1 `div` (1 - 3*s_z + 4*s_z*s_z `div` (1 + s_z))
 
 >-- | This is an ideal of the set of positive integers, usually denoted \(nZ^+\),
@@ -1936,7 +2136,7 @@ generating_sqrt xplus1 = (`subst` x) $ fmap (binomial (1%2)) naturals
 >-- <https://en.wikipedia.org/wiki/Falling_and_rising_factorials?wprof=sfla1>
 >--
 >-- Be careful about indices here, could cause off-by-one error!
->fallingFactorialPowersDiag :: (ConjugateSymmetric a, Integral a, Closed a) => Stream a :-> Stream a
+>fallingFactorialPowersDiag :: (Real (Closure Stream a), Real (Closure (Stream :*: Stream) a), ConjugateSymmetric a, Integral a, Closed a) => Stream a :-> Stream a
 >fallingFactorialPowersDiag = linear $ Matrix $ liftA2 (liftA2 (*)) (fmap constant factorial) (cells pascalTriangleDiag)
 
 >fallingFactorialPowers :: (Eq a,Num a) => (Stream :*: Stream) a
@@ -1950,7 +2150,7 @@ generating_sqrt xplus1 = (`subst` x) $ fmap (binomial (1%2)) naturals
 >bell_numbers :: (Num a, Ord a) => Stream a
 >bell_numbers = fmap (\x -> peircesTriangleFunc x x) nonzeroNaturals
 
->integerPartitionsWithParts :: (Integral a) => Integer -> Stream a
+>integerPartitionsWithParts :: (Num a, Integral (Stream a)) => Integer -> Stream a
 >integerPartitionsWithParts m = s_z^m `div` (foldr (*) 1 $ map (\a -> 1 - s_z^a) [1..m])
 
 >-- | newton's method of computing square root approximations:
@@ -1974,7 +2174,7 @@ generating_sqrt xplus1 = (`subst` x) $ fmap (binomial (1%2)) naturals
 >            | x /= y = findStart xr yr
 >            | otherwise = z'
 
->integerPartitions :: (Integral a) => (Stream :*: Stream) a
+>integerPartitions :: (Num a, Integral (Stream a)) => (Stream :*: Stream) a
 >integerPartitions = Matrix $ fmap integerPartitionsWithParts nonzeroNaturals
 
 >-- | Stream of prime numbers generated using a sieve.
@@ -2019,15 +2219,21 @@ generating_sqrt xplus1 = (`subst` x) $ fmap (binomial (1%2)) naturals
 
 >-- | Square root algorithm is from
 >-- Simpson: Power Series, <http://caps.gsfc.nasa.gov/simpson/ref/series.pdf>
->sqrtStream :: (Floating a, Closed a) => Stream a -> Stream a
+>sqrtStream :: (Floating a) => Stream a -> Stream a
 >sqrtStream ~z'@(Pre x xr) = Pre (sqrt x) $ mprod xr (sqrtStream z')
 > where pprod (a,i) (b,j) = ((i+j)-3*j)*a*b/(2*(i+j)*x)
 >       mprod a b = fmap sum $ codiagonals
 >              $ matrix pprod (a <&> nonzeroNaturals) (b <&> naturals)
 
+>cosStreamRealFloat :: (RealFloat a, Infinitesimal Stream a) => Stream a -> Stream a
+>cosStreamRealFloat x = fmap realPart $ exp $ fmap (0 :+) x
+
+>sinStreamRealFloat :: (RealFloat a, Infinitesimal Stream a) => Stream a -> Stream a
+>sinStreamRealFloat x = fmap imagPart $ exp $ fmap (0 :+) x
+
 >-- | <https://en.wikipedia.org/wiki/Inverse_trigonometric_functions inverse trigonometric functions>
 >-- <http://en.wikipedia.org/wiki/Hyperbolic_function hyperbolic function>
->instance (ConjugateSymmetric a, Closed a, Eq a,Floating a) => Floating (Stream a) where
+>instance (ConjugateSymmetric a, Eq a,Floating a) => Floating (Stream a) where
 >  sqrt = sqrtStream
 >  exp  = exponential
 >  log  = streamLogarithm
@@ -2084,20 +2290,20 @@ generating_sqrt xplus1 = (`subst` x) $ fmap (binomial (1%2)) naturals
 >gcd_prime_gen n = p + gcd n p
 >    where p = gcd_prime_gen (n - 1)                                            
            
->instance (Limiting str a, Limiting str b) => Limiting str (a,b) where
->  data Closure str (a,b) = PairClosure (Closure str a,Closure str b)
+>instance (Limiting Stream a, Limiting Stream b) => Limiting Stream (a,b) where
+>  data Closure Stream (a,b) = PairClosure (Closure Stream a,Closure Stream b)
 >  limit str = PairClosure (limit a, limit b)
 >      where ~(a,b) = funzip str
 >  approximations (PairClosure (x,y)) = approximations x <&> approximations y
 
 
->instance (Limiting str a, Limiting str b, Limiting str c) => Limiting str (a,b,c) where
->  data Closure str (a,b,c) = TripleClosure (Closure str a, Closure str b, Closure str c)
+>instance (Limiting Stream a, Limiting Stream b, Limiting Stream c) => Limiting Stream (a,b,c) where
+>  data Closure Stream (a,b,c) = TripleClosure (Closure Stream a, Closure Stream b, Closure Stream c)
 >  limit str = TripleClosure (limit a, limit b, limit c)
 >    where ~(a,b,c) = funzip3 str
 >  approximations (TripleClosure (x,y,z')) = liftA3 (,,) (approximations x) (approximations y) (approximations z')
 >
->instance (Show (Closure str a), Show (Closure str b), Show (Closure str c)) => Show (Closure str (a,b,c)) where
+>instance (Show (Closure Stream a), Show (Closure Stream b), Show (Closure Stream c)) => Show (Closure Stream (a,b,c)) where
 >   show (TripleClosure (x,y,z')) = "(" ++ show x ++ "," ++ show y
 >      ++ "," ++ show z' ++ ")"
 
@@ -2116,13 +2322,13 @@ instance (Closed a, Closed b) => Closed (a,b) where
 >  limit ~(Pre x xr) = IsoClosure $ pre x $ fmap (x >>>) $ runIsoClosure $ limit xr
 >  approximations = runIsoClosure
 
->instance Limiting str a => Limiting str (Complex a) where
->  data Closure str (Complex a) = ComplexClosure { runComplexClosure :: Complex (Closure str a) }
+>instance Limiting Stream a => Limiting Stream (Complex a) where
+>  data Closure Stream (Complex a) = ComplexClosure { runComplexClosure :: Complex (Closure Stream a) }
 >  limit str = ComplexClosure (limit a :+ limit b)
 >    where (a,b) = funzip $ fmap (\(a' :+ b') -> (a',b')) str
 >  approximations (ComplexClosure (a :+ b)) = liftA2 (:+) (approximations a) (approximations b)
 
->instance (Show (Closure str a)) => Show (Closure str (Complex a)) where
+>instance (Show (Closure Stream a)) => Show (Closure Stream (Complex a)) where
 >   show (ComplexClosure r) = show r
 
 >instance (Limiting Stream a, RealFloat a) => Num (Closure Stream (Complex a)) where
@@ -2135,7 +2341,7 @@ instance (Closed a, Closed b) => Closed (a,b) where
 >   fromInteger x = ComplexClosure (limit (constant (fromInteger x))
 >                                   :+ limit (constant (fromInteger 0)))
 
->instance (RealFloat a, Infinitesimal str a) => Infinitesimal str (Complex a) where
+>instance (RealFloat a, Infinitesimal Stream a) => Infinitesimal Stream (Complex a) where
 >  epsilonStream = liftA2 (:+) epsilonStream epsilonStream
 
 >instance (RealFloat a, Infinitesimal Stream a) => Closed (Complex a) where
@@ -2168,7 +2374,7 @@ instance (Closed a) => Closed (Complex a) where
 >instance (Infinitesimal Stream a, Num a) => Infinitesimal Stream (Stream a) where
 >   epsilonStream = cells $ matrix (*) epsilonStream epsilonStream
 
->derivativeCoefficients :: (Integral a) => (Stream :*: Stream) a
+>derivativeCoefficients :: (Num a, Integral (Stream (Stream a))) => (Stream :*: Stream) a
 >derivativeCoefficients = Matrix $ s_z2 `div` (1 - s_z*s_z2)^(2 :: Integer)
 
 >derivativeCoefficientsFractional :: (Fractional a) => (Stream :*: Stream) a
@@ -2205,10 +2411,10 @@ instance (Closed a) => Closed (Complex a) where
 >bernoulliPolynomialCoefficients = codiagonals (lowerTriangleImpl bernoulliPolynomials)
 
 >-- | <https://en.wikipedia.org/wiki/Legendre_polynomials>
->legendrePolynomials :: (Closed a, Eq a, ConjugateSymmetric a, Floating a) => (Stream :*: Stream) a
+>legendrePolynomials :: (Eq a, ConjugateSymmetric a, Floating a) => (Stream :*: Stream) a
 >legendrePolynomials = Matrix $ 1 / sqrt (1 - 2*s_z2*s_z + s_z*s_z)
 
->legendrePolynomialLists :: (Closed a, Num a, Eq a, ConjugateSymmetric a, Floating a) => Stream [a]
+>legendrePolynomialLists :: (Num a, Eq a, ConjugateSymmetric a, Floating a) => Stream [a]
 >legendrePolynomialLists = codiagonals $
 >   lowerTriangleImpl legendrePolynomials
 
@@ -2217,11 +2423,11 @@ instance (Closed a) => Closed (Complex a) where
 >  where mult = take (fromIntegral $ length poly) $ powerUniformFractional x
 >        res = P.sum $ P.zipWith (*) poly mult
 
->evaluateLegendrePolynomial :: (Fractional a, Closed a, Eq a, ConjugateSymmetric a, Floating a) => Integer -> a -> a
+>evaluateLegendrePolynomial :: (Fractional a, Eq a, ConjugateSymmetric a, Floating a) => Integer -> a -> a
 >evaluateLegendrePolynomial i =
 >   evaluatePolynomial (i `streamindex` legendrePolynomialLists)
 
->evaluateLegendreAt :: (Fractional a, Closed a, Eq a, ConjugateSymmetric a, Floating a) => a -> Stream a
+>evaluateLegendreAt :: (Fractional a, Eq a, ConjugateSymmetric a, Floating a) => a -> Stream a
 >evaluateLegendreAt x = fmap (`evaluateLegendrePolynomial` x) naturals
 
 

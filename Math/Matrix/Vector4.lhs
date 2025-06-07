@@ -160,15 +160,15 @@ import Math.Matrix.Dimension
 >                  Vector4 0 0 1 0,
 >                  Vector4 0 0 0 1]                   
 
->instance (Num a) => Indexable Vector4 a where
+>instance Indexable Vector4 a where
 >  diagonalProjections = diagonalProjections4
 >  indexableIndices = Vector4 0 1 2 3
 
->diagonalProjections4 :: (Num a) => Vector4 (Index Vector4 a)
->diagonalProjections4 = Vector4 (tcoord4 <!-!> \a -> Vector4 a 0 0 0)
->                                (xcoord4 <!-!> \a -> Vector4 0 a 0 0)
->                                (ycoord4 <!-!> \a -> Vector4 0 0 a 0)
->                                (zcoord4 <!-!> \a -> Vector4 0 0 0 a)
+>diagonalProjections4 :: Vector4 (Index Vector4 a)
+>diagonalProjections4 = Vector4 (tcoord4 <!-!> sett4)
+>                                (xcoord4 <!-!> setx4)
+>                                (ycoord4 <!-!> sety4)
+>                                (zcoord4 <!-!> setz4)
 
 >cycle4 :: Vector4 a -> Stream a
 >cycle4 z@(Vector4 a b c d) = a `Pre` b `Pre` c `Pre` d `Pre` cycle4 z
@@ -296,8 +296,9 @@ instance FractionalSpace (Vector4 (Complex R))
 >instance (SupportsMatrixMultiplication Vector4 Vector4 Vector4 a) => Monoid ((Vector4 :*: Vector4) a) where
 >   mempty = identity
 
->instance (Monad str, Limiting str a) => Limiting str (Vector4 a) where
->  data Closure str (Vector4 a) = Vector4Closure { runVector4Closure :: Vector4 (Closure str a) }
+>instance (Limiting Stream a) => Limiting Stream (Vector4 a) where
+>  data Closure Stream (Vector4 a) = Vector4Closure {
+>    runVector4Closure :: Vector4 (Closure Stream a) }
 >  limit str = Vector4Closure $ Vector4
 >                      (limit $ str >>= (return . tcoord4))
 >                      (limit $ str >>= (return . xcoord4))
@@ -384,7 +385,7 @@ instance FractionalSpace (Vector4 (Complex R))
 >   negate (Matrix v) = Matrix $ liftA (liftA negate) v
 >   abs (Matrix v) = Matrix $ liftA (liftA abs) v
 >   signum (Matrix v) = Matrix $ liftA (liftA signum) v
->   fromInteger i = diagonalMatrixImpl (constant4 (fromInteger i))
+>   fromInteger i = diagonalMatrixImpl (constant4 (fromInteger i)) vzero
 
 >index4 :: Int -> Vector4 a -> a
 >index4 0 = tcoord4
@@ -555,8 +556,7 @@ instance FractionalSpace (Vector4 (Complex R))
 
 >instance (ConjugateSymmetric a, Num a) => InnerProductSpaceFunctor Vector4 a
 
->instance (Num a) => Diagonalizable Vector4 a where
->  identityImpl _ = identity4
+>instance Diagonalizable Vector4 a where
 >  identity = identity4
 >  diagonalImpl = diagonal4
 >  diagonalMatrixImpl = diagonal_matrix4
@@ -566,7 +566,7 @@ instance FractionalSpace (Vector4 (Complex R))
 >  traceImpl    = trace4
 
 >identity4 :: (Num a) => Matrix4 a
->identity4 = diagonalMatrixImpl (constant4 1)
+>identity4 = diagonalMatrixImpl (constant4 1) vzero
 
 >diagonal4x :: Matrix4 a -> Vector4 a
 >diagonal4x (Matrix (Vector4 t x y z)) =
@@ -575,8 +575,8 @@ instance FractionalSpace (Vector4 (Complex R))
 >zero_codiagonal4 :: (Num a) => Codiagonal Vector4 a
 >zero_codiagonal4 = Codiagonal4 (constant3 0) (constant3 0) (zero_codiagonal3)
 
->diagonal_matrix4 :: (Num a) => Vector4 a -> (Vector4 :*: Vector4) a
->diagonal_matrix4 v = matrix4 v zero_codiagonal4
+>diagonal_matrix4 :: Vector4 a -> (Vector4 :*: Vector4) a -> (Vector4 :*: Vector4) a
+>diagonal_matrix4 v m = matrix4 v (codiag4 m)
 
 >mat4 :: Vector4 a -> Codiagonal Vector4 a -> (Vector4 :*: Vector4) a
 >mat4 (Vector4 d1 d2 d3 d4) (Codiagonal4 (Vector3 a' a'' a''') (Vector3 a b c)

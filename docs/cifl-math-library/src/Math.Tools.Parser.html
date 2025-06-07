@@ -12,47 +12,47 @@
 </span><span id="line-12"></span><span>
 </span><span id="line-13"></span><span> </span><span class="hs-keyword">type</span><span> </span><span id="Error"><span class="annot"><a href="Math.Tools.Parser.html#Error"><span class="hs-identifier hs-var">Error</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Doc</span></span><span>
 </span><span id="line-14"></span><span>
-</span><span id="line-15"></span><span> </span><span class="hs-keyword">newtype</span><span> </span><span id="ParserM"><span class="annot"><a href="Math.Tools.Parser.html#ParserM"><span class="hs-identifier hs-var">ParserM</span></a></span></span><span> </span><span id="local-6989586621681202386"><span class="annot"><a href="#local-6989586621681202386"><span class="hs-identifier hs-type">i</span></a></span></span><span> </span><span id="local-6989586621681202387"><span class="annot"><a href="#local-6989586621681202387"><span class="hs-identifier hs-type">a</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span id="ParserM"><span class="annot"><a href="Math.Tools.Parser.html#ParserM"><span class="hs-identifier hs-var">ParserM</span></a></span></span><span> </span><span class="hs-special">{</span><span>
+</span><span id="line-15"></span><span> </span><span class="hs-keyword">newtype</span><span> </span><span id="ParserM"><span class="annot"><a href="Math.Tools.Parser.html#ParserM"><span class="hs-identifier hs-var">ParserM</span></a></span></span><span> </span><span id="local-6989586621681257470"><span class="annot"><a href="#local-6989586621681257470"><span class="hs-identifier hs-type">i</span></a></span></span><span> </span><span id="local-6989586621681257471"><span class="annot"><a href="#local-6989586621681257471"><span class="hs-identifier hs-type">a</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span id="ParserM"><span class="annot"><a href="Math.Tools.Parser.html#ParserM"><span class="hs-identifier hs-var">ParserM</span></a></span></span><span> </span><span class="hs-special">{</span><span>
 </span><span id="line-16"></span><span>      </span><span id="runParseM"><span class="annot"><span class="annottext">forall i a.
 ParserM i a
 -&gt; forall c.
    (a -&gt; i -&gt; LineInfo -&gt; c)
    -&gt; (Error -&gt; LineInfo -&gt; c) -&gt; i -&gt; LineInfo -&gt; c
-</span><a href="Math.Tools.Parser.html#runParseM"><span class="hs-identifier hs-var hs-var">runParseM</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="hs-keyword">forall</span><span> </span><span id="local-6989586621681202390"><span class="annot"><a href="#local-6989586621681202390"><span class="hs-identifier hs-type">c</span></a></span></span><span class="hs-operator">.</span><span> </span><span class="hs-special">(</span><span class="annot"><a href="#local-6989586621681202387"><span class="hs-identifier hs-type">a</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="#local-6989586621681202386"><span class="hs-identifier hs-type">i</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="Math.Tools.LineInfo.html#LineInfo"><span class="hs-identifier hs-type">LineInfo</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="#local-6989586621681202390"><span class="hs-identifier hs-type">c</span></a></span><span class="hs-special">)</span><span>
-</span><span id="line-17"></span><span>                          </span><span class="hs-glyph">-&gt;</span><span> </span><span class="hs-special">(</span><span class="annot"><a href="Math.Tools.Parser.html#Error"><span class="hs-identifier hs-type">Error</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="Math.Tools.LineInfo.html#LineInfo"><span class="hs-identifier hs-type">LineInfo</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="#local-6989586621681202390"><span class="hs-identifier hs-type">c</span></a></span><span class="hs-special">)</span><span>
-</span><span id="line-18"></span><span>                          </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="#local-6989586621681202386"><span class="hs-identifier hs-type">i</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="Math.Tools.LineInfo.html#LineInfo"><span class="hs-identifier hs-type">LineInfo</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="#local-6989586621681202390"><span class="hs-identifier hs-type">c</span></a></span><span>
+</span><a href="Math.Tools.Parser.html#runParseM"><span class="hs-identifier hs-var hs-var">runParseM</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="hs-keyword">forall</span><span> </span><span id="local-6989586621681257474"><span class="annot"><a href="#local-6989586621681257474"><span class="hs-identifier hs-type">c</span></a></span></span><span class="hs-operator">.</span><span> </span><span class="hs-special">(</span><span class="annot"><a href="#local-6989586621681257471"><span class="hs-identifier hs-type">a</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="#local-6989586621681257470"><span class="hs-identifier hs-type">i</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="Math.Tools.LineInfo.html#LineInfo"><span class="hs-identifier hs-type">LineInfo</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="#local-6989586621681257474"><span class="hs-identifier hs-type">c</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-17"></span><span>                          </span><span class="hs-glyph">-&gt;</span><span> </span><span class="hs-special">(</span><span class="annot"><a href="Math.Tools.Parser.html#Error"><span class="hs-identifier hs-type">Error</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="Math.Tools.LineInfo.html#LineInfo"><span class="hs-identifier hs-type">LineInfo</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="#local-6989586621681257474"><span class="hs-identifier hs-type">c</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-18"></span><span>                          </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="#local-6989586621681257470"><span class="hs-identifier hs-type">i</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="Math.Tools.LineInfo.html#LineInfo"><span class="hs-identifier hs-type">LineInfo</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="#local-6989586621681257474"><span class="hs-identifier hs-type">c</span></a></span><span>
 </span><span id="line-19"></span><span>    </span><span class="hs-special">}</span><span>
 </span><span id="line-20"></span><span>
-</span><span id="line-21"></span><span> </span><span class="hs-keyword">instance</span><span> </span><span id="local-6989586621681202401"><span id="local-6989586621681202511"><span class="annot"><span class="hs-identifier hs-type">Functor</span></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="Math.Tools.Parser.html#ParserM"><span class="hs-identifier hs-type">ParserM</span></a></span><span> </span><span class="annot"><a href="#local-6989586621681202401"><span class="hs-identifier hs-type">i</span></a></span><span class="hs-special">)</span></span></span><span> </span><span class="hs-keyword">where</span><span>
-</span><span id="line-22"></span><span>    </span><span id="local-6989586621681202518"><span class="annot"><span class="annottext">fmap :: forall a b. (a -&gt; b) -&gt; ParserM i a -&gt; ParserM i b
-</span><span class="hs-identifier hs-var hs-var hs-var hs-var">fmap</span></span></span><span> </span><span id="local-6989586621681202519"><span class="annot"><span class="annottext">a -&gt; b
-</span><a href="#local-6989586621681202519"><span class="hs-identifier hs-var">f</span></a></span></span><span> </span><span id="local-6989586621681202520"><span class="annot"><span class="annottext">ParserM i a
-</span><a href="#local-6989586621681202520"><span class="hs-identifier hs-var">p</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">(a -&gt; b) -&gt; ParserM i (a -&gt; b)
+</span><span id="line-21"></span><span> </span><span class="hs-keyword">instance</span><span> </span><span id="local-6989586621681257485"><span id="local-6989586621681257595"><span class="annot"><span class="hs-identifier hs-type">Functor</span></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="Math.Tools.Parser.html#ParserM"><span class="hs-identifier hs-type">ParserM</span></a></span><span> </span><span class="annot"><a href="#local-6989586621681257485"><span class="hs-identifier hs-type">i</span></a></span><span class="hs-special">)</span></span></span><span> </span><span class="hs-keyword">where</span><span>
+</span><span id="line-22"></span><span>    </span><span id="local-6989586621681257602"><span class="annot"><span class="annottext">fmap :: forall a b. (a -&gt; b) -&gt; ParserM i a -&gt; ParserM i b
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var">fmap</span></span></span><span> </span><span id="local-6989586621681257603"><span class="annot"><span class="annottext">a -&gt; b
+</span><a href="#local-6989586621681257603"><span class="hs-identifier hs-var">f</span></a></span></span><span> </span><span id="local-6989586621681257604"><span class="annot"><span class="annottext">ParserM i a
+</span><a href="#local-6989586621681257604"><span class="hs-identifier hs-var">p</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">(a -&gt; b) -&gt; ParserM i (a -&gt; b)
 forall a. a -&gt; ParserM i a
 forall (f :: * -&gt; *) a. Applicative f =&gt; a -&gt; f a
 </span><span class="hs-identifier hs-var">pure</span></span><span> </span><span class="annot"><span class="annottext">a -&gt; b
-</span><a href="#local-6989586621681202519"><span class="hs-identifier hs-var">f</span></a></span><span> </span><span class="annot"><span class="annottext">ParserM i (a -&gt; b) -&gt; ParserM i a -&gt; ParserM i b
+</span><a href="#local-6989586621681257603"><span class="hs-identifier hs-var">f</span></a></span><span> </span><span class="annot"><span class="annottext">ParserM i (a -&gt; b) -&gt; ParserM i a -&gt; ParserM i b
 forall a b. ParserM i (a -&gt; b) -&gt; ParserM i a -&gt; ParserM i b
 forall (f :: * -&gt; *) a b. Applicative f =&gt; f (a -&gt; b) -&gt; f a -&gt; f b
 </span><span class="hs-operator hs-var">&lt;*&gt;</span></span><span> </span><span class="annot"><span class="annottext">ParserM i a
-</span><a href="#local-6989586621681202520"><span class="hs-identifier hs-var">p</span></a></span><span>
+</span><a href="#local-6989586621681257604"><span class="hs-identifier hs-var">p</span></a></span><span>
 </span><span id="line-23"></span><span>
-</span><span id="line-24"></span><span> </span><span class="hs-keyword">instance</span><span> </span><span id="local-6989586621681202415"><span id="local-6989586621681202526"><span id="local-6989586621681202530"><span class="annot"><span class="hs-identifier hs-type">Alternative</span></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="Math.Tools.Parser.html#ParserM"><span class="hs-identifier hs-type">ParserM</span></a></span><span> </span><span class="annot"><a href="#local-6989586621681202415"><span class="hs-identifier hs-type">i</span></a></span><span class="hs-special">)</span></span></span></span><span> </span><span class="hs-keyword">where</span><span>
-</span><span id="line-25"></span><span>    </span><span id="local-6989586621681202535"><span class="annot"><span class="annottext">empty :: forall a. ParserM i a
-</span><a href="#local-6989586621681202535"><span class="hs-identifier hs-var hs-var hs-var hs-var">empty</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">ParserM i a
+</span><span id="line-24"></span><span> </span><span class="hs-keyword">instance</span><span> </span><span id="local-6989586621681257499"><span id="local-6989586621681257610"><span id="local-6989586621681257614"><span class="annot"><span class="hs-identifier hs-type">Alternative</span></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="Math.Tools.Parser.html#ParserM"><span class="hs-identifier hs-type">ParserM</span></a></span><span> </span><span class="annot"><a href="#local-6989586621681257499"><span class="hs-identifier hs-type">i</span></a></span><span class="hs-special">)</span></span></span></span><span> </span><span class="hs-keyword">where</span><span>
+</span><span id="line-25"></span><span>    </span><span id="local-6989586621681257619"><span class="annot"><span class="annottext">empty :: forall a. ParserM i a
+</span><a href="#local-6989586621681257619"><span class="hs-identifier hs-var hs-var hs-var hs-var">empty</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">ParserM i a
 forall a. ParserM i a
 forall (m :: * -&gt; *) a. MonadPlus m =&gt; m a
 </span><span class="hs-identifier hs-var">mzero</span></span><span>
-</span><span id="line-26"></span><span>    </span><span id="local-6989586621681202539"><span class="annot"><span class="annottext">&lt;|&gt; :: forall a. ParserM i a -&gt; ParserM i a -&gt; ParserM i a
-</span><a href="#local-6989586621681202539"><span class="hs-operator hs-var hs-var hs-var hs-var">(&lt;|&gt;)</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">ParserM i a -&gt; ParserM i a -&gt; ParserM i a
+</span><span id="line-26"></span><span>    </span><span id="local-6989586621681257623"><span class="annot"><span class="annottext">&lt;|&gt; :: forall a. ParserM i a -&gt; ParserM i a -&gt; ParserM i a
+</span><a href="#local-6989586621681257623"><span class="hs-operator hs-var hs-var hs-var hs-var">(&lt;|&gt;)</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">ParserM i a -&gt; ParserM i a -&gt; ParserM i a
 forall a. ParserM i a -&gt; ParserM i a -&gt; ParserM i a
 forall (m :: * -&gt; *) a. MonadPlus m =&gt; m a -&gt; m a -&gt; m a
 </span><span class="hs-identifier hs-var">mplus</span></span><span>
 </span><span id="line-27"></span><span>
-</span><span id="line-28"></span><span> </span><span class="hs-keyword">instance</span><span> </span><span id="local-6989586621681202402"><span id="local-6989586621681202547"><span id="local-6989586621681202550"><span id="local-6989586621681202553"><span class="annot"><span class="hs-identifier hs-type">Applicative</span></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="Math.Tools.Parser.html#ParserM"><span class="hs-identifier hs-type">ParserM</span></a></span><span> </span><span class="annot"><a href="#local-6989586621681202402"><span class="hs-identifier hs-type">i</span></a></span><span class="hs-special">)</span></span></span></span></span><span> </span><span class="hs-keyword">where</span><span>
-</span><span id="line-29"></span><span>    </span><span id="local-6989586621681202556"><span class="annot"><span class="annottext">pure :: forall a. a -&gt; ParserM i a
-</span><span class="hs-identifier hs-var hs-var hs-var hs-var">pure</span></span></span><span> </span><span id="local-6989586621681202557"><span class="annot"><span class="annottext">a
-</span><a href="#local-6989586621681202557"><span class="hs-identifier hs-var">x</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">(forall c.
+</span><span id="line-28"></span><span> </span><span class="hs-keyword">instance</span><span> </span><span id="local-6989586621681257486"><span id="local-6989586621681257631"><span id="local-6989586621681257634"><span id="local-6989586621681257637"><span class="annot"><span class="hs-identifier hs-type">Applicative</span></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="Math.Tools.Parser.html#ParserM"><span class="hs-identifier hs-type">ParserM</span></a></span><span> </span><span class="annot"><a href="#local-6989586621681257486"><span class="hs-identifier hs-type">i</span></a></span><span class="hs-special">)</span></span></span></span></span><span> </span><span class="hs-keyword">where</span><span>
+</span><span id="line-29"></span><span>    </span><span id="local-6989586621681257640"><span class="annot"><span class="annottext">pure :: forall a. a -&gt; ParserM i a
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var">pure</span></span></span><span> </span><span id="local-6989586621681257641"><span class="annot"><span class="annottext">a
+</span><a href="#local-6989586621681257641"><span class="hs-identifier hs-var">x</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">(forall c.
  (a -&gt; i -&gt; LineInfo -&gt; c)
  -&gt; (Error -&gt; LineInfo -&gt; c) -&gt; i -&gt; LineInfo -&gt; c)
 -&gt; ParserM i a
@@ -61,43 +61,43 @@ forall i a.
  (a -&gt; i -&gt; LineInfo -&gt; c)
  -&gt; (Error -&gt; LineInfo -&gt; c) -&gt; i -&gt; LineInfo -&gt; c)
 -&gt; ParserM i a
-</span><a href="Math.Tools.Parser.html#ParserM"><span class="hs-identifier hs-var">ParserM</span></a></span><span> </span><span class="hs-special">(</span><span class="hs-glyph">\</span><span id="local-6989586621681202558"><span class="annot"><span class="annottext">a -&gt; i -&gt; LineInfo -&gt; c
-</span><a href="#local-6989586621681202558"><span class="hs-identifier hs-var">f</span></a></span></span><span> </span><span class="annot"><span class="annottext">Error -&gt; LineInfo -&gt; c
+</span><a href="Math.Tools.Parser.html#ParserM"><span class="hs-identifier hs-var">ParserM</span></a></span><span> </span><span class="hs-special">(</span><span class="hs-glyph">\</span><span id="local-6989586621681257642"><span class="annot"><span class="annottext">a -&gt; i -&gt; LineInfo -&gt; c
+</span><a href="#local-6989586621681257642"><span class="hs-identifier hs-var">f</span></a></span></span><span> </span><span class="annot"><span class="annottext">Error -&gt; LineInfo -&gt; c
 </span><span class="hs-identifier">_</span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="annottext">a -&gt; i -&gt; LineInfo -&gt; c
-</span><a href="#local-6989586621681202558"><span class="hs-identifier hs-var">f</span></a></span><span> </span><span class="annot"><span class="annottext">a
-</span><a href="#local-6989586621681202557"><span class="hs-identifier hs-var">x</span></a></span><span class="hs-special">)</span><span>
-</span><span id="line-30"></span><span>    </span><span id="local-6989586621681202563"><span class="annot"><span class="annottext">ParserM i (a -&gt; b)
-</span><a href="#local-6989586621681202563"><span class="hs-identifier hs-var">f</span></a></span></span><span> </span><span id="local-6989586621681202564"><span class="annot"><span class="annottext">&lt;*&gt; :: forall a b. ParserM i (a -&gt; b) -&gt; ParserM i a -&gt; ParserM i b
-</span><span class="hs-operator hs-var hs-var hs-var hs-var">&lt;*&gt;</span></span></span><span> </span><span id="local-6989586621681202565"><span class="annot"><span class="annottext">ParserM i a
-</span><a href="#local-6989586621681202565"><span class="hs-identifier hs-var">x</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">ParserM i (a -&gt; b)
-</span><a href="#local-6989586621681202563"><span class="hs-identifier hs-var">f</span></a></span><span> </span><span class="annot"><span class="annottext">ParserM i (a -&gt; b) -&gt; ((a -&gt; b) -&gt; ParserM i b) -&gt; ParserM i b
+</span><a href="#local-6989586621681257642"><span class="hs-identifier hs-var">f</span></a></span><span> </span><span class="annot"><span class="annottext">a
+</span><a href="#local-6989586621681257641"><span class="hs-identifier hs-var">x</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-30"></span><span>    </span><span id="local-6989586621681257647"><span class="annot"><span class="annottext">ParserM i (a -&gt; b)
+</span><a href="#local-6989586621681257647"><span class="hs-identifier hs-var">f</span></a></span></span><span> </span><span id="local-6989586621681257648"><span class="annot"><span class="annottext">&lt;*&gt; :: forall a b. ParserM i (a -&gt; b) -&gt; ParserM i a -&gt; ParserM i b
+</span><span class="hs-operator hs-var hs-var hs-var hs-var">&lt;*&gt;</span></span></span><span> </span><span id="local-6989586621681257649"><span class="annot"><span class="annottext">ParserM i a
+</span><a href="#local-6989586621681257649"><span class="hs-identifier hs-var">x</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">ParserM i (a -&gt; b)
+</span><a href="#local-6989586621681257647"><span class="hs-identifier hs-var">f</span></a></span><span> </span><span class="annot"><span class="annottext">ParserM i (a -&gt; b) -&gt; ((a -&gt; b) -&gt; ParserM i b) -&gt; ParserM i b
 forall a b. ParserM i a -&gt; (a -&gt; ParserM i b) -&gt; ParserM i b
 forall (m :: * -&gt; *) a b. Monad m =&gt; m a -&gt; (a -&gt; m b) -&gt; m b
-</span><span class="hs-operator hs-var">&gt;&gt;=</span></span><span> </span><span class="hs-glyph">\</span><span id="local-6989586621681202566"><span class="annot"><span class="annottext">a -&gt; b
-</span><a href="#local-6989586621681202566"><span class="hs-identifier hs-var">f'</span></a></span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="annottext">ParserM i a
-</span><a href="#local-6989586621681202565"><span class="hs-identifier hs-var">x</span></a></span><span> </span><span class="annot"><span class="annottext">ParserM i a -&gt; (a -&gt; ParserM i b) -&gt; ParserM i b
+</span><span class="hs-operator hs-var">&gt;&gt;=</span></span><span> </span><span class="hs-glyph">\</span><span id="local-6989586621681257650"><span class="annot"><span class="annottext">a -&gt; b
+</span><a href="#local-6989586621681257650"><span class="hs-identifier hs-var">f'</span></a></span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="annottext">ParserM i a
+</span><a href="#local-6989586621681257649"><span class="hs-identifier hs-var">x</span></a></span><span> </span><span class="annot"><span class="annottext">ParserM i a -&gt; (a -&gt; ParserM i b) -&gt; ParserM i b
 forall a b. ParserM i a -&gt; (a -&gt; ParserM i b) -&gt; ParserM i b
 forall (m :: * -&gt; *) a b. Monad m =&gt; m a -&gt; (a -&gt; m b) -&gt; m b
-</span><span class="hs-operator hs-var">&gt;&gt;=</span></span><span> </span><span class="hs-glyph">\</span><span id="local-6989586621681202567"><span class="annot"><span class="annottext">a
-</span><a href="#local-6989586621681202567"><span class="hs-identifier hs-var">x'</span></a></span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="annottext">b -&gt; ParserM i b
+</span><span class="hs-operator hs-var">&gt;&gt;=</span></span><span> </span><span class="hs-glyph">\</span><span id="local-6989586621681257651"><span class="annot"><span class="annottext">a
+</span><a href="#local-6989586621681257651"><span class="hs-identifier hs-var">x'</span></a></span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="annottext">b -&gt; ParserM i b
 forall a. a -&gt; ParserM i a
 forall (m :: * -&gt; *) a. Monad m =&gt; a -&gt; m a
 </span><span class="hs-identifier hs-var">return</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">a -&gt; b
-</span><a href="#local-6989586621681202566"><span class="hs-identifier hs-var">f'</span></a></span><span> </span><span class="annot"><span class="annottext">a
-</span><a href="#local-6989586621681202567"><span class="hs-identifier hs-var">x'</span></a></span><span class="hs-special">)</span><span>
+</span><a href="#local-6989586621681257650"><span class="hs-identifier hs-var">f'</span></a></span><span> </span><span class="annot"><span class="annottext">a
+</span><a href="#local-6989586621681257651"><span class="hs-identifier hs-var">x'</span></a></span><span class="hs-special">)</span><span>
 </span><span id="line-31"></span><span>
-</span><span id="line-32"></span><span> </span><span class="hs-keyword">instance</span><span> </span><span id="local-6989586621681202433"><span id="local-6989586621681202572"><span class="annot"><span class="hs-identifier hs-type">Monad</span></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="Math.Tools.Parser.html#ParserM"><span class="hs-identifier hs-type">ParserM</span></a></span><span> </span><span class="annot"><a href="#local-6989586621681202433"><span class="hs-identifier hs-type">i</span></a></span><span class="hs-special">)</span></span></span><span> </span><span class="hs-keyword">where</span><span>
-</span><span id="line-33"></span><span>    </span><span id="local-6989586621681202577"><span class="annot"><span class="annottext">return :: forall a. a -&gt; ParserM i a
+</span><span id="line-32"></span><span> </span><span class="hs-keyword">instance</span><span> </span><span id="local-6989586621681257517"><span id="local-6989586621681257656"><span class="annot"><span class="hs-identifier hs-type">Monad</span></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="Math.Tools.Parser.html#ParserM"><span class="hs-identifier hs-type">ParserM</span></a></span><span> </span><span class="annot"><a href="#local-6989586621681257517"><span class="hs-identifier hs-type">i</span></a></span><span class="hs-special">)</span></span></span><span> </span><span class="hs-keyword">where</span><span>
+</span><span id="line-33"></span><span>    </span><span id="local-6989586621681257661"><span class="annot"><span class="annottext">return :: forall a. a -&gt; ParserM i a
 </span><span class="hs-identifier hs-var hs-var hs-var hs-var">return</span></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">a -&gt; ParserM i a
 forall a. a -&gt; ParserM i a
 forall (f :: * -&gt; *) a. Applicative f =&gt; a -&gt; f a
 </span><span class="hs-identifier hs-var">pure</span></span><span>
-</span><span id="line-34"></span><span>    </span><span class="hs-special">(</span><span class="annot"><a href="Math.Tools.Parser.html#ParserM"><span class="hs-identifier hs-type">ParserM</span></a></span><span> </span><span id="local-6989586621681202578"><span class="annot"><span class="annottext">forall c.
+</span><span id="line-34"></span><span>    </span><span class="hs-special">(</span><span class="annot"><a href="Math.Tools.Parser.html#ParserM"><span class="hs-identifier hs-type">ParserM</span></a></span><span> </span><span id="local-6989586621681257662"><span class="annot"><span class="annottext">forall c.
 (a -&gt; i -&gt; LineInfo -&gt; c)
 -&gt; (Error -&gt; LineInfo -&gt; c) -&gt; i -&gt; LineInfo -&gt; c
-</span><a href="#local-6989586621681202578"><span class="hs-identifier hs-var">f</span></a></span></span><span class="hs-special">)</span><span> </span><span id="local-6989586621681202579"><span class="annot"><span class="annottext">&gt;&gt;= :: forall a b. ParserM i a -&gt; (a -&gt; ParserM i b) -&gt; ParserM i b
-</span><span class="hs-operator hs-var hs-var hs-var hs-var">&gt;&gt;=</span></span></span><span> </span><span id="local-6989586621681202580"><span class="annot"><span class="annottext">a -&gt; ParserM i b
-</span><a href="#local-6989586621681202580"><span class="hs-identifier hs-var">g</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">(forall c.
+</span><a href="#local-6989586621681257662"><span class="hs-identifier hs-var">f</span></a></span></span><span class="hs-special">)</span><span> </span><span id="local-6989586621681257663"><span class="annot"><span class="annottext">&gt;&gt;= :: forall a b. ParserM i a -&gt; (a -&gt; ParserM i b) -&gt; ParserM i b
+</span><span class="hs-operator hs-var hs-var hs-var hs-var">&gt;&gt;=</span></span></span><span> </span><span id="local-6989586621681257664"><span class="annot"><span class="annottext">a -&gt; ParserM i b
+</span><a href="#local-6989586621681257664"><span class="hs-identifier hs-var">g</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">(forall c.
  (b -&gt; i -&gt; LineInfo -&gt; c)
  -&gt; (Error -&gt; LineInfo -&gt; c) -&gt; i -&gt; LineInfo -&gt; c)
 -&gt; ParserM i b
@@ -106,16 +106,16 @@ forall i a.
  (a -&gt; i -&gt; LineInfo -&gt; c)
  -&gt; (Error -&gt; LineInfo -&gt; c) -&gt; i -&gt; LineInfo -&gt; c)
 -&gt; ParserM i a
-</span><a href="Math.Tools.Parser.html#ParserM"><span class="hs-identifier hs-var">ParserM</span></a></span><span> </span><span class="hs-special">(</span><span class="hs-glyph">\</span><span id="local-6989586621681202581"><span class="annot"><span class="annottext">b -&gt; i -&gt; LineInfo -&gt; c
-</span><a href="#local-6989586621681202581"><span class="hs-identifier hs-var">res</span></a></span></span><span> </span><span id="local-6989586621681202582"><span class="annot"><span class="annottext">Error -&gt; LineInfo -&gt; c
-</span><a href="#local-6989586621681202582"><span class="hs-identifier hs-var">err</span></a></span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span>
+</span><a href="Math.Tools.Parser.html#ParserM"><span class="hs-identifier hs-var">ParserM</span></a></span><span> </span><span class="hs-special">(</span><span class="hs-glyph">\</span><span id="local-6989586621681257665"><span class="annot"><span class="annottext">b -&gt; i -&gt; LineInfo -&gt; c
+</span><a href="#local-6989586621681257665"><span class="hs-identifier hs-var">res</span></a></span></span><span> </span><span id="local-6989586621681257666"><span class="annot"><span class="annottext">Error -&gt; LineInfo -&gt; c
+</span><a href="#local-6989586621681257666"><span class="hs-identifier hs-var">err</span></a></span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span>
 </span><span id="line-35"></span><span>                         </span><span class="annot"><span class="annottext">(a -&gt; i -&gt; LineInfo -&gt; c)
 -&gt; (Error -&gt; LineInfo -&gt; c) -&gt; i -&gt; LineInfo -&gt; c
 forall c.
 (a -&gt; i -&gt; LineInfo -&gt; c)
 -&gt; (Error -&gt; LineInfo -&gt; c) -&gt; i -&gt; LineInfo -&gt; c
-</span><a href="#local-6989586621681202578"><span class="hs-identifier hs-var">f</span></a></span><span> </span><span class="hs-special">(</span><span class="hs-glyph">\</span><span id="local-6989586621681202583"><span class="annot"><span class="annottext">a
-</span><a href="#local-6989586621681202583"><span class="hs-identifier hs-var">res2</span></a></span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="annottext">ParserM i b
+</span><a href="#local-6989586621681257662"><span class="hs-identifier hs-var">f</span></a></span><span> </span><span class="hs-special">(</span><span class="hs-glyph">\</span><span id="local-6989586621681257667"><span class="annot"><span class="annottext">a
+</span><a href="#local-6989586621681257667"><span class="hs-identifier hs-var">res2</span></a></span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="annottext">ParserM i b
 -&gt; forall c.
    (b -&gt; i -&gt; LineInfo -&gt; c)
    -&gt; (Error -&gt; LineInfo -&gt; c) -&gt; i -&gt; LineInfo -&gt; c
@@ -125,16 +125,16 @@ ParserM i a
    (a -&gt; i -&gt; LineInfo -&gt; c)
    -&gt; (Error -&gt; LineInfo -&gt; c) -&gt; i -&gt; LineInfo -&gt; c
 </span><a href="Math.Tools.Parser.html#runParseM"><span class="hs-identifier hs-var">runParseM</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">a -&gt; ParserM i b
-</span><a href="#local-6989586621681202580"><span class="hs-identifier hs-var">g</span></a></span><span> </span><span class="annot"><span class="annottext">a
-</span><a href="#local-6989586621681202583"><span class="hs-identifier hs-var">res2</span></a></span><span class="hs-special">)</span><span> </span><span class="annot"><span class="annottext">b -&gt; i -&gt; LineInfo -&gt; c
-</span><a href="#local-6989586621681202581"><span class="hs-identifier hs-var">res</span></a></span><span> </span><span class="annot"><span class="annottext">Error -&gt; LineInfo -&gt; c
-</span><a href="#local-6989586621681202582"><span class="hs-identifier hs-var">err</span></a></span><span class="hs-special">)</span><span> </span><span class="annot"><span class="annottext">Error -&gt; LineInfo -&gt; c
-</span><a href="#local-6989586621681202582"><span class="hs-identifier hs-var">err</span></a></span><span class="hs-special">)</span><span>
+</span><a href="#local-6989586621681257664"><span class="hs-identifier hs-var">g</span></a></span><span> </span><span class="annot"><span class="annottext">a
+</span><a href="#local-6989586621681257667"><span class="hs-identifier hs-var">res2</span></a></span><span class="hs-special">)</span><span> </span><span class="annot"><span class="annottext">b -&gt; i -&gt; LineInfo -&gt; c
+</span><a href="#local-6989586621681257665"><span class="hs-identifier hs-var">res</span></a></span><span> </span><span class="annot"><span class="annottext">Error -&gt; LineInfo -&gt; c
+</span><a href="#local-6989586621681257666"><span class="hs-identifier hs-var">err</span></a></span><span class="hs-special">)</span><span> </span><span class="annot"><span class="annottext">Error -&gt; LineInfo -&gt; c
+</span><a href="#local-6989586621681257666"><span class="hs-identifier hs-var">err</span></a></span><span class="hs-special">)</span><span>
 </span><span id="line-36"></span><span>
-</span><span id="line-37"></span><span> </span><span class="hs-keyword">instance</span><span> </span><span id="local-6989586621681202450"><span class="annot"><span class="hs-identifier hs-type">MonadFail</span></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="Math.Tools.Parser.html#ParserM"><span class="hs-identifier hs-type">ParserM</span></a></span><span> </span><span class="annot"><a href="#local-6989586621681202450"><span class="hs-identifier hs-type">i</span></a></span><span class="hs-special">)</span></span><span> </span><span class="hs-keyword">where</span><span>
-</span><span id="line-38"></span><span>    </span><span id="local-6989586621681202589"><span class="annot"><span class="annottext">fail :: forall a. String -&gt; ParserM i a
-</span><span class="hs-identifier hs-var hs-var hs-var hs-var">fail</span></span></span><span> </span><span id="local-6989586621681202590"><span class="annot"><span class="annottext">String
-</span><a href="#local-6989586621681202590"><span class="hs-identifier hs-var">msg</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">(forall c.
+</span><span id="line-37"></span><span> </span><span class="hs-keyword">instance</span><span> </span><span id="local-6989586621681257534"><span class="annot"><span class="hs-identifier hs-type">MonadFail</span></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="Math.Tools.Parser.html#ParserM"><span class="hs-identifier hs-type">ParserM</span></a></span><span> </span><span class="annot"><a href="#local-6989586621681257534"><span class="hs-identifier hs-type">i</span></a></span><span class="hs-special">)</span></span><span> </span><span class="hs-keyword">where</span><span>
+</span><span id="line-38"></span><span>    </span><span id="local-6989586621681257673"><span class="annot"><span class="annottext">fail :: forall a. String -&gt; ParserM i a
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var">fail</span></span></span><span> </span><span id="local-6989586621681257674"><span class="annot"><span class="annottext">String
+</span><a href="#local-6989586621681257674"><span class="hs-identifier hs-var">msg</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">(forall c.
  (a -&gt; i -&gt; LineInfo -&gt; c)
  -&gt; (Error -&gt; LineInfo -&gt; c) -&gt; i -&gt; LineInfo -&gt; c)
 -&gt; ParserM i a
@@ -144,18 +144,18 @@ forall i a.
  -&gt; (Error -&gt; LineInfo -&gt; c) -&gt; i -&gt; LineInfo -&gt; c)
 -&gt; ParserM i a
 </span><a href="Math.Tools.Parser.html#ParserM"><span class="hs-identifier hs-var">ParserM</span></a></span><span> </span><span class="hs-special">(</span><span class="hs-glyph">\</span><span class="annot"><span class="annottext">a -&gt; i -&gt; LineInfo -&gt; c
-</span><span class="hs-identifier">_</span></span><span> </span><span id="local-6989586621681202593"><span class="annot"><span class="annottext">Error -&gt; LineInfo -&gt; c
-</span><a href="#local-6989586621681202593"><span class="hs-identifier hs-var">err</span></a></span></span><span> </span><span class="annot"><span class="annottext">i
-</span><span class="hs-identifier">_</span></span><span> </span><span id="local-6989586621681202594"><span class="annot"><span class="annottext">LineInfo
-</span><a href="#local-6989586621681202594"><span class="hs-identifier hs-var">li</span></a></span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="annottext">Error -&gt; LineInfo -&gt; c
-</span><a href="#local-6989586621681202593"><span class="hs-identifier hs-var">err</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">String -&gt; Error
+</span><span class="hs-identifier">_</span></span><span> </span><span id="local-6989586621681257677"><span class="annot"><span class="annottext">Error -&gt; LineInfo -&gt; c
+</span><a href="#local-6989586621681257677"><span class="hs-identifier hs-var">err</span></a></span></span><span> </span><span class="annot"><span class="annottext">i
+</span><span class="hs-identifier">_</span></span><span> </span><span id="local-6989586621681257678"><span class="annot"><span class="annottext">LineInfo
+</span><a href="#local-6989586621681257678"><span class="hs-identifier hs-var">li</span></a></span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="annottext">Error -&gt; LineInfo -&gt; c
+</span><a href="#local-6989586621681257677"><span class="hs-identifier hs-var">err</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">String -&gt; Error
 forall a. PpShow a =&gt; a -&gt; Error
 </span><a href="Math.Tools.PrettyP.html#pp"><span class="hs-identifier hs-var">pp</span></a></span><span> </span><span class="annot"><span class="annottext">String
-</span><a href="#local-6989586621681202590"><span class="hs-identifier hs-var">msg</span></a></span><span class="hs-special">)</span><span> </span><span class="annot"><span class="annottext">LineInfo
-</span><a href="#local-6989586621681202594"><span class="hs-identifier hs-var">li</span></a></span><span class="hs-special">)</span><span>
+</span><a href="#local-6989586621681257674"><span class="hs-identifier hs-var">msg</span></a></span><span class="hs-special">)</span><span> </span><span class="annot"><span class="annottext">LineInfo
+</span><a href="#local-6989586621681257678"><span class="hs-identifier hs-var">li</span></a></span><span class="hs-special">)</span><span>
 </span><span id="line-39"></span><span>
-</span><span id="line-40"></span><span> </span><span class="hs-keyword">instance</span><span> </span><span id="local-6989586621681202417"><span class="annot"><span class="hs-identifier hs-type">MonadPlus</span></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="Math.Tools.Parser.html#ParserM"><span class="hs-identifier hs-type">ParserM</span></a></span><span> </span><span class="annot"><a href="#local-6989586621681202417"><span class="hs-identifier hs-type">i</span></a></span><span class="hs-special">)</span></span><span> </span><span class="hs-keyword">where</span><span>
-</span><span id="line-41"></span><span>    </span><span id="local-6989586621681202603"><span class="annot"><span class="annottext">mzero :: forall a. ParserM i a
+</span><span id="line-40"></span><span> </span><span class="hs-keyword">instance</span><span> </span><span id="local-6989586621681257501"><span class="annot"><span class="hs-identifier hs-type">MonadPlus</span></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="Math.Tools.Parser.html#ParserM"><span class="hs-identifier hs-type">ParserM</span></a></span><span> </span><span class="annot"><a href="#local-6989586621681257501"><span class="hs-identifier hs-type">i</span></a></span><span class="hs-special">)</span></span><span> </span><span class="hs-keyword">where</span><span>
+</span><span id="line-41"></span><span>    </span><span id="local-6989586621681257687"><span class="annot"><span class="annottext">mzero :: forall a. ParserM i a
 </span><span class="hs-identifier hs-var hs-var hs-var hs-var">mzero</span></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">(forall c.
  (a -&gt; i -&gt; LineInfo -&gt; c)
  -&gt; (Error -&gt; LineInfo -&gt; c) -&gt; i -&gt; LineInfo -&gt; c)
@@ -166,21 +166,21 @@ forall i a.
  -&gt; (Error -&gt; LineInfo -&gt; c) -&gt; i -&gt; LineInfo -&gt; c)
 -&gt; ParserM i a
 </span><a href="Math.Tools.Parser.html#ParserM"><span class="hs-identifier hs-var">ParserM</span></a></span><span> </span><span class="hs-special">(</span><span class="hs-glyph">\</span><span class="annot"><span class="annottext">a -&gt; i -&gt; LineInfo -&gt; c
-</span><span class="hs-identifier">_</span></span><span> </span><span id="local-6989586621681202606"><span class="annot"><span class="annottext">Error -&gt; LineInfo -&gt; c
-</span><a href="#local-6989586621681202606"><span class="hs-identifier hs-var">err</span></a></span></span><span> </span><span class="annot"><span class="annottext">i
-</span><span class="hs-identifier">_</span></span><span> </span><span id="local-6989586621681202607"><span class="annot"><span class="annottext">LineInfo
-</span><a href="#local-6989586621681202607"><span class="hs-identifier hs-var">li</span></a></span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="annottext">Error -&gt; LineInfo -&gt; c
-</span><a href="#local-6989586621681202606"><span class="hs-identifier hs-var">err</span></a></span><span> </span><span class="annot"><span class="annottext">Error
+</span><span class="hs-identifier">_</span></span><span> </span><span id="local-6989586621681257690"><span class="annot"><span class="annottext">Error -&gt; LineInfo -&gt; c
+</span><a href="#local-6989586621681257690"><span class="hs-identifier hs-var">err</span></a></span></span><span> </span><span class="annot"><span class="annottext">i
+</span><span class="hs-identifier">_</span></span><span> </span><span id="local-6989586621681257691"><span class="annot"><span class="annottext">LineInfo
+</span><a href="#local-6989586621681257691"><span class="hs-identifier hs-var">li</span></a></span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="annottext">Error -&gt; LineInfo -&gt; c
+</span><a href="#local-6989586621681257690"><span class="hs-identifier hs-var">err</span></a></span><span> </span><span class="annot"><span class="annottext">Error
 </span><span class="hs-string">&quot;Unsupported alternative&quot;</span></span><span> </span><span class="annot"><span class="annottext">LineInfo
-</span><a href="#local-6989586621681202607"><span class="hs-identifier hs-var">li</span></a></span><span class="hs-special">)</span><span>
-</span><span id="line-42"></span><span>    </span><span class="hs-special">(</span><span class="annot"><a href="Math.Tools.Parser.html#ParserM"><span class="hs-identifier hs-type">ParserM</span></a></span><span> </span><span id="local-6989586621681202608"><span class="annot"><span class="annottext">forall c.
+</span><a href="#local-6989586621681257691"><span class="hs-identifier hs-var">li</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-42"></span><span>    </span><span class="hs-special">(</span><span class="annot"><a href="Math.Tools.Parser.html#ParserM"><span class="hs-identifier hs-type">ParserM</span></a></span><span> </span><span id="local-6989586621681257692"><span class="annot"><span class="annottext">forall c.
 (a -&gt; i -&gt; LineInfo -&gt; c)
 -&gt; (Error -&gt; LineInfo -&gt; c) -&gt; i -&gt; LineInfo -&gt; c
-</span><a href="#local-6989586621681202608"><span class="hs-identifier hs-var">f</span></a></span></span><span class="hs-special">)</span><span> </span><span id="local-6989586621681202609"><span class="annot"><span class="annottext">mplus :: forall a. ParserM i a -&gt; ParserM i a -&gt; ParserM i a
-</span><span class="hs-operator hs-var hs-var hs-var hs-var">`mplus`</span></span></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="Math.Tools.Parser.html#ParserM"><span class="hs-identifier hs-type">ParserM</span></a></span><span> </span><span id="local-6989586621681202610"><span class="annot"><span class="annottext">forall c.
+</span><a href="#local-6989586621681257692"><span class="hs-identifier hs-var">f</span></a></span></span><span class="hs-special">)</span><span> </span><span id="local-6989586621681257693"><span class="annot"><span class="annottext">mplus :: forall a. ParserM i a -&gt; ParserM i a -&gt; ParserM i a
+</span><span class="hs-operator hs-var hs-var hs-var hs-var">`mplus`</span></span></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="Math.Tools.Parser.html#ParserM"><span class="hs-identifier hs-type">ParserM</span></a></span><span> </span><span id="local-6989586621681257694"><span class="annot"><span class="annottext">forall c.
 (a -&gt; i -&gt; LineInfo -&gt; c)
 -&gt; (Error -&gt; LineInfo -&gt; c) -&gt; i -&gt; LineInfo -&gt; c
-</span><a href="#local-6989586621681202610"><span class="hs-identifier hs-var">g</span></a></span></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">=</span><span> </span><span>
+</span><a href="#local-6989586621681257694"><span class="hs-identifier hs-var">g</span></a></span></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">=</span><span> </span><span>
 </span><span id="line-43"></span><span>       </span><span class="annot"><span class="annottext">(forall c.
  (a -&gt; i -&gt; LineInfo -&gt; c)
  -&gt; (Error -&gt; LineInfo -&gt; c) -&gt; i -&gt; LineInfo -&gt; c)
@@ -190,72 +190,72 @@ forall i a.
  (a -&gt; i -&gt; LineInfo -&gt; c)
  -&gt; (Error -&gt; LineInfo -&gt; c) -&gt; i -&gt; LineInfo -&gt; c)
 -&gt; ParserM i a
-</span><a href="Math.Tools.Parser.html#ParserM"><span class="hs-identifier hs-var">ParserM</span></a></span><span> </span><span class="hs-special">(</span><span class="hs-glyph">\</span><span id="local-6989586621681202611"><span class="annot"><span class="annottext">a -&gt; i -&gt; LineInfo -&gt; c
-</span><a href="#local-6989586621681202611"><span class="hs-identifier hs-var">s</span></a></span></span><span> </span><span id="local-6989586621681202612"><span class="annot"><span class="annottext">Error -&gt; LineInfo -&gt; c
-</span><a href="#local-6989586621681202612"><span class="hs-identifier hs-var">err</span></a></span></span><span> </span><span id="local-6989586621681202613"><span class="annot"><span class="annottext">i
-</span><a href="#local-6989586621681202613"><span class="hs-identifier hs-var">i</span></a></span></span><span> </span><span id="local-6989586621681202614"><span class="annot"><span class="annottext">LineInfo
-</span><a href="#local-6989586621681202614"><span class="hs-identifier hs-var">li</span></a></span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="annottext">(a -&gt; i -&gt; LineInfo -&gt; c)
+</span><a href="Math.Tools.Parser.html#ParserM"><span class="hs-identifier hs-var">ParserM</span></a></span><span> </span><span class="hs-special">(</span><span class="hs-glyph">\</span><span id="local-6989586621681257695"><span class="annot"><span class="annottext">a -&gt; i -&gt; LineInfo -&gt; c
+</span><a href="#local-6989586621681257695"><span class="hs-identifier hs-var">s</span></a></span></span><span> </span><span id="local-6989586621681257696"><span class="annot"><span class="annottext">Error -&gt; LineInfo -&gt; c
+</span><a href="#local-6989586621681257696"><span class="hs-identifier hs-var">err</span></a></span></span><span> </span><span id="local-6989586621681257697"><span class="annot"><span class="annottext">i
+</span><a href="#local-6989586621681257697"><span class="hs-identifier hs-var">i</span></a></span></span><span> </span><span id="local-6989586621681257698"><span class="annot"><span class="annottext">LineInfo
+</span><a href="#local-6989586621681257698"><span class="hs-identifier hs-var">li</span></a></span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="annottext">(a -&gt; i -&gt; LineInfo -&gt; c)
 -&gt; (Error -&gt; LineInfo -&gt; c) -&gt; i -&gt; LineInfo -&gt; c
 forall c.
 (a -&gt; i -&gt; LineInfo -&gt; c)
 -&gt; (Error -&gt; LineInfo -&gt; c) -&gt; i -&gt; LineInfo -&gt; c
-</span><a href="#local-6989586621681202608"><span class="hs-identifier hs-var">f</span></a></span><span> </span><span class="annot"><span class="annottext">a -&gt; i -&gt; LineInfo -&gt; c
-</span><a href="#local-6989586621681202611"><span class="hs-identifier hs-var">s</span></a></span><span> </span><span class="hs-special">(</span><span class="hs-glyph">\</span><span class="annot"><span class="annottext">Error
+</span><a href="#local-6989586621681257692"><span class="hs-identifier hs-var">f</span></a></span><span> </span><span class="annot"><span class="annottext">a -&gt; i -&gt; LineInfo -&gt; c
+</span><a href="#local-6989586621681257695"><span class="hs-identifier hs-var">s</span></a></span><span> </span><span class="hs-special">(</span><span class="hs-glyph">\</span><span class="annot"><span class="annottext">Error
 </span><span class="hs-identifier">_</span></span><span> </span><span class="annot"><span class="annottext">LineInfo
 </span><span class="hs-identifier">_</span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="annottext">(a -&gt; i -&gt; LineInfo -&gt; c)
 -&gt; (Error -&gt; LineInfo -&gt; c) -&gt; i -&gt; LineInfo -&gt; c
 forall c.
 (a -&gt; i -&gt; LineInfo -&gt; c)
 -&gt; (Error -&gt; LineInfo -&gt; c) -&gt; i -&gt; LineInfo -&gt; c
-</span><a href="#local-6989586621681202610"><span class="hs-identifier hs-var">g</span></a></span><span> </span><span class="annot"><span class="annottext">a -&gt; i -&gt; LineInfo -&gt; c
-</span><a href="#local-6989586621681202611"><span class="hs-identifier hs-var">s</span></a></span><span> </span><span class="annot"><span class="annottext">Error -&gt; LineInfo -&gt; c
-</span><a href="#local-6989586621681202612"><span class="hs-identifier hs-var">err</span></a></span><span> </span><span class="annot"><span class="annottext">i
-</span><a href="#local-6989586621681202613"><span class="hs-identifier hs-var">i</span></a></span><span> </span><span class="annot"><span class="annottext">LineInfo
-</span><a href="#local-6989586621681202614"><span class="hs-identifier hs-var">li</span></a></span><span class="hs-special">)</span><span> </span><span class="annot"><span class="annottext">i
-</span><a href="#local-6989586621681202613"><span class="hs-identifier hs-var">i</span></a></span><span> </span><span class="annot"><span class="annottext">LineInfo
-</span><a href="#local-6989586621681202614"><span class="hs-identifier hs-var">li</span></a></span><span class="hs-special">)</span><span>
+</span><a href="#local-6989586621681257694"><span class="hs-identifier hs-var">g</span></a></span><span> </span><span class="annot"><span class="annottext">a -&gt; i -&gt; LineInfo -&gt; c
+</span><a href="#local-6989586621681257695"><span class="hs-identifier hs-var">s</span></a></span><span> </span><span class="annot"><span class="annottext">Error -&gt; LineInfo -&gt; c
+</span><a href="#local-6989586621681257696"><span class="hs-identifier hs-var">err</span></a></span><span> </span><span class="annot"><span class="annottext">i
+</span><a href="#local-6989586621681257697"><span class="hs-identifier hs-var">i</span></a></span><span> </span><span class="annot"><span class="annottext">LineInfo
+</span><a href="#local-6989586621681257698"><span class="hs-identifier hs-var">li</span></a></span><span class="hs-special">)</span><span> </span><span class="annot"><span class="annottext">i
+</span><a href="#local-6989586621681257697"><span class="hs-identifier hs-var">i</span></a></span><span> </span><span class="annot"><span class="annottext">LineInfo
+</span><a href="#local-6989586621681257698"><span class="hs-identifier hs-var">li</span></a></span><span class="hs-special">)</span><span>
 </span><span id="line-44"></span><span>
 </span><span id="line-45"></span><span> </span><span class="hs-keyword">instance</span><span> </span><span class="annot"><a href="Math.Tools.ParserInterface.html#ParserCombinators"><span class="hs-identifier hs-type">ParserCombinators</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="Math.Tools.Parser.html#ParserM"><span class="hs-identifier hs-type">ParserM</span></a></span><span> </span><span class="annot"><span class="hs-identifier hs-type">Text</span></span><span class="hs-special">)</span><span> </span><span class="hs-keyword">where</span><span>
-</span><span id="line-46"></span><span>    </span><span id="local-6989586621681202629"><span class="annot"><span class="annottext">readChar :: ParserM Text Char
-</span><a href="#local-6989586621681202629"><span class="hs-identifier hs-var hs-var hs-var hs-var">readChar</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">ParserM Text Char
+</span><span id="line-46"></span><span>    </span><span id="local-6989586621681257713"><span class="annot"><span class="annottext">readChar :: ParserM Text Char
+</span><a href="#local-6989586621681257713"><span class="hs-identifier hs-var hs-var hs-var hs-var">readChar</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">ParserM Text Char
 </span><a href="Math.Tools.Parser.html#readChar%27"><span class="hs-identifier hs-var">readChar'</span></a></span><span>
-</span><span id="line-47"></span><span>    </span><span id="local-6989586621681202632"><span class="annot"><span class="annottext">eof :: ParserM Text ()
-</span><a href="#local-6989586621681202632"><span class="hs-identifier hs-var hs-var hs-var hs-var">eof</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">ParserM Text ()
+</span><span id="line-47"></span><span>    </span><span id="local-6989586621681257716"><span class="annot"><span class="annottext">eof :: ParserM Text ()
+</span><a href="#local-6989586621681257716"><span class="hs-identifier hs-var hs-var hs-var hs-var">eof</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">ParserM Text ()
 </span><a href="Math.Tools.Parser.html#eof%27"><span class="hs-identifier hs-var">eof'</span></a></span><span>
-</span><span id="line-48"></span><span>    </span><span id="local-6989586621681202635"><span class="annot"><span class="annottext">newline :: ParserM Text ()
-</span><a href="#local-6989586621681202635"><span class="hs-identifier hs-var hs-var hs-var hs-var">newline</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">ParserM Text ()
+</span><span id="line-48"></span><span>    </span><span id="local-6989586621681257719"><span class="annot"><span class="annottext">newline :: ParserM Text ()
+</span><a href="#local-6989586621681257719"><span class="hs-identifier hs-var hs-var hs-var hs-var">newline</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">ParserM Text ()
 </span><a href="Math.Tools.Parser.html#newline%27"><span class="hs-identifier hs-var">newline'</span></a></span><span>
-</span><span id="line-49"></span><span>    </span><span id="local-6989586621681202638"><span class="annot"><span class="annottext">readWhile :: (Char -&gt; Bool) -&gt; ParserM Text Text
-</span><a href="#local-6989586621681202638"><span class="hs-identifier hs-var hs-var hs-var hs-var">readWhile</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">(Char -&gt; Bool) -&gt; ParserM Text Text
+</span><span id="line-49"></span><span>    </span><span id="local-6989586621681257722"><span class="annot"><span class="annottext">readWhile :: (Char -&gt; Bool) -&gt; ParserM Text Text
+</span><a href="#local-6989586621681257722"><span class="hs-identifier hs-var hs-var hs-var hs-var">readWhile</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">(Char -&gt; Bool) -&gt; ParserM Text Text
 </span><a href="Math.Tools.Parser.html#readWhile%27"><span class="hs-identifier hs-var">readWhile'</span></a></span><span>
-</span><span id="line-50"></span><span>    </span><span id="local-6989586621681202641"><span class="annot"><span class="annottext">oneOf :: (Char -&gt; Bool) -&gt; ParserM Text Char
-</span><a href="#local-6989586621681202641"><span class="hs-identifier hs-var hs-var hs-var hs-var">oneOf</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">(Char -&gt; Bool) -&gt; ParserM Text Char
+</span><span id="line-50"></span><span>    </span><span id="local-6989586621681257725"><span class="annot"><span class="annottext">oneOf :: (Char -&gt; Bool) -&gt; ParserM Text Char
+</span><a href="#local-6989586621681257725"><span class="hs-identifier hs-var hs-var hs-var hs-var">oneOf</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">(Char -&gt; Bool) -&gt; ParserM Text Char
 </span><a href="Math.Tools.Parser.html#oneOf%27"><span class="hs-identifier hs-var">oneOf'</span></a></span><span>
-</span><span id="line-51"></span><span>    </span><span id="local-6989586621681202644"><span class="annot"><span class="annottext">require :: Char -&gt; ParserM Text Char
-</span><a href="#local-6989586621681202644"><span class="hs-identifier hs-var hs-var hs-var hs-var">require</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Char -&gt; ParserM Text Char
+</span><span id="line-51"></span><span>    </span><span id="local-6989586621681257728"><span class="annot"><span class="annottext">require :: Char -&gt; ParserM Text Char
+</span><a href="#local-6989586621681257728"><span class="hs-identifier hs-var hs-var hs-var hs-var">require</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Char -&gt; ParserM Text Char
 </span><a href="Math.Tools.Parser.html#require%27"><span class="hs-identifier hs-var">require'</span></a></span><span>
-</span><span id="line-52"></span><span>    </span><span id="local-6989586621681202647"><span class="annot"><span class="annottext">optional :: forall a. ParserM Text a -&gt; ParserM Text (Maybe a)
-</span><a href="#local-6989586621681202647"><span class="hs-identifier hs-var hs-var hs-var hs-var">optional</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">ParserM Text a -&gt; ParserM Text (Maybe a)
+</span><span id="line-52"></span><span>    </span><span id="local-6989586621681257731"><span class="annot"><span class="annottext">optional :: forall a. ParserM Text a -&gt; ParserM Text (Maybe a)
+</span><a href="#local-6989586621681257731"><span class="hs-identifier hs-var hs-var hs-var hs-var">optional</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">ParserM Text a -&gt; ParserM Text (Maybe a)
 forall i a. ParserM i a -&gt; ParserM i (Maybe a)
 </span><a href="Math.Tools.Parser.html#optional%27"><span class="hs-identifier hs-var">optional'</span></a></span><span>
-</span><span id="line-53"></span><span>    </span><span id="local-6989586621681202650"><span class="annot"><span class="annottext">getRemainingInput :: ParserM Text Text
-</span><a href="#local-6989586621681202650"><span class="hs-identifier hs-var hs-var hs-var hs-var">getRemainingInput</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">ParserM Text Text
+</span><span id="line-53"></span><span>    </span><span id="local-6989586621681257734"><span class="annot"><span class="annottext">getRemainingInput :: ParserM Text Text
+</span><a href="#local-6989586621681257734"><span class="hs-identifier hs-var hs-var hs-var hs-var">getRemainingInput</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">ParserM Text Text
 forall a. ParserM a a
 </span><a href="Math.Tools.Parser.html#getRemainingInput%27"><span class="hs-identifier hs-var">getRemainingInput'</span></a></span><span>
-</span><span id="line-54"></span><span>    </span><span id="local-6989586621681202653"><span class="annot"><span class="annottext">getLineInfo :: ParserM Text LineInfo
-</span><a href="#local-6989586621681202653"><span class="hs-identifier hs-var hs-var hs-var hs-var">getLineInfo</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">ParserM Text LineInfo
+</span><span id="line-54"></span><span>    </span><span id="local-6989586621681257737"><span class="annot"><span class="annottext">getLineInfo :: ParserM Text LineInfo
+</span><a href="#local-6989586621681257737"><span class="hs-identifier hs-var hs-var hs-var hs-var">getLineInfo</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">ParserM Text LineInfo
 forall a. ParserM a LineInfo
 </span><a href="Math.Tools.Parser.html#getLineInfo%27"><span class="hs-identifier hs-var">getLineInfo'</span></a></span><span>
-</span><span id="line-55"></span><span>    </span><span id="local-6989586621681202656"><span class="annot"><span class="annottext">syntaxError :: forall a. Error -&gt; ParserM Text a
-</span><a href="#local-6989586621681202656"><span class="hs-identifier hs-var hs-var hs-var hs-var">syntaxError</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Error -&gt; ParserM Text a
+</span><span id="line-55"></span><span>    </span><span id="local-6989586621681257740"><span class="annot"><span class="annottext">syntaxError :: forall a. Error -&gt; ParserM Text a
+</span><a href="#local-6989586621681257740"><span class="hs-identifier hs-var hs-var hs-var hs-var">syntaxError</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Error -&gt; ParserM Text a
 forall i a. Error -&gt; ParserM i a
 </span><a href="Math.Tools.Parser.html#syntaxError%27"><span class="hs-identifier hs-var">syntaxError'</span></a></span><span>
 </span><span id="line-56"></span><span>
-</span><span id="line-57"></span><span> </span><span id="local-6989586621681202466"><span id="local-6989586621681202467"><span class="annot"><a href="Math.Tools.Parser.html#optional%27"><span class="hs-identifier hs-type">optional'</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="Math.Tools.Parser.html#ParserM"><span class="hs-identifier hs-type">ParserM</span></a></span><span> </span><span class="annot"><a href="#local-6989586621681202466"><span class="hs-identifier hs-type">i</span></a></span><span> </span><span class="annot"><a href="#local-6989586621681202467"><span class="hs-identifier hs-type">a</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="Math.Tools.Parser.html#ParserM"><span class="hs-identifier hs-type">ParserM</span></a></span><span> </span><span class="annot"><a href="#local-6989586621681202466"><span class="hs-identifier hs-type">i</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="hs-identifier hs-type">Maybe</span></span><span> </span><span class="annot"><a href="#local-6989586621681202467"><span class="hs-identifier hs-type">a</span></a></span><span class="hs-special">)</span></span></span><span>
+</span><span id="line-57"></span><span> </span><span id="local-6989586621681257550"><span id="local-6989586621681257551"><span class="annot"><a href="Math.Tools.Parser.html#optional%27"><span class="hs-identifier hs-type">optional'</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="Math.Tools.Parser.html#ParserM"><span class="hs-identifier hs-type">ParserM</span></a></span><span> </span><span class="annot"><a href="#local-6989586621681257550"><span class="hs-identifier hs-type">i</span></a></span><span> </span><span class="annot"><a href="#local-6989586621681257551"><span class="hs-identifier hs-type">a</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="Math.Tools.Parser.html#ParserM"><span class="hs-identifier hs-type">ParserM</span></a></span><span> </span><span class="annot"><a href="#local-6989586621681257550"><span class="hs-identifier hs-type">i</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="hs-identifier hs-type">Maybe</span></span><span> </span><span class="annot"><a href="#local-6989586621681257551"><span class="hs-identifier hs-type">a</span></a></span><span class="hs-special">)</span></span></span><span>
 </span><span id="line-58"></span><span> </span><span id="optional%27"><span class="annot"><span class="annottext">optional' :: forall i a. ParserM i a -&gt; ParserM i (Maybe a)
-</span><a href="Math.Tools.Parser.html#optional%27"><span class="hs-identifier hs-var hs-var">optional'</span></a></span></span><span> </span><span id="local-6989586621681202663"><span class="annot"><span class="annottext">ParserM i a
-</span><a href="#local-6989586621681202663"><span class="hs-identifier hs-var">f</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">ParserM i a
-</span><a href="#local-6989586621681202663"><span class="hs-identifier hs-var">f</span></a></span><span> </span><span class="annot"><span class="annottext">ParserM i a -&gt; (a -&gt; ParserM i (Maybe a)) -&gt; ParserM i (Maybe a)
+</span><a href="Math.Tools.Parser.html#optional%27"><span class="hs-identifier hs-var hs-var">optional'</span></a></span></span><span> </span><span id="local-6989586621681257747"><span class="annot"><span class="annottext">ParserM i a
+</span><a href="#local-6989586621681257747"><span class="hs-identifier hs-var">f</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">ParserM i a
+</span><a href="#local-6989586621681257747"><span class="hs-identifier hs-var">f</span></a></span><span> </span><span class="annot"><span class="annottext">ParserM i a -&gt; (a -&gt; ParserM i (Maybe a)) -&gt; ParserM i (Maybe a)
 forall a b. ParserM i a -&gt; (a -&gt; ParserM i b) -&gt; ParserM i b
 forall (m :: * -&gt; *) a b. Monad m =&gt; m a -&gt; (a -&gt; m b) -&gt; m b
 </span><span class="hs-operator hs-var">&gt;&gt;=</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">Maybe a -&gt; ParserM i (Maybe a)
@@ -276,10 +276,10 @@ forall (m :: * -&gt; *) a. Monad m =&gt; a -&gt; m a
 forall a. Maybe a
 </span><span class="hs-identifier hs-var">Nothing</span></span><span>
 </span><span id="line-59"></span><span>
-</span><span id="line-60"></span><span> </span><span id="local-6989586621681202471"><span id="local-6989586621681202472"><span class="annot"><a href="Math.Tools.Parser.html#syntaxError%27"><span class="hs-identifier hs-type">syntaxError'</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Doc</span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="Math.Tools.Parser.html#ParserM"><span class="hs-identifier hs-type">ParserM</span></a></span><span> </span><span class="annot"><a href="#local-6989586621681202471"><span class="hs-identifier hs-type">i</span></a></span><span> </span><span class="annot"><a href="#local-6989586621681202472"><span class="hs-identifier hs-type">a</span></a></span></span></span><span>
+</span><span id="line-60"></span><span> </span><span id="local-6989586621681257555"><span id="local-6989586621681257556"><span class="annot"><a href="Math.Tools.Parser.html#syntaxError%27"><span class="hs-identifier hs-type">syntaxError'</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Doc</span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="Math.Tools.Parser.html#ParserM"><span class="hs-identifier hs-type">ParserM</span></a></span><span> </span><span class="annot"><a href="#local-6989586621681257555"><span class="hs-identifier hs-type">i</span></a></span><span> </span><span class="annot"><a href="#local-6989586621681257556"><span class="hs-identifier hs-type">a</span></a></span></span></span><span>
 </span><span id="line-61"></span><span> </span><span id="syntaxError%27"><span class="annot"><span class="annottext">syntaxError' :: forall i a. Error -&gt; ParserM i a
-</span><a href="Math.Tools.Parser.html#syntaxError%27"><span class="hs-identifier hs-var hs-var">syntaxError'</span></a></span></span><span> </span><span id="local-6989586621681202665"><span class="annot"><span class="annottext">Error
-</span><a href="#local-6989586621681202665"><span class="hs-identifier hs-var">d</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">(forall c.
+</span><a href="Math.Tools.Parser.html#syntaxError%27"><span class="hs-identifier hs-var hs-var">syntaxError'</span></a></span></span><span> </span><span id="local-6989586621681257749"><span class="annot"><span class="annottext">Error
+</span><a href="#local-6989586621681257749"><span class="hs-identifier hs-var">d</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">(forall c.
  (a -&gt; i -&gt; LineInfo -&gt; c)
  -&gt; (Error -&gt; LineInfo -&gt; c) -&gt; i -&gt; LineInfo -&gt; c)
 -&gt; ParserM i a
@@ -297,14 +297,14 @@ forall i a.
     -&gt; (Error -&gt; LineInfo -&gt; c) -&gt; i -&gt; LineInfo -&gt; c)
 -&gt; ParserM i a
 forall a b. (a -&gt; b) -&gt; a -&gt; b
-</span><span class="hs-operator hs-var">$</span></span><span> </span><span class="hs-glyph">\</span><span id="local-6989586621681202666"><span class="annot"><span class="annottext">a -&gt; i -&gt; LineInfo -&gt; c
-</span><a href="#local-6989586621681202666"><span class="hs-identifier hs-var">f</span></a></span></span><span> </span><span id="local-6989586621681202667"><span class="annot"><span class="annottext">Error -&gt; LineInfo -&gt; c
-</span><a href="#local-6989586621681202667"><span class="hs-identifier hs-var">err</span></a></span></span><span> </span><span id="local-6989586621681202668"><span class="annot"><span class="annottext">i
-</span><a href="#local-6989586621681202668"><span class="hs-identifier hs-var">i</span></a></span></span><span> </span><span id="local-6989586621681202669"><span class="annot"><span class="annottext">LineInfo
-</span><a href="#local-6989586621681202669"><span class="hs-identifier hs-var">li</span></a></span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="annottext">Error -&gt; LineInfo -&gt; c
-</span><a href="#local-6989586621681202667"><span class="hs-identifier hs-var">err</span></a></span><span> </span><span class="annot"><span class="annottext">Error
-</span><a href="#local-6989586621681202665"><span class="hs-identifier hs-var">d</span></a></span><span> </span><span class="annot"><span class="annottext">LineInfo
-</span><a href="#local-6989586621681202669"><span class="hs-identifier hs-var">li</span></a></span><span>
+</span><span class="hs-operator hs-var">$</span></span><span> </span><span class="hs-glyph">\</span><span id="local-6989586621681257750"><span class="annot"><span class="annottext">a -&gt; i -&gt; LineInfo -&gt; c
+</span><a href="#local-6989586621681257750"><span class="hs-identifier hs-var">f</span></a></span></span><span> </span><span id="local-6989586621681257751"><span class="annot"><span class="annottext">Error -&gt; LineInfo -&gt; c
+</span><a href="#local-6989586621681257751"><span class="hs-identifier hs-var">err</span></a></span></span><span> </span><span id="local-6989586621681257752"><span class="annot"><span class="annottext">i
+</span><a href="#local-6989586621681257752"><span class="hs-identifier hs-var">i</span></a></span></span><span> </span><span id="local-6989586621681257753"><span class="annot"><span class="annottext">LineInfo
+</span><a href="#local-6989586621681257753"><span class="hs-identifier hs-var">li</span></a></span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="annottext">Error -&gt; LineInfo -&gt; c
+</span><a href="#local-6989586621681257751"><span class="hs-identifier hs-var">err</span></a></span><span> </span><span class="annot"><span class="annottext">Error
+</span><a href="#local-6989586621681257749"><span class="hs-identifier hs-var">d</span></a></span><span> </span><span class="annot"><span class="annottext">LineInfo
+</span><a href="#local-6989586621681257753"><span class="hs-identifier hs-var">li</span></a></span><span>
 </span><span id="line-62"></span><span>
 </span><span id="line-63"></span><span> </span><span class="annot"><a href="Math.Tools.Parser.html#readChar%27"><span class="hs-identifier hs-type">readChar'</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="Math.Tools.Parser.html#ParserM"><span class="hs-identifier hs-type">ParserM</span></a></span><span> </span><span class="annot"><span class="hs-identifier hs-type">Text</span></span><span> </span><span class="annot"><span class="hs-identifier hs-type">Char</span></span><span>
 </span><span id="line-64"></span><span> </span><span id="readChar%27"><span class="annot"><span class="annottext">readChar' :: ParserM Text Char
@@ -326,31 +326,31 @@ forall i a.
     -&gt; (Error -&gt; LineInfo -&gt; c) -&gt; Text -&gt; LineInfo -&gt; c)
 -&gt; ParserM Text Char
 forall a b. (a -&gt; b) -&gt; a -&gt; b
-</span><span class="hs-operator hs-var">$</span></span><span> </span><span class="hs-glyph">\</span><span id="local-6989586621681202671"><span class="annot"><span class="annottext">Char -&gt; Text -&gt; LineInfo -&gt; c
-</span><a href="#local-6989586621681202671"><span class="hs-identifier hs-var">f</span></a></span></span><span> </span><span id="local-6989586621681202672"><span class="annot"><span class="annottext">Error -&gt; LineInfo -&gt; c
-</span><a href="#local-6989586621681202672"><span class="hs-identifier hs-var">err</span></a></span></span><span> </span><span id="local-6989586621681202673"><span class="annot"><span class="annottext">Text
-</span><a href="#local-6989586621681202673"><span class="hs-identifier hs-var">i</span></a></span></span><span> </span><span id="local-6989586621681202674"><span class="annot"><span class="annottext">LineInfo
-</span><a href="#local-6989586621681202674"><span class="hs-identifier hs-var">li</span></a></span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="hs-keyword">case</span><span> </span><span class="annot"><span class="annottext">Text -&gt; Maybe (Char, Text)
+</span><span class="hs-operator hs-var">$</span></span><span> </span><span class="hs-glyph">\</span><span id="local-6989586621681257755"><span class="annot"><span class="annottext">Char -&gt; Text -&gt; LineInfo -&gt; c
+</span><a href="#local-6989586621681257755"><span class="hs-identifier hs-var">f</span></a></span></span><span> </span><span id="local-6989586621681257756"><span class="annot"><span class="annottext">Error -&gt; LineInfo -&gt; c
+</span><a href="#local-6989586621681257756"><span class="hs-identifier hs-var">err</span></a></span></span><span> </span><span id="local-6989586621681257757"><span class="annot"><span class="annottext">Text
+</span><a href="#local-6989586621681257757"><span class="hs-identifier hs-var">i</span></a></span></span><span> </span><span id="local-6989586621681257758"><span class="annot"><span class="annottext">LineInfo
+</span><a href="#local-6989586621681257758"><span class="hs-identifier hs-var">li</span></a></span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="hs-keyword">case</span><span> </span><span class="annot"><span class="annottext">Text -&gt; Maybe (Char, Text)
 </span><span class="hs-identifier hs-var">uncons</span></span><span> </span><span class="annot"><span class="annottext">Text
-</span><a href="#local-6989586621681202673"><span class="hs-identifier hs-var">i</span></a></span><span> </span><span class="hs-keyword">of</span><span>
-</span><span id="line-65"></span><span>                         </span><span class="annot"><span class="hs-identifier hs-type">Just</span></span><span> </span><span class="hs-special">(</span><span id="local-6989586621681202676"><span class="annot"><span class="annottext">Char
-</span><a href="#local-6989586621681202676"><span class="hs-identifier hs-var">c</span></a></span></span><span class="hs-special">,</span><span id="local-6989586621681202677"><span class="annot"><span class="annottext">Text
-</span><a href="#local-6989586621681202677"><span class="hs-identifier hs-var">cr</span></a></span></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="annottext">Char -&gt; Text -&gt; LineInfo -&gt; c
-</span><a href="#local-6989586621681202671"><span class="hs-identifier hs-var">f</span></a></span><span> </span><span class="annot"><span class="annottext">Char
-</span><a href="#local-6989586621681202676"><span class="hs-identifier hs-var">c</span></a></span><span> </span><span class="annot"><span class="annottext">Text
-</span><a href="#local-6989586621681202677"><span class="hs-identifier hs-var">cr</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">LineInfo -&gt; LineInfo
+</span><a href="#local-6989586621681257757"><span class="hs-identifier hs-var">i</span></a></span><span> </span><span class="hs-keyword">of</span><span>
+</span><span id="line-65"></span><span>                         </span><span class="annot"><span class="hs-identifier hs-type">Just</span></span><span> </span><span class="hs-special">(</span><span id="local-6989586621681257760"><span class="annot"><span class="annottext">Char
+</span><a href="#local-6989586621681257760"><span class="hs-identifier hs-var">c</span></a></span></span><span class="hs-special">,</span><span id="local-6989586621681257761"><span class="annot"><span class="annottext">Text
+</span><a href="#local-6989586621681257761"><span class="hs-identifier hs-var">cr</span></a></span></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="annottext">Char -&gt; Text -&gt; LineInfo -&gt; c
+</span><a href="#local-6989586621681257755"><span class="hs-identifier hs-var">f</span></a></span><span> </span><span class="annot"><span class="annottext">Char
+</span><a href="#local-6989586621681257760"><span class="hs-identifier hs-var">c</span></a></span><span> </span><span class="annot"><span class="annottext">Text
+</span><a href="#local-6989586621681257761"><span class="hs-identifier hs-var">cr</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">LineInfo -&gt; LineInfo
 </span><a href="Math.Tools.LineInfo.html#nextColumn"><span class="hs-identifier hs-var">nextColumn</span></a></span><span> </span><span class="annot"><span class="annottext">LineInfo
-</span><a href="#local-6989586621681202674"><span class="hs-identifier hs-var">li</span></a></span><span class="hs-special">)</span><span>
+</span><a href="#local-6989586621681257758"><span class="hs-identifier hs-var">li</span></a></span><span class="hs-special">)</span><span>
 </span><span id="line-66"></span><span>                         </span><span class="annot"><span class="annottext">Maybe (Char, Text)
 </span><span class="hs-identifier hs-var">Nothing</span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="annottext">Error -&gt; LineInfo -&gt; c
-</span><a href="#local-6989586621681202672"><span class="hs-identifier hs-var">err</span></a></span><span> </span><span class="annot"><span class="annottext">Error
+</span><a href="#local-6989586621681257756"><span class="hs-identifier hs-var">err</span></a></span><span> </span><span class="annot"><span class="annottext">Error
 </span><span class="hs-string">&quot;Expected any character, found EOF&quot;</span></span><span> </span><span class="annot"><span class="annottext">LineInfo
-</span><a href="#local-6989586621681202674"><span class="hs-identifier hs-var">li</span></a></span><span>
+</span><a href="#local-6989586621681257758"><span class="hs-identifier hs-var">li</span></a></span><span>
 </span><span id="line-67"></span><span>
 </span><span id="line-68"></span><span> </span><span class="annot"><a href="Math.Tools.Parser.html#oneOf%27"><span class="hs-identifier hs-type">oneOf'</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="hs-special">(</span><span class="annot"><span class="hs-identifier hs-type">Char</span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Bool</span></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="Math.Tools.Parser.html#ParserM"><span class="hs-identifier hs-type">ParserM</span></a></span><span> </span><span class="annot"><span class="hs-identifier hs-type">Text</span></span><span> </span><span class="annot"><span class="hs-identifier hs-type">Char</span></span><span>
 </span><span id="line-69"></span><span> </span><span id="oneOf%27"><span class="annot"><span class="annottext">oneOf' :: (Char -&gt; Bool) -&gt; ParserM Text Char
-</span><a href="Math.Tools.Parser.html#oneOf%27"><span class="hs-identifier hs-var hs-var">oneOf'</span></a></span></span><span> </span><span id="local-6989586621681202679"><span class="annot"><span class="annottext">Char -&gt; Bool
-</span><a href="#local-6989586621681202679"><span class="hs-identifier hs-var">check</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">(forall c.
+</span><a href="Math.Tools.Parser.html#oneOf%27"><span class="hs-identifier hs-var hs-var">oneOf'</span></a></span></span><span> </span><span id="local-6989586621681257763"><span class="annot"><span class="annottext">Char -&gt; Bool
+</span><a href="#local-6989586621681257763"><span class="hs-identifier hs-var">check</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">(forall c.
  (Char -&gt; Text -&gt; LineInfo -&gt; c)
  -&gt; (Error -&gt; LineInfo -&gt; c) -&gt; Text -&gt; LineInfo -&gt; c)
 -&gt; ParserM Text Char
@@ -368,37 +368,37 @@ forall i a.
     -&gt; (Error -&gt; LineInfo -&gt; c) -&gt; Text -&gt; LineInfo -&gt; c)
 -&gt; ParserM Text Char
 forall a b. (a -&gt; b) -&gt; a -&gt; b
-</span><span class="hs-operator hs-var">$</span></span><span> </span><span class="hs-glyph">\</span><span id="local-6989586621681202686"><span class="annot"><span class="annottext">Char -&gt; Text -&gt; LineInfo -&gt; c
-</span><a href="#local-6989586621681202686"><span class="hs-identifier hs-var">f</span></a></span></span><span> </span><span id="local-6989586621681202687"><span class="annot"><span class="annottext">Error -&gt; LineInfo -&gt; c
-</span><a href="#local-6989586621681202687"><span class="hs-identifier hs-var">err</span></a></span></span><span> </span><span id="local-6989586621681202688"><span class="annot"><span class="annottext">Text
-</span><a href="#local-6989586621681202688"><span class="hs-identifier hs-var">lst</span></a></span></span><span> </span><span id="local-6989586621681202689"><span class="annot"><span class="annottext">LineInfo
-</span><a href="#local-6989586621681202689"><span class="hs-identifier hs-var">li</span></a></span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="hs-keyword">case</span><span> </span><span class="annot"><span class="annottext">Text -&gt; Maybe (Char, Text)
+</span><span class="hs-operator hs-var">$</span></span><span> </span><span class="hs-glyph">\</span><span id="local-6989586621681257770"><span class="annot"><span class="annottext">Char -&gt; Text -&gt; LineInfo -&gt; c
+</span><a href="#local-6989586621681257770"><span class="hs-identifier hs-var">f</span></a></span></span><span> </span><span id="local-6989586621681257771"><span class="annot"><span class="annottext">Error -&gt; LineInfo -&gt; c
+</span><a href="#local-6989586621681257771"><span class="hs-identifier hs-var">err</span></a></span></span><span> </span><span id="local-6989586621681257772"><span class="annot"><span class="annottext">Text
+</span><a href="#local-6989586621681257772"><span class="hs-identifier hs-var">lst</span></a></span></span><span> </span><span id="local-6989586621681257773"><span class="annot"><span class="annottext">LineInfo
+</span><a href="#local-6989586621681257773"><span class="hs-identifier hs-var">li</span></a></span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="hs-keyword">case</span><span> </span><span class="annot"><span class="annottext">Text -&gt; Maybe (Char, Text)
 </span><span class="hs-identifier hs-var">uncons</span></span><span> </span><span class="annot"><span class="annottext">Text
-</span><a href="#local-6989586621681202688"><span class="hs-identifier hs-var">lst</span></a></span><span> </span><span class="hs-keyword">of</span><span>
-</span><span id="line-70"></span><span>    </span><span class="hs-special">(</span><span class="annot"><span class="hs-identifier hs-type">Just</span></span><span> </span><span class="hs-special">(</span><span id="local-6989586621681202690"><span class="annot"><span class="annottext">Char
-</span><a href="#local-6989586621681202690"><span class="hs-identifier hs-var">c</span></a></span></span><span class="hs-special">,</span><span id="local-6989586621681202691"><span class="annot"><span class="annottext">Text
-</span><a href="#local-6989586621681202691"><span class="hs-identifier hs-var">cr</span></a></span></span><span class="hs-special">)</span><span class="hs-special">)</span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="hs-keyword">if</span><span> </span><span class="annot"><span class="annottext">Char -&gt; Bool
-</span><a href="#local-6989586621681202679"><span class="hs-identifier hs-var">check</span></a></span><span> </span><span class="annot"><span class="annottext">Char
-</span><a href="#local-6989586621681202690"><span class="hs-identifier hs-var">c</span></a></span><span> </span><span class="hs-keyword">then</span><span> </span><span class="annot"><span class="annottext">Char -&gt; Text -&gt; LineInfo -&gt; c
-</span><a href="#local-6989586621681202686"><span class="hs-identifier hs-var">f</span></a></span><span> </span><span class="annot"><span class="annottext">Char
-</span><a href="#local-6989586621681202690"><span class="hs-identifier hs-var">c</span></a></span><span> </span><span class="annot"><span class="annottext">Text
-</span><a href="#local-6989586621681202691"><span class="hs-identifier hs-var">cr</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">LineInfo -&gt; LineInfo
+</span><a href="#local-6989586621681257772"><span class="hs-identifier hs-var">lst</span></a></span><span> </span><span class="hs-keyword">of</span><span>
+</span><span id="line-70"></span><span>    </span><span class="hs-special">(</span><span class="annot"><span class="hs-identifier hs-type">Just</span></span><span> </span><span class="hs-special">(</span><span id="local-6989586621681257774"><span class="annot"><span class="annottext">Char
+</span><a href="#local-6989586621681257774"><span class="hs-identifier hs-var">c</span></a></span></span><span class="hs-special">,</span><span id="local-6989586621681257775"><span class="annot"><span class="annottext">Text
+</span><a href="#local-6989586621681257775"><span class="hs-identifier hs-var">cr</span></a></span></span><span class="hs-special">)</span><span class="hs-special">)</span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="hs-keyword">if</span><span> </span><span class="annot"><span class="annottext">Char -&gt; Bool
+</span><a href="#local-6989586621681257763"><span class="hs-identifier hs-var">check</span></a></span><span> </span><span class="annot"><span class="annottext">Char
+</span><a href="#local-6989586621681257774"><span class="hs-identifier hs-var">c</span></a></span><span> </span><span class="hs-keyword">then</span><span> </span><span class="annot"><span class="annottext">Char -&gt; Text -&gt; LineInfo -&gt; c
+</span><a href="#local-6989586621681257770"><span class="hs-identifier hs-var">f</span></a></span><span> </span><span class="annot"><span class="annottext">Char
+</span><a href="#local-6989586621681257774"><span class="hs-identifier hs-var">c</span></a></span><span> </span><span class="annot"><span class="annottext">Text
+</span><a href="#local-6989586621681257775"><span class="hs-identifier hs-var">cr</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">LineInfo -&gt; LineInfo
 </span><a href="Math.Tools.LineInfo.html#nextColumn"><span class="hs-identifier hs-var">nextColumn</span></a></span><span> </span><span class="annot"><span class="annottext">LineInfo
-</span><a href="#local-6989586621681202689"><span class="hs-identifier hs-var">li</span></a></span><span class="hs-special">)</span><span>
+</span><a href="#local-6989586621681257773"><span class="hs-identifier hs-var">li</span></a></span><span class="hs-special">)</span><span>
 </span><span id="line-71"></span><span>                                </span><span class="hs-keyword">else</span><span> </span><span class="annot"><span class="annottext">Error -&gt; LineInfo -&gt; c
-</span><a href="#local-6989586621681202687"><span class="hs-identifier hs-var">err</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">Error
+</span><a href="#local-6989586621681257771"><span class="hs-identifier hs-var">err</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">Error
 </span><span class="hs-string">&quot;Bad character:&quot;</span></span><span> </span><span class="annot"><span class="annottext">Error -&gt; Error -&gt; Error
 forall a. Semigroup a =&gt; a -&gt; a -&gt; a
 </span><span class="hs-operator hs-var">&lt;&gt;</span></span><span> </span><span class="annot"><span class="annottext">Char -&gt; Error
 forall a. PpShow a =&gt; a -&gt; Error
 </span><a href="Math.Tools.PrettyP.html#enclose"><span class="hs-identifier hs-var">enclose</span></a></span><span> </span><span class="annot"><span class="annottext">Char
-</span><a href="#local-6989586621681202690"><span class="hs-identifier hs-var">c</span></a></span><span class="hs-special">)</span><span> </span><span class="annot"><span class="annottext">LineInfo
-</span><a href="#local-6989586621681202689"><span class="hs-identifier hs-var">li</span></a></span><span>
+</span><a href="#local-6989586621681257774"><span class="hs-identifier hs-var">c</span></a></span><span class="hs-special">)</span><span> </span><span class="annot"><span class="annottext">LineInfo
+</span><a href="#local-6989586621681257773"><span class="hs-identifier hs-var">li</span></a></span><span>
 </span><span id="line-72"></span><span>    </span><span class="annot"><span class="annottext">Maybe (Char, Text)
 </span><span class="hs-identifier hs-var">Nothing</span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="annottext">Error -&gt; LineInfo -&gt; c
-</span><a href="#local-6989586621681202687"><span class="hs-identifier hs-var">err</span></a></span><span> </span><span class="annot"><span class="annottext">Error
+</span><a href="#local-6989586621681257771"><span class="hs-identifier hs-var">err</span></a></span><span> </span><span class="annot"><span class="annottext">Error
 </span><span class="hs-string">&quot;Expected a character, found EOF&quot;</span></span><span> </span><span class="annot"><span class="annottext">LineInfo
-</span><a href="#local-6989586621681202689"><span class="hs-identifier hs-var">li</span></a></span><span>
+</span><a href="#local-6989586621681257773"><span class="hs-identifier hs-var">li</span></a></span><span>
 </span><span id="line-73"></span><span>
 </span><span id="line-74"></span><span> </span><span class="annot"><a href="Math.Tools.Parser.html#eof%27"><span class="hs-identifier hs-type">eof'</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="Math.Tools.Parser.html#ParserM"><span class="hs-identifier hs-type">ParserM</span></a></span><span> </span><span class="annot"><span class="hs-identifier hs-type">Text</span></span><span> </span><span class="hs-special">(</span><span class="hs-special">)</span><span>
 </span><span id="line-75"></span><span> </span><span id="eof%27"><span class="annot"><span class="annottext">eof' :: ParserM Text ()
@@ -420,21 +420,21 @@ forall i a.
     -&gt; (Error -&gt; LineInfo -&gt; c) -&gt; Text -&gt; LineInfo -&gt; c)
 -&gt; ParserM Text ()
 forall a b. (a -&gt; b) -&gt; a -&gt; b
-</span><span class="hs-operator hs-var">$</span></span><span> </span><span class="hs-glyph">\</span><span id="local-6989586621681202695"><span class="annot"><span class="annottext">() -&gt; Text -&gt; LineInfo -&gt; c
-</span><a href="#local-6989586621681202695"><span class="hs-identifier hs-var">f</span></a></span></span><span> </span><span id="local-6989586621681202696"><span class="annot"><span class="annottext">Error -&gt; LineInfo -&gt; c
-</span><a href="#local-6989586621681202696"><span class="hs-identifier hs-var">err</span></a></span></span><span> </span><span id="local-6989586621681202697"><span class="annot"><span class="annottext">Text
-</span><a href="#local-6989586621681202697"><span class="hs-identifier hs-var">i</span></a></span></span><span> </span><span id="local-6989586621681202698"><span class="annot"><span class="annottext">LineInfo
-</span><a href="#local-6989586621681202698"><span class="hs-identifier hs-var">li</span></a></span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="hs-keyword">case</span><span> </span><span class="annot"><span class="annottext">Text -&gt; Bool
+</span><span class="hs-operator hs-var">$</span></span><span> </span><span class="hs-glyph">\</span><span id="local-6989586621681257779"><span class="annot"><span class="annottext">() -&gt; Text -&gt; LineInfo -&gt; c
+</span><a href="#local-6989586621681257779"><span class="hs-identifier hs-var">f</span></a></span></span><span> </span><span id="local-6989586621681257780"><span class="annot"><span class="annottext">Error -&gt; LineInfo -&gt; c
+</span><a href="#local-6989586621681257780"><span class="hs-identifier hs-var">err</span></a></span></span><span> </span><span id="local-6989586621681257781"><span class="annot"><span class="annottext">Text
+</span><a href="#local-6989586621681257781"><span class="hs-identifier hs-var">i</span></a></span></span><span> </span><span id="local-6989586621681257782"><span class="annot"><span class="annottext">LineInfo
+</span><a href="#local-6989586621681257782"><span class="hs-identifier hs-var">li</span></a></span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="hs-keyword">case</span><span> </span><span class="annot"><span class="annottext">Text -&gt; Bool
 </span><span class="hs-identifier hs-var">null</span></span><span> </span><span class="annot"><span class="annottext">Text
-</span><a href="#local-6989586621681202697"><span class="hs-identifier hs-var">i</span></a></span><span> </span><span class="hs-keyword">of</span><span>
+</span><a href="#local-6989586621681257781"><span class="hs-identifier hs-var">i</span></a></span><span> </span><span class="hs-keyword">of</span><span>
 </span><span id="line-76"></span><span>                    </span><span class="annot"><span class="annottext">Bool
 </span><span class="hs-identifier hs-var">True</span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="annottext">() -&gt; Text -&gt; LineInfo -&gt; c
-</span><a href="#local-6989586621681202695"><span class="hs-identifier hs-var">f</span></a></span><span> </span><span class="hs-special">(</span><span class="hs-special">)</span><span> </span><span class="annot"><span class="annottext">Text
+</span><a href="#local-6989586621681257779"><span class="hs-identifier hs-var">f</span></a></span><span> </span><span class="hs-special">(</span><span class="hs-special">)</span><span> </span><span class="annot"><span class="annottext">Text
 </span><span class="hs-identifier hs-var">Text.empty</span></span><span> </span><span class="annot"><span class="annottext">LineInfo
-</span><a href="#local-6989586621681202698"><span class="hs-identifier hs-var">li</span></a></span><span>
+</span><a href="#local-6989586621681257782"><span class="hs-identifier hs-var">li</span></a></span><span>
 </span><span id="line-77"></span><span>                    </span><span class="annot"><span class="annottext">Bool
 </span><span class="hs-identifier hs-var">False</span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="annottext">Error -&gt; LineInfo -&gt; c
-</span><a href="#local-6989586621681202696"><span class="hs-identifier hs-var">err</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">Error
+</span><a href="#local-6989586621681257780"><span class="hs-identifier hs-var">err</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">Error
 </span><span class="hs-string">&quot;Expected EOF, found:&quot;</span></span><span> </span><span class="annot"><span class="annottext">Error -&gt; Error -&gt; Error
 </span><span class="hs-operator hs-var">&lt;+&gt;</span></span><span> </span><span class="annot"><span class="annottext">String -&gt; Error
 forall a. PpShow a =&gt; [a] -&gt; Error
@@ -444,8 +444,8 @@ forall a b. (a -&gt; b) -&gt; a -&gt; b
 </span><span class="hs-operator hs-var">$</span></span><span> </span><span class="annot"><span class="annottext">Int -&gt; Text -&gt; Text
 </span><span class="hs-identifier hs-var">take</span></span><span> </span><span class="annot"><span class="annottext">Int
 </span><span class="hs-number">10</span></span><span> </span><span class="annot"><span class="annottext">Text
-</span><a href="#local-6989586621681202697"><span class="hs-identifier hs-var">i</span></a></span><span class="hs-special">)</span><span class="hs-special">)</span><span> </span><span class="annot"><span class="annottext">LineInfo
-</span><a href="#local-6989586621681202698"><span class="hs-identifier hs-var">li</span></a></span><span>
+</span><a href="#local-6989586621681257781"><span class="hs-identifier hs-var">i</span></a></span><span class="hs-special">)</span><span class="hs-special">)</span><span> </span><span class="annot"><span class="annottext">LineInfo
+</span><a href="#local-6989586621681257782"><span class="hs-identifier hs-var">li</span></a></span><span>
 </span><span id="line-78"></span><span>
 </span><span id="line-79"></span><span> </span><span class="annot"><a href="Math.Tools.Parser.html#newline%27"><span class="hs-identifier hs-type">newline'</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="Math.Tools.Parser.html#ParserM"><span class="hs-identifier hs-type">ParserM</span></a></span><span> </span><span class="annot"><span class="hs-identifier hs-type">Text</span></span><span> </span><span class="hs-special">(</span><span class="hs-special">)</span><span>
 </span><span id="line-80"></span><span> </span><span id="newline%27"><span class="annot"><span class="annottext">newline' :: ParserM Text ()
@@ -467,36 +467,36 @@ forall i a.
     -&gt; (Error -&gt; LineInfo -&gt; c) -&gt; Text -&gt; LineInfo -&gt; c)
 -&gt; ParserM Text ()
 forall a b. (a -&gt; b) -&gt; a -&gt; b
-</span><span class="hs-operator hs-var">$</span></span><span> </span><span class="hs-glyph">\</span><span id="local-6989586621681202706"><span class="annot"><span class="annottext">() -&gt; Text -&gt; LineInfo -&gt; c
-</span><a href="#local-6989586621681202706"><span class="hs-identifier hs-var">f</span></a></span></span><span> </span><span id="local-6989586621681202707"><span class="annot"><span class="annottext">Error -&gt; LineInfo -&gt; c
-</span><a href="#local-6989586621681202707"><span class="hs-identifier hs-var">err</span></a></span></span><span> </span><span id="local-6989586621681202708"><span class="annot"><span class="annottext">Text
-</span><a href="#local-6989586621681202708"><span class="hs-identifier hs-var">i</span></a></span></span><span> </span><span id="local-6989586621681202709"><span class="annot"><span class="annottext">LineInfo
-</span><a href="#local-6989586621681202709"><span class="hs-identifier hs-var">li</span></a></span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="hs-keyword">case</span><span> </span><span class="annot"><span class="annottext">Text -&gt; Maybe (Char, Text)
+</span><span class="hs-operator hs-var">$</span></span><span> </span><span class="hs-glyph">\</span><span id="local-6989586621681257790"><span class="annot"><span class="annottext">() -&gt; Text -&gt; LineInfo -&gt; c
+</span><a href="#local-6989586621681257790"><span class="hs-identifier hs-var">f</span></a></span></span><span> </span><span id="local-6989586621681257791"><span class="annot"><span class="annottext">Error -&gt; LineInfo -&gt; c
+</span><a href="#local-6989586621681257791"><span class="hs-identifier hs-var">err</span></a></span></span><span> </span><span id="local-6989586621681257792"><span class="annot"><span class="annottext">Text
+</span><a href="#local-6989586621681257792"><span class="hs-identifier hs-var">i</span></a></span></span><span> </span><span id="local-6989586621681257793"><span class="annot"><span class="annottext">LineInfo
+</span><a href="#local-6989586621681257793"><span class="hs-identifier hs-var">li</span></a></span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="hs-keyword">case</span><span> </span><span class="annot"><span class="annottext">Text -&gt; Maybe (Char, Text)
 </span><span class="hs-identifier hs-var">uncons</span></span><span> </span><span class="annot"><span class="annottext">Text
-</span><a href="#local-6989586621681202708"><span class="hs-identifier hs-var">i</span></a></span><span> </span><span class="hs-keyword">of</span><span>
+</span><a href="#local-6989586621681257792"><span class="hs-identifier hs-var">i</span></a></span><span> </span><span class="hs-keyword">of</span><span>
 </span><span id="line-81"></span><span>                        </span><span class="annot"><span class="hs-identifier hs-type">Just</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">Char
-</span><span class="hs-char">'\n'</span></span><span class="hs-special">,</span><span id="local-6989586621681202710"><span class="annot"><span class="annottext">Text
-</span><a href="#local-6989586621681202710"><span class="hs-identifier hs-var">cr</span></a></span></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="annottext">() -&gt; Text -&gt; LineInfo -&gt; c
-</span><a href="#local-6989586621681202706"><span class="hs-identifier hs-var">f</span></a></span><span> </span><span class="hs-special">(</span><span class="hs-special">)</span><span> </span><span class="annot"><span class="annottext">Text
-</span><a href="#local-6989586621681202710"><span class="hs-identifier hs-var">cr</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">LineInfo -&gt; LineInfo
+</span><span class="hs-char">'\n'</span></span><span class="hs-special">,</span><span id="local-6989586621681257794"><span class="annot"><span class="annottext">Text
+</span><a href="#local-6989586621681257794"><span class="hs-identifier hs-var">cr</span></a></span></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="annottext">() -&gt; Text -&gt; LineInfo -&gt; c
+</span><a href="#local-6989586621681257790"><span class="hs-identifier hs-var">f</span></a></span><span> </span><span class="hs-special">(</span><span class="hs-special">)</span><span> </span><span class="annot"><span class="annottext">Text
+</span><a href="#local-6989586621681257794"><span class="hs-identifier hs-var">cr</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">LineInfo -&gt; LineInfo
 </span><a href="Math.Tools.LineInfo.html#nextLine"><span class="hs-identifier hs-var">nextLine</span></a></span><span> </span><span class="annot"><span class="annottext">LineInfo
-</span><a href="#local-6989586621681202709"><span class="hs-identifier hs-var">li</span></a></span><span class="hs-special">)</span><span>
+</span><a href="#local-6989586621681257793"><span class="hs-identifier hs-var">li</span></a></span><span class="hs-special">)</span><span>
 </span><span id="line-82"></span><span>                        </span><span class="annot"><span class="hs-identifier hs-type">Just</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">Char
 </span><span class="hs-identifier">_</span></span><span class="hs-special">,</span><span class="annot"><span class="annottext">Text
 </span><span class="hs-identifier">_</span></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="annottext">Error -&gt; LineInfo -&gt; c
-</span><a href="#local-6989586621681202707"><span class="hs-identifier hs-var">err</span></a></span><span> </span><span class="annot"><span class="annottext">Error
+</span><a href="#local-6989586621681257791"><span class="hs-identifier hs-var">err</span></a></span><span> </span><span class="annot"><span class="annottext">Error
 </span><span class="hs-string">&quot;Expected a newline&quot;</span></span><span> </span><span class="annot"><span class="annottext">LineInfo
-</span><a href="#local-6989586621681202709"><span class="hs-identifier hs-var">li</span></a></span><span>
+</span><a href="#local-6989586621681257793"><span class="hs-identifier hs-var">li</span></a></span><span>
 </span><span id="line-83"></span><span>                        </span><span class="annot"><span class="annottext">Maybe (Char, Text)
 </span><span class="hs-identifier hs-var">Nothing</span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="annottext">Error -&gt; LineInfo -&gt; c
-</span><a href="#local-6989586621681202707"><span class="hs-identifier hs-var">err</span></a></span><span> </span><span class="annot"><span class="annottext">Error
+</span><a href="#local-6989586621681257791"><span class="hs-identifier hs-var">err</span></a></span><span> </span><span class="annot"><span class="annottext">Error
 </span><span class="hs-string">&quot;Unexpected end of file&quot;</span></span><span> </span><span class="annot"><span class="annottext">LineInfo
-</span><a href="#local-6989586621681202709"><span class="hs-identifier hs-var">li</span></a></span><span>
+</span><a href="#local-6989586621681257793"><span class="hs-identifier hs-var">li</span></a></span><span>
 </span><span id="line-84"></span><span>
 </span><span id="line-85"></span><span> </span><span class="annot"><a href="Math.Tools.Parser.html#readWhile%27"><span class="hs-identifier hs-type">readWhile'</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="hs-special">(</span><span class="annot"><span class="hs-identifier hs-type">Char</span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Bool</span></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="Math.Tools.Parser.html#ParserM"><span class="hs-identifier hs-type">ParserM</span></a></span><span> </span><span class="annot"><span class="hs-identifier hs-type">Text</span></span><span> </span><span class="annot"><span class="hs-identifier hs-type">Text</span></span><span>
 </span><span id="line-86"></span><span> </span><span id="readWhile%27"><span class="annot"><span class="annottext">readWhile' :: (Char -&gt; Bool) -&gt; ParserM Text Text
-</span><a href="Math.Tools.Parser.html#readWhile%27"><span class="hs-identifier hs-var hs-var">readWhile'</span></a></span></span><span> </span><span id="local-6989586621681202712"><span class="annot"><span class="annottext">Char -&gt; Bool
-</span><a href="#local-6989586621681202712"><span class="hs-identifier hs-var">ch</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">(forall c.
+</span><a href="Math.Tools.Parser.html#readWhile%27"><span class="hs-identifier hs-var hs-var">readWhile'</span></a></span></span><span> </span><span id="local-6989586621681257796"><span class="annot"><span class="annottext">Char -&gt; Bool
+</span><a href="#local-6989586621681257796"><span class="hs-identifier hs-var">ch</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">(forall c.
  (Text -&gt; Text -&gt; LineInfo -&gt; c)
  -&gt; (Error -&gt; LineInfo -&gt; c) -&gt; Text -&gt; LineInfo -&gt; c)
 -&gt; ParserM Text Text
@@ -514,20 +514,20 @@ forall i a.
     -&gt; (Error -&gt; LineInfo -&gt; c) -&gt; Text -&gt; LineInfo -&gt; c)
 -&gt; ParserM Text Text
 forall a b. (a -&gt; b) -&gt; a -&gt; b
-</span><span class="hs-operator hs-var">$</span></span><span> </span><span class="hs-glyph">\</span><span id="local-6989586621681202715"><span class="annot"><span class="annottext">Text -&gt; Text -&gt; LineInfo -&gt; c
-</span><a href="#local-6989586621681202715"><span class="hs-identifier hs-var">f</span></a></span></span><span> </span><span id="local-6989586621681202716"><span class="annot"><span class="annottext">Error -&gt; LineInfo -&gt; c
-</span><a href="#local-6989586621681202716"><span class="hs-identifier hs-var">err</span></a></span></span><span> </span><span id="local-6989586621681202717"><span class="annot"><span class="annottext">Text
-</span><a href="#local-6989586621681202717"><span class="hs-identifier hs-var">i</span></a></span></span><span> </span><span id="local-6989586621681202718"><span class="annot"><span class="annottext">LineInfo
-</span><a href="#local-6989586621681202718"><span class="hs-identifier hs-var">li</span></a></span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="hs-keyword">let</span><span> </span><span class="hs-special">(</span><span id="local-6989586621681202719"><span class="annot"><span class="annottext">Text
-</span><a href="#local-6989586621681202719"><span class="hs-identifier hs-var">s</span></a></span></span><span class="hs-special">,</span><span id="local-6989586621681202720"><span class="annot"><span class="annottext">Text
-</span><a href="#local-6989586621681202720"><span class="hs-identifier hs-var">r</span></a></span></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">(Char -&gt; Bool) -&gt; Text -&gt; (Text, Text)
+</span><span class="hs-operator hs-var">$</span></span><span> </span><span class="hs-glyph">\</span><span id="local-6989586621681257799"><span class="annot"><span class="annottext">Text -&gt; Text -&gt; LineInfo -&gt; c
+</span><a href="#local-6989586621681257799"><span class="hs-identifier hs-var">f</span></a></span></span><span> </span><span id="local-6989586621681257800"><span class="annot"><span class="annottext">Error -&gt; LineInfo -&gt; c
+</span><a href="#local-6989586621681257800"><span class="hs-identifier hs-var">err</span></a></span></span><span> </span><span id="local-6989586621681257801"><span class="annot"><span class="annottext">Text
+</span><a href="#local-6989586621681257801"><span class="hs-identifier hs-var">i</span></a></span></span><span> </span><span id="local-6989586621681257802"><span class="annot"><span class="annottext">LineInfo
+</span><a href="#local-6989586621681257802"><span class="hs-identifier hs-var">li</span></a></span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="hs-keyword">let</span><span> </span><span class="hs-special">(</span><span id="local-6989586621681257803"><span class="annot"><span class="annottext">Text
+</span><a href="#local-6989586621681257803"><span class="hs-identifier hs-var">s</span></a></span></span><span class="hs-special">,</span><span id="local-6989586621681257804"><span class="annot"><span class="annottext">Text
+</span><a href="#local-6989586621681257804"><span class="hs-identifier hs-var">r</span></a></span></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">(Char -&gt; Bool) -&gt; Text -&gt; (Text, Text)
 </span><span class="hs-identifier hs-var">span</span></span><span> </span><span class="annot"><span class="annottext">Char -&gt; Bool
-</span><a href="#local-6989586621681202712"><span class="hs-identifier hs-var">ch</span></a></span><span> </span><span class="annot"><span class="annottext">Text
-</span><a href="#local-6989586621681202717"><span class="hs-identifier hs-var">i</span></a></span><span>
+</span><a href="#local-6989586621681257796"><span class="hs-identifier hs-var">ch</span></a></span><span> </span><span class="annot"><span class="annottext">Text
+</span><a href="#local-6989586621681257801"><span class="hs-identifier hs-var">i</span></a></span><span>
 </span><span id="line-87"></span><span>                             </span><span class="hs-keyword">in</span><span> </span><span class="hs-keyword">if</span><span> </span><span class="annot"><span class="annottext">Text -&gt; Bool
 </span><span class="hs-identifier hs-var">null</span></span><span> </span><span class="annot"><span class="annottext">Text
-</span><a href="#local-6989586621681202719"><span class="hs-identifier hs-var">s</span></a></span><span> </span><span class="hs-keyword">then</span><span> </span><span class="annot"><span class="annottext">Error -&gt; LineInfo -&gt; c
-</span><a href="#local-6989586621681202716"><span class="hs-identifier hs-var">err</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">Error
+</span><a href="#local-6989586621681257803"><span class="hs-identifier hs-var">s</span></a></span><span> </span><span class="hs-keyword">then</span><span> </span><span class="annot"><span class="annottext">Error -&gt; LineInfo -&gt; c
+</span><a href="#local-6989586621681257800"><span class="hs-identifier hs-var">err</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">Error
 </span><span class="hs-string">&quot;unexpected character in input:&quot;</span></span><span> </span><span class="annot"><span class="annottext">Error -&gt; Error -&gt; Error
 </span><span class="hs-operator hs-var">&lt;+&gt;</span></span><span> </span><span class="annot"><span class="annottext">String -&gt; Error
 forall a. PpShow a =&gt; [a] -&gt; Error
@@ -537,21 +537,21 @@ forall a b. (a -&gt; b) -&gt; a -&gt; b
 </span><span class="hs-operator hs-var">$</span></span><span> </span><span class="annot"><span class="annottext">Int -&gt; Text -&gt; Text
 </span><span class="hs-identifier hs-var">take</span></span><span> </span><span class="annot"><span class="annottext">Int
 </span><span class="hs-number">10</span></span><span> </span><span class="annot"><span class="annottext">Text
-</span><a href="#local-6989586621681202720"><span class="hs-identifier hs-var">r</span></a></span><span class="hs-special">)</span><span class="hs-special">)</span><span> </span><span class="annot"><span class="annottext">LineInfo
-</span><a href="#local-6989586621681202718"><span class="hs-identifier hs-var">li</span></a></span><span>
+</span><a href="#local-6989586621681257804"><span class="hs-identifier hs-var">r</span></a></span><span class="hs-special">)</span><span class="hs-special">)</span><span> </span><span class="annot"><span class="annottext">LineInfo
+</span><a href="#local-6989586621681257802"><span class="hs-identifier hs-var">li</span></a></span><span>
 </span><span id="line-88"></span><span>                                          </span><span class="hs-keyword">else</span><span> </span><span class="annot"><span class="annottext">Text -&gt; Text -&gt; LineInfo -&gt; c
-</span><a href="#local-6989586621681202715"><span class="hs-identifier hs-var">f</span></a></span><span> </span><span class="annot"><span class="annottext">Text
-</span><a href="#local-6989586621681202719"><span class="hs-identifier hs-var">s</span></a></span><span> </span><span class="annot"><span class="annottext">Text
-</span><a href="#local-6989586621681202720"><span class="hs-identifier hs-var">r</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">Int -&gt; LineInfo -&gt; LineInfo
+</span><a href="#local-6989586621681257799"><span class="hs-identifier hs-var">f</span></a></span><span> </span><span class="annot"><span class="annottext">Text
+</span><a href="#local-6989586621681257803"><span class="hs-identifier hs-var">s</span></a></span><span> </span><span class="annot"><span class="annottext">Text
+</span><a href="#local-6989586621681257804"><span class="hs-identifier hs-var">r</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">Int -&gt; LineInfo -&gt; LineInfo
 </span><a href="Math.Tools.LineInfo.html#addToColumn"><span class="hs-identifier hs-var">addToColumn</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">Text -&gt; Int
 </span><span class="hs-identifier hs-var">length</span></span><span> </span><span class="annot"><span class="annottext">Text
-</span><a href="#local-6989586621681202719"><span class="hs-identifier hs-var">s</span></a></span><span class="hs-special">)</span><span> </span><span class="annot"><span class="annottext">LineInfo
-</span><a href="#local-6989586621681202718"><span class="hs-identifier hs-var">li</span></a></span><span class="hs-special">)</span><span>
+</span><a href="#local-6989586621681257803"><span class="hs-identifier hs-var">s</span></a></span><span class="hs-special">)</span><span> </span><span class="annot"><span class="annottext">LineInfo
+</span><a href="#local-6989586621681257802"><span class="hs-identifier hs-var">li</span></a></span><span class="hs-special">)</span><span>
 </span><span id="line-89"></span><span>
 </span><span id="line-90"></span><span> </span><span class="annot"><a href="Math.Tools.Parser.html#require%27"><span class="hs-identifier hs-type">require'</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Char</span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="Math.Tools.Parser.html#ParserM"><span class="hs-identifier hs-type">ParserM</span></a></span><span> </span><span class="annot"><span class="hs-identifier hs-type">Text</span></span><span> </span><span class="annot"><span class="hs-identifier hs-type">Char</span></span><span>
 </span><span id="line-91"></span><span> </span><span id="require%27"><span class="annot"><span class="annottext">require' :: Char -&gt; ParserM Text Char
-</span><a href="Math.Tools.Parser.html#require%27"><span class="hs-identifier hs-var hs-var">require'</span></a></span></span><span> </span><span id="local-6989586621681202724"><span class="annot"><span class="annottext">Char
-</span><a href="#local-6989586621681202724"><span class="hs-identifier hs-var">c</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">(forall c.
+</span><a href="Math.Tools.Parser.html#require%27"><span class="hs-identifier hs-var hs-var">require'</span></a></span></span><span> </span><span id="local-6989586621681257808"><span class="annot"><span class="annottext">Char
+</span><a href="#local-6989586621681257808"><span class="hs-identifier hs-var">c</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">(forall c.
  (Char -&gt; Text -&gt; LineInfo -&gt; c)
  -&gt; (Error -&gt; LineInfo -&gt; c) -&gt; Text -&gt; LineInfo -&gt; c)
 -&gt; ParserM Text Char
@@ -569,51 +569,51 @@ forall i a.
     -&gt; (Error -&gt; LineInfo -&gt; c) -&gt; Text -&gt; LineInfo -&gt; c)
 -&gt; ParserM Text Char
 forall a b. (a -&gt; b) -&gt; a -&gt; b
-</span><span class="hs-operator hs-var">$</span></span><span> </span><span class="hs-glyph">\</span><span id="local-6989586621681202731"><span class="annot"><span class="annottext">Char -&gt; Text -&gt; LineInfo -&gt; c
-</span><a href="#local-6989586621681202731"><span class="hs-identifier hs-var">f</span></a></span></span><span> </span><span id="local-6989586621681202732"><span class="annot"><span class="annottext">Error -&gt; LineInfo -&gt; c
-</span><a href="#local-6989586621681202732"><span class="hs-identifier hs-var">err</span></a></span></span><span> </span><span id="local-6989586621681202733"><span class="annot"><span class="annottext">Text
-</span><a href="#local-6989586621681202733"><span class="hs-identifier hs-var">i</span></a></span></span><span> </span><span id="local-6989586621681202734"><span class="annot"><span class="annottext">LineInfo
-</span><a href="#local-6989586621681202734"><span class="hs-identifier hs-var">li</span></a></span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="hs-keyword">case</span><span> </span><span class="annot"><span class="annottext">Text -&gt; Maybe (Char, Text)
+</span><span class="hs-operator hs-var">$</span></span><span> </span><span class="hs-glyph">\</span><span id="local-6989586621681257815"><span class="annot"><span class="annottext">Char -&gt; Text -&gt; LineInfo -&gt; c
+</span><a href="#local-6989586621681257815"><span class="hs-identifier hs-var">f</span></a></span></span><span> </span><span id="local-6989586621681257816"><span class="annot"><span class="annottext">Error -&gt; LineInfo -&gt; c
+</span><a href="#local-6989586621681257816"><span class="hs-identifier hs-var">err</span></a></span></span><span> </span><span id="local-6989586621681257817"><span class="annot"><span class="annottext">Text
+</span><a href="#local-6989586621681257817"><span class="hs-identifier hs-var">i</span></a></span></span><span> </span><span id="local-6989586621681257818"><span class="annot"><span class="annottext">LineInfo
+</span><a href="#local-6989586621681257818"><span class="hs-identifier hs-var">li</span></a></span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="hs-keyword">case</span><span> </span><span class="annot"><span class="annottext">Text -&gt; Maybe (Char, Text)
 </span><span class="hs-identifier hs-var">uncons</span></span><span> </span><span class="annot"><span class="annottext">Text
-</span><a href="#local-6989586621681202733"><span class="hs-identifier hs-var">i</span></a></span><span> </span><span class="hs-keyword">of</span><span>
-</span><span id="line-92"></span><span>                           </span><span class="annot"><span class="hs-identifier hs-type">Just</span></span><span> </span><span class="hs-special">(</span><span id="local-6989586621681202735"><span class="annot"><span class="annottext">Char
-</span><a href="#local-6989586621681202735"><span class="hs-identifier hs-var">c'</span></a></span></span><span class="hs-special">,</span><span id="local-6989586621681202736"><span class="annot"><span class="annottext">Text
-</span><a href="#local-6989586621681202736"><span class="hs-identifier hs-var">cr</span></a></span></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="hs-keyword">if</span><span> </span><span class="annot"><span class="annottext">Char
-</span><a href="#local-6989586621681202735"><span class="hs-identifier hs-var">c'</span></a></span><span> </span><span class="annot"><span class="annottext">Char -&gt; Char -&gt; Bool
+</span><a href="#local-6989586621681257817"><span class="hs-identifier hs-var">i</span></a></span><span> </span><span class="hs-keyword">of</span><span>
+</span><span id="line-92"></span><span>                           </span><span class="annot"><span class="hs-identifier hs-type">Just</span></span><span> </span><span class="hs-special">(</span><span id="local-6989586621681257819"><span class="annot"><span class="annottext">Char
+</span><a href="#local-6989586621681257819"><span class="hs-identifier hs-var">c'</span></a></span></span><span class="hs-special">,</span><span id="local-6989586621681257820"><span class="annot"><span class="annottext">Text
+</span><a href="#local-6989586621681257820"><span class="hs-identifier hs-var">cr</span></a></span></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="hs-keyword">if</span><span> </span><span class="annot"><span class="annottext">Char
+</span><a href="#local-6989586621681257819"><span class="hs-identifier hs-var">c'</span></a></span><span> </span><span class="annot"><span class="annottext">Char -&gt; Char -&gt; Bool
 forall a. Eq a =&gt; a -&gt; a -&gt; Bool
 </span><span class="hs-operator hs-var">==</span></span><span> </span><span class="annot"><span class="annottext">Char
-</span><a href="#local-6989586621681202724"><span class="hs-identifier hs-var">c</span></a></span><span> </span><span class="hs-keyword">then</span><span> </span><span class="annot"><span class="annottext">Char -&gt; Text -&gt; LineInfo -&gt; c
-</span><a href="#local-6989586621681202731"><span class="hs-identifier hs-var">f</span></a></span><span> </span><span class="annot"><span class="annottext">Char
-</span><a href="#local-6989586621681202735"><span class="hs-identifier hs-var">c'</span></a></span><span> </span><span class="annot"><span class="annottext">Text
-</span><a href="#local-6989586621681202736"><span class="hs-identifier hs-var">cr</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">LineInfo -&gt; LineInfo
+</span><a href="#local-6989586621681257808"><span class="hs-identifier hs-var">c</span></a></span><span> </span><span class="hs-keyword">then</span><span> </span><span class="annot"><span class="annottext">Char -&gt; Text -&gt; LineInfo -&gt; c
+</span><a href="#local-6989586621681257815"><span class="hs-identifier hs-var">f</span></a></span><span> </span><span class="annot"><span class="annottext">Char
+</span><a href="#local-6989586621681257819"><span class="hs-identifier hs-var">c'</span></a></span><span> </span><span class="annot"><span class="annottext">Text
+</span><a href="#local-6989586621681257820"><span class="hs-identifier hs-var">cr</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">LineInfo -&gt; LineInfo
 </span><a href="Math.Tools.LineInfo.html#nextColumn"><span class="hs-identifier hs-var">nextColumn</span></a></span><span> </span><span class="annot"><span class="annottext">LineInfo
-</span><a href="#local-6989586621681202734"><span class="hs-identifier hs-var">li</span></a></span><span class="hs-special">)</span><span>
+</span><a href="#local-6989586621681257818"><span class="hs-identifier hs-var">li</span></a></span><span class="hs-special">)</span><span>
 </span><span id="line-93"></span><span>                                                     </span><span class="hs-keyword">else</span><span> </span><span class="annot"><span class="annottext">Error -&gt; LineInfo -&gt; c
-</span><a href="#local-6989586621681202732"><span class="hs-identifier hs-var">err</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">Char -&gt; Char -&gt; Error
+</span><a href="#local-6989586621681257816"><span class="hs-identifier hs-var">err</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">Char -&gt; Char -&gt; Error
 forall {a} {a}. (PpShow a, PpShow a) =&gt; a -&gt; a -&gt; Error
-</span><a href="#local-6989586621681202737"><span class="hs-identifier hs-var">unexpected</span></a></span><span> </span><span class="annot"><span class="annottext">Char
-</span><a href="#local-6989586621681202724"><span class="hs-identifier hs-var">c</span></a></span><span> </span><span class="annot"><span class="annottext">Char
-</span><a href="#local-6989586621681202735"><span class="hs-identifier hs-var">c'</span></a></span><span class="hs-special">)</span><span> </span><span class="annot"><span class="annottext">LineInfo
-</span><a href="#local-6989586621681202734"><span class="hs-identifier hs-var">li</span></a></span><span>
+</span><a href="#local-6989586621681257821"><span class="hs-identifier hs-var">unexpected</span></a></span><span> </span><span class="annot"><span class="annottext">Char
+</span><a href="#local-6989586621681257808"><span class="hs-identifier hs-var">c</span></a></span><span> </span><span class="annot"><span class="annottext">Char
+</span><a href="#local-6989586621681257819"><span class="hs-identifier hs-var">c'</span></a></span><span class="hs-special">)</span><span> </span><span class="annot"><span class="annottext">LineInfo
+</span><a href="#local-6989586621681257818"><span class="hs-identifier hs-var">li</span></a></span><span>
 </span><span id="line-94"></span><span>                           </span><span class="annot"><span class="annottext">Maybe (Char, Text)
 </span><span class="hs-identifier hs-var">Nothing</span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="annottext">Error -&gt; LineInfo -&gt; c
-</span><a href="#local-6989586621681202732"><span class="hs-identifier hs-var">err</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">Error
+</span><a href="#local-6989586621681257816"><span class="hs-identifier hs-var">err</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">Error
 </span><span class="hs-string">&quot;Unexpected EOF, expected&quot;</span></span><span> </span><span class="annot"><span class="annottext">Error -&gt; Error -&gt; Error
 </span><span class="hs-operator hs-var">&lt;+&gt;</span></span><span> </span><span class="annot"><span class="annottext">Char -&gt; Error
 forall a. PpShow a =&gt; a -&gt; Error
 </span><a href="Math.Tools.PrettyP.html#enclose"><span class="hs-identifier hs-var">enclose</span></a></span><span> </span><span class="annot"><span class="annottext">Char
-</span><a href="#local-6989586621681202724"><span class="hs-identifier hs-var">c</span></a></span><span class="hs-special">)</span><span> </span><span class="annot"><span class="annottext">LineInfo
-</span><a href="#local-6989586621681202734"><span class="hs-identifier hs-var">li</span></a></span><span>
-</span><span id="line-95"></span><span>     </span><span class="hs-keyword">where</span><span> </span><span id="local-6989586621681202737"><span class="annot"><span class="annottext">unexpected :: a -&gt; a -&gt; Error
-</span><a href="#local-6989586621681202737"><span class="hs-identifier hs-var hs-var">unexpected</span></a></span></span><span> </span><span id="local-6989586621681202747"><span class="annot"><span class="annottext">a
-</span><a href="#local-6989586621681202747"><span class="hs-identifier hs-var">c</span></a></span></span><span> </span><span id="local-6989586621681202748"><span class="annot"><span class="annottext">a
-</span><a href="#local-6989586621681202748"><span class="hs-identifier hs-var">c'</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Error
+</span><a href="#local-6989586621681257808"><span class="hs-identifier hs-var">c</span></a></span><span class="hs-special">)</span><span> </span><span class="annot"><span class="annottext">LineInfo
+</span><a href="#local-6989586621681257818"><span class="hs-identifier hs-var">li</span></a></span><span>
+</span><span id="line-95"></span><span>     </span><span class="hs-keyword">where</span><span> </span><span id="local-6989586621681257821"><span class="annot"><span class="annottext">unexpected :: a -&gt; a -&gt; Error
+</span><a href="#local-6989586621681257821"><span class="hs-identifier hs-var hs-var">unexpected</span></a></span></span><span> </span><span id="local-6989586621681257831"><span class="annot"><span class="annottext">a
+</span><a href="#local-6989586621681257831"><span class="hs-identifier hs-var">c</span></a></span></span><span> </span><span id="local-6989586621681257832"><span class="annot"><span class="annottext">a
+</span><a href="#local-6989586621681257832"><span class="hs-identifier hs-var">c'</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Error
 </span><span class="hs-string">&quot;Unexpected character: expected&quot;</span></span><span>
 </span><span id="line-96"></span><span>                                     </span><span class="annot"><span class="annottext">Error -&gt; Error -&gt; Error
 </span><span class="hs-operator hs-var">&lt;+&gt;</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">a -&gt; Error
 forall a. PpShow a =&gt; a -&gt; Error
 </span><a href="Math.Tools.PrettyP.html#enclose"><span class="hs-identifier hs-var">enclose</span></a></span><span> </span><span class="annot"><span class="annottext">a
-</span><a href="#local-6989586621681202747"><span class="hs-identifier hs-var">c</span></a></span><span> </span><span class="annot"><span class="annottext">Error -&gt; Error -&gt; Error
+</span><a href="#local-6989586621681257831"><span class="hs-identifier hs-var">c</span></a></span><span> </span><span class="annot"><span class="annottext">Error -&gt; Error -&gt; Error
 forall a. Semigroup a =&gt; a -&gt; a -&gt; a
 </span><span class="hs-operator hs-var">&lt;&gt;</span></span><span> </span><span class="annot"><span class="annottext">Char -&gt; Error
 forall a. PpShow a =&gt; a -&gt; Error
@@ -626,8 +626,8 @@ forall a. Semigroup a =&gt; a -&gt; a -&gt; a
 </span><span class="hs-operator hs-var">&lt;&gt;</span></span><span> </span><span class="annot"><span class="annottext">a -&gt; Error
 forall a. PpShow a =&gt; a -&gt; Error
 </span><a href="Math.Tools.PrettyP.html#enclose"><span class="hs-identifier hs-var">enclose</span></a></span><span> </span><span class="annot"><span class="annottext">a
-</span><a href="#local-6989586621681202748"><span class="hs-identifier hs-var">c'</span></a></span><span class="hs-special">)</span><span>
-</span><span id="line-98"></span><span> </span><span id="local-6989586621681202468"><span class="annot"><a href="Math.Tools.Parser.html#getRemainingInput%27"><span class="hs-identifier hs-type">getRemainingInput'</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="Math.Tools.Parser.html#ParserM"><span class="hs-identifier hs-type">ParserM</span></a></span><span> </span><span class="annot"><a href="#local-6989586621681202468"><span class="hs-identifier hs-type">a</span></a></span><span> </span><span class="annot"><a href="#local-6989586621681202468"><span class="hs-identifier hs-type">a</span></a></span></span><span>
+</span><a href="#local-6989586621681257832"><span class="hs-identifier hs-var">c'</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-98"></span><span> </span><span id="local-6989586621681257552"><span class="annot"><a href="Math.Tools.Parser.html#getRemainingInput%27"><span class="hs-identifier hs-type">getRemainingInput'</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="Math.Tools.Parser.html#ParserM"><span class="hs-identifier hs-type">ParserM</span></a></span><span> </span><span class="annot"><a href="#local-6989586621681257552"><span class="hs-identifier hs-type">a</span></a></span><span> </span><span class="annot"><a href="#local-6989586621681257552"><span class="hs-identifier hs-type">a</span></a></span></span><span>
 </span><span id="line-99"></span><span> </span><span id="getRemainingInput%27"><span class="annot"><span class="annottext">getRemainingInput' :: forall a. ParserM a a
 </span><a href="Math.Tools.Parser.html#getRemainingInput%27"><span class="hs-identifier hs-var hs-var">getRemainingInput'</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">(forall c.
  (a -&gt; a -&gt; LineInfo -&gt; c)
@@ -647,17 +647,17 @@ forall i a.
     -&gt; (Error -&gt; LineInfo -&gt; c) -&gt; a -&gt; LineInfo -&gt; c)
 -&gt; ParserM a a
 forall a b. (a -&gt; b) -&gt; a -&gt; b
-</span><span class="hs-operator hs-var">$</span></span><span> </span><span class="hs-glyph">\</span><span id="local-6989586621681202749"><span class="annot"><span class="annottext">a -&gt; a -&gt; LineInfo -&gt; c
-</span><a href="#local-6989586621681202749"><span class="hs-identifier hs-var">f</span></a></span></span><span> </span><span class="annot"><span class="annottext">Error -&gt; LineInfo -&gt; c
-</span><span class="hs-identifier">_</span></span><span> </span><span id="local-6989586621681202750"><span class="annot"><span class="annottext">a
-</span><a href="#local-6989586621681202750"><span class="hs-identifier hs-var">i</span></a></span></span><span> </span><span id="local-6989586621681202751"><span class="annot"><span class="annottext">LineInfo
-</span><a href="#local-6989586621681202751"><span class="hs-identifier hs-var">li</span></a></span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="annottext">a -&gt; a -&gt; LineInfo -&gt; c
-</span><a href="#local-6989586621681202749"><span class="hs-identifier hs-var">f</span></a></span><span> </span><span class="annot"><span class="annottext">a
-</span><a href="#local-6989586621681202750"><span class="hs-identifier hs-var">i</span></a></span><span> </span><span class="annot"><span class="annottext">a
-</span><a href="#local-6989586621681202750"><span class="hs-identifier hs-var">i</span></a></span><span> </span><span class="annot"><span class="annottext">LineInfo
-</span><a href="#local-6989586621681202751"><span class="hs-identifier hs-var">li</span></a></span><span>
+</span><span class="hs-operator hs-var">$</span></span><span> </span><span class="hs-glyph">\</span><span id="local-6989586621681257833"><span class="annot"><span class="annottext">a -&gt; a -&gt; LineInfo -&gt; c
+</span><a href="#local-6989586621681257833"><span class="hs-identifier hs-var">f</span></a></span></span><span> </span><span class="annot"><span class="annottext">Error -&gt; LineInfo -&gt; c
+</span><span class="hs-identifier">_</span></span><span> </span><span id="local-6989586621681257834"><span class="annot"><span class="annottext">a
+</span><a href="#local-6989586621681257834"><span class="hs-identifier hs-var">i</span></a></span></span><span> </span><span id="local-6989586621681257835"><span class="annot"><span class="annottext">LineInfo
+</span><a href="#local-6989586621681257835"><span class="hs-identifier hs-var">li</span></a></span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="annottext">a -&gt; a -&gt; LineInfo -&gt; c
+</span><a href="#local-6989586621681257833"><span class="hs-identifier hs-var">f</span></a></span><span> </span><span class="annot"><span class="annottext">a
+</span><a href="#local-6989586621681257834"><span class="hs-identifier hs-var">i</span></a></span><span> </span><span class="annot"><span class="annottext">a
+</span><a href="#local-6989586621681257834"><span class="hs-identifier hs-var">i</span></a></span><span> </span><span class="annot"><span class="annottext">LineInfo
+</span><a href="#local-6989586621681257835"><span class="hs-identifier hs-var">li</span></a></span><span>
 </span><span id="line-100"></span><span>
-</span><span id="line-101"></span><span> </span><span id="local-6989586621681202469"><span class="annot"><a href="Math.Tools.Parser.html#getLineInfo%27"><span class="hs-identifier hs-type">getLineInfo'</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="Math.Tools.Parser.html#ParserM"><span class="hs-identifier hs-type">ParserM</span></a></span><span> </span><span class="annot"><a href="#local-6989586621681202469"><span class="hs-identifier hs-type">a</span></a></span><span> </span><span class="annot"><a href="Math.Tools.LineInfo.html#LineInfo"><span class="hs-identifier hs-type">LineInfo</span></a></span></span><span>
+</span><span id="line-101"></span><span> </span><span id="local-6989586621681257553"><span class="annot"><a href="Math.Tools.Parser.html#getLineInfo%27"><span class="hs-identifier hs-type">getLineInfo'</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="Math.Tools.Parser.html#ParserM"><span class="hs-identifier hs-type">ParserM</span></a></span><span> </span><span class="annot"><a href="#local-6989586621681257553"><span class="hs-identifier hs-type">a</span></a></span><span> </span><span class="annot"><a href="Math.Tools.LineInfo.html#LineInfo"><span class="hs-identifier hs-type">LineInfo</span></a></span></span><span>
 </span><span id="line-102"></span><span> </span><span id="getLineInfo%27"><span class="annot"><span class="annottext">getLineInfo' :: forall a. ParserM a LineInfo
 </span><a href="Math.Tools.Parser.html#getLineInfo%27"><span class="hs-identifier hs-var hs-var">getLineInfo'</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">(forall c.
  (LineInfo -&gt; a -&gt; LineInfo -&gt; c)
@@ -677,14 +677,14 @@ forall i a.
     -&gt; (Error -&gt; LineInfo -&gt; c) -&gt; a -&gt; LineInfo -&gt; c)
 -&gt; ParserM a LineInfo
 forall a b. (a -&gt; b) -&gt; a -&gt; b
-</span><span class="hs-operator hs-var">$</span></span><span> </span><span class="hs-glyph">\</span><span id="local-6989586621681202752"><span class="annot"><span class="annottext">LineInfo -&gt; a -&gt; LineInfo -&gt; c
-</span><a href="#local-6989586621681202752"><span class="hs-identifier hs-var">f</span></a></span></span><span> </span><span class="annot"><span class="annottext">Error -&gt; LineInfo -&gt; c
-</span><span class="hs-identifier">_</span></span><span> </span><span id="local-6989586621681202753"><span class="annot"><span class="annottext">a
-</span><a href="#local-6989586621681202753"><span class="hs-identifier hs-var">i</span></a></span></span><span> </span><span id="local-6989586621681202754"><span class="annot"><span class="annottext">LineInfo
-</span><a href="#local-6989586621681202754"><span class="hs-identifier hs-var">li</span></a></span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="annottext">LineInfo -&gt; a -&gt; LineInfo -&gt; c
-</span><a href="#local-6989586621681202752"><span class="hs-identifier hs-var">f</span></a></span><span> </span><span class="annot"><span class="annottext">LineInfo
-</span><a href="#local-6989586621681202754"><span class="hs-identifier hs-var">li</span></a></span><span> </span><span class="annot"><span class="annottext">a
-</span><a href="#local-6989586621681202753"><span class="hs-identifier hs-var">i</span></a></span><span> </span><span class="annot"><span class="annottext">LineInfo
-</span><a href="#local-6989586621681202754"><span class="hs-identifier hs-var">li</span></a></span><span>
+</span><span class="hs-operator hs-var">$</span></span><span> </span><span class="hs-glyph">\</span><span id="local-6989586621681257836"><span class="annot"><span class="annottext">LineInfo -&gt; a -&gt; LineInfo -&gt; c
+</span><a href="#local-6989586621681257836"><span class="hs-identifier hs-var">f</span></a></span></span><span> </span><span class="annot"><span class="annottext">Error -&gt; LineInfo -&gt; c
+</span><span class="hs-identifier">_</span></span><span> </span><span id="local-6989586621681257837"><span class="annot"><span class="annottext">a
+</span><a href="#local-6989586621681257837"><span class="hs-identifier hs-var">i</span></a></span></span><span> </span><span id="local-6989586621681257838"><span class="annot"><span class="annottext">LineInfo
+</span><a href="#local-6989586621681257838"><span class="hs-identifier hs-var">li</span></a></span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="annottext">LineInfo -&gt; a -&gt; LineInfo -&gt; c
+</span><a href="#local-6989586621681257836"><span class="hs-identifier hs-var">f</span></a></span><span> </span><span class="annot"><span class="annottext">LineInfo
+</span><a href="#local-6989586621681257838"><span class="hs-identifier hs-var">li</span></a></span><span> </span><span class="annot"><span class="annottext">a
+</span><a href="#local-6989586621681257837"><span class="hs-identifier hs-var">i</span></a></span><span> </span><span class="annot"><span class="annottext">LineInfo
+</span><a href="#local-6989586621681257838"><span class="hs-identifier hs-var">li</span></a></span><span>
 </span><span id="line-103"></span><span>
 </span><span id="line-104"></span></pre></body></html>

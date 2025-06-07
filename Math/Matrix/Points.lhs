@@ -2,6 +2,7 @@
 >module Math.Matrix.Points where
 >import Math.Tools.PrettyP
 >import Math.Tools.Universe
+>import Math.Tools.CoMonad
 
 >data OneD = OneD0
 >  deriving (Eq,Ord,Enum)
@@ -361,3 +362,23 @@ to map indices.
 >   abs _ = OneD0
 >   signum _ = OneD0
 >   fromInteger _ = OneD0
+
+>instance Comonad ((->) TwoD) where
+>   extract f = f TwoD0
+>   duplicate f = \a b -> f (a + b)
+>
+>instance Comonad ((->) ThreeD) where
+>   extract f = f ThreeD0
+>   duplicate f = \a b -> f (a + b)
+>
+>instance Comonad ((->) FourD) where
+>   extract f = f FourD0
+>   duplicate f = \a b -> f (a + b)
+
+>instance Comonad ((->) FiveD) where
+>   extract f = f FiveD0
+>   duplicate f = \a b -> f (a + b)
+>
+>instance Comonad ((->) SixD) where
+>   extract f = f SixD0
+>   duplicate f = \a b -> f (a + b)

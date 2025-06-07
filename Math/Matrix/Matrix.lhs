@@ -123,7 +123,7 @@ instance Comonad ((,) a :*: (->) a) where
 >-- | <https://en.wikipedia.org/wiki/Modular_exponentiation>
 >-- @modular_exponentiation m b c == m^b  (mod c)@
 
->mod_linear_map :: (Linearizable LinearMap (:*:) f f a, Diagonalizable f a, Integral (f a)) => f a -> f a :-> f a
+>mod_linear_map :: (Num a, Linearizable LinearMap (:*:) f f a, Diagonalizable f a, Integral (f a)) => f a -> f a :-> f a
 >mod_linear_map c = linear $ functionMatrix (`mod` c)
 
 
@@ -147,7 +147,7 @@ instance Comonad ((,) a :*: (->) a) where
 > => m a :-> m a -> Bool
 >isSymmetric m = transpose m == m
 
->applyVector :: (LinearTransform m m b, Linearizable LinearMap (:*:) m m b, Transposable m m b, Diagonalizable m b)
+>applyVector :: (Num b, LinearTransform m m b, Linearizable LinearMap (:*:) m m b, Transposable m m b, Diagonalizable m b)
 > => m (a -> b) -> m a -> m b
 >applyVector f x = diagonal (f !$! x)
 

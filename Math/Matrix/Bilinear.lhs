@@ -31,7 +31,7 @@ bilinear (BilinearMap f g) = arr_linear $ \ (Tensor m) ->
 > Linearizable LinearMap (:*:) h h a,
 > Linearizable LinearMap (:*:) f h a)
 >
->instance (Bilinear f g h a) => VectorSpace (BilinearMap (f a, g a) (h a)) where
+>instance (Bilinear f g h a, Num a) => VectorSpace (BilinearMap (f a, g a) (h a)) where
 >  type Scalar (BilinearMap (f a, g a) (h a)) = a
 >  vzero = BilinearMap (const vzero) (const vzero)
 >  vnegate (BilinearMap f g) = BilinearMap (vnegate . f) (vnegate . g)

@@ -158,19 +158,19 @@ http://en.wikipedia.org/wiki/Bra%E2%80%93ket_notation
 
 >(%<|>%) a b = vectorElement $ vectorElement $ cells $ bra a %*% ket b
 
->instance (Limiting str a) => Limiting str (Vector1 a) where
->  data Closure str (Vector1 a) = Vector1Closure {
->     unVector1Limit :: Vector1 (Closure str a) }
+>instance (Limiting Stream a) => Limiting Stream (Vector1 a) where
+>  data Closure Stream (Vector1 a) = Vector1Closure {
+>     unVector1Limit :: Vector1 (Closure Stream a) }
 >  limit str = Vector1Closure (Vector1 (limit $ fmap vectorElement str))
 >  approximations (Vector1Closure (Vector1 a)) = do
 >    a' <- approximations a
 >    return $ Vector1 a'
 
 >instance (Num a) => Indexable Vector1 a where
->  diagonalProjections = Vector1 (vectorElement <!-!> Vector1)
+>  diagonalProjections = Vector1 (vectorElement <!-!> \a _ -> Vector1 a)
 >  indexableIndices = Vector1 0
 
->instance (Infinitesimal str a) => Infinitesimal str (Vector1 a) where
+>instance (Infinitesimal Stream a) => Infinitesimal Stream (Vector1 a) where
 >  epsilonStream = fmap Vector1 epsilonStream
 
 >instance (MedianAlgebra a) => MedianAlgebra (Vector1 a) where
@@ -253,10 +253,11 @@ http://en.wikipedia.org/wiki/Bra%E2%80%93ket_notation
 
 >instance (Num a) => Diagonalizable Vector1 a where
 >  diagonalImpl (Matrix (Vector1 (Vector1 x))) = Vector1 x
->  identityImpl _ = Matrix $ Vector1 (Vector1 1)
 >  identity = Matrix $ Vector1 (Vector1 1)
->  diagonalMatrixImpl (Vector1 x) = Matrix $ Vector1 $ Vector1 x
+>  diagonalMatrixImpl (Vector1 x) _ = Matrix $ Vector1 $ Vector1 x
 
+>instance (AdditiveIdentity a) => AdditiveIdentity (Vector1 a) where
+>  additiveIdentity = Vector1 additiveIdentity
 
 >instance Transposable Vector1 Vector1 a where
 >  transposeImpl (Matrix (Vector1 (Vector1 x))) = Matrix $ Vector1 (Vector1 x)

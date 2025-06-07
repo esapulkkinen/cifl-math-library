@@ -847,6 +847,12 @@ authors.
     <field name="headline">A new notation for arrows</field>
     <field name="url">http://www.staff.city.ac.uk/~ross/papers/notation.html</field>
   </Article>
+  <Article id="foner-quick-fix-on-comonads">
+    <summary>Kenneth Foner: Functional Pearl: Getting a Quick Fix on Comonads</summary>
+    <field name="author" type="Person"><summary name="name">Kenneth Foner</summary></field>
+    <field name="headline">Getting a Quick Fix on Comonads</field>
+    <field name="url">https://raw.githubusercontent.com/plaidfinch/GQFC-1.pdf</field>    
+  </Article>
   <WebSite id="nCatLab">
     <summary>nCatLab</summary>
     <field name="url">https://ncatlab.org</field>

@@ -129,17 +129,17 @@ directional_derivative :: (VectorDerivative v, InnerProductSpace v)
 >outerVector (Covector y) x = arrLinear $ \w -> (y -!!< w) %* x
 
 >-- | <http://en.wikipedia.org/wiki/Conjugate_transpose>
->conjugateTranspose :: (Diagonalizable m a, Linearizable LinearMap (:*:) m m a, Linearizable LinearMap (:*:) m n a, Linearizable LinearMap (:*:) n m a, Diagonalizable n a, LinearIso n m a, Transposable m n a, ConjugateSymmetric (m a))
+>conjugateTranspose :: (Num a, Diagonalizable m a, Linearizable LinearMap (:*:) m m a, Linearizable LinearMap (:*:) m n a, Linearizable LinearMap (:*:) n m a, Diagonalizable n a, LinearIso n m a, Transposable m n a, ConjugateSymmetric (m a))
 >                    => m a :-> n a -> n a :-> m a
 >conjugateTranspose f = arrLinear conj . transpose f
 
 >-- | unicode alias (unicode HERMITIAN CONJUGATE MATRIX character)
->(⊹) :: (Linearizable LinearMap (:*:) m m a, Linearizable LinearMap (:*:) m n a, Linearizable LinearMap (:*:) n m a, Diagonalizable m a, Diagonalizable n a, LinearIso n m a, Transposable m n a, ConjugateSymmetric (m a))
+>(⊹) :: (Num a, Linearizable LinearMap (:*:) m m a, Linearizable LinearMap (:*:) m n a, Linearizable LinearMap (:*:) n m a, Diagonalizable m a, Diagonalizable n a, LinearIso n m a, Transposable m n a, ConjugateSymmetric (m a))
 >                    => m a :-> n a -> n a :-> m a
 >(⊹) = conjugateTranspose
 
 >-- | <https://en.wikipedia.org/wiki/Conjugate_transpose>
->is_hermitian :: (Eq (m (m a)), ConjugateSymmetric (m a), Linearizable LinearMap (:*:) m m a,
+>is_hermitian :: (Eq (m (m a)), Num a,  ConjugateSymmetric (m a), Linearizable LinearMap (:*:) m m a,
 > Transposable m m a, Diagonalizable m a, LinearTransform m m a,
 > Applicative m,
 > Foldable m)
@@ -147,14 +147,14 @@ directional_derivative :: (VectorDerivative v, InnerProductSpace v)
 >is_hermitian a = a == conjugateTranspose a
 >
 >-- | <https://en.wikipedia.org/wiki/Conjugate_transpose>
->is_skew_hermitian :: (Num (Scalar (m a)), Eq (m (m a)),
+>is_skew_hermitian :: (Num a, Eq (m (m a)),
 > ConjugateSymmetric (m a), Applicative m, Linearizable LinearMap (:*:) m m a,
 > VectorSpace (m a), Diagonalizable m a, LinearTransform m m a,
 > Transposable m m a, Foldable m) => m a :-> m a -> Bool
 >is_skew_hermitian a = a == (negate 1) %* (conjugateTranspose a)
 >
 >-- | <https://en.wikipedia.org/wiki/Conjugate_transpose>
->is_normal :: (Eq (m (m a)), Diagonalizable m a, LinearTransform m m a,
+>is_normal :: (Eq (m (m a)), Num a, Diagonalizable m a, LinearTransform m m a,
 >            Linearizable LinearMap (:*:) m m a,
 >            ConjugateSymmetric (m a)) => m a :-> m a -> Bool
 >is_normal a = (conjugateTranspose a) . a == a . (conjugateTranspose a)
