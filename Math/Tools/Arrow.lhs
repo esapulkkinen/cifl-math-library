@@ -19,6 +19,7 @@
 >import Control.Arrow 
 >import Control.Category
 >import Data.Monoid
+>import Data.Kind
 >import Prelude hiding (id,(.))
 >import Math.Tools.PrettyP (render,pp)
 >import Math.Tools.I
@@ -30,9 +31,9 @@
 >   monoidA :: m -> arr a a
 
 >-- | <https://en.wikipedia.org/wiki/Monoidal_category>
->class (Category arr) => MonoidalCategory (arr :: k -> k -> *) where
->   type Prod (arr :: k -> k -> *) (a :: k) (b :: k) :: k
->   type MUnit (arr :: k -> k -> *) :: k
+>class (Category arr) => MonoidalCategory (arr :: k -> k -> Type) where
+>   type Prod (arr :: k -> k -> Type) (a :: k) (b :: k) :: k
+>   type MUnit (arr :: k -> k -> Type) :: k
 >   (-*-)   :: arr a b -> arr a' b' -> arr (Prod arr a a') (Prod arr b b')
 >   monoidal_assoc   :: arr (Prod arr (Prod arr a b) c) (Prod arr a (Prod arr b c))
 >   monoidal_deassoc :: arr (Prod arr a (Prod arr b c)) (Prod arr (Prod arr a b) c)

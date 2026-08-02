@@ -17,7 +17,8 @@
 > approximatelyEqualToR, maxR, minR, realToFloat, realToDouble,
 > Limited(..), supremum, infinum, boundedApproximations, upperBounds,
 > lowerBounds, piByIntegration, integralAccuracySimple, asinBySeries, acosBySeries, integrateRationalR, integrateRealR,
-> atanBySeries, errorFunctionR
+> atanBySeries, errorFunctionR, polyLogarithm, fromContinuedFraction, continuedFraction,
+> approximationsMatrix
 > ) where
 >import safe Control.Applicative
 >import safe Control.Monad
@@ -68,6 +69,38 @@
 
 >properFractionR :: (Integral b) => R -> (b, R)
 >properFractionR r = let res = floorR r in (res, r - fromIntegral res)
+
+>signumR :: R -> Int -> Int
+>signumR _ 0 = 0
+>signumR r i
+>   | ~(a,b) <- properFraction (shead $ approximate r) =
+>       if signum a == 0
+>        then signumR (r*10) (i-1)
+>         else signum a
+
+>instance ShowPrecision R where
+>   showAtPrecision = showAtPrecisionR
+
+>showAtPrecisionR :: R -> Integer -> String
+>showAtPrecisionR r i = (signcorr r . shows a . showString "." . decs) []
+>   where signcorr r = if signum a == 0 && signumR b 30 == -1 then ('-':) else id
+>         decs = if a == 0 then decimalsStr2 (abs b) i
+>                          else decimals (abs (b `atPrecision` i)) i
+>         (a :: Integer,b) = properFractionR r
+>         decimals x 0 = id
+>         decimals x i
+>             | ~(a' :: Int,b') <- properFractionR (x*10), r <- decimals b' (pred i) = shows a' . r
+>         decimalsStr2 x i = case decimals2 x i of
+>           (0,res) -> decimals (res `atPrecision` i) i 
+>           (j,res) -> decimals (res `atPrecision` i) i 
+>                        . showString "e" . shows j
+>         decimals2 x 0 = (0,x)
+>         decimals2 x i = let ~(a' :: Int,b') = properFractionR (x*10) 
+>                           in case a' of
+>                             0 -> let (res,res2) = decimals2 b' (pred i) in (pred res,res2)
+>                             _ -> (0,x)
+>         atPrecision r i = fromRational $ r `approximate` ((1 % 10) ^ i)
+
 
 Can't implement Real or RealFrac, because (Ord R) is not available.
 
@@ -153,45 +186,80 @@ closure_less_eq x y =
 
 >instance Limiting ((->) Rational) R where
 >   data Closure ((->) Rational) R = RQClosure { runRQClosure :: !R }
+>                           | RQInfinite
+>                           | RQMinusInfinite
+>                           | RQEpsilon
 >   limit f = RQClosure $ real $ \eps ->
 >      let !eps' = eps/2
 >      in if abs (f eps `approximate` eps - f eps' `approximate` eps') < eps
 >       then f eps' `approximate` eps'
 >       else runRQClosure (limit f) `approximate` eps'
 >   approximations (RQClosure r) = \eps -> real $ \eps' -> r `approximate` min eps eps'
+>   approximations RQInfinite = \eps -> real $ \eps' -> 1 / max eps eps'
+>   approximations RQMinusInfinite = \eps -> real $ \eps' -> -1 / max eps eps'
+>   approximations RQEpsilon = \eps -> real $ \eps' -> min eps eps'
 
->instance StreamBuilder ((->) Rational) where
->   pre x f = \eps -> if eps >= 1 then x else f (eps*2)
+>instance Infinitesimal ((->) Rational) R where
+>   epsilonStream eps = real $ \eps' -> max eps eps'
+>   infiniteClosure = RQInfinite
+>   minusInfiniteClosure = RQMinusInfinite
 
->instance StreamObserver ((->) Rational) where
->   shead f = f (1%2)
->   stail f = \eps -> f (eps*2)
+>liftQClosure :: (R -> R) -> Closure ((->) Rational) R -> Closure ((->) Rational) R
+>liftQClosure f (RQClosure r) = RQClosure (f r)
+>liftQClosure f RQInfinite = RQClosure $ f (real $ \eps -> 1 / eps)
+>liftQClosure f RQMinusInfinite = RQClosure $ f (real $ \eps -> -1 / eps)
+>liftQClosure f RQEpsilon = RQClosure $ f (real id)
 
 >instance Limiting Stream R where
 >   data Closure Stream R = RClosure { runRClosure :: !R }
+>                    | EpsilonR
+>                    | InfiniteR
+>                    | MinusInfiniteR
 >   limit ~(Pre x ~z@(Pre y _)) = RClosure $ real $ \ !eps ->
 >       if abs (y `approximate` eps - x `approximate` eps) < eps
 >         then y `approximate` eps
 >         else runRClosure (limit z) `approximate` eps
+>   approximations InfiniteR = power 10
+>   approximations MinusInfiniteR = fmap negate $ power 10
+>   approximations EpsilonR = fmap (1 /) $ power 10
 >   approximations ~(RClosure r) = fmap f $ fmap (1 /) $ power 10
 >      where f p = real $ \eps -> r `approximate` min p eps
 
+>approximationsMatrix :: (Infinitesimal ((->) Rational) Rational) => R -> R -> ((->) Rational :*: (->) Rational) Rational
+>approximationsMatrix (Limit f) (Limit g) = matrix dist epsilonStream epsilonStream
+>   where dist eps1 eps2 = abs (f `appEndo` eps1 - g `appEndo` eps2)
+
 >instance ConjugateSymmetric (Closure Stream R) where
 >   conj (RClosure r) = RClosure (conj r)
+
 > 
 >instance Infinitesimal Stream R where
 >  epsilonStream = Pre 1.0 $ fmap (*0.1) epsilonStream
+>  infiniteClosure = InfiniteR
+>  minusInfiniteClosure = MinusInfiniteR
 
 >instance Fractional (Closure Stream R) where
+>  InfiniteR / (RClosure _) = InfiniteR
+>  MinusInfiniteR / (RClosure _) = MinusInfiniteR
+>  a / InfiniteR = 0
+>  a / MinusInfiniteR = 0
 >  (RClosure x) / (RClosure y) = RClosure (x/y)
+>  recip InfiniteR = 0
+>  recip MinusInfiniteR = 0
 >  recip (RClosure x) = RClosure (recip x)
 >  fromRational r = RClosure (fromRational r)
 >
 >liftRClosure :: (R -> R) -> Closure Stream R -> Closure Stream R
->liftRClosure f = \(RClosure x) -> RClosure (f x)
+>liftRClosure f (RClosure x) = RClosure (f x)
+>liftRClosure f InfiniteR = RClosure $ f (real $ \eps -> 1 / eps)
+>liftRClosure f MinusInfiniteR = RClosure $ f (real $ \eps -> -1 / eps)
 > 
 >liftRClosure2 :: (R -> R -> R) -> Closure Stream R -> Closure Stream R -> Closure Stream R
 >liftRClosure2 f (RClosure x) (RClosure y) = RClosure (f x y)
+>liftRClosure2 f InfiniteR z = liftRClosure2 f (RClosure $ real $ \eps -> 1 / eps) z
+>liftRClosure2 f z InfiniteR = liftRClosure2 f z (RClosure $ real $ \eps -> 1 / eps)
+>liftRClosure2 f MinusInfiniteR z = liftRClosure2 f (RClosure $ real $ \eps -> -1 / eps) z
+>liftRClosure2 f z MinusInfiniteR = liftRClosure2 f z (RClosure $ real $ \eps -> -1 / eps)
 >
 >instance Floating (Closure Stream R) where
 >  pi = RClosure pi
@@ -280,6 +348,7 @@ closure_less_eq x y =
 >instance PpShow R where
 >   pp x = pp $! (fromRational (x `approximate` displayPrecision) :: Double)
 
+
 >instance CompleteSpace R
 
 >gammaR :: R -> R
@@ -296,7 +365,7 @@ closure_less_eq x y =
 
 >-- | this propagates accuracy without changing it.
 >liftR :: (Rational -> Rational) -> R -> R
->liftR g = \ (Limit (Endo f)) -> real $ g . f
+>liftR g (Limit (Endo f)) = real $ g . f
 
 >-- | this propagates accuracy without changing it
 >liftR2 :: (Rational -> Rational -> Rational) -> R -> R -> R
@@ -397,6 +466,15 @@ closure_less_eq x y =
 >   type Distance R = R
 >   distance x y = abs (x - y)
 
+>fromContinuedFraction :: [Integer] -> R
+>fromContinuedFraction [] = infiniteR
+>fromContinuedFraction [x] = fromIntegral x
+>fromContinuedFraction (x:xr) = fromIntegral x + recip (fromContinuedFraction xr)
+
+>continuedFraction :: R -> Stream Integer
+>continuedFraction r = let (p,r') = properFractionR r
+>                       in Pre p (continuedFraction (recip r'))
+
 
 >-- | This lifts a rational function to a real function.
 >-- This computes accuracy using the formula \(dx = df / f'(x)\).
@@ -430,7 +508,7 @@ closure_less_eq x y =
 >-- | newton's method for finding root of function.
 >-- \[x_{i+1} = x_i - {{f(x_i)}\over{f'(x_i)}}\]
 >newtonsMethodR :: (R -> R) -> R -> R
->newtonsMethodR f = \x -> lim $ iterateStream iteration x 
+>newtonsMethodR f x = lim $ iterateStream iteration x 
 >  where iteration = \ z' -> z' - f z' / derivate f z'
 > 
 >instance Numerics R where
@@ -459,9 +537,8 @@ closure_less_eq x y =
 >piR :: R
 >piR = lim $ sumStream $ do
 >   k <- naturals
->   let !kr = k % 1
->   return $ fromRational $ (16^^(negate k))*(4/(8*kr+1) - 2/(8*kr+4)
->                              - 1/(8*kr+5) - 1/(8*kr+6))
+>   let !kr = 8 * (k % 1)
+>   return $ fromRational $ (16^^(negate k))*(4/(kr+1) - 2/(kr+4) - 1/(kr+5) - 1/(kr+6))
 
 
 >-- <http://en.wikipedia.org/wiki/Logarithm Logarithm>
@@ -470,6 +547,10 @@ closure_less_eq x y =
 >  2* (lim $ sumStream $ do   
 >     n <- naturals
 >     return $! (1 / (2 * fromIntegral n + 1))*a'^(2*n+1))
+
+>polyLogarithm :: (Closed a, Floating a) => a -> a -> a
+>polyLogarithm s = evaluatePowerSeries $
+> fmap (\i -> 1/((fromInteger i) ** s)) $ nonzeroNaturals
 
 
 <https://en.wikipedia.org/wiki/Fourier_series> <https://en.wikipedia.org/wiki/Fourier_transform>
@@ -495,12 +576,12 @@ fourierCoefficient f n = (1/(2*pi)) %* integralR (-pi,pi) (\x -> f (x :+ 0) * ex
 >{-# NOINLINE integralR #-}
 >-- integral[a,b] f(x)dx.
 >integralR :: (R,R) -> (R -> R) -> R
->integralR (x,y) = \f -> let acc = integralAccuracySimple x y
->                          in foldableIntegral acc (f . fromRational)
+>integralR (x,y) f = let acc = integralAccuracySimple x y
+>                    in foldableIntegral acc (f . fromRational)
 
 >{-# SPECIALIZE foldableIntegral :: (Rational -> [Rational]) -> (Rational -> R) -> R #-}
 >foldableIntegral :: (Foldable t, Functor t) => (Rational -> t b) -> (b -> R) -> R
->foldableIntegral border = \f -> real $ \ !eps ->
+>foldableIntegral border f = real $ \ !eps ->
 >   foldableSimpleIntegral border ((`approximate` eps) . f) eps
 
 >foldable_vectorIntegral :: (VectorSpace (v a), Scalar (v a) ~ a, Foldable t, Functor t)
@@ -510,7 +591,7 @@ fourierCoefficient f n = (1/(2*pi)) %* integralR (-pi,pi) (\x -> f (x :+ 0) * ex
 >{-# SPECIALIZE foldableSimpleIntegral :: (Rational -> [Rational]) -> (Rational -> Rational) -> Rational -> Rational #-}
 >foldableSimpleIntegral :: (Num a, Foldable t, Functor t) =>
 >  (a -> t b) -> (b -> a) -> a -> a
->foldableSimpleIntegral border = \f !eps -> sum $
+>foldableSimpleIntegral border f eps = sum $
 >   fmap ((eps*) . f) $ border eps
 
 >foldableComplexIntegral :: (Num a, Foldable t, Functor t) =>

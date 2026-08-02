@@ -1,4 +1,4 @@
->{-# LANGUAGE OverloadedStrings, FlexibleInstances, MultiParamTypeClasses #-}
+>{-# LANGUAGE Safe, OverloadedStrings, FlexibleInstances, MultiParamTypeClasses #-}
 >-- | This module supports digraphs and reversible graphs with clearly separated vertex and edge sets.
 >-- This is often needed in practical applications of graphs.
 >module Math.Graph.Digraph where

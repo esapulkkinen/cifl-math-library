@@ -34,6 +34,9 @@
 
 >data Vector2 s = Vector2 { xcoord2 :: !s, ycoord2 :: !s }
 
+>type instance RealPart (Vector2 a) = Vector2 (RealPart a)
+>type instance ImagPart (Vector2 a) = Vector2 (ImagPart a)
+
 >instance (MetricSpace a, Floating (Distance a)) => MetricSpace (Vector2 a) where
 >  type Distance (Vector2 a) = Distance a
 >  distance (Vector2 x y) (Vector2 x' y') = sqrt ((distance x x')^2 + (distance y y')^2)
@@ -297,8 +300,7 @@ deriving instance (Show a) => Show (Codiagonal Vector2 a)
 >instance (Show a) => Show (Vector2 a) where
 >  show (Vector2 x y) = "[" ++ show x ++ "," ++ show y ++ "]"
 
->instance (Fractional a, Ord a, ConjugateSymmetric a, NumIdentities a)
-> => Group ((Vector2 :*: Vector2) a) where
+>instance (Fractional a, Ord a, ConjugateSymmetric a) => Group ((Vector2 :*: Vector2) a) where
 >   ginvert = inverse2
 
 >instance (Num a) => CoordinateSpace (Vector2 a) where
@@ -490,7 +492,7 @@ instance (Num a, ConjugateSymmetric a) => LieAlgebra ((Vector2 :*: Vector2) a) w
 >  normSquared v = v %. v
 
 >instance {-# INCOHERENT #-} (Num a, ConjugateSymmetric a) => InnerProductSpace (Vector2 a) where
->  (Vector2 x y) %. (Vector2 x' y') = x*conj x' + y*conj y'
+>  (Vector2 x y) %. (Vector2 x' y') = x * conj x' + y * conj y'
 
 >instance Diagonalizable Vector2 a where
 >  diagonalImpl = diagonal2 

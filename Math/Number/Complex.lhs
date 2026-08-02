@@ -1,4 +1,4 @@
->{-# LANGUAGE TypeOperators, FlexibleInstances #-}
+>{-# LANGUAGE Safe, TypeOperators, FlexibleInstances #-}
 >module Math.Number.Complex where
 >import Data.Complex
 >import qualified Math.Number.StreamInterface as S

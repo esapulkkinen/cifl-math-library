@@ -89,7 +89,7 @@
 >flattenList2D :: Transform2D [a] [a]
 >flattenList2D = Transform2D id (++) (\a b c -> a ++ b ++ c)
 
->matrix2D :: (VectorSpace ((f :*: f) a), SupportsMatrixMultiplication f f f a)
+>matrix2D :: (VectorSpace ((f :*: f) a), a ~ Scalar (f a), SupportsMatrixMultiplication f f f a)
 >  => ((f :*: f) a -> (f :*: f) a -> (f :*: f) a -> (f :*: f) a) -> Transform2D ((f :*: f) a) ((f :*: f) a)
 >matrix2D = Transform2D transposeImpl (%*%)
 
@@ -97,7 +97,8 @@ matrixProduct2D :: (VectorSpace ((f :*: f) a), Transposable f f a,
  InnerProductSpace (f a), VectorSpaceOver (f a) a)
  => Transform2D ((f :*: f) a) ((f :*: f) a)
 
->matrixProduct2D :: (SupportsMatrixMultiplication f f f a, VectorSpace ((f :*: f) a))
+>matrixProduct2D :: (SupportsMatrixMultiplication f f f a, a ~ Scalar (f a),
+> VectorSpace ((f :*: f) a))
 > => Transform2D ((f :*: f) a) ((f :*: f) a)
 >matrixProduct2D = Transform2D transposeImpl (\a b -> a %*% b %- b %*% a) (\a m b -> a %*% m %*% transposeImpl b)
 

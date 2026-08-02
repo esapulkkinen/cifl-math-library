@@ -1,4 +1,4 @@
->{-# LANGUAGE GADTs #-}
+>{-# LANGUAGE Safe, GADTs #-}
 >{-# OPTIONS_HADDOCK hide, prune #-}
 >module Math.Tools.Category where
 >import Control.Category

@@ -6,6 +6,7 @@
 >import qualified Math.Number.Stream as Stream
 >import Math.Number.Stream
 >import Math.Number.StreamInterface
+>import Math.Number.R
 
 >prop_sqrt_squared_naturals :: Property
 >prop_sqrt_squared_naturals = property $ (sqrtStream s * sqrtStream s - s) < 0.001
@@ -14,6 +15,9 @@
 
 >prop_primes1 :: Property
 >prop_primes1 = property $ Stream.take 10 primes == [2,3,5,7,11,13,17,19,23,29]
+
+>prop_expApprox :: Property
+>prop_expApprox = property $ show (Stream.take 5 $ Stream.drop 40 $ Stream.expApprox (2 :: Rational)) /= ""
 
 >$(return [])
 >qcTests = $quickCheckAll

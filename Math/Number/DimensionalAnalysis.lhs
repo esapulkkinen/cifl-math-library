@@ -246,6 +246,8 @@
 >   referenceValue :: Quantity r,
 >   baseOfLogarithm :: r }
 
+
+
 >deriving instance Read (Level Double)
 >deriving instance Read (Level (Complex Double))
 >deriving instance Read (Level Integer)
@@ -585,6 +587,12 @@
 >     | d == d' = let QuantityClosure yr _ = limit r in QuantityClosure (limit (Pre x $ approximations yr)) d
 >     | otherwise = invalidDimensions "limit" d d' x y
 >   approximations (QuantityClosure a d) = fmap (`As` d) (approximations a)
+
+>quantityClosureDimension :: Closure Stream (Quantity r) -> Dimension
+>quantityClosureDimension (QuantityClosure _ d) = d
+
+>quantityClosureValue :: Closure Stream (Quantity r) -> Closure Stream r
+>quantityClosureValue (QuantityClosure v _) = v
 
 >instance (ShowPrecision r, Show (Closure Stream r), Floating r, Ord r) => Show (Stream.Closure Stream (Quantity r)) where
 >   show (QuantityClosure s d) = show s ++ (if isDimensionless d then "" else ":") ++ show d

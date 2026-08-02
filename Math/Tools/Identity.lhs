@@ -1,4 +1,4 @@
->{-# LANGUAGE MultiParamTypeClasses, ExistentialQuantification, TypeOperators #-}
+>{-# LANGUAGE Safe, MultiParamTypeClasses, ExistentialQuantification, TypeOperators #-}
 >module Math.Tools.Identity where
 >import Math.Tools.I
 >import Math.Tools.PrettyP

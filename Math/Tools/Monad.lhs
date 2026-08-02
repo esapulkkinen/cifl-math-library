@@ -1,4 +1,4 @@
->{-# LANGUAGE FlexibleContexts, InstanceSigs #-}
+>{-# LANGUAGE Safe, FlexibleContexts, InstanceSigs #-}
 >module Math.Tools.Monad where
 >import Math.Tools.Adjunction hiding (AdjM, runAdjM)
 >import Math.Tools.CoMonad

@@ -1,3 +1,4 @@
+>{-# LANGUAGE Safe #-}
 >module Math.Tools.Maybe where
 
 >guardM :: (MonadFail m) => Bool -> a -> m a

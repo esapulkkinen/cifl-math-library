@@ -30,7 +30,9 @@
 >-- ** symbolic expressions
 >   module Math.Number.NumericExpression,
 >-- ** fourier transform
->   module Math.Number.Fourier
+>   module Math.Number.Fourier,
+>   module Math.Number.Cyclotomic,
+>   module Math.Number.Trigonometric
 > ) where
 >import safe qualified Math.Number.Real
 >import safe qualified Math.Number.R
@@ -47,3 +49,5 @@
 >import safe Math.Number.StreamInterface
 >import safe Math.Number.Transform2D
 >import safe Math.Number.Fourier
+>import safe Math.Number.Cyclotomic
+>import safe Math.Number.Trigonometric

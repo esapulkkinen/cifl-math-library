@@ -1,4 +1,4 @@
->{-# LANGUAGE TypeOperators, OverloadedStrings #-}
+>{-# LANGUAGE Safe, TypeOperators, OverloadedStrings #-}
 >module Math.Tools.ParsingCombinators where
 >import Prelude hiding ((.),id)
 >import Control.Category

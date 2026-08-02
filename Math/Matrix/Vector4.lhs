@@ -33,6 +33,9 @@ import Math.Matrix.Dimension
 
 >data Vector4 s = Vector4 { tcoord4 :: !s, xcoord4 :: !s, ycoord4 :: !s, zcoord4 :: !s }
 
+>type instance RealPart (Vector4 a) = Vector4 (RealPart a)
+>type instance ImagPart (Vector4 a) = Vector4 (ImagPart a)
+
 >instance (MetricSpace a, Floating (Distance a)) => MetricSpace (Vector4 a) where
 >  type Distance (Vector4 a) = Distance a
 >  distance (Vector4 t x y z) (Vector4 t' x' y' z') =

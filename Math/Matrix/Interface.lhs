@@ -80,8 +80,15 @@ cellsLinear = cells . fromLinear
 
 >{-# INLINE matrix #-}
 >matrix :: (Functor m, Functor n) => (a -> b -> c) -> m a -> n b -> (m :*: n) c
->matrix f x = \y -> Matrix $ flip fmap x $ \a -> 
->                            flip fmap y $ \b -> f a b
+>matrix f x y = Matrix $ flip fmap x $ \a -> 
+>                        flip fmap y $ \b -> f a b
+
+
+
+>applicativesMatrix :: (Applicative f, Functor g, Functor h)
+>   => f (a -> b -> c) -> g (f a) -> h (f b) -> (g :*: h) (f c)
+>applicativesMatrix f x y = Matrix $ flip fmap x $ \a ->
+>                                     flip fmap y $ \b -> f <*> a <*> b
 
 >inverseMatrix :: (Contravariant m, Contravariant n)
 > => (g a -> c -> b) -> (m :*: n) c -> n b -> (m :*: g) a
@@ -103,27 +110,41 @@ cellsLinear = cells . fromLinear
 >loeb :: (Functor f) => f (f a -> a) -> f a
 >loeb ffs = fix (\fa -> fmap ($ fa) ffs)
 
+>-- | From "Kenneth Foner: Functional Pearl: Getting a Quick Fix on Comonads"
+>-- <https://raw.githubusercontent.com/plaidfinch/GQFC-1.pdf>
 >loebM :: (Monad m) => m a -> (a -> m (m b -> b)) -> m b
 >loebM m f = loeb (m >>= f)
 
+>-- | From "Kenneth Foner: Functional Pearl: Getting a Quick Fix on Comonads"
+>-- <https://raw.githubusercontent.com/plaidfinch/GQFC-1.pdf>
 >loebloeb :: (Functor f) => f (f (f a -> a) -> f a -> a) -> f a
 >loebloeb = loeb . loeb
 
 >-- | construct a matrix where each element may refer to other elements
 >-- for computation.
+>-- From "Kenneth Foner: Functional Pearl: Getting a Quick Fix on Comonads"
+>-- <https://raw.githubusercontent.com/plaidfinch/GQFC-1.pdf>
 >spreadsheetMatrix :: (Functor f, Functor g) => (a -> b -> (f :*: g) c -> c)
 >  -> f a -> g b -> (f :*: g) c
 >spreadsheetMatrix f x y = loeb $ matrix f x y
 
+>-- | From "Kenneth Foner: Functional Pearl: Getting a Quick Fix on Comonads"
+>-- <https://raw.githubusercontent.com/plaidfinch/GQFC-1.pdf>
 >mapWithSelf :: (Functor f) => (f b -> a -> b) -> f a -> f b
 >mapWithSelf f = loeb . fmap (flip f)
 
+>-- | From "Kenneth Foner: Functional Pearl: Getting a Quick Fix on Comonads"
+>-- <https://raw.githubusercontent.com/plaidfinch/GQFC-1.pdf>
 >selfM :: (Monad m) => (m a -> a) -> m a
 >selfM = loeb . return
 
+>-- | From "Kenneth Foner: Functional Pearl: Getting a Quick Fix on Comonads"
+>-- <https://raw.githubusercontent.com/plaidfinch/GQFC-1.pdf>
 >selfJoinM :: (Monad m) => m (m (m a -> a)) -> m a
 >selfJoinM = loeb . (>>= id)
 
+>-- | From "Kenneth Foner: Functional Pearl: Getting a Quick Fix on Comonads"
+>-- <https://raw.githubusercontent.com/plaidfinch/GQFC-1.pdf>
 >spreadsheet :: (Functor f, Functor g) => (f :*: g) ((f :*: g) a -> a) -> (f :*: g) a
 >spreadsheet = loeb . Matrix . cells
 
@@ -202,7 +223,8 @@ bilinear f (x,y) = linear $ bilinear_impl f (fromLinear x) (fromLinear y)
 >type Linear a b = (VectorSpace a, VectorSpace b, Scalar a ~ Scalar b)
 >type LinearInnerProductSpace a b = (Linear a b, InnerProductSpace a, InnerProductSpace b)
 
->type SupportsMatrixMultiplication f g h a = (InnerProductSpaceFunctor g a, ConjugateSymmetric a,
+>type SupportsMatrixMultiplication f g h a = (InnerProductSpaceFunctor g a,
+>                                             ConjugateSymmetric a,
 >                                             Transposable g h a, Functor f, Num a)
 
 >type LinearIso f g a = (LinearTransform f g a, LinearTransform g f a)
@@ -219,8 +241,14 @@ bilinear f (x,y) = linear $ bilinear_impl f (fromLinear x) (fromLinear y)
 >  canonicalNorm :: (Floating (Scalar m)) => m -> Scalar m
 >  canonicalNorm x = sqrt(x %. x)
 
->class (InnerProductSpace (f a), a ~ Scalar (f a))
-> => InnerProductSpaceFunctor f a where
+>inOppositeDirections :: (Ord (Scalar m), InnerProductSpace m) => m -> m -> Bool
+>inOppositeDirections a b = a %. b < 0
+
+>euclideanDistance :: (Floating (Scalar m), InnerProductSpace m) => m -> m -> Scalar m
+>euclideanDistance a b = sqrt(d %. d)
+>    where d = a %- b
+
+>class (InnerProductSpace (f a)) => InnerProductSpaceFunctor f a where
 >  innerProductF :: f a -> f a -> a
 >
 >  default innerProductF :: (Scalar (f a) ~ a) => f a -> f a -> a
@@ -721,10 +749,10 @@ index2 (row,col) (C e) = index col (index row e)
 >-- see <http://en.wikipedia.org/wiki/Matrix_multiplication>
 
 >{-# INLINABLE (%*%) #-}
->(%*%) :: (SupportsMatrixMultiplication f g h a) => (f :*: g) a -> (g :*: h) a -> (f :*: h) a
+>(%*%) :: (SupportsMatrixMultiplication f g h a) => (f :*: g) a -> (g :*: h) a -> (f :*: h) (Scalar (g a))
 >(%*%) (Matrix m1) m2 = matrix (%.) m1 (cells $ transposeImpl m2)
 
->(%**%) :: (SupportsMatrixMultiplication f g h a,
+>(%**%) :: (SupportsMatrixMultiplication f g h a, Scalar a ~ Scalar (g a),
 >        Linearizable arr (:*:) f h (Scalar (g a)), Linearizable arr (:*:) f g a,
 >        Linearizable arr (:*:) g h a)
 >    => arr (f a) (g a) -> arr (g a) (h a)
@@ -768,7 +796,7 @@ linear_power :: (Diagonalizable h (h b), Diagonalizable h b) => h b :-> h b -> I
 linear_power (LinearMap p f) 0 = LinearMap Refl $ identity_impl (vector_dimension $ cells f)
 linear_power f i = f . linear_power f (i-1)
 
->(%^%) :: (a ~ Scalar (f a), SupportsMatrixMultiplication f f f a, AdditiveIdentity a, MultiplicativeIdentity a, Diagonalizable f (f a), Diagonalizable f a)
+>(%^%) :: (a ~ Scalar (f a), Scalar a ~ a, SupportsMatrixMultiplication f f f a, AdditiveIdentity a, MultiplicativeIdentity a, Diagonalizable f (f a), Diagonalizable f a)
 > => (f :*: f) a -> Integer -> (f :*: f) a
 >x %^% 0 = identity
 >x %^% i = x %*% (x %^% (i-1))
@@ -844,7 +872,7 @@ x %^% i = x %*% (x %^% (i-1))
 >  fromInteger i = CD (fromInteger i) 0
 
 >-- | <https://en.wikipedia.org/wiki/Convex_combination>
->-- This computes \[f([a_0,a_1,...,a_n], [{\mathbf b}_0,{\mathbf b}_1,...,{\mathbf b}_n]) = {{\sum_{j=0}^n{a_j{\mathbf b}_j}} \over \sum_{i=0}^n{a_i}}\]
+>-- This computes \[ f([a_0,a_1,...,a_n], [{\mathbf b}_0,{\mathbf b}_1,...,{\mathbf b}_n]) = {{\sum_{j=0}^n{a_j{\mathbf b}_j}} \over \sum_{i=0}^n{a_i}} \]
 >convex_combination :: (VectorSpace v, Fractional (Scalar v), Foldable t,
 >  Applicative t) => t (Scalar v) -> t v -> v
 >convex_combination a b = (1/sum a) %* vsum (liftA2 (%*) a b)
@@ -927,6 +955,12 @@ instance Diagonalizable Stream Integer where
 >  => MetricSpace (a,b) where
 >   type Distance (a,b) = Distance a
 >   distance (x,y) (x',y') = sqrt( (distance x x')^2 + (distance y y')^2)
+
+>type family RealPart a
+>type instance RealPart (Complex a) = a
+>type family ImagPart a
+>type instance ImagPart (Complex a) = a
+
 
 >-- | Note: Scalar (Complex a) = Complex a
 >instance (RealFloat a) => VectorSpace (Complex a) where
@@ -1140,6 +1174,10 @@ instance (Functor m) => Unital (:*:) m where
 >-- | <https://en.wikipedia.org/wiki/Norm_(mathematics)>
 >isInsideUnitCircle :: (NormedSpace v, Ord (Scalar v)) => v -> Bool
 >isInsideUnitCircle v = normSquared v <= 1
+
+>-- | <https://en.wikipedia.org/wiki/Invertible_matrix>, Invertible Matrix Theorem.
+>isInvertible :: (Traceable v a, Num a, Eq a) => (v :*: v) a -> Bool 
+>isInvertible m = determinantImpl m /= 0
 
 instance VectorSpace (f (Complex a)) => VectorSpace ((f :*: Complex) a) where
   type Scalar ((f :*: Complex) a) = Scalar (f (Complex a))

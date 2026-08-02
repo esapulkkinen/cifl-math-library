@@ -1,4 +1,4 @@
->{-# LANGUAGE GADTs, ExistentialQuantification, Rank2Types #-}
+>{-# LANGUAGE Safe, GADTs, ExistentialQuantification, Rank2Types #-}
 >module Math.Tools.Set where
 >import qualified Data.Set as Set
 >import Data.Set (Set)

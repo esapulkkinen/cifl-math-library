@@ -41,6 +41,9 @@
 >-- | Three element vector
 >data Vector3 s = Vector3 { xcoord3 :: !s, ycoord3 :: !s,  zcoord3 :: !s }
 
+>type instance RealPart (Vector3 a) = Vector3 (RealPart a)
+>type instance ImagPart (Vector3 a) = Vector3 (ImagPart a)
+
 >deriving instance (Eq a) => Eq (Vector3 a)
 >deriving instance (Typeable a) => Typeable (Vector3 a)
 >deriving instance (Data a) => Data (Vector3 a)
@@ -386,12 +389,12 @@ approximations_vector3 (Vector3 x y z) = do
 >instance (ConjugateSymmetric a, Num a) => ConjugateSymmetric ((Vector3 :*: Vector3) a) where
 >   conj = fmap conj . transposeImpl
 
->instance (Ord a, Floating a, ConjugateSymmetric a) => NormedSpace (Vector3 a) where
+>instance (Floating a, ConjugateSymmetric a) => NormedSpace (Vector3 a) where
 >  norm = innerproductspaceNorm
 >  normSquared = innerproductspaceNormSquared
 
->instance {-# OVERLAPPABLE #-} (ConjugateSymmetric a, Num a) => InnerProductSpace (Vector3 a) where
->  (Vector3 x y z) %. (Vector3 x' y' z') = x * conj x' + y * conj y' + z * conj z'
+>instance {-# OVERLAPPABLE #-} (Num a, ConjugateSymmetric a) => InnerProductSpace (Vector3 a) where
+>  (Vector3 x y z) %. (Vector3 x' y' z') = (x * conj x') + (y * conj y') + (z * conj z')
 
 >{-# INLINABLE sum_coordinates3 #-}
 >sum_coordinates3 :: (Num a) => Vector3 a -> a
@@ -538,7 +541,7 @@ approximations_vector3 (Vector3 x y z) = do
 >matrixIndices3 :: (Integral a) => (Vector3 :*: Vector3) (a,a)
 >matrixIndices3 = matrix (,) vectorIndices3 vectorIndices3
 
->matrixMultiply3 :: (Ord a, ConjugateSymmetric a,Num a) => Matrix3 a -> Matrix3 a -> Matrix3 a
+>matrixMultiply3 :: (ConjugateSymmetric a, Ord a, Num a) => Matrix3 a -> Matrix3 a -> Matrix3 a
 >matrixMultiply3 (Matrix m1) m2 
 >   | Matrix m2t <- transpose3 m2 = matrix (%.) m1 m2t
 
@@ -725,7 +728,7 @@ deriving instance (Show a) => Show (Codiagonal Vector3 a)
 >         combine (Vector3 a b c) = a - b + c         
 
 
->instance (Num a, Ord a, ConjugateSymmetric a) => LinearTransform Vector1 Vector3 a where
+>instance (InnerProductSpace a, ConjugateSymmetric a, Num a, Ord a) => LinearTransform Vector1 Vector3 a where
 >  x <*>> (Matrix (Vector1 m)) = Vector1 $ x %. m
 >  (Matrix (Vector1 m)) <<*> (Vector1 x) = conj x %* m
 
@@ -790,7 +793,7 @@ instance FractionalSpace (Vector3 (Complex R)) where
 >  (Matrix x) %+ (Matrix y) = Matrix $ x %+ y
 
 >instance {-# OVERLAPPING #-}
->     (Floating a, ConjugateSymmetric a, AdditiveIdentity a, MultiplicativeIdentity a)
+>     (InnerProductSpace a, Floating a, ConjugateSymmetric a, AdditiveIdentity a, MultiplicativeIdentity a)
 > => NormedSpace ((Vector3 :*: Vector3) a) where
 >  norm = innerproductspaceNorm
 
@@ -812,7 +815,7 @@ instance FractionalSpace (Vector3 (Complex R)) where
 >--   based on algorithm by
 >--   Smith, Oliver K.: Eigenvalues of symmetric 3x3 matrix, 1961, Communications of the ACM., <doi:10.1145/355578.366316>
 >--  The algorithm works reasonably when the matrix is real and symmetric.
->eigenvalue3 :: (Floating a, Ord a, ConjugateSymmetric a) => (Vector3 :*: Vector3) a -> Vector3 a
+>eigenvalue3 :: (ConjugateSymmetric a, Floating a, Ord a) => (Vector3 :*: Vector3) a -> Vector3 a
 >eigenvalue3 m = if p1 == 0 then diagonalImpl m else Vector3 eig1 eig2 eig3
 >   where eig1 = q + 2*p*cos(phi)
 >         eig3 = q + 2*p*cos(phi + 2*pi/3)
@@ -832,7 +835,7 @@ instance FractionalSpace (Vector3 (Complex R)) where
 >             | otherwise = acos r / 3
 
 
->instance (Floating a, Ord a,ConjugateSymmetric a)
+>instance (ConjugateSymmetric a, Floating a, Ord a)
 > => EigenDecomposable Vector3 a where
 >   eigenvalues = eigenvalue3
 

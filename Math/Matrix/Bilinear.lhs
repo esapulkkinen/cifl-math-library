@@ -1,5 +1,5 @@
 >-- -*- coding: utf-8 -*-
->{-# LANGUAGE TypeOperators #-}
+>{-# LANGUAGE Safe, TypeOperators #-}
 >{-# LANGUAGE GADTs #-}
 >{-# LANGUAGE ConstraintKinds #-}
 >{-# LANGUAGE FlexibleContexts #-}

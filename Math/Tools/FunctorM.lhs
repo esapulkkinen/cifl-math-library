@@ -1,3 +1,4 @@
+>{-# LANGUAGE Safe #-}
 >{-# OPTIONS_HADDOCK hide, prune #-}
 >module Math.Tools.FunctorM where
 >import Math.Tools.Universe

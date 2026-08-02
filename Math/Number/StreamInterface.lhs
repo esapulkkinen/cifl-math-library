@@ -1,4 +1,5 @@
->{-# LANGUAGE TypeFamilies, RankNTypes, QuantifiedConstraints #-}
+
+>{-# LANGUAGE Safe, TypeFamilies, RankNTypes, QuantifiedConstraints #-}
 >{-# LANGUAGE MultiParamTypeClasses, ConstraintKinds #-}
 >{-# LANGUAGE FlexibleContexts, TypeOperators, FlexibleInstances #-}
 >{-# LANGUAGE LinearTypes, BangPatterns #-}
@@ -6,6 +7,7 @@
 >import Math.Matrix.Interface
 >import Data.Kind
 >import Control.Applicative
+>import Data.Ratio ((%))
 >
 >infixr 5 `pre`
 
@@ -60,6 +62,9 @@
 
 >class (Infinitesimal Stream a) => Closed a where
 >  accumulationPoint :: Closure Stream a -> a
+
+>class (Infinitesimal (Stream :*: Stream) a, Closed a) => Closed2 a where
+>  accumulationPoint2 :: Closure (Stream :*: Stream) a -> a
 
 >type DerivateConstraint str a = (Monad str, Num a)
 
@@ -175,6 +180,12 @@
 >constant :: a -> Stream a
 >constant x = Pre x (constant x)
 
+>constantStreamMatrix :: a -> (Stream :*: Stream) a
+>constantStreamMatrix x = Matrix $ Pre (constant x) (cells $ constantStreamMatrix x)
+
+>constantMatrix :: (Applicative m, Applicative n) => a -> (m :*: n) a
+>constantMatrix a = matrix const (pure a) (pure a)
+
 >instance Functor Stream where
 >   fmap f (Pre x xr) = Pre (f x) (fmap f xr)
 
@@ -208,4 +219,11 @@
 >instance StreamObserver Stream where
 >   shead = sheadImpl
 >   stail = stailLazy
+
+>instance StreamBuilder ((->) Rational) where
+>   pre x f eps = if eps >= 1 then x else f (eps*2)
+
+>instance StreamObserver ((->) Rational) where
+>   shead f = f (1%2)
+>   stail f eps = f (eps*2)
 

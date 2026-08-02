@@ -2,3 +2,4 @@
 :def emacs \s -> return $ ":! emacs \"" ++ s ++ "\" &"
 :set prompt "λ: "
 :set -fprint-bind-result
+:set editor emacs

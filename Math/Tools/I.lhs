@@ -1,4 +1,4 @@
->{-# LANGUAGE Safe, RankNTypes, LinearTypes #-}
+>{-# LANGUAGE Safe, RankNTypes, LinearTypes, PolyKinds #-}
 >module Math.Tools.I where
 >import Math.Tools.PrettyP
 > 

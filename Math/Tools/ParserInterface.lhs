@@ -1,3 +1,4 @@
+>{-# LANGUAGE Safe #-}
 >module Math.Tools.ParserInterface where
 >import qualified Text.PrettyPrint as Pretty
 >import Math.Tools.LineInfo

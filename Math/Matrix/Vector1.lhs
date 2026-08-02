@@ -31,6 +31,9 @@
 >deriving instance (Data a) => Data (Vector1 a)
 >deriving instance (Generic a) => Generic (Vector1 a)
 
+>type instance RealPart (Vector1 a) = Vector1 (RealPart a)
+>type instance ImagPart (Vector1 a) = Vector1 (ImagPart a)
+
 >instance (Bin.Binary s) => Bin.Binary (Vector1 s) where
 >   put (Vector1 x) = Bin.put x
 >   get = do { x <- Bin.get ; return (Vector1 x) }

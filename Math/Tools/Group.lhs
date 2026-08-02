@@ -1,3 +1,4 @@
+>{-# LANGUAGE Safe #-}
 >{-# OPTIONS_HADDOCK prune #-}
 >module Math.Tools.Group where
 >import Math.Tools.I

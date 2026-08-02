@@ -1,4 +1,4 @@
->{-# LANGUAGE TypeOperators, OverloadedStrings #-}
+>{-# LANGUAGE Safe, TypeOperators, OverloadedStrings #-}
 >module Math.Number.BiStream where
 >import Text.PrettyPrint (punctuate,hsep, (<+>), vcat)
 >import qualified Text.PrettyPrint as Pretty

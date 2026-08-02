@@ -1,4 +1,4 @@
->{-# LANGUAGE Rank2Types, FlexibleInstances, OverloadedStrings #-}
+>{-# LANGUAGE Safe, Rank2Types, FlexibleInstances, OverloadedStrings #-}
 >module Math.Tools.Parser where
 >import Prelude hiding (null, take, span, length, take)
 >import Text.PrettyPrint (Doc, (<+>), empty)

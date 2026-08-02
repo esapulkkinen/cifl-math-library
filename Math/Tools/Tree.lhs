@@ -1,4 +1,4 @@
->{-# LANGUAGE DeriveTraversable, TypeFamilies, PatternSynonyms #-}
+>{-# LANGUAGE Safe, DeriveTraversable, TypeFamilies, PatternSynonyms #-}
 >module Math.Tools.Tree where
 >import Control.Arrow
 >import Control.Applicative

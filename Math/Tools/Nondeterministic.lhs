@@ -1,3 +1,4 @@
+>{-# LANGUAGE Trustworthy #-}
 >module Math.Tools.Nondeterministic where
 >import System.Random
 

@@ -5,6 +5,7 @@
 >{-# LANGUAGE UndecidableInstances, Arrows #-}
 >{-# LANGUAGE DeriveGeneric, StandaloneDeriving, InstanceSigs #-}
 >{-# LANGUAGE TypeApplications, QuantifiedConstraints, AllowAmbiguousTypes #-}
+>{-# LANGUAGE FunctionalDependencies #-}
 >module Math.Matrix.Linear where
 >import safe Prelude hiding (id,(.))
 >import safe Control.Category
@@ -31,9 +32,69 @@
 >import safe Math.Tools.Universe
 >import safe Math.Tools.PrettyP
 
+>infixr :!*!
+
+>data (:!*!) v w where
+>  TensorProd :: v -> w -> v :!*! w
+>  TensorSum  :: [v :!*! w] -> v :!*! w
+
+>instance (Show v, Show w) => Show (v :!*! w) where
+>   show (TensorProd x y) = show x ++ "*" ++ show y
+>   show (TensorSum []) = "0"
+>   show (TensorSum [c]) = show c
+>   show (TensorSum (c:cr)) = show c ++ "+" ++ show (TensorSum cr)
+
+
+>class (VectorSpace v, VectorSpace w, Scalar v ~ Scalar w) => ReducibleTensor v w where
+>   type TensorProduct v w
+>   treduce :: v :!*! w -> TensorProduct v w
+
+>instance (Num x) => ReducibleTensor (Vector1 x) (Vector1 x) where
+>   type TensorProduct (Vector1 x) (Vector1 x) = Vector2 x
+>   treduce (TensorProd (Vector1 x) (Vector1 y)) = Vector2 x y
+>   treduce (TensorSum lst) = vsum (map treduce lst)
+
+>instance (Num x) => ReducibleTensor (Vector1 x) (Vector2 x) where
+>   type TensorProduct (Vector1 x) (Vector2 x) = Vector3 x
+>   treduce (TensorProd (Vector1 x) (Vector2 y z)) = Vector3 x y z
+>   treduce (TensorSum lst) = vsum (map treduce lst)
+>
+>instance (Num x) => ReducibleTensor (Vector2 x) (Vector1 x)  where
+>   type TensorProduct (Vector2 x) (Vector1 x) = Vector3 x
+>   treduce (TensorProd (Vector2 x y) (Vector1 z)) = Vector3 x y z
+>   treduce (TensorSum lst) = vsum (map treduce lst)
+>
+>instance (Num x) => ReducibleTensor (Vector3 x) (Vector1 x) where
+>   type TensorProduct (Vector3 x) (Vector1 x) = Vector4 x
+>   treduce (TensorProd (Vector3 x y z) (Vector1 t)) = Vector4 x y z t
+>   treduce (TensorSum lst) = vsum (map treduce lst)
+>
+>instance (Num x) => ReducibleTensor (Vector1 x) (Vector3 x) where
+>   type TensorProduct (Vector1 x) (Vector3 x) = Vector4 x
+>   treduce (TensorProd (Vector1 t) (Vector3 x y z)) = Vector4 t x y z
+>   treduce (TensorSum lst) = vsum (map treduce lst)
+>
+>instance (Num x) => ReducibleTensor (Vector2 x) (Vector2 x) where
+>   type TensorProduct (Vector2 x) (Vector2 x) = Vector4 x
+>   treduce (TensorProd (Vector2 x y) (Vector2 z t)) = Vector4 x y z t
+>   treduce (TensorSum lst) = vsum (map treduce lst)
+
+>instance (VectorSpace v, VectorSpace w, Scalar v ~ Scalar w) => VectorSpace (v :!*! w) where
+>  type Scalar (v :!*! w) = (Scalar v)
+>  vzero = TensorProd vzero vzero
+>  vnegate (TensorProd x y) = TensorProd (vnegate x) y
+>  vnegate (TensorSum lst) = TensorSum (map vnegate lst)
+>  z@(TensorProd _ _) %+ z'@(TensorProd _ _) = TensorSum [z,z']
+>  z@(TensorProd _ _) %+ (TensorSum lst) = TensorSum (z:lst)
+>  (TensorSum lst) %+ z@(TensorProd _ _) = TensorSum (z:lst)
+>  (TensorSum lst) %+ (TensorSum lst') = TensorSum (lst ++ lst')
+>  k %* (TensorProd x y) = TensorProd (k %* x) y
+>  k %* (TensorSum lst) = TensorSum $ map (k %*) lst
+
 >-- | Linear maps <https://en.wikipedia.org/wiki/Linear_map>
 >data LinearMap v w where
 >   MatIdentity :: LinearMap b b
+>   TensorProduct :: LinearMap (v,w) z -> LinearMap (v :!*! w) z
 >   Mat11 :: (Num a, ConjugateSymmetric a) => (Vector1 :*: Vector1) a -> LinearMap (Vector1 a) (Vector1 a)
 >   Mat12 :: (Num a, ConjugateSymmetric a) => (Vector1 :*: Vector2) a -> LinearMap (Vector1 a) (Vector2 a)
 >   Mat13 :: (Num a, ConjugateSymmetric a) => (Vector1 :*: Vector3) a -> LinearMap (Vector1 a) (Vector3 a)
@@ -84,21 +145,6 @@
 >-- converts from matrix representation to linear map representation.
 >linear_map :: (Linearizable LinearMap (:*:) f g a) => (f :*: g) a -> f a :-> g a
 >linear_map = linear
-
-Tensoring :: (a -> b -> c) -> LinearMap (f a, g b) (f c ⮾ g c)
-Bilinear :: (a -> LinearMap b c) -> (b -> LinearMap a c) -> LinearMap (a ⮾ b) c
-
-matrix_bilinear ::
-   (LinearTransform g (f :*: h) a, Linearizable LinearMap (:*:) f h a,
-    LinearTransform f (g :*: h) a, Linearizable LinearMap (:*:) g h a)
- =>  (f :*: (g :*: h)) a -> (g :*: (f :*: h)) a -> (f a, g a) :-> h a
-matrix_bilinear b c = Bilinear (\a -> linear $ b <<*> a) (\a' -> linear $ c <<*> a')
-
--- Unicode character "CIRCLED X".
-type (a ⮾ b) = Tensor a b
-
-tensor :: (Functor f, Functor g) => (f a, g b) -> f a ⮾ g b
-tensor (a,b) = Tensor $ matrix (,) a b
 
 >tensor :: (Functor f, Functor g,
 >          Linearizable arr (:*:) f g c)
@@ -471,11 +517,16 @@ instance (forall b. VectorSpace (g b), forall b. VectorSpace (f b), Indexable f 
 >matrixLin f x y = linear $ matrix f x y
 
 >linmatrix :: (Functor g, Functor f, LinearTransform ((,) (t a)) v (u a),
+>  Linearizable LinearMap (:*:) g u a,
+>  Linearizable LinearMap (:*:) f t a,
 >  Linearizable LinearMap (:*:) f g (v (u a)))
-> => ((t a,u a) :-> v (u a)) -> (f (t a), g (u a)) -> f (v (u a)) :-> g (v (u a))
->linmatrix f (ma, nb) = linear $ Matrix $
->   flip fmap ma $ \a ->
->   flip fmap nb $ \b -> f -!< (a, b)
+> => ((t a,u a) :-> v (u a))
+> -> (f a :-> t a)
+> -> (g a :-> u a)
+> -> f (v (u a)) :-> g (v (u a))
+>linmatrix f ma nb = linear $ Matrix $
+>   flip fmap (cellsLinear ma) $ \a ->
+>   flip fmap (cellsLinear nb) $ \b -> f -!< (a, b)
 
 >arrmatrix :: (FunctorArrow f arr arr, FunctorArrow g arr arr, ArrowApply arr)
 >          => arr (a,b) c -> arr (f a, g b) ((f :*: g) c)
@@ -654,7 +705,7 @@ dual_lin_apply f (Matrix g) = matrixLin (-!!<) (fmap bracketMap f) g
 linear_identity_indexable :: (Num a, LinearTransform f f a, Diagonalizable f a, Indexable f a) => f a :-> f a
 linear_identity_indexable = linear $ identityImpl indexable_indices
 
->matrix_equalizer :: (Eq (g (f a)),
+>matrix_equalizer :: (Eq (g (f (Scalar (h a)))),
 >   Linearizable LinearMap (:*:) h f a,
 >   Linearizable LinearMap (:*:) g h a,
 >  SupportsMatrixMultiplication g h f a,

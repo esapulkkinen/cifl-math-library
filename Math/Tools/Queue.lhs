@@ -1,4 +1,4 @@
->{-# LANGUAGE FlexibleInstances, MultiParamTypeClasses, Arrows, TypeFamilies #-}
+>{-# LANGUAGE Trustworthy, FlexibleInstances, MultiParamTypeClasses, Arrows, TypeFamilies #-}
 >{-# LANGUAGE OverloadedStrings #-}
 >module Math.Tools.Queue where
 >import qualified Prelude as P

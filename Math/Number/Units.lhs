@@ -4,7 +4,7 @@
 >{-# LANGUAGE UndecidableInstances #-}
 >{-# LANGUAGE GeneralizedNewtypeDeriving, DerivingStrategies #-}
 >{-# LANGUAGE ExistentialQuantification, TypeFamilies,GADTs, RankNTypes, UnicodeSyntax #-}
->{-# LANGUAGE ScopedTypeVariables, StandaloneDeriving, FlexibleContexts, DeriveGeneric, DeriveDataTypeable, DeriveAnyClass #-}
+>{-# LANGUAGE ScopedTypeVariables, StandaloneDeriving, FlexibleContexts, DeriveGeneric, DeriveDataTypeable, DeriveAnyClass, DeriveFunctor #-}
 
 #if __GLASGOW_HASKELL__ >= 806
 
@@ -225,6 +225,10 @@
 > deriving (Eq,Ord, Typeable, Data, Generic)
 > deriving newtype (Binary, Num, Fractional, Real, RealFrac, Floating, RealFloat)
 >
+>instance Functor Dimensionless where
+>   fmap f (Dimensionless x) = Dimensionless (f x)
+> 
+>
 >instance (MetricSpace a) => MetricSpace (Dimensionless a) where
 >   type Distance (Dimensionless a) = Dimensionless (Distance a)
 >   distance (Dimensionless x) (Dimensionless y) = Dimensionless (distance x y)
@@ -256,7 +260,7 @@
 >   fromAmount = Dimensionless
 
 >newtype Information a = Bits { numberOfBits :: a }
->  deriving (Eq,Ord, Data,Generic, Typeable)
+>  deriving (Eq,Ord, Data,Generic, Typeable, Functor)
 >  deriving newtype (Binary)
 >instance (Num a, Show a) => Show ( Information  a) where { show = showUnit }
 
@@ -268,7 +272,7 @@
 >instance (Show a, Num a) => LiteralUnit (Information a) where { fromAmount = Bits }
 > 
 >newtype SoundLevel a = SoundAmplitude { soundAmplitude :: a }
->  deriving (Eq, Ord, Typeable, Data, Generic)
+>  deriving (Eq, Ord, Typeable, Data, Generic, Functor)
 >  deriving newtype (Binary)
 
 >instance (Floating a, Show a) => Show ( SoundLevel  a) where { show = showUnit }
@@ -290,11 +294,8 @@
 >instance (Show a, Floating a) => LiteralUnit (SoundLevel a) where { fromAmount = SoundAmplitude . (10.0 **) }
 
 >newtype Angle a = Radians { radians :: a }
->   deriving (Eq,Ord, Typeable, Data, Generic)
+>   deriving (Eq,Ord, Typeable, Data, Generic, Functor)
 >   deriving newtype (Binary, Num, Fractional)
-
->instance Functor Angle where
->  fmap f (Radians x) = Radians (f x)
 
 >instance (Show a, Num a) => Show (Angle a) where { show = showUnit }
 
@@ -314,6 +315,7 @@
 >  dimToPolar :: (RealFloat a) => Complex a -> (a, angle a)
 >  fullRotation = fractionOfRotation (1 % 1)
 >  halfRotation = fractionOfRotation (1 % 2)
+
 
 >instance DimensionalFloating Angle where
 >  halfRotation = piAngle
@@ -369,12 +371,26 @@
 >         b' = amount b
 
 >newtype DegreesAngle a = Degrees { degrees :: a }
->   deriving (Eq,Ord, Typeable, Data, Generic)
+>   deriving (Eq,Ord, Typeable, Data, Generic, Functor)
 >   deriving newtype (Binary, Num, Fractional)
 
 
 >instance (Show a, Floating a) => Show (DegreesAngle a) where { show = showUnit }
 
+>instance DimensionalFloating DegreesAngle where
+>  halfRotation = angleDegrees halfRotation
+>  fullRotation = angleDegrees fullRotation
+>  fractionOfRotation = angleDegrees . fractionOfRotation
+>  dimSin = dimSin . degreesAngle
+>  dimCos = dimCos . degreesAngle
+>  dimTan = dimTan . degreesAngle
+>  dimAsin = angleDegrees . dimAsin
+>  dimAcos = angleDegrees . dimAcos
+>  dimAtan = angleDegrees . dimAtan
+>  dimLog = angleDegrees . dimLog
+>  dimExp = dimExp . degreesAngle
+>  dimFromPolar x a = dimFromPolar x (degreesAngle a)
+>  dimToPolar c = let (a,s) = dimToPolar c in (a, angleDegrees s)
 
 >degreesAngle :: (Floating a) => DegreesAngle a -> Angle a
 >degreesAngle (Degrees d) = Radians $ (d * pi) / 180.0
@@ -406,7 +422,7 @@
 
 >-- | <https://en.wikipedia.org/wiki/Steradian>
 >newtype SolidAngle a = Steradians { steradians :: a }
->   deriving (Eq,Ord, Typeable, Data, Generic)
+>   deriving (Eq,Ord, Typeable, Data, Generic, Functor)
 >   deriving newtype (Binary, Num, Fractional)
 
 >instance (Num a, Show a) => Show ( SolidAngle  a) where { show = showUnit }
@@ -427,7 +443,7 @@
 > >> return (unitname d)
 
 >newtype Percentage a = Percentages { percentages :: a }
->  deriving (Eq,Ord, Typeable, Data, Generic)
+>  deriving (Eq,Ord, Typeable, Data, Generic, Functor)
 >  deriving newtype (Binary, Num, Fractional)
 
 >instance (Fractional a, Show a) => Show (Percentage a) where { show = showUnit }
@@ -442,7 +458,7 @@
 >   conversionFactor _ = 0.01
 >
 >newtype Acceleration a = MetersPerSquareSecond { metersPerSquareSecond :: a }
->   deriving (Eq,Ord, Typeable, Data, Generic)
+>   deriving (Eq,Ord, Typeable, Data, Generic, Functor)
 >   deriving newtype (Binary)
 
 >instance (Num a, Show a) => Show (Acceleration a) where { show = showUnit }
@@ -454,7 +470,7 @@
 >   unitOf _ = "m/s^2"
 >instance (Show a, Num a) => LiteralUnit (Acceleration a) where { fromAmount = MetersPerSquareSecond }
 >newtype Velocity a = MetersPerSecond { metersPerSecond :: a }
->   deriving (Eq,Ord, Typeable, Data, Generic)
+>   deriving (Eq,Ord, Typeable, Data, Generic, Functor)
 >   deriving newtype (Binary)
 >instance (Num a, Show a) => Show (Velocity a) where { show = showUnit }
 >
@@ -465,11 +481,11 @@
 >   unitOf _ = "m/s"
 >instance (Show a, Num a) => LiteralUnit (Velocity a) where { fromAmount = MetersPerSecond }
 >newtype SquareLength a = SquareMeters { squaremeters :: a }
-> deriving (Eq,Ord, Typeable, Data, Generic)
+> deriving (Eq,Ord, Typeable, Data, Generic, Functor)
 > deriving newtype (Binary)
 
 >newtype CubicLength a = CubicMeters { cubicmeters :: a }
->  deriving (Eq,Ord, Typeable, Data, Generic)
+>  deriving (Eq,Ord, Typeable, Data, Generic, Functor)
 >  deriving newtype (Binary)
 >
 >sqrt_length :: (Floating a) => SquareLength a -> Length a
@@ -497,27 +513,27 @@
 >instance (Show a, Num a) => LiteralUnit (SquareLength a) where { fromAmount = SquareMeters }
 >-- types for basic units <https://en.wikipedia.org/wiki/International_System_of_Units>
 >newtype Length a = Meters { meters :: a }
-> deriving (Eq,Ord, Typeable, Data, Generic)
+> deriving (Eq,Ord, Typeable, Data, Generic, Functor)
 > deriving newtype (Binary)
 >instance (Num a, Show a) => Show (Length a) where { show = showUnit }
 
 >newtype Mass a = Kilograms { kilograms :: a }
->  deriving (Eq,Ord, Typeable, Data, Generic)
+>  deriving (Eq,Ord, Typeable, Data, Generic, Functor)
 >  deriving newtype (Binary)
 >instance (Num a, Show a) => Show ( Mass  a) where { show = showUnit }
 >newtype Time a = Seconds { seconds :: a }
-> deriving (Eq,Ord, Typeable, Data, Generic)
+> deriving (Eq,Ord, Typeable, Data, Generic, Functor)
 > deriving newtype (Binary)
 >instance (Num a, Show a) => Show (Time a) where { show = showUnit }
 
 >newtype Current a = Amperes { amperes :: a }
->  deriving (Eq,Ord, Typeable, Data, Generic)
+>  deriving (Eq,Ord, Typeable, Data, Generic, Functor)
 >  deriving newtype (Binary)
 >instance (Num a, Show a) => Show (Current a) where { show = showUnit }
 
 >-- | <https://en.wikipedia.org/wiki/Fahrenheit>
 >newtype DegreesFahrenheit a = DegreesFahrenheit { fahrenheits :: a }
-> deriving (Eq,Ord, Typeable, Data, Generic)
+> deriving (Eq,Ord, Typeable, Data, Generic, Functor)
 > deriving newtype (Binary)
 >instance (Fractional a, Show a) => Show (DegreesFahrenheit a) where { show = showUnit }
 >instance (Fractional a, Show a) => Unit (DegreesFahrenheit a) where
@@ -535,7 +551,7 @@
 >
 >-- | <https://en.wikipedia.org/wiki/Rankine_scale>
 >newtype DegreesRankine a = DegreesRankine { rankines :: a }
-> deriving (Eq, Ord, Typeable, Data, Generic)
+> deriving (Eq, Ord, Typeable, Data, Generic, Functor)
 > deriving newtype (Binary)
 >instance (Fractional a, Show a) => Show (DegreesRankine a) where { show = showUnit }
 >instance (Fractional a, Show a) => Unit (DegreesRankine a) where
@@ -552,7 +568,7 @@
 >  zeroAmount _ = 0.0 
 
 >newtype DegreesTemperature a = DegreesCelcius { celciuses :: a }
-> deriving (Eq,Ord, Typeable, Data, Generic)
+> deriving (Eq,Ord, Typeable, Data, Generic, Functor)
 > deriving newtype (Binary)
 >instance (Fractional a, Show a) => Show (DegreesTemperature a) where { show = showUnit }
 >
@@ -569,7 +585,7 @@
 >   zeroAmount _ = 273.15
 
 >newtype Temperature a = DegreesKelvin { kelvins :: a }
-> deriving (Eq,Ord, Typeable, Data, Generic)
+> deriving (Eq,Ord, Typeable, Data, Generic, Functor)
 > deriving newtype (Binary)
 >instance (Num a, Show a) => Show (Temperature a) where { show = showUnit }
 
@@ -583,109 +599,109 @@
 >kelvinToCelcius (DegreesKelvin x) = DegreesCelcius (x - 273.15)
 
 >newtype Substance a = Moles { moles :: a }
-> deriving (Eq,Ord, Typeable, Data, Generic)
+> deriving (Eq,Ord, Typeable, Data, Generic, Functor)
 > deriving newtype (Binary)
 >instance (Num a, Show a) => Show (Substance a) where { show = showUnit }
 
 >newtype Intensity a = Candelas { candelas :: a }
-> deriving (Eq,Ord, Typeable, Data, Generic)
+> deriving (Eq,Ord, Typeable, Data, Generic, Functor)
 > deriving newtype (Binary)
 >instance (Num a, Show a) => Show (Intensity a) where { show = showUnit }
 
 >newtype Frequency a = Hertzes { hertzes :: a }
-> deriving (Eq,Ord, Typeable, Data, Generic)
+> deriving (Eq,Ord, Typeable, Data, Generic, Functor)
 > deriving newtype (Binary)
 >instance (Num a, Show a) => Show (Frequency a) where { show = showUnit }
 
 >newtype Force a = Newtons { newtons :: a }
-> deriving (Eq,Ord, Typeable, Data, Generic)
+> deriving (Eq,Ord, Typeable, Data, Generic, Functor)
 > deriving newtype (Binary)
 >instance (Num a, Show a) => Show (Force a) where { show = showUnit }
 
 >newtype Torque a = NewtonMeters { newtonmeters :: a }
->  deriving (Eq, Ord, Typeable, Data, Generic)
+>  deriving (Eq, Ord, Typeable, Data, Generic, Functor)
 >  deriving newtype (Binary)
 >instance (Num a, Show a) => Show (Torque a) where { show = showUnit }
 
 >newtype Pressure a = Pascals { pascals :: a }
-> deriving (Eq,Ord, Typeable, Data, Generic)
+> deriving (Eq,Ord, Typeable, Data, Generic, Functor)
 > deriving newtype (Binary)
 >instance (Num a, Show a) => Show ( Pressure  a) where { show = showUnit }
 
 >newtype Energy a = Joules { joules :: a }
-> deriving (Eq,Ord, Typeable, Data, Generic)
+> deriving (Eq,Ord, Typeable, Data, Generic, Functor)
 > deriving newtype (Binary)
 >instance (Num a, Show a) => Show (Energy a) where { show = showUnit }
 
 >newtype Power a = Watts { watts :: a }
-> deriving (Eq,Ord, Typeable, Data, Generic)
+> deriving (Eq,Ord, Typeable, Data, Generic, Functor)
 > deriving newtype (Binary)
 >instance (Num a, Show a) => Show (Power a) where { show = showUnit }
 
 >newtype Charge a = Coulombs { coulombs :: a }
-> deriving (Eq,Ord, Typeable, Data, Generic)
+> deriving (Eq,Ord, Typeable, Data, Generic, Functor)
 > deriving newtype (Binary)
 >instance (Num a, Show a) => Show (Charge a) where { show = showUnit }
 
 >newtype Voltage a = Volts { volts :: a }
-> deriving (Eq,Ord, Typeable, Data, Generic)
+> deriving (Eq,Ord, Typeable, Data, Generic, Functor)
 > deriving newtype (Binary)
 >instance (Num a, Show a) => Show (Voltage a) where { show = showUnit }
 
 >newtype Capacitance a = Farads { farads :: a }
-> deriving (Eq,Ord, Typeable, Data, Generic) deriving newtype (Binary)
+> deriving (Eq,Ord, Typeable, Data, Generic, Functor) deriving newtype (Binary)
 >instance (Num a, Show a) => Show (Capacitance a) where { show = showUnit }
 
 >newtype Resistance a = Ohms { ohms :: a }
-> deriving (Eq,Ord, Typeable, Data, Generic)
+> deriving (Eq,Ord, Typeable, Data, Generic, Functor)
 > deriving newtype (Binary)
 >instance (Num a, Show a) => Show (Resistance a) where { show = showUnit }
 
 >newtype Conductance a = Siemenses { siemenses :: a }
-> deriving (Eq,Ord, Typeable, Data, Generic) deriving newtype (Binary)
+> deriving (Eq,Ord, Typeable, Data, Generic, Functor) deriving newtype (Binary)
 >instance (Num a, Show a) => Show ( Conductance  a) where { show = showUnit }
 
 >newtype Flux a = Webers { webers :: a }
-> deriving (Eq,Ord, Typeable, Data, Generic) deriving newtype (Binary)
+> deriving (Eq,Ord, Typeable, Data, Generic, Functor) deriving newtype (Binary)
 >instance (Num a, Show a) => Show (Flux a) where { show = showUnit }
 
 >newtype FluxDensity a = Teslas { teslas :: a }
-> deriving (Eq,Ord, Typeable, Data, Generic) deriving newtype (Binary)
+> deriving (Eq,Ord, Typeable, Data, Generic, Functor) deriving newtype (Binary)
 >instance (Num a, Show a) => Show (FluxDensity a) where { show = showUnit }
 
 >newtype Inductance a = Henrys { henrys :: a }
-> deriving (Eq,Ord, Typeable, Data, Generic)
+> deriving (Eq,Ord, Typeable, Data, Generic, Functor)
 > deriving newtype (Binary)
 >instance (Num a, Show a) => Show (Inductance a) where { show = showUnit }
 
 >newtype LuminousFlux a = Lumens { lumens :: a }
-> deriving (Eq,Ord, Typeable, Data, Generic) deriving newtype (Binary)
+> deriving (Eq,Ord, Typeable, Data, Generic, Functor) deriving newtype (Binary)
 >instance (Num a, Show a) => Show ( LuminousFlux  a) where { show = showUnit }
 
 >newtype Illuminance a = Luxes { luxes :: a }
-> deriving (Eq,Ord, Typeable, Data, Generic)
+> deriving (Eq,Ord, Typeable, Data, Generic, Functor)
 > deriving newtype (Binary)
 >instance (Num a, Show a) => Show (Illuminance a) where { show = showUnit }
 
 >newtype Radioactivity a = Becquerels { becquerels :: a }
-> deriving (Eq,Ord, Typeable, Data, Generic)
+> deriving (Eq,Ord, Typeable, Data, Generic, Functor)
 > deriving newtype (Binary)
 >instance (Num a, Show a) => Show (Radioactivity a) where { show = showUnit }
 
 >newtype AbsorbedDose a = Grays { grays :: a }
-> deriving (Eq,Ord, Typeable, Data, Generic)
+> deriving (Eq,Ord, Typeable, Data, Generic, Functor)
 > deriving newtype (Binary)
 >instance (Num a, Show a) => Show (AbsorbedDose a) where { show = showUnit }
 
 >newtype EquivalentDose a = Sieverts { sieverts :: a }
-> deriving (Eq,Ord, Typeable, Data, Generic)
+> deriving (Eq,Ord, Typeable, Data, Generic, Functor)
 > deriving newtype (Binary)
 
 >instance (Num a, Show a) => Show (EquivalentDose a) where { show = showUnit }
 
 
 >newtype CatalyticActivity a = Katals { katals :: a }
-> deriving (Eq,Ord, Typeable, Data, Generic)
+> deriving (Eq,Ord, Typeable, Data, Generic, Functor)
 > deriving newtype (Binary)
 >instance (Num a, Show a) => Show (CatalyticActivity a) where { show = showUnit }
 

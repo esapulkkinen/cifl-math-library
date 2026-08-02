@@ -47,18 +47,18 @@
 
 >instance (Monoid a, Applicative m) => Monoid (InGraphM mon e m a) where
 >   mempty = pure mempty
->   mappend f g = liftA2 mappend f g
+>   mappend = (<>)
 
 >instance (Monad m) => Monad (InGraphM mon e m) where
->  return = inGraphM_return
->  (>>=) = inGraphM_bind
+>  return = pure
+>  (>>=) = inGraphMBind
 
->{-# INLINE inGraphM_bind #-}
->{-# INLINE inGraphM_return #-}
->inGraphM_bind :: (Monad m) => InGraphM mon e m a -> (a -> InGraphM mon e m b) -> InGraphM mon e m b
->inGraphM_bind ~(InGraphM m) f = InGraphM $ m >>= (runInGraphM . f)
->inGraphM_return :: (Monad m) => a -> InGraphM mon e m a
->inGraphM_return x = InGraphM (return x)
+>{-# INLINE inGraphMBind #-}
+>{-# INLINE inGraphMReturn #-}
+>inGraphMBind :: (Monad m) => InGraphM mon e m a -> (a -> InGraphM mon e m b) -> InGraphM mon e m b
+>inGraphMBind ~(InGraphM m) f = InGraphM $ m >>= (runInGraphM . f)
+>inGraphMReturn :: (Monad m) => a -> InGraphM mon e m a
+>inGraphMReturn x = InGraphM (return x)
 
 >instance (MonadIO m) => MonadIO (InGraphM mon e m) where
 >  liftIO m = InGraphM $ liftIO m
@@ -87,7 +87,7 @@
 >actSetM e m = do { g <- currentGraphM ; return $ Set.map (\ee -> action g ee m) e }
 
 >elementsM :: (Monad m, Ord e) => InGraphM mon e m (Set e)
->elementsM = InGraphM $ do { g <- ask ; return (elements g) }
+>elementsM = InGraphM $ asks elements
 
 >borderM :: (GraphMonoid mon Bool, Monad m) => e -> InGraphM mon e m (e,e)
 >borderM e = actM e gdom >>= \a -> actM e gcod >>= \b -> return $ (a,b)
@@ -113,10 +113,10 @@
 >   greversibleLinks = reversibleLinksM
 
 >verticesM :: (Ord e, GraphMonoid mon Bool, Monad m) => InGraphM mon e m (Set e)
->verticesM = InGraphM $ ask >>= (return . vertices)
+>verticesM = InGraphM $ asks vertices
 
 >edgesM :: (Ord e, GraphMonoid mon Bool, Monad m) => InGraphM mon e m (Set e)
->edgesM = InGraphM $ ask >>= (return . edges)
+>edgesM = InGraphM $ asks edges
 
 >nodesLinkedFromM :: (Monad m, Ord e, GraphMonoid mon Bool)
 >                  => e -> InGraphM mon e m (Set e)
@@ -208,20 +208,20 @@
 
 >isEdgeBetweenM :: (Monad m, GraphMonoid mon Bool, Eq e)
 >        => e -> e -> e -> InGraphM mon e m Bool
->isEdgeBetweenM edge x y = do s <- sourceM edge
->                             t <- targetM edge
->                             return (x == s && y == t)
+>isEdgeBetweenM ed x y = do s <- sourceM ed
+>                           t <- targetM ed
+>                           return (x == s && y == t)
 
 >isLoopM :: (Eq e, Monad m, GraphMonoid mon Bool) => e -> InGraphM mon e m Bool
->isLoopM edge = do { s <- sourceM edge ; t <- targetM edge ; return (s == t) }
+>isLoopM ed = do { s <- sourceM ed ; t <- targetM ed ; return (s == t) }
 
 >isOneLaneLoopM :: (Eq e, Monad m, ReversibleGraphMonoid mon Bool)
 >               => e -> InGraphM mon e m Bool
->isOneLaneLoopM edge = inverseM edge >>= \ie -> return (ie == edge)
+>isOneLaneLoopM ed = inverseM ed >>= \ie -> return (ie == ed)
 
 >isBandM :: (Eq e, Monad m, ReversibleGraphMonoid mon Bool)
 >        => e -> InGraphM mon e m Bool
->isBandM edge = inverseM edge >>= \ie -> return (ie /= edge)
+>isBandM ed = inverseM ed >>= \ie -> return (ie /= ed)
 
 
 liftStateGraph :: (Monad m) => InGraphM mon e m a -> StateT (Graph mon e) m a

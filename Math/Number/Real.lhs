@@ -208,9 +208,6 @@ maxConvergenceRatio = fmap (foldl1 max) . cauchy
 >instance InnerProductSpace R where
 >   x %. y = x * y
 
->instance Infinitesimal Stream Rational where
->   epsilonStream = fmap (1 /) $ Stream.power 10
-
 >instance MetricSpace R where
 >  type Distance R = R
 >  distance x y = abs (x-y)

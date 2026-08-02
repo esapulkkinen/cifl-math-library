@@ -1,4 +1,4 @@
->{-# LANGUAGE FlexibleInstances, MultiParamTypeClasses, TypeOperators #-}
+>{-# LANGUAGE Safe, FlexibleInstances, MultiParamTypeClasses, TypeOperators #-}
 >{-# LANGUAGE FlexibleContexts #-}
 >module Math.Graph.Labeled where
 >import Control.Monad.Trans.Class

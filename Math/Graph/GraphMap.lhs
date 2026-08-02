@@ -1,4 +1,4 @@
->{-# LANGUAGE TypeOperators, KindSignatures, RankNTypes #-}
+>{-# LANGUAGE Safe, TypeOperators, KindSignatures, RankNTypes #-}
 >module Math.Graph.GraphMap where
 >import Prelude hiding (id,(.))
 >import qualified Data.Set as Set

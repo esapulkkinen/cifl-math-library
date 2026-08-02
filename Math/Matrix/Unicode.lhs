@@ -1,5 +1,5 @@
 >-- -*- coding: utf-8 -*-
->{-# LANGUAGE UnicodeSyntax, FlexibleContexts, TypeOperators, GADTs #-}
+>{-# LANGUAGE Safe, UnicodeSyntax, FlexibleContexts, TypeOperators, GADTs #-}
 >-- |
 >-- To use these, use emacs "Options/Select input method" and choose 'TeX'.
 >-- Then enter the symbol by using backslash and the indicated name.
@@ -73,7 +73,7 @@
 (⊗) = linearOuterProduct
 
 >-- | otimes
->(⊗⊗) ∷ (SupportsMatrixMultiplication g h f a) ⇒ (g :*: h) a → (h :*: f) a → (g :*: f) a
+>(⊗⊗) ∷ (SupportsMatrixMultiplication g h f a, a ~ Scalar (h a)) ⇒ (g :*: h) a → (h :*: f) a → (g :*: f) a
 >(⊗⊗) = (%*%)
 
 >-- | boxtimes

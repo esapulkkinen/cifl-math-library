@@ -64,8 +64,10 @@ instance (Universe v, Universe e) => Universe (GraphElem v e) where
 >class (GraphMonoid arr a) => ReversibleGraphMonoid arr a where
 >   gnot :: arr a a
 
->instance Eq (Bool -> Bool) where
->  a == b = a True == b True && a False == b False
+>newtype BoolPair = BoolPair (Bool -> Bool)
+
+>instance Eq BoolPair where
+>  (BoolPair a) == (BoolPair b) = a True == b True && a False == b False
 >
 
 >instance Eq (Endo Bool) where

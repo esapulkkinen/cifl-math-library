@@ -1,4 +1,4 @@
->{-# LANGUAGE CPP #-}
+>{-# LANGUAGE CPP, Safe #-}
 >{-# LANGUAGE DataKinds, TypeOperators, KindSignatures, GADTs, TypeFamilies #-}
 >{-# LANGUAGE UndecidableInstances, MultiParamTypeClasses, PolyKinds #-}
 >{-# LANGUAGE FlexibleInstances, TypeFamilyDependencies, FlexibleContexts #-}

@@ -52,6 +52,7 @@
 >import safe Data.Data
 >import safe Control.Monad.Fix (fix)
 >import safe qualified Numeric.Limits
+>import safe Math.Tools.Median (MedianAlgebra(..))
 
 import qualified Model.Nondeterminism as Nondet
 
@@ -98,7 +99,7 @@ instance ProjectionDual Stream Math.Matrix.Linear.Dual a where
 >sheadStrict :: Stream a -> a
 >sheadStrict (Pre !x _) = x
 
->matrixPowers :: (SupportsMatrixMultiplication g g g a,
+>matrixPowers :: (SupportsMatrixMultiplication g g g a, a ~ Scalar (g a), 
 >  Diagonalizable g a, LinearTransform g g a)
 > => (g :*: g) a -> Stream ((g :*: g) a)
 >matrixPowers x = Pre identity $ fmap (x %*%) $ matrixPowers x
@@ -144,6 +145,11 @@ instance (Num a) => FiniteDimensional a Math.Matrix.Linear.Dual Stream LinearMap
     where tls = stail `Pre` (fmap (\x -> x . stail) tls)
 
 
+>instance Limiting Stream (Closure Stream Rational) where
+>   data Closure Stream (Closure Stream Rational) = MatrixStreamClosure { runMatrixStreamClosure :: Closure (Stream :*: Stream) Rational }
+>   limit z = let m = Matrix (fmap approximations z) in MatrixStreamClosure (limit m)
+>   approximations (MatrixStreamClosure m) = fmap limit $ cells (approximations m)
+
 >instance Limiting Stream Bool where
 >   data Closure Stream Bool = BoolClosure { boolClosurePrefix :: Bool, boolClosureSuffix :: Closure Stream Bool }
 >                     | BoolClosureStreamTrue -- all further elements are true
@@ -167,6 +173,22 @@ instance (Num a) => FiniteDimensional a Math.Matrix.Linear.Dual Stream LinearMap
 >
 >instance StreamObserver2 (Stream :*: Stream) where
 >   stail2 = upperTriangleImpl
+
+>instance MedianAlgebra (Closure (Stream :*: Stream) Rational) where
+>   med (InfiniteMatrixClosure d l u) (InfiniteMatrixClosure d' l' u')
+>       (InfiniteMatrixClosure d'' l'' u'')
+>    = InfiniteMatrixClosure (med d d' d'') (med l l' l'') (med u u' u'')
+
+>rationalContinuedFraction :: (Integral a) => a -> a -> [a]
+>rationalContinuedFraction a b
+> | b == 0 = []
+> | b == 1 = [a]
+> | otherwise = whole_part : rationalContinuedFraction b rem
+>     where (whole_part, rem) = a `divMod` b
+>
+>fromRationalContinuedFraction :: (Integral a, Fractional b) => [a] -> b
+>fromRationalContinuedFraction [a] = fromIntegral a
+>fromRationalContinuedFraction (c:cr) = fromIntegral c + recip (fromRationalContinuedFraction cr)
 
 >instance (Num a, Limiting Stream a) => Limiting (Stream :*: Stream) a where
 >   data Closure (Stream :*: Stream) a = InfiniteMatrixClosure {
@@ -210,14 +232,59 @@ instance (Num a) => FiniteDimensional a Math.Matrix.Linear.Dual Stream LinearMap
 >instance Real (Stream Rational) where
 >   toRational s = toRational $ limit s
 
+>instance Infinitesimal (Stream :*: Stream) Rational where
+>   epsilonClosure = InfiniteMatrixClosure epsilonClosure epsilonClosure epsilonClosure
+>   infiniteClosure = InfiniteMatrixClosure infiniteClosure infiniteClosure infiniteClosure
+>   minusInfiniteClosure = InfiniteMatrixClosure minusInfiniteClosure minusInfiniteClosure minusInfiniteClosure
+
+>instance Infinitesimal Stream Rational where
+>   epsilonStream = fmap (1 /) $ power 10
+>   epsilonClosure = FiniteRational epsilonStream
+>   infiniteClosure = InfiniteRational
+>   minusInfiniteClosure = MinusInfiniteRational
+
+>instance Infinitesimal Stream (Closure Stream Rational) where
+>   epsilonClosure = MatrixStreamClosure epsilonClosure2
+>     where epsilonClosure2 = InfiniteMatrixClosure epsilonClosure epsilonClosure2
+>                                                   epsilonClosure2
+>   infiniteClosure = MatrixStreamClosure infiniteClosure2
+>     where infiniteClosure2 = InfiniteMatrixClosure infiniteClosure infiniteClosure2 infiniteClosure
+>   minusInfiniteClosure = MatrixStreamClosure minusInfiniteClosure2
+>     where minusInfiniteClosure2 = InfiniteMatrixClosure minusInfiniteClosure minusInfiniteClosure2 minusInfiniteClosure2
+>           
+
+>instance (MedianAlgebra a) => MedianAlgebra (Stream a) where
+>  med (Pre x xr) (Pre y yr) (Pre z zr) = Pre (med x y z) (med xr yr zr)
+
+>instance MedianAlgebra (Closure Stream Rational) where
+>  med (FiniteExactRational a) (FiniteExactRational b) (FiniteExactRational c) = FiniteExactRational (med a b c)
+>  med (FiniteRational a) (FiniteRational b) (FiniteRational c) = FiniteRational (med a b c)
+>  med InfiniteRational InfiniteRational _ = InfiniteRational
+>  med MinusInfiniteRational MinusInfiniteRational _ = MinusInfiniteRational
+
+>  med x MinusInfiniteRational InfiniteRational = x
+>  med MinusInfiniteRational x InfiniteRational = x
+>  med MinusInfiniteRational InfiniteRational x = x
+
+>  med x InfiniteRational MinusInfiniteRational = x
+>  med InfiniteRational x MinusInfiniteRational = x
+>  med InfiniteRational MinusInfiniteRational x = x
+>  med x y z = error "sorry not supported: specific case of med (Closure Stream Rational)"
+
 >instance Limiting Stream Rational where
 >   data Closure Stream Rational = FiniteRational (Stream Rational)
+>                   | FiniteExactRational Rational
 >                   | MinusInfiniteRational
 >                   | InfiniteRational
 >   limit = FiniteRational
 >   approximations (FiniteRational s) = s
+>   approximations (FiniteExactRational q) = constant q
 >   approximations MinusInfiniteRational = fmap negate $ power 10
 >   approximations InfiniteRational = power 10
+
+>instance Closed (Closure Stream Rational) where
+>   accumulationPoint (MatrixStreamClosure (InfiniteMatrixClosure d l u))
+>     = d
 
 >instance Infinitary (Closure Stream Rational) where
 >   infinite = InfiniteRational
@@ -226,6 +293,9 @@ instance (Num a) => FiniteDimensional a Math.Matrix.Linear.Dual Stream LinearMap
 >   infinite = InfiniteInteger
 
 >instance Eq (Closure Stream Rational) where
+>   (FiniteExactRational q) == (FiniteExactRational q') = True
+>   (FiniteExactRational x) == _ = False
+>   _ == (FiniteExactRational _) = False
 >   MinusInfiniteRational == MinusInfiniteRational = True
 >   InfiniteRational == InfiniteRational = True
 >   MinusInfiniteRational == _ = False
@@ -235,6 +305,9 @@ instance (Num a) => FiniteDimensional a Math.Matrix.Linear.Dual Stream LinearMap
 >   (FiniteRational s) == (FiniteRational s') = s == s'
 
 >instance Ord (Closure Stream Rational) where
+>   compare (FiniteExactRational a) (FiniteExactRational b) = compare a b
+>   compare (FiniteExactRational a) b = compare (FiniteRational (constant a)) b
+>   compare a (FiniteExactRational b) = compare a (FiniteRational (constant b))
 >   compare MinusInfiniteRational MinusInfiniteRational = EQ
 >   compare InfiniteRational InfiniteRational = EQ
 >   compare MinusInfiniteRational _ = LT
@@ -244,26 +317,33 @@ instance (Num a) => FiniteDimensional a Math.Matrix.Linear.Dual Stream LinearMap
 >   compare (FiniteRational s) (FiniteRational s') = compare s s'
 
 >instance Real (Closure Stream Rational) where
+>   toRational (FiniteExactRational a) = a
 >   toRational MinusInfiniteRational = (-1) % 0
 >   toRational InfiniteRational = 1 % 0
 >   toRational (FiniteRational (Pre x z@(Pre y yr)))
 >     | abs(y - x) < 1 % 10000000 = y
 >     | otherwise = toRational z
 
-
 >instance Fractional (Closure Stream Rational) where
+>   (FiniteExactRational x) / (FiniteExactRational y) = FiniteExactRational (x / y)
+>   (FiniteExactRational x) / a = (FiniteRational (constant x)) / a
+>   x / (FiniteExactRational a) = x / (FiniteRational (constant a))
 >   (FiniteRational x) / (FiniteRational y) = FiniteRational $ liftA2 (/) x y
 >   (FiniteRational _) / InfiniteRational = 0
 >   (FiniteRational _) / MinusInfiniteRational = 0
 >   MinusInfiniteRational / (FiniteRational _) = error "can't compute sign of rational closure in -INF/lim{i->INF}(x_i)"
 >   InfiniteRational / (FiniteRational _) = error "can't compute sign of rational closure in INF/lim{i->INF}(x_i)"
 >   _ / _ = error "undefined: INF/INF"
+>   recip (FiniteExactRational x) = FiniteExactRational (recip x)
 >   recip (FiniteRational x) = FiniteRational $ fmap recip x
 >   recip InfiniteRational = 0
 >   recip MinusInfiniteRational = -0
->   fromRational = FiniteRational . constant
+>   fromRational = FiniteExactRational
 
 >instance Num (Closure Stream Rational) where
+>   (FiniteExactRational x) + (FiniteExactRational y) = FiniteExactRational (x + y)
+>   (FiniteExactRational x) + y = (FiniteRational (constant x)) + y
+>   x + (FiniteExactRational y) = x + (FiniteRational (constant y))
 >   InfiniteRational + InfiniteRational = InfiniteRational
 >   MinusInfiniteRational + InfiniteRational = error "undefined INF-INF"
 >   InfiniteRational + MinusInfiniteRational = error "undefined INF-INF"
@@ -274,6 +354,9 @@ instance (Num a) => FiniteDimensional a Math.Matrix.Linear.Dual Stream LinearMap
 >   _ + MinusInfiniteRational = MinusInfiniteRational
 >   (FiniteRational x) + (FiniteRational y) = FiniteRational (liftA2 (+) x y)
 >   a - b = a + (negate b)
+>   (FiniteExactRational x) * (FiniteExactRational y) = FiniteExactRational (x*y)
+>   (FiniteExactRational x) * y = (FiniteRational (constant x)) * y
+>   x * (FiniteExactRational y) = x * (FiniteRational (constant y))
 >   (FiniteRational x) * (FiniteRational y) = FiniteRational $ liftA2 (*) x y
 >   InfiniteRational * InfiniteRational = InfiniteRational
 >   InfiniteRational * MinusInfiniteRational = MinusInfiniteRational
@@ -285,20 +368,25 @@ instance (Num a) => FiniteDimensional a Math.Matrix.Linear.Dual Stream LinearMap
 >   MinusInfiniteRational * _ = error "(*): can't compute sign of rational closure in -INF*lim{i->INF}(x_i)"
 >   negate InfiniteRational = MinusInfiniteRational
 >   negate MinusInfiniteRational = InfiniteRational
+>   negate (FiniteExactRational x) = FiniteExactRational (negate x)
 >   negate (FiniteRational x) = FiniteRational (fmap negate x)
+>   abs (FiniteExactRational x) = FiniteExactRational (abs x)
 >   abs (FiniteRational x) = FiniteRational (fmap abs x)
 >   abs MinusInfiniteRational = InfiniteRational
 >   abs InfiniteRational = InfiniteRational
+>   signum (FiniteExactRational x) = FiniteExactRational (signum x)
 >   signum InfiniteRational = FiniteRational (constant 1)
 >   signum MinusInfiniteRational = FiniteRational (constant $ negate 1)
 >   signum (FiniteRational s) = FiniteRational (fmap signum s)
->   fromInteger = FiniteRational . fromInteger
+>   fromInteger = FiniteExactRational . fromInteger
 
 >instance Limiting Stream Integer where
 >   data Closure Stream Integer = FiniteInteger { integer_closureStream :: Stream Integer }
+>     | FiniteExactInteger { integer_closureStream_accumulationPoint :: Integer }
 >     | MinusInfiniteInteger
 >     | InfiniteInteger
 >   limit s = FiniteInteger s
+>   approximations (FiniteExactInteger s) = constant s
 >   approximations (FiniteInteger s) = s
 >   approximations MinusInfiniteInteger = fmap negate $ powerIntegral 10
 >   approximations InfiniteInteger = powerIntegral 10
@@ -313,6 +401,9 @@ instance (Num a) => FiniteDimensional a Math.Matrix.Linear.Dual Stream LinearMap
 >   approximations InfiniteClosureMatrix = constant InfiniteInteger
 
 >instance Ord (Closure Stream Integer) where
+>   compare (FiniteExactInteger a) (FiniteExactInteger b) = compare a b
+>   compare (FiniteExactInteger a) b = compare (FiniteInteger (constant a)) b
+>   compare a (FiniteExactInteger b) = compare a (FiniteInteger (constant b))
 >   compare InfiniteInteger InfiniteInteger = EQ
 >   compare MinusInfiniteInteger MinusInfiniteInteger = EQ
 >   compare InfiniteInteger _ = GT
@@ -322,11 +413,15 @@ instance (Num a) => FiniteDimensional a Math.Matrix.Linear.Dual Stream LinearMap
 >   compare (FiniteInteger s) (FiniteInteger s') = compare s s'
 >
 >instance Real (Closure Stream Integer) where
+>   toRational (FiniteExactInteger a) = toRational a
 >   toRational InfiniteInteger = 1 % 0
 >   toRational MinusInfiniteInteger = (-1) % 0
 >   toRational (FiniteInteger str) = 1 % shead (1 `div` str)
 
 >instance (Num (Closure Stream Integer)) where
+>   (FiniteExactInteger a) + (FiniteExactInteger b) = FiniteExactInteger (a + b)
+>   (FiniteExactInteger a) + b = (FiniteInteger (constant a)) + b
+>   a + (FiniteExactInteger b) = a + (FiniteInteger (constant b))
 >   InfiniteInteger + InfiniteInteger = InfiniteInteger
 >   MinusInfiniteInteger + InfiniteInteger = error "undefined inf - inf"
 >   InfiniteInteger + MinusInfiniteInteger = error "undefined inf - inf"
@@ -338,9 +433,13 @@ instance (Num a) => FiniteDimensional a Math.Matrix.Linear.Dual Stream LinearMap
 >   (FiniteInteger s) + (FiniteInteger s')
 >     = FiniteInteger (s + s') 
 >   a - b = a + (negate b)
+>   negate (FiniteExactInteger a) = FiniteExactInteger (negate a)
 >   negate InfiniteInteger = MinusInfiniteInteger
 >   negate MinusInfiniteInteger = InfiniteInteger
 >   negate (FiniteInteger s) = FiniteInteger (fmap negate s)
+>   (FiniteExactInteger a) * (FiniteExactInteger b) = FiniteExactInteger (a * b)
+>   (FiniteExactInteger a) * b = (FiniteInteger (constant a)) * b
+>   a * (FiniteExactInteger b) = a * (FiniteInteger (constant b))
 >   InfiniteInteger * InfiniteInteger = InfiniteInteger
 >   MinusInfiniteInteger * InfiniteInteger = MinusInfiniteInteger
 >   InfiniteInteger * MinusInfiniteInteger = MinusInfiniteInteger
@@ -351,13 +450,15 @@ instance (Num a) => FiniteDimensional a Math.Matrix.Linear.Dual Stream LinearMap
 >   _ * MinusInfiniteInteger = error "cannot compute sign of integer closure in -INF*lim{i->INF}(x_i)"
 >   (FiniteInteger s) * (FiniteInteger s')
 >     = FiniteInteger (liftA2 (*) s s')
+>   abs (FiniteExactInteger a) = FiniteExactInteger (abs a)
 >   abs MinusInfiniteInteger = InfiniteInteger
 >   abs InfiniteInteger = InfiniteInteger
 >   abs (FiniteInteger s) = FiniteInteger (fmap abs s)
+>   signum (FiniteExactInteger a) = FiniteExactInteger (signum a)
 >   signum InfiniteInteger = constantIntegerClosure 1
 >   signum MinusInfiniteInteger = constantIntegerClosure (negate 1)
 >   signum (FiniteInteger s) = FiniteInteger (fmap signum s)
->   fromInteger = constantIntegerClosure
+>   fromInteger = FiniteExactInteger
 
 >constantIntegerClosure :: Integer -> Closure Stream Integer
 >constantIntegerClosure i = FiniteInteger (constant i)
@@ -368,11 +469,13 @@ instance (Num a) => FiniteDimensional a Math.Matrix.Linear.Dual Stream LinearMap
 >negativeInfiniteInteger = MinusInfiniteInteger
 
 >instance Show (Closure Stream Integer) where
+>   show (FiniteExactInteger s) = show s
 >   show (FiniteInteger s) = " ... " ++ concat (List.intersperse "," (map show $ take 10 s)) ++ " ... "
 >   show InfiniteInteger = "INF"
 >   show MinusInfiniteInteger = "-INF"
 
 >instance Show (Closure Stream Rational) where
+>   show (FiniteExactRational s) = show s
 >   show InfiniteRational = "INF"
 >   show MinusInfiniteRational = "-INF"
 >   show (FiniteRational s) = " ... " ++ concat (List.intersperse "," (map show $ take 10 s)) ++ " ... "
@@ -544,6 +647,9 @@ instance (Num a) => FiniteDimensional a Math.Matrix.Linear.Dual Stream LinearMap
 >-- | operation for producing a closure out of single element.
 >close :: (Limiting Stream a) => a -> Closure Stream a
 >close x = limit $ constant x
+
+>close2 :: (Limiting (Stream :*: Stream) a) => a -> Closure (Stream :*: Stream) a
+>close2 x = limit $ constantMatrix x
 
 >closure_limit :: (Num a, Closed a, Limiting Stream a) => Stream (Closure Stream a) -> Closure Stream a
 >closure_limit = stream_limit . limit . fmap approximations
@@ -903,13 +1009,15 @@ instance (Num a) => Matrix.VectorSpace ((Stream :*: Stream) a) where
 >                                 $ fmap (liftA2 (*) g) (cells $ streamPowers f)
 >compose _ _ = error "Stream must begin with zero to be pre-composed"
 
->matrixConvolution :: (SupportsMatrixMultiplication f g h a,
+>matrixConvolution :: (SupportsMatrixMultiplication f g h a, Scalar (g a) ~ Scalar (h a),
+> Scalar (g a) ~ a, 
 >  VectorSpace ((f :*: h) a))
-> => Stream ((f :*: g) a) -> Stream ((g :*: h) a) -> Stream ((f :*: h) a)
+> => Stream ((f :*: g) a) -> Stream ((g :*: h) a) -> Stream ((f :*: h) (Scalar (g a)))
 >matrixConvolution x y = fmap Matrix.vsum $ codiagonalsSeq $ matrix (Matrix.%*%) x y
 
 >matrixConvolutionLinear ::
-> (SupportsMatrixMultiplication f g h a,
+> (SupportsMatrixMultiplication f g h a, Scalar (g a) ~ Scalar (h a),
+> Scalar (f a) ~ Scalar (h a), Scalar (h a) ~ a,
 > Linearizable LinearMap (:*:) g h a, Linearizable LinearMap (:*:) f g a,
 > Linearizable LinearMap (:*:) f h a,
 >  VectorSpace ((f :*: h) a))
@@ -1061,7 +1169,12 @@ and_convolution x y = fmap or $ codiagonalsSeq $ linmatrix (bilinear (&&)) (x, y
 >   quot x y = x * quotientInvert y
 >   div x y = x * inversion y
 >   rem x y = x - ((x * inversion y)*y)
->   quotRem x y = (x*quotientInvert y, x - ((x*quotientInvert y)*y))
+>   quotRem x y = let yinv = quotientInvert y
+>                     xyinv = x*yinv
+>                  in (xyinv, x - ((xyinv)*y))
+>   divMod x y = let yinv = inversion y
+>                    xyinv = x*yinv
+>                 in (xyinv, x - (xyinv*y))
 >   toInteger = toInteger . shead
 
 >-- | Fractional instance is based on interpretation of
@@ -1139,6 +1252,9 @@ and_convolution x y = fmap or $ codiagonalsSeq $ linmatrix (bilinear (&&)) (x, y
 >limitFoldGen f g = streamfold $
 >   \ x r !i -> if i > 0 then f x (r (i-1)) else g x
 
+>-- | computes sums of all prefixes of the streams
+>streamSums :: (Num a) => Stream a -> Stream a
+>streamSums ~(Pre x xr) = Pre x $ fmap (+ x) (streamSums xr) 
 
 >streamDifferences :: (Num a) => Stream a -> Stream a
 >streamDifferences ~(Pre x ~z'@(Pre y _)) = 
@@ -1458,23 +1574,23 @@ codiagonalsSeq_linear = linear . Matrix . codiagonalsSeq . fromLinear
 >--
 >-- <https://en.wikipedia.org/wiki/Formal_power_series>                        
 >uncodiagonals :: (Linearizable LinearMap (:*:) Stream Stream a) => Stream [a] -> Stream a :-> Stream a
->uncodiagonals (Pre [!d] (Pre [!x,!y] re)) = streamMatrix diag codiag
-> where codiaghead = (x `Pre` fmap head re,y `Pre` fmap last re)
+>uncodiagonals (Pre [!d] (Pre [x,y] re)) = streamMatrix diag codiag
+> where codiaghead = (y `Pre` fmap last re,x `Pre` fmap head re)
 >       codiag = codiaghead `Pre` streamCodiagonal next
 >       diag = d `Pre` streamDiagonal next
 >       next = uncodiagonals $ fmap (\lst -> P.take (length lst - 2) (tail lst)) re
 >uncodiagonals _ = error "form requirements for input to uncodiagonals not satisfied."
 
 >uncodiagonalsImpl :: Stream [a] -> (Stream :*: Stream) a
->uncodiagonalsImpl (Pre [!d] (Pre [!x,!y] re)) = streamMatrixImpl diag codiag
-> where codiaghead = (x `Pre` fmap head re,y `Pre` fmap last re)
+>uncodiagonalsImpl (Pre [!d] (Pre [x,y] re)) = streamMatrixImpl diag codiag
+> where codiaghead = (y `Pre` fmap last re, x `Pre` fmap head re)
 >       codiag = codiaghead `Pre` streamCodiagonalImpl next
 >       diag = d `Pre` streamDiagonalImpl next
 >       next = uncodiagonalsImpl $ fmap (\lst -> P.take (length lst - 2) (tail lst)) re
 >uncodiagonalsImpl _ = error "form requirements for input to uncodiagonals not satisfied."
 
 >takes :: Stream Integer -> Stream a -> Stream [a]
->takes ~(Pre x xr) = \s -> Pre (take x s) $ takes xr (drop x s)
+>takes ~(Pre x xr) s = Pre (take x s) $ takes xr (drop x s)
 
 >split_dimension :: (ConjugateSymmetric a, Num a, Closed a) => Stream a -> Stream a :-> Stream a
 >split_dimension = uncodiagonals . takes nonzeroNaturals
@@ -1712,7 +1828,8 @@ codiagonals3 = codiagonals . linear . Matrix . fmap codiagonals . cells_linear
 >{-# INLINEABLE factorial #-}
 >{-# SPECIALIZE factorial :: Stream Integer #-}
 >factorial :: (Num a) => Stream a
->factorial = Pre 1 $ Pre 1 $ liftA2 (*) (stail $ nonzeroNaturals) (stail factorial)
+>factorial = Pre 1 $ Pre 1 $ rest 2
+>   where rest i = Pre i $ fmap (i*) (rest (i+1))
 
 >-- | both reciprocal and inversion are the inverse of a Cauchy product.
 >-- see <http://en.wikipedia.org/wiki/Formal_power_series>
@@ -1940,6 +2057,9 @@ power i = 1 / (1 - (fromInteger i * s_z))
 >powerUniformFractional :: (Fractional a) => a -> Stream a
 >powerUniformFractional i = Pre 1 $ fmap (i*) $ powerUniformFractional i
 
+>powerNum :: (Num a) => a -> Stream a
+>powerNum x = Pre 1 $ fmap (x*) $ powerNum x
+
 >-- | stream of powers of a given integer for integral items.
 >powerIntegral :: (Integral a) => Integer -> Stream a
 >powerIntegral i = powerUniformIntegral $ fromInteger i
@@ -2037,8 +2157,8 @@ generating_sqrt xplus1 = (`subst` x) $ fmap (binomial (1%2)) naturals
 >       liftA2 (,) naturals $ fmap (List.zip [(0 :: Integer)..]) $ binomialCoefficients
 
 >-- | computes \((a + b)^n\) for all n, using binomial coefficients.
->--   Hint: use 'z' in one of the argument.
->--   @pascalTriangle == Matrix $ polynomial_powers 1 z@
+>--   Hint: use 's_z' in one of the argument.
+>--   @pascalTriangle == Matrix $ polynomial_powers 1 s_z@
 >--   Note: stream_powers can sometimes be a more efficient alternative.
 >polynomialPowers :: (Integral a, RealClosure2 Stream a) => a -> a -> Stream a
 >polynomialPowers a b = fmap sum coeffs
@@ -2423,6 +2543,18 @@ instance (Closed a) => Closed (Complex a) where
 >  where mult = take (fromIntegral $ length poly) $ powerUniformFractional x
 >        res = P.sum $ P.zipWith (*) poly mult
 
+>zipListStream :: [a] -> Stream b -> [(a,b)]
+>zipListStream [] _ = []
+>zipListStream (c:cr) (Pre x xr) = (c,x) : zipListStream cr xr
+
+>-- | \( \exp(x)_i = \sum_{j=0}^i{binomial(i,j)*x^j/(i^j)} = \sum_{j=0}^i(1+(x/i))^j \)
+>expByBinomialTheorem :: (Fractional a, Closed a) => a -> Stream a
+>expByBinomialTheorem x = liftA2 (gg x) naturals (codiagonals pascalTriangleDiag)
+>  where ff x' i ~(coeff,j) = fromInteger coeff * (x'/fromInteger i)^j
+>        gg xx i lst = Prelude.sum $ fmap (ff xx i) (zipListStream lst (naturals :: Stream Integer))
+
+
+
 >evaluateLegendrePolynomial :: (Fractional a, Eq a, ConjugateSymmetric a, Floating a) => Integer -> a -> a
 >evaluateLegendrePolynomial i =
 >   evaluatePolynomial (i `streamindex` legendrePolynomialLists)
@@ -2430,6 +2562,10 @@ instance (Closed a) => Closed (Complex a) where
 >evaluateLegendreAt :: (Fractional a, Eq a, ConjugateSymmetric a, Floating a) => a -> Stream a
 >evaluateLegendreAt x = fmap (`evaluateLegendrePolynomial` x) naturals
 
+
+>evaluatePowerSeries :: (Closed a, Num a) => Stream a -> a -> a
+>evaluatePowerSeries coeffs x =
+>   ssum $ liftA2 (*) (powerNum x) coeffs
 
 >-- | circle_periods returns a stream of ${2\pi n | n \in N+}$ in increasing order.
 >circlePeriods :: (Floating a) => Stream a

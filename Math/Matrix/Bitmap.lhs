@@ -1,4 +1,4 @@
->{-# LANGUAGE TypeOperators, TypeFamilies, MultiParamTypeClasses #-}
+>{-# LANGUAGE Safe, TypeOperators, TypeFamilies, MultiParamTypeClasses #-}
 >{-# LANGUAGE FlexibleInstances #-}
 >module Math.Matrix.Bitmap where
 >import qualified Data.Array as A

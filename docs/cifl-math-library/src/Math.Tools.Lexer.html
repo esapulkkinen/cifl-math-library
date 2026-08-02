@@ -1,4 +1,4 @@
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"><html xmlns="http://www.w3.org/1999/xhtml"><head><link rel="stylesheet" type="text/css" href="style.css" /><script type="text/javascript" src="highlight.js"></script></head><body><pre><span id="local-6989586621681258595"><span id="local-6989586621681258596"><span id="local-6989586621681258597"><span id="local-6989586621681258598"><span id="local-6989586621681258599"><span id="local-6989586621681258600"><span id="local-6989586621681258601"><span id="local-6989586621681258602"><span id="local-6989586621681258603"><span id="local-6989586621681258604"><span id="local-6989586621681258605"><span id="local-6989586621681258606"><span id="local-6989586621681258607"><span id="local-6989586621681258608"><span id="local-6989586621681258609"><span id="local-6989586621681258610"><span id="local-6989586621681258611"></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span><span> </span><span class="hs-pragma">{-# LANGUAGE LambdaCase, DeriveDataTypeable, DeriveGeneric, OverloadedStrings, OverloadedLists #-}</span><span>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"><html xmlns="http://www.w3.org/1999/xhtml"><head><link rel="stylesheet" type="text/css" href="style.css" /><script type="text/javascript" src="highlight.js"></script></head><body><pre><span id="local-6989586621681330014"><span id="local-6989586621681330015"><span id="local-6989586621681330016"><span id="local-6989586621681330017"><span id="local-6989586621681330018"><span id="local-6989586621681330019"><span id="local-6989586621681330020"><span id="local-6989586621681330021"><span id="local-6989586621681330022"><span id="local-6989586621681330023"><span id="local-6989586621681330024"><span id="local-6989586621681330025"><span id="local-6989586621681330026"><span id="local-6989586621681330027"><span id="local-6989586621681330028"><span id="local-6989586621681330029"><span id="local-6989586621681330030"></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span><span> </span><span class="hs-pragma">{-# LANGUAGE LambdaCase, DeriveDataTypeable, DeriveGeneric, OverloadedStrings, OverloadedLists #-}</span><span>
 </span><span id="line-2"></span><span> </span><span class="hs-keyword">module</span><span> </span><span class="hs-identifier">Math.Tools.Lexer</span><span> </span><span class="hs-keyword">where</span><span>
 </span><span id="line-3"></span><span> </span><span class="hs-keyword">import</span><span> </span><span class="annot"><span class="hs-identifier">Prelude</span></span><span> </span><span class="hs-keyword">hiding</span><span> </span><span class="hs-special">(</span><span class="annot"><span class="hs-identifier">span</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="hs-identifier">length</span></span><span class="hs-special">,</span><span class="annot"><span class="hs-identifier">any</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="hs-identifier">null</span></span><span class="hs-special">)</span><span>
 </span><span id="line-4"></span><span> </span><span class="hs-keyword">import</span><span> </span><span class="annot"><span class="hs-identifier">GHC.Generics</span></span><span>
@@ -25,14 +25,14 @@
 </span><span id="line-25"></span><span>            </span><span class="hs-glyph">|</span><span> </span><span id="OpenBrace"><span class="annot"><a href="Math.Tools.Lexer.html#OpenBrace"><span class="hs-identifier hs-var">OpenBrace</span></a></span></span><span> </span><span class="hs-glyph">|</span><span> </span><span id="CloseBrace"><span class="annot"><a href="Math.Tools.Lexer.html#CloseBrace"><span class="hs-identifier hs-var">CloseBrace</span></a></span></span><span>
 </span><span id="line-26"></span><span>            </span><span class="hs-glyph">|</span><span> </span><span id="OpenBracket"><span class="annot"><a href="Math.Tools.Lexer.html#OpenBracket"><span class="hs-identifier hs-var">OpenBracket</span></a></span></span><span> </span><span class="hs-glyph">|</span><span> </span><span id="CloseBracket"><span class="annot"><a href="Math.Tools.Lexer.html#CloseBracket"><span class="hs-identifier hs-var">CloseBracket</span></a></span></span><span>
 </span><span id="line-27"></span><span>            </span><span class="hs-glyph">|</span><span> </span><span id="OpenParenthesis"><span class="annot"><a href="Math.Tools.Lexer.html#OpenParenthesis"><span class="hs-identifier hs-var">OpenParenthesis</span></a></span></span><span> </span><span class="hs-glyph">|</span><span> </span><span id="CloseParenthesis"><span class="annot"><a href="Math.Tools.Lexer.html#CloseParenthesis"><span class="hs-identifier hs-var">CloseParenthesis</span></a></span></span><span>
-</span><span id="line-28"></span><span>    </span><span class="hs-keyword">deriving</span><span> </span><span class="hs-special">(</span><span id="local-6989586621681258691"><span id="local-6989586621681258702"><span class="annot"><span class="annottext">Token -&gt; Token -&gt; Bool
+</span><span id="line-28"></span><span>    </span><span class="hs-keyword">deriving</span><span> </span><span class="hs-special">(</span><span id="local-6989586621681330110"><span id="local-6989586621681330121"><span class="annot"><span class="annottext">Token -&gt; Token -&gt; Bool
 (Token -&gt; Token -&gt; Bool) -&gt; (Token -&gt; Token -&gt; Bool) -&gt; Eq Token
 forall a. (a -&gt; a -&gt; Bool) -&gt; (a -&gt; a -&gt; Bool) -&gt; Eq a
 $c== :: Token -&gt; Token -&gt; Bool
 == :: Token -&gt; Token -&gt; Bool
 $c/= :: Token -&gt; Token -&gt; Bool
 /= :: Token -&gt; Token -&gt; Bool
-</span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var">Eq</span></span></span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Typeable</span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621681258709"><span id="local-6989586621681258720"><span id="local-6989586621681258728"><span id="local-6989586621681258730"><span id="local-6989586621681258732"><span id="local-6989586621681258738"><span id="local-6989586621681258743"><span id="local-6989586621681258746"><span id="local-6989586621681258749"><span id="local-6989586621681258752"><span id="local-6989586621681258755"><span id="local-6989586621681258758"><span id="local-6989586621681258763"><span id="local-6989586621681258768"><span class="annot"><span class="annottext">Typeable Token
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var">Eq</span></span></span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Typeable</span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621681330128"><span id="local-6989586621681330139"><span id="local-6989586621681330147"><span id="local-6989586621681330149"><span id="local-6989586621681330151"><span id="local-6989586621681330157"><span id="local-6989586621681330162"><span id="local-6989586621681330165"><span id="local-6989586621681330168"><span id="local-6989586621681330171"><span id="local-6989586621681330174"><span id="local-6989586621681330177"><span id="local-6989586621681330182"><span id="local-6989586621681330187"><span class="annot"><span class="annottext">Typeable Token
 Typeable Token =&gt;
 (forall (c :: * -&gt; *).
  (forall d b. Data d =&gt; c (d -&gt; b) -&gt; d -&gt; c b)
@@ -185,7 +185,7 @@ MonadPlus m =&gt;
 gmapMo :: forall (m :: * -&gt; *).
 MonadPlus m =&gt;
 (forall d. Data d =&gt; d -&gt; m d) -&gt; Token -&gt; m Token
-</span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var">Data</span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621681258774"><span id="local-6989586621681258776"><span class="annot"><span class="annottext">(forall x. Token -&gt; Rep Token x)
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var">Data</span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621681330193"><span id="local-6989586621681330195"><span class="annot"><span class="annottext">(forall x. Token -&gt; Rep Token x)
 -&gt; (forall x. Rep Token x -&gt; Token) -&gt; Generic Token
 forall x. Rep Token x -&gt; Token
 forall x. Token -&gt; Rep Token x
@@ -198,42 +198,42 @@ to :: forall x. Rep Token x -&gt; Token
 </span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var">Generic</span></span></span></span><span class="hs-special">)</span><span>
 </span><span id="line-29"></span><span>
 </span><span id="line-30"></span><span> </span><span class="hs-keyword">instance</span><span> </span><span class="annot"><a href="Math.Tools.PrettyP.html#PpShow"><span class="hs-identifier hs-type">PpShow</span></a></span><span> </span><span class="annot"><a href="Math.Tools.Lexer.html#Token"><span class="hs-identifier hs-type">Token</span></a></span><span> </span><span class="hs-keyword">where</span><span>
-</span><span id="line-31"></span><span>   </span><span id="local-6989586621681258805"><span class="annot"><span class="annottext">pp :: Token -&gt; Doc
-</span><a href="#local-6989586621681258805"><span class="hs-identifier hs-var hs-var hs-var hs-var">pp</span></a></span></span><span> </span><span class="annot"><span class="annottext">Token
+</span><span id="line-31"></span><span>   </span><span id="local-6989586621681330224"><span class="annot"><span class="annottext">pp :: Token -&gt; Doc
+</span><a href="#local-6989586621681330224"><span class="hs-identifier hs-var hs-var hs-var hs-var">pp</span></a></span></span><span> </span><span class="annot"><span class="annottext">Token
 </span><a href="Math.Tools.Lexer.html#EOF"><span class="hs-identifier hs-var">EOF</span></a></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Text -&gt; Doc
 forall a. PpShow a =&gt; a -&gt; Doc
 </span><a href="Math.Tools.PrettyP.html#pp"><span class="hs-identifier hs-var">pp</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">Text
 </span><span class="hs-string">&quot;EOF&quot;</span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Text</span></span><span class="hs-special">)</span><span>
-</span><span id="line-32"></span><span>   </span><span class="annot"><a href="Math.Tools.PrettyP.html#pp"><span class="hs-identifier hs-var">pp</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="Math.Tools.Lexer.html#Number"><span class="hs-identifier hs-type">Number</span></a></span><span> </span><span id="local-6989586621681258807"><span class="annot"><span class="annottext">Integer
-</span><a href="#local-6989586621681258807"><span class="hs-identifier hs-var">n</span></a></span></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Integer -&gt; Doc
+</span><span id="line-32"></span><span>   </span><span class="annot"><a href="Math.Tools.PrettyP.html#pp"><span class="hs-identifier hs-var">pp</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="Math.Tools.Lexer.html#Number"><span class="hs-identifier hs-type">Number</span></a></span><span> </span><span id="local-6989586621681330226"><span class="annot"><span class="annottext">Integer
+</span><a href="#local-6989586621681330226"><span class="hs-identifier hs-var">n</span></a></span></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Integer -&gt; Doc
 forall a. PpShow a =&gt; a -&gt; Doc
 </span><a href="Math.Tools.PrettyP.html#pp"><span class="hs-identifier hs-var">pp</span></a></span><span> </span><span class="annot"><span class="annottext">Integer
-</span><a href="#local-6989586621681258807"><span class="hs-identifier hs-var">n</span></a></span><span>
-</span><span id="line-33"></span><span>   </span><span class="annot"><a href="Math.Tools.PrettyP.html#pp"><span class="hs-identifier hs-var">pp</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="Math.Tools.Lexer.html#FloatNumber"><span class="hs-identifier hs-type">FloatNumber</span></a></span><span> </span><span id="local-6989586621681258808"><span class="annot"><span class="annottext">Double
-</span><a href="#local-6989586621681258808"><span class="hs-identifier hs-var">n</span></a></span></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Double -&gt; Doc
+</span><a href="#local-6989586621681330226"><span class="hs-identifier hs-var">n</span></a></span><span>
+</span><span id="line-33"></span><span>   </span><span class="annot"><a href="Math.Tools.PrettyP.html#pp"><span class="hs-identifier hs-var">pp</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="Math.Tools.Lexer.html#FloatNumber"><span class="hs-identifier hs-type">FloatNumber</span></a></span><span> </span><span id="local-6989586621681330227"><span class="annot"><span class="annottext">Double
+</span><a href="#local-6989586621681330227"><span class="hs-identifier hs-var">n</span></a></span></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Double -&gt; Doc
 forall a. PpShow a =&gt; a -&gt; Doc
 </span><a href="Math.Tools.PrettyP.html#pp"><span class="hs-identifier hs-var">pp</span></a></span><span> </span><span class="annot"><span class="annottext">Double
-</span><a href="#local-6989586621681258808"><span class="hs-identifier hs-var">n</span></a></span><span>
-</span><span id="line-34"></span><span>   </span><span class="annot"><a href="Math.Tools.PrettyP.html#pp"><span class="hs-identifier hs-var">pp</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="Math.Tools.Lexer.html#StringLit"><span class="hs-identifier hs-type">StringLit</span></a></span><span> </span><span id="local-6989586621681258809"><span class="annot"><span class="annottext">Text
-</span><a href="#local-6989586621681258809"><span class="hs-identifier hs-var">t</span></a></span></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Text -&gt; Doc
+</span><a href="#local-6989586621681330227"><span class="hs-identifier hs-var">n</span></a></span><span>
+</span><span id="line-34"></span><span>   </span><span class="annot"><a href="Math.Tools.PrettyP.html#pp"><span class="hs-identifier hs-var">pp</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="Math.Tools.Lexer.html#StringLit"><span class="hs-identifier hs-type">StringLit</span></a></span><span> </span><span id="local-6989586621681330228"><span class="annot"><span class="annottext">Text
+</span><a href="#local-6989586621681330228"><span class="hs-identifier hs-var">t</span></a></span></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Text -&gt; Doc
 forall a. PpShow a =&gt; a -&gt; Doc
 </span><a href="Math.Tools.PrettyP.html#pp"><span class="hs-identifier hs-var">pp</span></a></span><span> </span><span class="annot"><span class="annottext">Text
-</span><a href="#local-6989586621681258809"><span class="hs-identifier hs-var">t</span></a></span><span>
-</span><span id="line-35"></span><span>   </span><span class="annot"><a href="Math.Tools.PrettyP.html#pp"><span class="hs-identifier hs-var">pp</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="Math.Tools.Lexer.html#Identifier"><span class="hs-identifier hs-type">Identifier</span></a></span><span> </span><span id="local-6989586621681258810"><span class="annot"><span class="annottext">Text
-</span><a href="#local-6989586621681258810"><span class="hs-identifier hs-var">i</span></a></span></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Text -&gt; Doc
+</span><a href="#local-6989586621681330228"><span class="hs-identifier hs-var">t</span></a></span><span>
+</span><span id="line-35"></span><span>   </span><span class="annot"><a href="Math.Tools.PrettyP.html#pp"><span class="hs-identifier hs-var">pp</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="Math.Tools.Lexer.html#Identifier"><span class="hs-identifier hs-type">Identifier</span></a></span><span> </span><span id="local-6989586621681330229"><span class="annot"><span class="annottext">Text
+</span><a href="#local-6989586621681330229"><span class="hs-identifier hs-var">i</span></a></span></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Text -&gt; Doc
 forall a. PpShow a =&gt; a -&gt; Doc
 </span><a href="Math.Tools.PrettyP.html#pp"><span class="hs-identifier hs-var">pp</span></a></span><span> </span><span class="annot"><span class="annottext">Text
-</span><a href="#local-6989586621681258810"><span class="hs-identifier hs-var">i</span></a></span><span>
-</span><span id="line-36"></span><span>   </span><span class="annot"><a href="Math.Tools.PrettyP.html#pp"><span class="hs-identifier hs-var">pp</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="Math.Tools.Lexer.html#Operator"><span class="hs-identifier hs-type">Operator</span></a></span><span> </span><span id="local-6989586621681258811"><span class="annot"><span class="annottext">Text
-</span><a href="#local-6989586621681258811"><span class="hs-identifier hs-var">t</span></a></span></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Text -&gt; Doc
+</span><a href="#local-6989586621681330229"><span class="hs-identifier hs-var">i</span></a></span><span>
+</span><span id="line-36"></span><span>   </span><span class="annot"><a href="Math.Tools.PrettyP.html#pp"><span class="hs-identifier hs-var">pp</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="Math.Tools.Lexer.html#Operator"><span class="hs-identifier hs-type">Operator</span></a></span><span> </span><span id="local-6989586621681330230"><span class="annot"><span class="annottext">Text
+</span><a href="#local-6989586621681330230"><span class="hs-identifier hs-var">t</span></a></span></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Text -&gt; Doc
 forall a. PpShow a =&gt; a -&gt; Doc
 </span><a href="Math.Tools.PrettyP.html#pp"><span class="hs-identifier hs-var">pp</span></a></span><span> </span><span class="annot"><span class="annottext">Text
-</span><a href="#local-6989586621681258811"><span class="hs-identifier hs-var">t</span></a></span><span>
-</span><span id="line-37"></span><span>   </span><span class="annot"><a href="Math.Tools.PrettyP.html#pp"><span class="hs-identifier hs-var">pp</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="Math.Tools.Lexer.html#WhiteSpace"><span class="hs-identifier hs-type">WhiteSpace</span></a></span><span> </span><span id="local-6989586621681258812"><span class="annot"><span class="annottext">Text
-</span><a href="#local-6989586621681258812"><span class="hs-identifier hs-var">t</span></a></span></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Text -&gt; Doc
+</span><a href="#local-6989586621681330230"><span class="hs-identifier hs-var">t</span></a></span><span>
+</span><span id="line-37"></span><span>   </span><span class="annot"><a href="Math.Tools.PrettyP.html#pp"><span class="hs-identifier hs-var">pp</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="Math.Tools.Lexer.html#WhiteSpace"><span class="hs-identifier hs-type">WhiteSpace</span></a></span><span> </span><span id="local-6989586621681330231"><span class="annot"><span class="annottext">Text
+</span><a href="#local-6989586621681330231"><span class="hs-identifier hs-var">t</span></a></span></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Text -&gt; Doc
 forall a. PpShow a =&gt; a -&gt; Doc
 </span><a href="Math.Tools.PrettyP.html#pp"><span class="hs-identifier hs-var">pp</span></a></span><span> </span><span class="annot"><span class="annottext">Text
-</span><a href="#local-6989586621681258812"><span class="hs-identifier hs-var">t</span></a></span><span>
+</span><a href="#local-6989586621681330231"><span class="hs-identifier hs-var">t</span></a></span><span>
 </span><span id="line-38"></span><span>   </span><span class="annot"><a href="Math.Tools.PrettyP.html#pp"><span class="hs-identifier hs-var">pp</span></a></span><span> </span><span class="annot"><span class="annottext">Token
 </span><a href="Math.Tools.Lexer.html#Linefeed"><span class="hs-identifier hs-var">Linefeed</span></a></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Text -&gt; Doc
 forall a. PpShow a =&gt; a -&gt; Doc
@@ -282,189 +282,189 @@ forall a. PpShow a =&gt; a -&gt; Doc
 </span><a href="Math.Tools.PrettyP.html#pp"><span class="hs-identifier hs-var">pp</span></a></span><span> </span><span class="annot"><span class="annottext">Char
 </span><span class="hs-char">')'</span></span><span>
 </span><span id="line-49"></span><span>
-</span><span id="line-50"></span><span> </span><span id="local-6989586621681258538"><span id="local-6989586621681258539"><span class="annot"><a href="Math.Tools.Lexer.html#tokenLexer"><span class="hs-identifier hs-type">tokenLexer</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="#local-6989586621681258538"><span class="hs-identifier hs-type">t</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Int</span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="hs-special">(</span><span class="annot"><a href="#local-6989586621681258538"><span class="hs-identifier hs-type">t</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="Math.Tools.ParseMonad.html#ParseM"><span class="hs-identifier hs-type">ParseM</span></a></span><span> </span><span class="annot"><a href="#local-6989586621681258539"><span class="hs-identifier hs-type">a</span></a></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="Math.Tools.ParseMonad.html#ParseM"><span class="hs-identifier hs-type">ParseM</span></a></span><span> </span><span class="annot"><a href="#local-6989586621681258539"><span class="hs-identifier hs-type">a</span></a></span></span></span><span>
+</span><span id="line-50"></span><span> </span><span id="local-6989586621681329957"><span id="local-6989586621681329958"><span class="annot"><a href="Math.Tools.Lexer.html#tokenLexer"><span class="hs-identifier hs-type">tokenLexer</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="#local-6989586621681329957"><span class="hs-identifier hs-type">t</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Int</span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="hs-special">(</span><span class="annot"><a href="#local-6989586621681329957"><span class="hs-identifier hs-type">t</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="Math.Tools.ParseMonad.html#ParseM"><span class="hs-identifier hs-type">ParseM</span></a></span><span> </span><span class="annot"><a href="#local-6989586621681329958"><span class="hs-identifier hs-type">a</span></a></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="Math.Tools.ParseMonad.html#ParseM"><span class="hs-identifier hs-type">ParseM</span></a></span><span> </span><span class="annot"><a href="#local-6989586621681329958"><span class="hs-identifier hs-type">a</span></a></span></span></span><span>
 </span><span id="line-51"></span><span> </span><span id="tokenLexer"><span class="annot"><span class="annottext">tokenLexer :: forall t a. t -&gt; Int -&gt; (t -&gt; ParseM a) -&gt; ParseM a
-</span><a href="Math.Tools.Lexer.html#tokenLexer"><span class="hs-identifier hs-var hs-var">tokenLexer</span></a></span></span><span> </span><span id="local-6989586621681258814"><span class="annot"><span class="annottext">t
-</span><a href="#local-6989586621681258814"><span class="hs-identifier hs-var">tok</span></a></span></span><span> </span><span id="local-6989586621681258815"><span class="annot"><span class="annottext">Int
-</span><a href="#local-6989586621681258815"><span class="hs-identifier hs-var">len</span></a></span></span><span> </span><span id="local-6989586621681258816"><span class="annot"><span class="annottext">t -&gt; ParseM a
-</span><a href="#local-6989586621681258816"><span class="hs-identifier hs-var">cont</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">(Text -&gt; LineInfo -&gt; ParseResult a) -&gt; ParseM a
+</span><a href="Math.Tools.Lexer.html#tokenLexer"><span class="hs-identifier hs-var hs-var">tokenLexer</span></a></span></span><span> </span><span id="local-6989586621681330233"><span class="annot"><span class="annottext">t
+</span><a href="#local-6989586621681330233"><span class="hs-identifier hs-var">tok</span></a></span></span><span> </span><span id="local-6989586621681330234"><span class="annot"><span class="annottext">Int
+</span><a href="#local-6989586621681330234"><span class="hs-identifier hs-var">len</span></a></span></span><span> </span><span id="local-6989586621681330235"><span class="annot"><span class="annottext">t -&gt; ParseM a
+</span><a href="#local-6989586621681330235"><span class="hs-identifier hs-var">cont</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">(Text -&gt; LineInfo -&gt; ParseResult a) -&gt; ParseM a
 forall a. (Text -&gt; LineInfo -&gt; ParseResult a) -&gt; ParseM a
 </span><a href="Math.Tools.ParseMonad.html#ParseM"><span class="hs-identifier hs-var">ParseM</span></a></span><span> </span><span class="annot"><span class="annottext">((Text -&gt; LineInfo -&gt; ParseResult a) -&gt; ParseM a)
 -&gt; (Text -&gt; LineInfo -&gt; ParseResult a) -&gt; ParseM a
 forall a b. (a -&gt; b) -&gt; a -&gt; b
-</span><span class="hs-operator hs-var">$</span></span><span> </span><span class="hs-glyph">\</span><span id="local-6989586621681258818"><span class="annot"><span class="annottext">Text
-</span><a href="#local-6989586621681258818"><span class="hs-identifier hs-var">r</span></a></span></span><span> </span><span id="local-6989586621681258819"><span class="annot"><span class="annottext">LineInfo
-</span><a href="#local-6989586621681258819"><span class="hs-identifier hs-var">li</span></a></span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="annottext">ParseM a -&gt; Text -&gt; LineInfo -&gt; ParseResult a
+</span><span class="hs-operator hs-var">$</span></span><span> </span><span class="hs-glyph">\</span><span id="local-6989586621681330237"><span class="annot"><span class="annottext">Text
+</span><a href="#local-6989586621681330237"><span class="hs-identifier hs-var">r</span></a></span></span><span> </span><span id="local-6989586621681330238"><span class="annot"><span class="annottext">LineInfo
+</span><a href="#local-6989586621681330238"><span class="hs-identifier hs-var">li</span></a></span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="annottext">ParseM a -&gt; Text -&gt; LineInfo -&gt; ParseResult a
 forall a. ParseM a -&gt; Text -&gt; LineInfo -&gt; ParseResult a
 </span><a href="Math.Tools.ParseMonad.html#runParseM"><span class="hs-identifier hs-var">runParseM</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">t -&gt; ParseM a
-</span><a href="#local-6989586621681258816"><span class="hs-identifier hs-var">cont</span></a></span><span> </span><span class="annot"><span class="annottext">t
-</span><a href="#local-6989586621681258814"><span class="hs-identifier hs-var">tok</span></a></span><span class="hs-special">)</span><span> </span><span class="annot"><span class="annottext">Text
-</span><a href="#local-6989586621681258818"><span class="hs-identifier hs-var">r</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">Int -&gt; LineInfo -&gt; LineInfo
+</span><a href="#local-6989586621681330235"><span class="hs-identifier hs-var">cont</span></a></span><span> </span><span class="annot"><span class="annottext">t
+</span><a href="#local-6989586621681330233"><span class="hs-identifier hs-var">tok</span></a></span><span class="hs-special">)</span><span> </span><span class="annot"><span class="annottext">Text
+</span><a href="#local-6989586621681330237"><span class="hs-identifier hs-var">r</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">Int -&gt; LineInfo -&gt; LineInfo
 </span><a href="Math.Tools.LineInfo.html#addToColumn"><span class="hs-identifier hs-var">addToColumn</span></a></span><span> </span><span class="annot"><span class="annottext">Int
-</span><a href="#local-6989586621681258815"><span class="hs-identifier hs-var">len</span></a></span><span> </span><span class="annot"><span class="annottext">LineInfo
-</span><a href="#local-6989586621681258819"><span class="hs-identifier hs-var">li</span></a></span><span class="hs-special">)</span><span>
+</span><a href="#local-6989586621681330234"><span class="hs-identifier hs-var">len</span></a></span><span> </span><span class="annot"><span class="annottext">LineInfo
+</span><a href="#local-6989586621681330238"><span class="hs-identifier hs-var">li</span></a></span><span class="hs-special">)</span><span>
 </span><span id="line-52"></span><span>
-</span><span id="line-53"></span><span> </span><span id="local-6989586621681258550"><span class="annot"><a href="Math.Tools.Lexer.html#lexer"><span class="hs-identifier hs-type">lexer</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="hs-special">(</span><span class="annot"><a href="Math.Tools.Lexer.html#Token"><span class="hs-identifier hs-type">Token</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="Math.Tools.ParseMonad.html#ParseM"><span class="hs-identifier hs-type">ParseM</span></a></span><span> </span><span class="annot"><a href="#local-6989586621681258550"><span class="hs-identifier hs-type">a</span></a></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="Math.Tools.ParseMonad.html#ParseM"><span class="hs-identifier hs-type">ParseM</span></a></span><span> </span><span class="annot"><a href="#local-6989586621681258550"><span class="hs-identifier hs-type">a</span></a></span></span><span>
+</span><span id="line-53"></span><span> </span><span id="local-6989586621681329969"><span class="annot"><a href="Math.Tools.Lexer.html#lexer"><span class="hs-identifier hs-type">lexer</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="hs-special">(</span><span class="annot"><a href="Math.Tools.Lexer.html#Token"><span class="hs-identifier hs-type">Token</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="Math.Tools.ParseMonad.html#ParseM"><span class="hs-identifier hs-type">ParseM</span></a></span><span> </span><span class="annot"><a href="#local-6989586621681329969"><span class="hs-identifier hs-type">a</span></a></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="Math.Tools.ParseMonad.html#ParseM"><span class="hs-identifier hs-type">ParseM</span></a></span><span> </span><span class="annot"><a href="#local-6989586621681329969"><span class="hs-identifier hs-type">a</span></a></span></span><span>
 </span><span id="line-54"></span><span> </span><span id="lexer"><span class="annot"><span class="annottext">lexer :: forall a. (Token -&gt; ParseM a) -&gt; ParseM a
-</span><a href="Math.Tools.Lexer.html#lexer"><span class="hs-identifier hs-var hs-var">lexer</span></a></span></span><span> </span><span id="local-6989586621681258846"><span class="annot"><span class="annottext">Token -&gt; ParseM a
-</span><a href="#local-6989586621681258846"><span class="hs-identifier hs-var">cont</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">(Text -&gt; LineInfo -&gt; ParseResult a) -&gt; ParseM a
+</span><a href="Math.Tools.Lexer.html#lexer"><span class="hs-identifier hs-var hs-var">lexer</span></a></span></span><span> </span><span id="local-6989586621681330265"><span class="annot"><span class="annottext">Token -&gt; ParseM a
+</span><a href="#local-6989586621681330265"><span class="hs-identifier hs-var">cont</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">(Text -&gt; LineInfo -&gt; ParseResult a) -&gt; ParseM a
 forall a. (Text -&gt; LineInfo -&gt; ParseResult a) -&gt; ParseM a
 </span><a href="Math.Tools.ParseMonad.html#ParseM"><span class="hs-identifier hs-var">ParseM</span></a></span><span> </span><span class="annot"><span class="annottext">((Text -&gt; LineInfo -&gt; ParseResult a) -&gt; ParseM a)
 -&gt; (Text -&gt; LineInfo -&gt; ParseResult a) -&gt; ParseM a
 forall a b. (a -&gt; b) -&gt; a -&gt; b
-</span><span class="hs-operator hs-var">$</span></span><span> </span><span class="hs-glyph">\</span><span id="local-6989586621681258847"><span class="annot"><span class="annottext">Text
-</span><a href="#local-6989586621681258847"><span class="hs-identifier hs-var">inp</span></a></span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="hs-keyword">case</span><span> </span><span class="annot"><span class="annottext">Text -&gt; Maybe (Char, Text)
+</span><span class="hs-operator hs-var">$</span></span><span> </span><span class="hs-glyph">\</span><span id="local-6989586621681330266"><span class="annot"><span class="annottext">Text
+</span><a href="#local-6989586621681330266"><span class="hs-identifier hs-var">inp</span></a></span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="hs-keyword">case</span><span> </span><span class="annot"><span class="annottext">Text -&gt; Maybe (Char, Text)
 </span><span class="hs-identifier hs-var">uncons</span></span><span> </span><span class="annot"><span class="annottext">Text
-</span><a href="#local-6989586621681258847"><span class="hs-identifier hs-var">inp</span></a></span><span> </span><span class="hs-keyword">of</span><span>
+</span><a href="#local-6989586621681330266"><span class="hs-identifier hs-var">inp</span></a></span><span> </span><span class="hs-keyword">of</span><span>
 </span><span id="line-55"></span><span>     </span><span class="annot"><span class="annottext">Maybe (Char, Text)
 </span><span class="hs-identifier hs-var">Nothing</span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="annottext">Token -&gt; Int -&gt; (Token -&gt; ParseM a) -&gt; ParseM a
 forall t a. t -&gt; Int -&gt; (t -&gt; ParseM a) -&gt; ParseM a
 </span><a href="Math.Tools.Lexer.html#tokenLexer"><span class="hs-identifier hs-var">tokenLexer</span></a></span><span> </span><span class="annot"><span class="annottext">Token
 </span><a href="Math.Tools.Lexer.html#EOF"><span class="hs-identifier hs-var">EOF</span></a></span><span> </span><span class="annot"><span class="annottext">Int
 </span><span class="hs-number">0</span></span><span> </span><span class="annot"><span class="annottext">Token -&gt; ParseM a
-</span><a href="#local-6989586621681258846"><span class="hs-identifier hs-var">cont</span></a></span><span> </span><span class="annot"><span class="annottext">ParseM a -&gt; Text -&gt; LineInfo -&gt; ParseResult a
+</span><a href="#local-6989586621681330265"><span class="hs-identifier hs-var">cont</span></a></span><span> </span><span class="annot"><span class="annottext">ParseM a -&gt; Text -&gt; LineInfo -&gt; ParseResult a
 forall a. ParseM a -&gt; Text -&gt; LineInfo -&gt; ParseResult a
 </span><a href="Math.Tools.ParseMonad.html#runParseM"><span class="hs-operator hs-var">`runParseM`</span></a></span><span> </span><span class="annot"><span class="annottext">Text
 </span><span class="hs-identifier hs-var">Text.empty</span></span><span>
 </span><span id="line-56"></span><span>     </span><span class="annot"><span class="hs-identifier hs-type">Just</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">Char
-</span><span class="hs-char">'\n'</span></span><span class="hs-special">,</span><span id="local-6989586621681258849"><span class="annot"><span class="annottext">Text
-</span><a href="#local-6989586621681258849"><span class="hs-identifier hs-var">r</span></a></span></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="hs-glyph">\</span><span id="local-6989586621681258850"><span class="annot"><span class="annottext">LineInfo
-</span><a href="#local-6989586621681258850"><span class="hs-identifier hs-var">line</span></a></span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="annottext">ParseM a -&gt; Text -&gt; LineInfo -&gt; ParseResult a
+</span><span class="hs-char">'\n'</span></span><span class="hs-special">,</span><span id="local-6989586621681330268"><span class="annot"><span class="annottext">Text
+</span><a href="#local-6989586621681330268"><span class="hs-identifier hs-var">r</span></a></span></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="hs-glyph">\</span><span id="local-6989586621681330269"><span class="annot"><span class="annottext">LineInfo
+</span><a href="#local-6989586621681330269"><span class="hs-identifier hs-var">line</span></a></span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="annottext">ParseM a -&gt; Text -&gt; LineInfo -&gt; ParseResult a
 forall a. ParseM a -&gt; Text -&gt; LineInfo -&gt; ParseResult a
 </span><a href="Math.Tools.ParseMonad.html#runParseM"><span class="hs-identifier hs-var">runParseM</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">Token -&gt; ParseM a
-</span><a href="#local-6989586621681258846"><span class="hs-identifier hs-var">cont</span></a></span><span> </span><span class="annot"><span class="annottext">Token
+</span><a href="#local-6989586621681330265"><span class="hs-identifier hs-var">cont</span></a></span><span> </span><span class="annot"><span class="annottext">Token
 </span><a href="Math.Tools.Lexer.html#Linefeed"><span class="hs-identifier hs-var">Linefeed</span></a></span><span class="hs-special">)</span><span> </span><span class="annot"><span class="annottext">Text
-</span><a href="#local-6989586621681258849"><span class="hs-identifier hs-var">r</span></a></span><span> </span><span class="annot"><span class="annottext">(LineInfo -&gt; ParseResult a) -&gt; LineInfo -&gt; ParseResult a
+</span><a href="#local-6989586621681330268"><span class="hs-identifier hs-var">r</span></a></span><span> </span><span class="annot"><span class="annottext">(LineInfo -&gt; ParseResult a) -&gt; LineInfo -&gt; ParseResult a
 forall a b. (a -&gt; b) -&gt; a -&gt; b
 </span><span class="hs-operator hs-var">$!</span></span><span> </span><span class="annot"><span class="annottext">LineInfo -&gt; LineInfo
 </span><a href="Math.Tools.LineInfo.html#nextLine"><span class="hs-identifier hs-var">nextLine</span></a></span><span> </span><span class="annot"><span class="annottext">LineInfo
-</span><a href="#local-6989586621681258850"><span class="hs-identifier hs-var">line</span></a></span><span>
+</span><a href="#local-6989586621681330269"><span class="hs-identifier hs-var">line</span></a></span><span>
 </span><span id="line-57"></span><span>     </span><span class="annot"><span class="hs-identifier hs-type">Just</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">Char
-</span><span class="hs-char">'&quot;'</span></span><span class="hs-special">,</span><span id="local-6989586621681258853"><span class="annot"><span class="annottext">Text
-</span><a href="#local-6989586621681258853"><span class="hs-identifier hs-var">r</span></a></span></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">|</span><span> </span><span class="hs-special">(</span><span id="local-6989586621681258854"><span class="annot"><span class="annottext">Text
-</span><a href="#local-6989586621681258854"><span class="hs-identifier hs-var">str</span></a></span></span><span class="hs-special">,</span><span id="local-6989586621681258855"><span class="annot"><span class="annottext">Text
-</span><a href="#local-6989586621681258855"><span class="hs-identifier hs-var">s'</span></a></span></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">&lt;-</span><span> </span><span class="annot"><span class="annottext">(Char -&gt; Bool) -&gt; Text -&gt; (Text, Text)
+</span><span class="hs-char">'&quot;'</span></span><span class="hs-special">,</span><span id="local-6989586621681330272"><span class="annot"><span class="annottext">Text
+</span><a href="#local-6989586621681330272"><span class="hs-identifier hs-var">r</span></a></span></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">|</span><span> </span><span class="hs-special">(</span><span id="local-6989586621681330273"><span class="annot"><span class="annottext">Text
+</span><a href="#local-6989586621681330273"><span class="hs-identifier hs-var">str</span></a></span></span><span class="hs-special">,</span><span id="local-6989586621681330274"><span class="annot"><span class="annottext">Text
+</span><a href="#local-6989586621681330274"><span class="hs-identifier hs-var">s'</span></a></span></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">&lt;-</span><span> </span><span class="annot"><span class="annottext">(Char -&gt; Bool) -&gt; Text -&gt; (Text, Text)
 </span><span class="hs-identifier hs-var">span</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">Char -&gt; Char -&gt; Bool
 forall a. Eq a =&gt; a -&gt; a -&gt; Bool
 </span><span class="hs-operator hs-var">/=</span></span><span> </span><span class="annot"><span class="annottext">Char
 </span><span class="hs-char">'&quot;'</span></span><span class="hs-special">)</span><span> </span><span class="annot"><span class="annottext">Text
-</span><a href="#local-6989586621681258853"><span class="hs-identifier hs-var">r</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span>
+</span><a href="#local-6989586621681330272"><span class="hs-identifier hs-var">r</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span>
 </span><span id="line-58"></span><span>           </span><span class="annot"><span class="annottext">Token -&gt; Int -&gt; (Token -&gt; ParseM a) -&gt; ParseM a
 forall t a. t -&gt; Int -&gt; (t -&gt; ParseM a) -&gt; ParseM a
 </span><a href="Math.Tools.Lexer.html#tokenLexer"><span class="hs-identifier hs-var">tokenLexer</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">Text -&gt; Token
 </span><a href="Math.Tools.Lexer.html#StringLit"><span class="hs-identifier hs-var">StringLit</span></a></span><span> </span><span class="annot"><span class="annottext">Text
-</span><a href="#local-6989586621681258854"><span class="hs-identifier hs-var">str</span></a></span><span class="hs-special">)</span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">Text -&gt; Int
+</span><a href="#local-6989586621681330273"><span class="hs-identifier hs-var">str</span></a></span><span class="hs-special">)</span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">Text -&gt; Int
 </span><span class="hs-identifier hs-var">length</span></span><span> </span><span class="annot"><span class="annottext">Text
-</span><a href="#local-6989586621681258854"><span class="hs-identifier hs-var">str</span></a></span><span> </span><span class="annot"><span class="annottext">Int -&gt; Int -&gt; Int
+</span><a href="#local-6989586621681330273"><span class="hs-identifier hs-var">str</span></a></span><span> </span><span class="annot"><span class="annottext">Int -&gt; Int -&gt; Int
 forall a. Num a =&gt; a -&gt; a -&gt; a
 </span><span class="hs-operator hs-var">+</span></span><span> </span><span class="annot"><span class="annottext">Int
 </span><span class="hs-number">1</span></span><span class="hs-special">)</span><span> </span><span class="annot"><span class="annottext">Token -&gt; ParseM a
-</span><a href="#local-6989586621681258846"><span class="hs-identifier hs-var">cont</span></a></span><span> </span><span class="annot"><span class="annottext">ParseM a -&gt; Text -&gt; LineInfo -&gt; ParseResult a
+</span><a href="#local-6989586621681330265"><span class="hs-identifier hs-var">cont</span></a></span><span> </span><span class="annot"><span class="annottext">ParseM a -&gt; Text -&gt; LineInfo -&gt; ParseResult a
 forall a. ParseM a -&gt; Text -&gt; LineInfo -&gt; ParseResult a
 </span><a href="Math.Tools.ParseMonad.html#runParseM"><span class="hs-operator hs-var">`runParseM`</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">HasCallStack =&gt; Text -&gt; Text
 Text -&gt; Text
 </span><span class="hs-identifier hs-var">Text.tail</span></span><span> </span><span class="annot"><span class="annottext">Text
-</span><a href="#local-6989586621681258855"><span class="hs-identifier hs-var">s'</span></a></span><span class="hs-special">)</span><span>
+</span><a href="#local-6989586621681330274"><span class="hs-identifier hs-var">s'</span></a></span><span class="hs-special">)</span><span>
 </span><span id="line-59"></span><span>     </span><span class="annot"><span class="hs-identifier hs-type">Just</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">Char
-</span><span class="hs-char">'{'</span></span><span class="hs-special">,</span><span id="local-6989586621681258859"><span class="annot"><span class="annottext">Text
-</span><a href="#local-6989586621681258859"><span class="hs-identifier hs-var">r</span></a></span></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="annottext">Token -&gt; Int -&gt; (Token -&gt; ParseM a) -&gt; ParseM a
+</span><span class="hs-char">'{'</span></span><span class="hs-special">,</span><span id="local-6989586621681330278"><span class="annot"><span class="annottext">Text
+</span><a href="#local-6989586621681330278"><span class="hs-identifier hs-var">r</span></a></span></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="annottext">Token -&gt; Int -&gt; (Token -&gt; ParseM a) -&gt; ParseM a
 forall t a. t -&gt; Int -&gt; (t -&gt; ParseM a) -&gt; ParseM a
 </span><a href="Math.Tools.Lexer.html#tokenLexer"><span class="hs-identifier hs-var">tokenLexer</span></a></span><span> </span><span class="annot"><span class="annottext">Token
 </span><a href="Math.Tools.Lexer.html#OpenBrace"><span class="hs-identifier hs-var">OpenBrace</span></a></span><span> </span><span class="annot"><span class="annottext">Int
 </span><span class="hs-number">1</span></span><span> </span><span class="annot"><span class="annottext">Token -&gt; ParseM a
-</span><a href="#local-6989586621681258846"><span class="hs-identifier hs-var">cont</span></a></span><span> </span><span class="annot"><span class="annottext">ParseM a -&gt; Text -&gt; LineInfo -&gt; ParseResult a
+</span><a href="#local-6989586621681330265"><span class="hs-identifier hs-var">cont</span></a></span><span> </span><span class="annot"><span class="annottext">ParseM a -&gt; Text -&gt; LineInfo -&gt; ParseResult a
 forall a. ParseM a -&gt; Text -&gt; LineInfo -&gt; ParseResult a
 </span><a href="Math.Tools.ParseMonad.html#runParseM"><span class="hs-operator hs-var">`runParseM`</span></a></span><span> </span><span class="annot"><span class="annottext">Text
-</span><a href="#local-6989586621681258859"><span class="hs-identifier hs-var">r</span></a></span><span>
+</span><a href="#local-6989586621681330278"><span class="hs-identifier hs-var">r</span></a></span><span>
 </span><span id="line-60"></span><span>     </span><span class="annot"><span class="hs-identifier hs-type">Just</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">Char
-</span><span class="hs-char">'}'</span></span><span class="hs-special">,</span><span id="local-6989586621681258860"><span class="annot"><span class="annottext">Text
-</span><a href="#local-6989586621681258860"><span class="hs-identifier hs-var">r</span></a></span></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="annottext">Token -&gt; Int -&gt; (Token -&gt; ParseM a) -&gt; ParseM a
+</span><span class="hs-char">'}'</span></span><span class="hs-special">,</span><span id="local-6989586621681330279"><span class="annot"><span class="annottext">Text
+</span><a href="#local-6989586621681330279"><span class="hs-identifier hs-var">r</span></a></span></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="annottext">Token -&gt; Int -&gt; (Token -&gt; ParseM a) -&gt; ParseM a
 forall t a. t -&gt; Int -&gt; (t -&gt; ParseM a) -&gt; ParseM a
 </span><a href="Math.Tools.Lexer.html#tokenLexer"><span class="hs-identifier hs-var">tokenLexer</span></a></span><span> </span><span class="annot"><span class="annottext">Token
 </span><a href="Math.Tools.Lexer.html#CloseBrace"><span class="hs-identifier hs-var">CloseBrace</span></a></span><span> </span><span class="annot"><span class="annottext">Int
 </span><span class="hs-number">1</span></span><span> </span><span class="annot"><span class="annottext">Token -&gt; ParseM a
-</span><a href="#local-6989586621681258846"><span class="hs-identifier hs-var">cont</span></a></span><span> </span><span class="annot"><span class="annottext">ParseM a -&gt; Text -&gt; LineInfo -&gt; ParseResult a
+</span><a href="#local-6989586621681330265"><span class="hs-identifier hs-var">cont</span></a></span><span> </span><span class="annot"><span class="annottext">ParseM a -&gt; Text -&gt; LineInfo -&gt; ParseResult a
 forall a. ParseM a -&gt; Text -&gt; LineInfo -&gt; ParseResult a
 </span><a href="Math.Tools.ParseMonad.html#runParseM"><span class="hs-operator hs-var">`runParseM`</span></a></span><span> </span><span class="annot"><span class="annottext">Text
-</span><a href="#local-6989586621681258860"><span class="hs-identifier hs-var">r</span></a></span><span>
+</span><a href="#local-6989586621681330279"><span class="hs-identifier hs-var">r</span></a></span><span>
 </span><span id="line-61"></span><span>     </span><span class="annot"><span class="hs-identifier hs-type">Just</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">Char
-</span><span class="hs-char">'['</span></span><span class="hs-special">,</span><span id="local-6989586621681258861"><span class="annot"><span class="annottext">Text
-</span><a href="#local-6989586621681258861"><span class="hs-identifier hs-var">r</span></a></span></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="annottext">Token -&gt; Int -&gt; (Token -&gt; ParseM a) -&gt; ParseM a
+</span><span class="hs-char">'['</span></span><span class="hs-special">,</span><span id="local-6989586621681330280"><span class="annot"><span class="annottext">Text
+</span><a href="#local-6989586621681330280"><span class="hs-identifier hs-var">r</span></a></span></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="annottext">Token -&gt; Int -&gt; (Token -&gt; ParseM a) -&gt; ParseM a
 forall t a. t -&gt; Int -&gt; (t -&gt; ParseM a) -&gt; ParseM a
 </span><a href="Math.Tools.Lexer.html#tokenLexer"><span class="hs-identifier hs-var">tokenLexer</span></a></span><span> </span><span class="annot"><span class="annottext">Token
 </span><a href="Math.Tools.Lexer.html#OpenBracket"><span class="hs-identifier hs-var">OpenBracket</span></a></span><span> </span><span class="annot"><span class="annottext">Int
 </span><span class="hs-number">1</span></span><span> </span><span class="annot"><span class="annottext">Token -&gt; ParseM a
-</span><a href="#local-6989586621681258846"><span class="hs-identifier hs-var">cont</span></a></span><span> </span><span class="annot"><span class="annottext">ParseM a -&gt; Text -&gt; LineInfo -&gt; ParseResult a
+</span><a href="#local-6989586621681330265"><span class="hs-identifier hs-var">cont</span></a></span><span> </span><span class="annot"><span class="annottext">ParseM a -&gt; Text -&gt; LineInfo -&gt; ParseResult a
 forall a. ParseM a -&gt; Text -&gt; LineInfo -&gt; ParseResult a
 </span><a href="Math.Tools.ParseMonad.html#runParseM"><span class="hs-operator hs-var">`runParseM`</span></a></span><span> </span><span class="annot"><span class="annottext">Text
-</span><a href="#local-6989586621681258861"><span class="hs-identifier hs-var">r</span></a></span><span>
+</span><a href="#local-6989586621681330280"><span class="hs-identifier hs-var">r</span></a></span><span>
 </span><span id="line-62"></span><span>     </span><span class="annot"><span class="hs-identifier hs-type">Just</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">Char
-</span><span class="hs-char">']'</span></span><span class="hs-special">,</span><span id="local-6989586621681258862"><span class="annot"><span class="annottext">Text
-</span><a href="#local-6989586621681258862"><span class="hs-identifier hs-var">r</span></a></span></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="annottext">Token -&gt; Int -&gt; (Token -&gt; ParseM a) -&gt; ParseM a
+</span><span class="hs-char">']'</span></span><span class="hs-special">,</span><span id="local-6989586621681330281"><span class="annot"><span class="annottext">Text
+</span><a href="#local-6989586621681330281"><span class="hs-identifier hs-var">r</span></a></span></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="annottext">Token -&gt; Int -&gt; (Token -&gt; ParseM a) -&gt; ParseM a
 forall t a. t -&gt; Int -&gt; (t -&gt; ParseM a) -&gt; ParseM a
 </span><a href="Math.Tools.Lexer.html#tokenLexer"><span class="hs-identifier hs-var">tokenLexer</span></a></span><span> </span><span class="annot"><span class="annottext">Token
 </span><a href="Math.Tools.Lexer.html#CloseBracket"><span class="hs-identifier hs-var">CloseBracket</span></a></span><span> </span><span class="annot"><span class="annottext">Int
 </span><span class="hs-number">1</span></span><span> </span><span class="annot"><span class="annottext">Token -&gt; ParseM a
-</span><a href="#local-6989586621681258846"><span class="hs-identifier hs-var">cont</span></a></span><span> </span><span class="annot"><span class="annottext">ParseM a -&gt; Text -&gt; LineInfo -&gt; ParseResult a
+</span><a href="#local-6989586621681330265"><span class="hs-identifier hs-var">cont</span></a></span><span> </span><span class="annot"><span class="annottext">ParseM a -&gt; Text -&gt; LineInfo -&gt; ParseResult a
 forall a. ParseM a -&gt; Text -&gt; LineInfo -&gt; ParseResult a
 </span><a href="Math.Tools.ParseMonad.html#runParseM"><span class="hs-operator hs-var">`runParseM`</span></a></span><span> </span><span class="annot"><span class="annottext">Text
-</span><a href="#local-6989586621681258862"><span class="hs-identifier hs-var">r</span></a></span><span>
+</span><a href="#local-6989586621681330281"><span class="hs-identifier hs-var">r</span></a></span><span>
 </span><span id="line-63"></span><span>     </span><span class="annot"><span class="hs-identifier hs-type">Just</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">Char
-</span><span class="hs-char">'('</span></span><span class="hs-special">,</span><span id="local-6989586621681258863"><span class="annot"><span class="annottext">Text
-</span><a href="#local-6989586621681258863"><span class="hs-identifier hs-var">r</span></a></span></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="annottext">Token -&gt; Int -&gt; (Token -&gt; ParseM a) -&gt; ParseM a
+</span><span class="hs-char">'('</span></span><span class="hs-special">,</span><span id="local-6989586621681330282"><span class="annot"><span class="annottext">Text
+</span><a href="#local-6989586621681330282"><span class="hs-identifier hs-var">r</span></a></span></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="annottext">Token -&gt; Int -&gt; (Token -&gt; ParseM a) -&gt; ParseM a
 forall t a. t -&gt; Int -&gt; (t -&gt; ParseM a) -&gt; ParseM a
 </span><a href="Math.Tools.Lexer.html#tokenLexer"><span class="hs-identifier hs-var">tokenLexer</span></a></span><span> </span><span class="annot"><span class="annottext">Token
 </span><a href="Math.Tools.Lexer.html#OpenParenthesis"><span class="hs-identifier hs-var">OpenParenthesis</span></a></span><span> </span><span class="annot"><span class="annottext">Int
 </span><span class="hs-number">1</span></span><span> </span><span class="annot"><span class="annottext">Token -&gt; ParseM a
-</span><a href="#local-6989586621681258846"><span class="hs-identifier hs-var">cont</span></a></span><span> </span><span class="annot"><span class="annottext">ParseM a -&gt; Text -&gt; LineInfo -&gt; ParseResult a
+</span><a href="#local-6989586621681330265"><span class="hs-identifier hs-var">cont</span></a></span><span> </span><span class="annot"><span class="annottext">ParseM a -&gt; Text -&gt; LineInfo -&gt; ParseResult a
 forall a. ParseM a -&gt; Text -&gt; LineInfo -&gt; ParseResult a
 </span><a href="Math.Tools.ParseMonad.html#runParseM"><span class="hs-operator hs-var">`runParseM`</span></a></span><span> </span><span class="annot"><span class="annottext">Text
-</span><a href="#local-6989586621681258863"><span class="hs-identifier hs-var">r</span></a></span><span>
+</span><a href="#local-6989586621681330282"><span class="hs-identifier hs-var">r</span></a></span><span>
 </span><span id="line-64"></span><span>     </span><span class="annot"><span class="hs-identifier hs-type">Just</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">Char
-</span><span class="hs-char">')'</span></span><span class="hs-special">,</span><span id="local-6989586621681258864"><span class="annot"><span class="annottext">Text
-</span><a href="#local-6989586621681258864"><span class="hs-identifier hs-var">r</span></a></span></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="annottext">Token -&gt; Int -&gt; (Token -&gt; ParseM a) -&gt; ParseM a
+</span><span class="hs-char">')'</span></span><span class="hs-special">,</span><span id="local-6989586621681330283"><span class="annot"><span class="annottext">Text
+</span><a href="#local-6989586621681330283"><span class="hs-identifier hs-var">r</span></a></span></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="annottext">Token -&gt; Int -&gt; (Token -&gt; ParseM a) -&gt; ParseM a
 forall t a. t -&gt; Int -&gt; (t -&gt; ParseM a) -&gt; ParseM a
 </span><a href="Math.Tools.Lexer.html#tokenLexer"><span class="hs-identifier hs-var">tokenLexer</span></a></span><span> </span><span class="annot"><span class="annottext">Token
 </span><a href="Math.Tools.Lexer.html#CloseParenthesis"><span class="hs-identifier hs-var">CloseParenthesis</span></a></span><span> </span><span class="annot"><span class="annottext">Int
 </span><span class="hs-number">1</span></span><span> </span><span class="annot"><span class="annottext">Token -&gt; ParseM a
-</span><a href="#local-6989586621681258846"><span class="hs-identifier hs-var">cont</span></a></span><span> </span><span class="annot"><span class="annottext">ParseM a -&gt; Text -&gt; LineInfo -&gt; ParseResult a
+</span><a href="#local-6989586621681330265"><span class="hs-identifier hs-var">cont</span></a></span><span> </span><span class="annot"><span class="annottext">ParseM a -&gt; Text -&gt; LineInfo -&gt; ParseResult a
 forall a. ParseM a -&gt; Text -&gt; LineInfo -&gt; ParseResult a
 </span><a href="Math.Tools.ParseMonad.html#runParseM"><span class="hs-operator hs-var">`runParseM`</span></a></span><span> </span><span class="annot"><span class="annottext">Text
-</span><a href="#local-6989586621681258864"><span class="hs-identifier hs-var">r</span></a></span><span>
+</span><a href="#local-6989586621681330283"><span class="hs-identifier hs-var">r</span></a></span><span>
 </span><span id="line-65"></span><span>     </span><span class="annot"><span class="hs-identifier hs-type">Just</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">Char
-</span><span class="hs-char">','</span></span><span class="hs-special">,</span><span id="local-6989586621681258865"><span class="annot"><span class="annottext">Text
-</span><a href="#local-6989586621681258865"><span class="hs-identifier hs-var">r</span></a></span></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="annottext">Token -&gt; Int -&gt; (Token -&gt; ParseM a) -&gt; ParseM a
+</span><span class="hs-char">','</span></span><span class="hs-special">,</span><span id="local-6989586621681330284"><span class="annot"><span class="annottext">Text
+</span><a href="#local-6989586621681330284"><span class="hs-identifier hs-var">r</span></a></span></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="annottext">Token -&gt; Int -&gt; (Token -&gt; ParseM a) -&gt; ParseM a
 forall t a. t -&gt; Int -&gt; (t -&gt; ParseM a) -&gt; ParseM a
 </span><a href="Math.Tools.Lexer.html#tokenLexer"><span class="hs-identifier hs-var">tokenLexer</span></a></span><span> </span><span class="annot"><span class="annottext">Token
 </span><a href="Math.Tools.Lexer.html#Comma"><span class="hs-identifier hs-var">Comma</span></a></span><span> </span><span class="annot"><span class="annottext">Int
 </span><span class="hs-number">1</span></span><span> </span><span class="annot"><span class="annottext">Token -&gt; ParseM a
-</span><a href="#local-6989586621681258846"><span class="hs-identifier hs-var">cont</span></a></span><span> </span><span class="annot"><span class="annottext">ParseM a -&gt; Text -&gt; LineInfo -&gt; ParseResult a
+</span><a href="#local-6989586621681330265"><span class="hs-identifier hs-var">cont</span></a></span><span> </span><span class="annot"><span class="annottext">ParseM a -&gt; Text -&gt; LineInfo -&gt; ParseResult a
 forall a. ParseM a -&gt; Text -&gt; LineInfo -&gt; ParseResult a
 </span><a href="Math.Tools.ParseMonad.html#runParseM"><span class="hs-operator hs-var">`runParseM`</span></a></span><span> </span><span class="annot"><span class="annottext">Text
-</span><a href="#local-6989586621681258865"><span class="hs-identifier hs-var">r</span></a></span><span>
+</span><a href="#local-6989586621681330284"><span class="hs-identifier hs-var">r</span></a></span><span>
 </span><span id="line-66"></span><span>     </span><span class="annot"><span class="hs-identifier hs-type">Just</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">Char
-</span><span class="hs-char">';'</span></span><span class="hs-special">,</span><span id="local-6989586621681258866"><span class="annot"><span class="annottext">Text
-</span><a href="#local-6989586621681258866"><span class="hs-identifier hs-var">r</span></a></span></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="annottext">Token -&gt; Int -&gt; (Token -&gt; ParseM a) -&gt; ParseM a
+</span><span class="hs-char">';'</span></span><span class="hs-special">,</span><span id="local-6989586621681330285"><span class="annot"><span class="annottext">Text
+</span><a href="#local-6989586621681330285"><span class="hs-identifier hs-var">r</span></a></span></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="annottext">Token -&gt; Int -&gt; (Token -&gt; ParseM a) -&gt; ParseM a
 forall t a. t -&gt; Int -&gt; (t -&gt; ParseM a) -&gt; ParseM a
 </span><a href="Math.Tools.Lexer.html#tokenLexer"><span class="hs-identifier hs-var">tokenLexer</span></a></span><span> </span><span class="annot"><span class="annottext">Token
 </span><a href="Math.Tools.Lexer.html#Semicolon"><span class="hs-identifier hs-var">Semicolon</span></a></span><span> </span><span class="annot"><span class="annottext">Int
 </span><span class="hs-number">1</span></span><span> </span><span class="annot"><span class="annottext">Token -&gt; ParseM a
-</span><a href="#local-6989586621681258846"><span class="hs-identifier hs-var">cont</span></a></span><span> </span><span class="annot"><span class="annottext">ParseM a -&gt; Text -&gt; LineInfo -&gt; ParseResult a
+</span><a href="#local-6989586621681330265"><span class="hs-identifier hs-var">cont</span></a></span><span> </span><span class="annot"><span class="annottext">ParseM a -&gt; Text -&gt; LineInfo -&gt; ParseResult a
 forall a. ParseM a -&gt; Text -&gt; LineInfo -&gt; ParseResult a
 </span><a href="Math.Tools.ParseMonad.html#runParseM"><span class="hs-operator hs-var">`runParseM`</span></a></span><span> </span><span class="annot"><span class="annottext">Text
-</span><a href="#local-6989586621681258866"><span class="hs-identifier hs-var">r</span></a></span><span>
+</span><a href="#local-6989586621681330285"><span class="hs-identifier hs-var">r</span></a></span><span>
 </span><span id="line-67"></span><span>     </span><span class="annot"><span class="hs-identifier hs-type">Just</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">Char
-</span><span class="hs-char">'0'</span></span><span class="hs-special">,</span><span id="local-6989586621681258867"><span class="annot"><span class="annottext">Text
-</span><a href="#local-6989586621681258867"><span class="hs-identifier hs-var">r1</span></a></span></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">|</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Just</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">Char
-</span><span class="hs-char">'x'</span></span><span class="hs-special">,</span><span id="local-6989586621681258868"><span class="annot"><span class="annottext">Text
-</span><a href="#local-6989586621681258868"><span class="hs-identifier hs-var">r</span></a></span></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">&lt;-</span><span> </span><span class="annot"><span class="annottext">Text -&gt; Maybe (Char, Text)
+</span><span class="hs-char">'0'</span></span><span class="hs-special">,</span><span id="local-6989586621681330286"><span class="annot"><span class="annottext">Text
+</span><a href="#local-6989586621681330286"><span class="hs-identifier hs-var">r1</span></a></span></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">|</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Just</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">Char
+</span><span class="hs-char">'x'</span></span><span class="hs-special">,</span><span id="local-6989586621681330287"><span class="annot"><span class="annottext">Text
+</span><a href="#local-6989586621681330287"><span class="hs-identifier hs-var">r</span></a></span></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">&lt;-</span><span> </span><span class="annot"><span class="annottext">Text -&gt; Maybe (Char, Text)
 </span><span class="hs-identifier hs-var">Text.uncons</span></span><span> </span><span class="annot"><span class="annottext">Text
-</span><a href="#local-6989586621681258867"><span class="hs-identifier hs-var">r1</span></a></span><span class="hs-special">,</span><span> </span><span class="hs-special">(</span><span id="local-6989586621681258869"><span class="annot"><span class="annottext">Text
-</span><a href="#local-6989586621681258869"><span class="hs-identifier hs-var">numstr</span></a></span></span><span class="hs-special">,</span><span id="local-6989586621681258870"><span class="annot"><span class="annottext">Text
-</span><a href="#local-6989586621681258870"><span class="hs-identifier hs-var">s'</span></a></span></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">&lt;-</span><span> </span><span class="annot"><span class="annottext">(Char -&gt; Bool) -&gt; Text -&gt; (Text, Text)
+</span><a href="#local-6989586621681330286"><span class="hs-identifier hs-var">r1</span></a></span><span class="hs-special">,</span><span> </span><span class="hs-special">(</span><span id="local-6989586621681330288"><span class="annot"><span class="annottext">Text
+</span><a href="#local-6989586621681330288"><span class="hs-identifier hs-var">numstr</span></a></span></span><span class="hs-special">,</span><span id="local-6989586621681330289"><span class="annot"><span class="annottext">Text
+</span><a href="#local-6989586621681330289"><span class="hs-identifier hs-var">s'</span></a></span></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">&lt;-</span><span> </span><span class="annot"><span class="annottext">(Char -&gt; Bool) -&gt; Text -&gt; (Text, Text)
 </span><span class="hs-identifier hs-var">Text.span</span></span><span> </span><span class="annot"><span class="annottext">Char -&gt; Bool
 </span><span class="hs-identifier hs-var">isHexDigit</span></span><span> </span><span class="annot"><span class="annottext">Text
-</span><a href="#local-6989586621681258868"><span class="hs-identifier hs-var">r</span></a></span><span>
+</span><a href="#local-6989586621681330287"><span class="hs-identifier hs-var">r</span></a></span><span>
 </span><span id="line-68"></span><span>                 </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="annottext">Token -&gt; Int -&gt; (Token -&gt; ParseM a) -&gt; ParseM a
 forall t a. t -&gt; Int -&gt; (t -&gt; ParseM a) -&gt; ParseM a
 </span><a href="Math.Tools.Lexer.html#tokenLexer"><span class="hs-identifier hs-var">tokenLexer</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">Integer -&gt; Token
@@ -472,29 +472,29 @@ forall t a. t -&gt; Int -&gt; (t -&gt; ParseM a) -&gt; ParseM a
 forall a b. (a -&gt; b) -&gt; a -&gt; b
 </span><span class="hs-operator hs-var">$</span></span><span> </span><span class="annot"><span class="annottext">Text -&gt; Integer -&gt; Integer
 </span><a href="Math.Tools.Lexer.html#hexToInt"><span class="hs-identifier hs-var">hexToInt</span></a></span><span> </span><span class="annot"><span class="annottext">Text
-</span><a href="#local-6989586621681258869"><span class="hs-identifier hs-var">numstr</span></a></span><span> </span><span class="annot"><span class="annottext">Integer
+</span><a href="#local-6989586621681330288"><span class="hs-identifier hs-var">numstr</span></a></span><span> </span><span class="annot"><span class="annottext">Integer
 </span><span class="hs-number">0</span></span><span class="hs-special">)</span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">Text -&gt; Int
 </span><span class="hs-identifier hs-var">Text.length</span></span><span> </span><span class="annot"><span class="annottext">Text
-</span><a href="#local-6989586621681258869"><span class="hs-identifier hs-var">numstr</span></a></span><span class="hs-special">)</span><span> </span><span class="annot"><span class="annottext">Token -&gt; ParseM a
-</span><a href="#local-6989586621681258846"><span class="hs-identifier hs-var">cont</span></a></span><span> </span><span class="annot"><span class="annottext">ParseM a -&gt; Text -&gt; LineInfo -&gt; ParseResult a
+</span><a href="#local-6989586621681330288"><span class="hs-identifier hs-var">numstr</span></a></span><span class="hs-special">)</span><span> </span><span class="annot"><span class="annottext">Token -&gt; ParseM a
+</span><a href="#local-6989586621681330265"><span class="hs-identifier hs-var">cont</span></a></span><span> </span><span class="annot"><span class="annottext">ParseM a -&gt; Text -&gt; LineInfo -&gt; ParseResult a
 forall a. ParseM a -&gt; Text -&gt; LineInfo -&gt; ParseResult a
 </span><a href="Math.Tools.ParseMonad.html#runParseM"><span class="hs-operator hs-var">`runParseM`</span></a></span><span> </span><span class="annot"><span class="annottext">Text
-</span><a href="#local-6989586621681258870"><span class="hs-identifier hs-var">s'</span></a></span><span>
+</span><a href="#local-6989586621681330289"><span class="hs-identifier hs-var">s'</span></a></span><span>
 </span><span id="line-69"></span><span>     </span><span class="annot"><span class="hs-identifier hs-type">Just</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">Char
-</span><span class="hs-char">'0'</span></span><span class="hs-special">,</span><span id="local-6989586621681258873"><span class="annot"><span class="annottext">Text
-</span><a href="#local-6989586621681258873"><span class="hs-identifier hs-var">r</span></a></span></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">|</span><span> </span><span class="hs-special">(</span><span id="local-6989586621681258874"><span class="annot"><span class="annottext">Text
-</span><a href="#local-6989586621681258874"><span class="hs-identifier hs-var">numstr</span></a></span></span><span class="hs-special">,</span><span id="local-6989586621681258875"><span class="annot"><span class="annottext">Text
-</span><a href="#local-6989586621681258875"><span class="hs-identifier hs-var">s'</span></a></span></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">&lt;-</span><span> </span><span class="annot"><span class="annottext">(Char -&gt; Bool) -&gt; Text -&gt; (Text, Text)
+</span><span class="hs-char">'0'</span></span><span class="hs-special">,</span><span id="local-6989586621681330292"><span class="annot"><span class="annottext">Text
+</span><a href="#local-6989586621681330292"><span class="hs-identifier hs-var">r</span></a></span></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">|</span><span> </span><span class="hs-special">(</span><span id="local-6989586621681330293"><span class="annot"><span class="annottext">Text
+</span><a href="#local-6989586621681330293"><span class="hs-identifier hs-var">numstr</span></a></span></span><span class="hs-special">,</span><span id="local-6989586621681330294"><span class="annot"><span class="annottext">Text
+</span><a href="#local-6989586621681330294"><span class="hs-identifier hs-var">s'</span></a></span></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">&lt;-</span><span> </span><span class="annot"><span class="annottext">(Char -&gt; Bool) -&gt; Text -&gt; (Text, Text)
 </span><span class="hs-identifier hs-var">Text.span</span></span><span> </span><span class="annot"><span class="annottext">Char -&gt; Bool
 </span><span class="hs-identifier hs-var">isOctDigit</span></span><span> </span><span class="annot"><span class="annottext">Text
-</span><a href="#local-6989586621681258873"><span class="hs-identifier hs-var">r</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">Bool -&gt; Bool
+</span><a href="#local-6989586621681330292"><span class="hs-identifier hs-var">r</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">Bool -&gt; Bool
 </span><span class="hs-identifier hs-var">not</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">Text -&gt; Bool
 </span><span class="hs-identifier hs-var">Text.null</span></span><span> </span><span class="annot"><span class="annottext">Text
-</span><a href="#local-6989586621681258875"><span class="hs-identifier hs-var">s'</span></a></span><span> </span><span class="annot"><span class="annottext">Bool -&gt; Bool -&gt; Bool
+</span><a href="#local-6989586621681330294"><span class="hs-identifier hs-var">s'</span></a></span><span> </span><span class="annot"><span class="annottext">Bool -&gt; Bool -&gt; Bool
 </span><span class="hs-operator hs-var">||</span></span><span> </span><span class="annot"><span class="annottext">HasCallStack =&gt; Text -&gt; Char
 Text -&gt; Char
 </span><span class="hs-identifier hs-var">Text.head</span></span><span> </span><span class="annot"><span class="annottext">Text
-</span><a href="#local-6989586621681258875"><span class="hs-identifier hs-var">s'</span></a></span><span> </span><span class="annot"><span class="annottext">Char -&gt; Char -&gt; Bool
+</span><a href="#local-6989586621681330294"><span class="hs-identifier hs-var">s'</span></a></span><span> </span><span class="annot"><span class="annottext">Char -&gt; Char -&gt; Bool
 forall a. Eq a =&gt; a -&gt; a -&gt; Bool
 </span><span class="hs-operator hs-var">==</span></span><span> </span><span class="annot"><span class="annottext">Char
 </span><span class="hs-char">'.'</span></span><span class="hs-special">)</span><span>
@@ -506,214 +506,214 @@ forall t a. t -&gt; Int -&gt; (t -&gt; ParseM a) -&gt; ParseM a
 forall a b. (a -&gt; b) -&gt; a -&gt; b
 </span><span class="hs-operator hs-var">$</span></span><span> </span><span class="annot"><span class="annottext">Text -&gt; Integer -&gt; Integer
 </span><a href="Math.Tools.Lexer.html#octToInt"><span class="hs-identifier hs-var">octToInt</span></a></span><span> </span><span class="annot"><span class="annottext">Text
-</span><a href="#local-6989586621681258874"><span class="hs-identifier hs-var">numstr</span></a></span><span> </span><span class="annot"><span class="annottext">Integer
+</span><a href="#local-6989586621681330293"><span class="hs-identifier hs-var">numstr</span></a></span><span> </span><span class="annot"><span class="annottext">Integer
 </span><span class="hs-number">0</span></span><span class="hs-special">)</span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">Text -&gt; Int
 </span><span class="hs-identifier hs-var">Text.length</span></span><span> </span><span class="annot"><span class="annottext">Text
-</span><a href="#local-6989586621681258874"><span class="hs-identifier hs-var">numstr</span></a></span><span class="hs-special">)</span><span> </span><span class="annot"><span class="annottext">Token -&gt; ParseM a
-</span><a href="#local-6989586621681258846"><span class="hs-identifier hs-var">cont</span></a></span><span> </span><span class="annot"><span class="annottext">ParseM a -&gt; Text -&gt; LineInfo -&gt; ParseResult a
+</span><a href="#local-6989586621681330293"><span class="hs-identifier hs-var">numstr</span></a></span><span class="hs-special">)</span><span> </span><span class="annot"><span class="annottext">Token -&gt; ParseM a
+</span><a href="#local-6989586621681330265"><span class="hs-identifier hs-var">cont</span></a></span><span> </span><span class="annot"><span class="annottext">ParseM a -&gt; Text -&gt; LineInfo -&gt; ParseResult a
 forall a. ParseM a -&gt; Text -&gt; LineInfo -&gt; ParseResult a
 </span><a href="Math.Tools.ParseMonad.html#runParseM"><span class="hs-operator hs-var">`runParseM`</span></a></span><span> </span><span class="annot"><span class="annottext">Text
-</span><a href="#local-6989586621681258875"><span class="hs-identifier hs-var">s'</span></a></span><span>
+</span><a href="#local-6989586621681330294"><span class="hs-identifier hs-var">s'</span></a></span><span>
 </span><span id="line-72"></span><span>     </span><span class="annot"><span class="hs-identifier hs-type">Just</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">Char
-</span><span class="hs-char">'-'</span></span><span class="hs-special">,</span><span id="local-6989586621681258881"><span class="annot"><span class="annottext">Text
-</span><a href="#local-6989586621681258881"><span class="hs-identifier hs-var">r</span></a></span></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">|</span><span> </span><span class="hs-special">(</span><span id="local-6989586621681258882"><span class="annot"><span class="annottext">Text
-</span><a href="#local-6989586621681258882"><span class="hs-identifier hs-var">tok</span></a></span></span><span class="hs-special">,</span><span id="local-6989586621681258883"><span class="annot"><span class="annottext">Text
-</span><a href="#local-6989586621681258883"><span class="hs-identifier hs-var">s'</span></a></span></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">&lt;-</span><span> </span><span class="annot"><span class="annottext">(Char -&gt; Bool) -&gt; Text -&gt; (Text, Text)
-</span><span class="hs-identifier hs-var">span</span></span><span> </span><span class="hs-special">(</span><span class="hs-glyph">\</span><span id="local-6989586621681258884"><span class="annot"><span class="annottext">Char
-</span><a href="#local-6989586621681258884"><span class="hs-identifier hs-var">x</span></a></span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="annottext">Char -&gt; Bool
+</span><span class="hs-char">'-'</span></span><span class="hs-special">,</span><span id="local-6989586621681330300"><span class="annot"><span class="annottext">Text
+</span><a href="#local-6989586621681330300"><span class="hs-identifier hs-var">r</span></a></span></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">|</span><span> </span><span class="hs-special">(</span><span id="local-6989586621681330301"><span class="annot"><span class="annottext">Text
+</span><a href="#local-6989586621681330301"><span class="hs-identifier hs-var">tok</span></a></span></span><span class="hs-special">,</span><span id="local-6989586621681330302"><span class="annot"><span class="annottext">Text
+</span><a href="#local-6989586621681330302"><span class="hs-identifier hs-var">s'</span></a></span></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">&lt;-</span><span> </span><span class="annot"><span class="annottext">(Char -&gt; Bool) -&gt; Text -&gt; (Text, Text)
+</span><span class="hs-identifier hs-var">span</span></span><span> </span><span class="hs-special">(</span><span class="hs-glyph">\</span><span id="local-6989586621681330303"><span class="annot"><span class="annottext">Char
+</span><a href="#local-6989586621681330303"><span class="hs-identifier hs-var">x</span></a></span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="annottext">Char -&gt; Bool
 </span><span class="hs-identifier hs-var">isDigit</span></span><span> </span><span class="annot"><span class="annottext">Char
-</span><a href="#local-6989586621681258884"><span class="hs-identifier hs-var">x</span></a></span><span> </span><span class="annot"><span class="annottext">Bool -&gt; Bool -&gt; Bool
+</span><a href="#local-6989586621681330303"><span class="hs-identifier hs-var">x</span></a></span><span> </span><span class="annot"><span class="annottext">Bool -&gt; Bool -&gt; Bool
 </span><span class="hs-operator hs-var">||</span></span><span> </span><span class="annot"><span class="annottext">Char
-</span><a href="#local-6989586621681258884"><span class="hs-identifier hs-var">x</span></a></span><span> </span><span class="annot"><span class="annottext">Char -&gt; Char -&gt; Bool
+</span><a href="#local-6989586621681330303"><span class="hs-identifier hs-var">x</span></a></span><span> </span><span class="annot"><span class="annottext">Char -&gt; Char -&gt; Bool
 forall a. Eq a =&gt; a -&gt; a -&gt; Bool
 </span><span class="hs-operator hs-var">==</span></span><span> </span><span class="annot"><span class="annottext">Char
 </span><span class="hs-char">'.'</span></span><span class="hs-special">)</span><span> </span><span class="annot"><span class="annottext">Text
-</span><a href="#local-6989586621681258881"><span class="hs-identifier hs-var">r</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span>
+</span><a href="#local-6989586621681330300"><span class="hs-identifier hs-var">r</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span>
 </span><span id="line-73"></span><span>               </span><span class="annot"><span class="annottext">Token -&gt; Int -&gt; (Token -&gt; ParseM a) -&gt; ParseM a
 forall t a. t -&gt; Int -&gt; (t -&gt; ParseM a) -&gt; ParseM a
 </span><a href="Math.Tools.Lexer.html#tokenLexer"><span class="hs-identifier hs-var">tokenLexer</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">Text -&gt; Token
-</span><a href="#local-6989586621681258886"><span class="hs-identifier hs-var">val</span></a></span><span> </span><span class="annot"><span class="annottext">Text
-</span><a href="#local-6989586621681258882"><span class="hs-identifier hs-var">tok</span></a></span><span class="hs-special">)</span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">Text -&gt; Int
+</span><a href="#local-6989586621681330305"><span class="hs-identifier hs-var">val</span></a></span><span> </span><span class="annot"><span class="annottext">Text
+</span><a href="#local-6989586621681330301"><span class="hs-identifier hs-var">tok</span></a></span><span class="hs-special">)</span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">Text -&gt; Int
 </span><span class="hs-identifier hs-var">length</span></span><span> </span><span class="annot"><span class="annottext">Text
-</span><a href="#local-6989586621681258882"><span class="hs-identifier hs-var">tok</span></a></span><span> </span><span class="annot"><span class="annottext">Int -&gt; Int -&gt; Int
+</span><a href="#local-6989586621681330301"><span class="hs-identifier hs-var">tok</span></a></span><span> </span><span class="annot"><span class="annottext">Int -&gt; Int -&gt; Int
 forall a. Num a =&gt; a -&gt; a -&gt; a
 </span><span class="hs-operator hs-var">+</span></span><span> </span><span class="annot"><span class="annottext">Int
 </span><span class="hs-number">1</span></span><span class="hs-special">)</span><span> </span><span class="annot"><span class="annottext">Token -&gt; ParseM a
-</span><a href="#local-6989586621681258846"><span class="hs-identifier hs-var">cont</span></a></span><span> </span><span class="annot"><span class="annottext">ParseM a -&gt; Text -&gt; LineInfo -&gt; ParseResult a
+</span><a href="#local-6989586621681330265"><span class="hs-identifier hs-var">cont</span></a></span><span> </span><span class="annot"><span class="annottext">ParseM a -&gt; Text -&gt; LineInfo -&gt; ParseResult a
 forall a. ParseM a -&gt; Text -&gt; LineInfo -&gt; ParseResult a
 </span><a href="Math.Tools.ParseMonad.html#runParseM"><span class="hs-operator hs-var">`runParseM`</span></a></span><span> </span><span class="annot"><span class="annottext">Text
-</span><a href="#local-6989586621681258883"><span class="hs-identifier hs-var">s'</span></a></span><span>
-</span><span id="line-74"></span><span>                </span><span class="hs-keyword">where</span><span> </span><span id="local-6989586621681258886"><span class="annot"><span class="annottext">val :: Text -&gt; Token
-</span><a href="#local-6989586621681258886"><span class="hs-identifier hs-var hs-var">val</span></a></span></span><span> </span><span id="local-6989586621681258894"><span class="annot"><span class="annottext">Text
-</span><a href="#local-6989586621681258894"><span class="hs-identifier hs-var">tok</span></a></span></span><span> </span><span class="hs-glyph">|</span><span> </span><span class="annot"><span class="annottext">(Char -&gt; Bool) -&gt; Text -&gt; Bool
+</span><a href="#local-6989586621681330302"><span class="hs-identifier hs-var">s'</span></a></span><span>
+</span><span id="line-74"></span><span>                </span><span class="hs-keyword">where</span><span> </span><span id="local-6989586621681330305"><span class="annot"><span class="annottext">val :: Text -&gt; Token
+</span><a href="#local-6989586621681330305"><span class="hs-identifier hs-var hs-var">val</span></a></span></span><span> </span><span id="local-6989586621681330313"><span class="annot"><span class="annottext">Text
+</span><a href="#local-6989586621681330313"><span class="hs-identifier hs-var">tok</span></a></span></span><span> </span><span class="hs-glyph">|</span><span> </span><span class="annot"><span class="annottext">(Char -&gt; Bool) -&gt; Text -&gt; Bool
 </span><span class="hs-identifier hs-var">any</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">Char -&gt; Char -&gt; Bool
 forall a. Eq a =&gt; a -&gt; a -&gt; Bool
 </span><span class="hs-operator hs-var">==</span></span><span class="annot"><span class="annottext">Char
 </span><span class="hs-char">'.'</span></span><span class="hs-special">)</span><span> </span><span class="annot"><span class="annottext">Text
-</span><a href="#local-6989586621681258894"><span class="hs-identifier hs-var">tok</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Right</span></span><span> </span><span class="hs-special">(</span><span id="local-6989586621681258895"><span class="annot"><span class="annottext">Double
-</span><a href="#local-6989586621681258895"><span class="hs-identifier hs-var">d</span></a></span></span><span class="hs-special">,</span><span class="annot"><span class="annottext">Text
+</span><a href="#local-6989586621681330313"><span class="hs-identifier hs-var">tok</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Right</span></span><span> </span><span class="hs-special">(</span><span id="local-6989586621681330314"><span class="annot"><span class="annottext">Double
+</span><a href="#local-6989586621681330314"><span class="hs-identifier hs-var">d</span></a></span></span><span class="hs-special">,</span><span class="annot"><span class="annottext">Text
 </span><span class="hs-identifier">_</span></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">&lt;-</span><span> </span><span class="annot"><span class="annottext">Reader Double
 </span><span class="hs-identifier hs-var">TRead.double</span></span><span> </span><span class="annot"><span class="annottext">Text
-</span><a href="#local-6989586621681258894"><span class="hs-identifier hs-var">tok</span></a></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Double -&gt; Token
+</span><a href="#local-6989586621681330313"><span class="hs-identifier hs-var">tok</span></a></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Double -&gt; Token
 </span><a href="Math.Tools.Lexer.html#FloatNumber"><span class="hs-identifier hs-var">FloatNumber</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">Double -&gt; Double
 forall a. Num a =&gt; a -&gt; a
 </span><span class="hs-identifier hs-var">negate</span></span><span> </span><span class="annot"><span class="annottext">Double
-</span><a href="#local-6989586621681258895"><span class="hs-identifier hs-var">d</span></a></span><span class="hs-special">)</span><span>
-</span><span id="line-75"></span><span>                              </span><span class="hs-glyph">|</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Right</span></span><span> </span><span class="hs-special">(</span><span id="local-6989586621681258897"><span class="annot"><span class="annottext">Integer
-</span><a href="#local-6989586621681258897"><span class="hs-identifier hs-var">d</span></a></span></span><span class="hs-special">,</span><span class="annot"><span class="annottext">Text
+</span><a href="#local-6989586621681330314"><span class="hs-identifier hs-var">d</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-75"></span><span>                              </span><span class="hs-glyph">|</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Right</span></span><span> </span><span class="hs-special">(</span><span id="local-6989586621681330316"><span class="annot"><span class="annottext">Integer
+</span><a href="#local-6989586621681330316"><span class="hs-identifier hs-var">d</span></a></span></span><span class="hs-special">,</span><span class="annot"><span class="annottext">Text
 </span><span class="hs-identifier">_</span></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">&lt;-</span><span> </span><span class="annot"><span class="annottext">Reader Integer
 forall a. Integral a =&gt; Reader a
 </span><span class="hs-identifier hs-var">TRead.decimal</span></span><span> </span><span class="annot"><span class="annottext">Text
-</span><a href="#local-6989586621681258894"><span class="hs-identifier hs-var">tok</span></a></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Integer -&gt; Token
+</span><a href="#local-6989586621681330313"><span class="hs-identifier hs-var">tok</span></a></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Integer -&gt; Token
 </span><a href="Math.Tools.Lexer.html#Number"><span class="hs-identifier hs-var">Number</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">Integer -&gt; Integer
 forall a. Num a =&gt; a -&gt; a
 </span><span class="hs-identifier hs-var">negate</span></span><span> </span><span class="annot"><span class="annottext">Integer
-</span><a href="#local-6989586621681258897"><span class="hs-identifier hs-var">d</span></a></span><span class="hs-special">)</span><span>
+</span><a href="#local-6989586621681330316"><span class="hs-identifier hs-var">d</span></a></span><span class="hs-special">)</span><span>
 </span><span id="line-76"></span><span>                              </span><span class="hs-glyph">|</span><span> </span><span class="annot"><span class="annottext">Bool
 </span><span class="hs-identifier hs-var">otherwise</span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">String -&gt; Token
 forall a. HasCallStack =&gt; String -&gt; a
 </span><span class="hs-identifier hs-var">error</span></span><span> </span><span class="annot"><span class="annottext">String
 </span><span class="hs-string">&quot;bug in lexer&quot;</span></span><span>
-</span><span id="line-77"></span><span>     </span><span class="annot"><span class="hs-identifier hs-type">Just</span></span><span> </span><span class="hs-special">(</span><span id="local-6989586621681258900"><span class="annot"><span class="annottext">Char
-</span><a href="#local-6989586621681258900"><span class="hs-identifier hs-var">c</span></a></span></span><span class="hs-special">,</span><span id="local-6989586621681258901"><span class="annot"><span class="annottext">Text
-</span><a href="#local-6989586621681258901"><span class="hs-identifier hs-var">r</span></a></span></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">|</span><span> </span><span class="annot"><span class="annottext">Char -&gt; Bool
+</span><span id="line-77"></span><span>     </span><span class="annot"><span class="hs-identifier hs-type">Just</span></span><span> </span><span class="hs-special">(</span><span id="local-6989586621681330319"><span class="annot"><span class="annottext">Char
+</span><a href="#local-6989586621681330319"><span class="hs-identifier hs-var">c</span></a></span></span><span class="hs-special">,</span><span id="local-6989586621681330320"><span class="annot"><span class="annottext">Text
+</span><a href="#local-6989586621681330320"><span class="hs-identifier hs-var">r</span></a></span></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">|</span><span> </span><span class="annot"><span class="annottext">Char -&gt; Bool
 </span><a href="Math.Tools.Lexer.html#isIdentifierChar"><span class="hs-identifier hs-var">isIdentifierChar</span></a></span><span> </span><span class="annot"><span class="annottext">Char
-</span><a href="#local-6989586621681258900"><span class="hs-identifier hs-var">c</span></a></span><span class="hs-special">,</span><span>
-</span><span id="line-78"></span><span>                  </span><span class="hs-special">(</span><span id="local-6989586621681258903"><span class="annot"><span class="annottext">Text
-</span><a href="#local-6989586621681258903"><span class="hs-identifier hs-var">tok</span></a></span></span><span class="hs-special">,</span><span id="local-6989586621681258904"><span class="annot"><span class="annottext">Text
-</span><a href="#local-6989586621681258904"><span class="hs-identifier hs-var">s'</span></a></span></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">&lt;-</span><span> </span><span class="annot"><span class="annottext">(Char -&gt; Bool) -&gt; Text -&gt; (Text, Text)
+</span><a href="#local-6989586621681330319"><span class="hs-identifier hs-var">c</span></a></span><span class="hs-special">,</span><span>
+</span><span id="line-78"></span><span>                  </span><span class="hs-special">(</span><span id="local-6989586621681330322"><span class="annot"><span class="annottext">Text
+</span><a href="#local-6989586621681330322"><span class="hs-identifier hs-var">tok</span></a></span></span><span class="hs-special">,</span><span id="local-6989586621681330323"><span class="annot"><span class="annottext">Text
+</span><a href="#local-6989586621681330323"><span class="hs-identifier hs-var">s'</span></a></span></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">&lt;-</span><span> </span><span class="annot"><span class="annottext">(Char -&gt; Bool) -&gt; Text -&gt; (Text, Text)
 </span><span class="hs-identifier hs-var">span</span></span><span> </span><span class="annot"><span class="annottext">Char -&gt; Bool
 </span><a href="Math.Tools.Lexer.html#isIdentifierContinuationChar"><span class="hs-identifier hs-var">isIdentifierContinuationChar</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">Char -&gt; Text -&gt; Text
 </span><span class="hs-identifier hs-var">cons</span></span><span> </span><span class="annot"><span class="annottext">Char
-</span><a href="#local-6989586621681258900"><span class="hs-identifier hs-var">c</span></a></span><span> </span><span class="annot"><span class="annottext">Text
-</span><a href="#local-6989586621681258901"><span class="hs-identifier hs-var">r</span></a></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">-&gt;</span><span>
+</span><a href="#local-6989586621681330319"><span class="hs-identifier hs-var">c</span></a></span><span> </span><span class="annot"><span class="annottext">Text
+</span><a href="#local-6989586621681330320"><span class="hs-identifier hs-var">r</span></a></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">-&gt;</span><span>
 </span><span id="line-79"></span><span>                    </span><span class="annot"><span class="annottext">Token -&gt; Int -&gt; (Token -&gt; ParseM a) -&gt; ParseM a
 forall t a. t -&gt; Int -&gt; (t -&gt; ParseM a) -&gt; ParseM a
 </span><a href="Math.Tools.Lexer.html#tokenLexer"><span class="hs-identifier hs-var">tokenLexer</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">Text -&gt; Token
 </span><a href="Math.Tools.Lexer.html#Identifier"><span class="hs-identifier hs-var">Identifier</span></a></span><span> </span><span class="annot"><span class="annottext">Text
-</span><a href="#local-6989586621681258903"><span class="hs-identifier hs-var">tok</span></a></span><span class="hs-special">)</span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">Text -&gt; Int
+</span><a href="#local-6989586621681330322"><span class="hs-identifier hs-var">tok</span></a></span><span class="hs-special">)</span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">Text -&gt; Int
 </span><span class="hs-identifier hs-var">length</span></span><span> </span><span class="annot"><span class="annottext">Text
-</span><a href="#local-6989586621681258903"><span class="hs-identifier hs-var">tok</span></a></span><span class="hs-special">)</span><span> </span><span class="annot"><span class="annottext">Token -&gt; ParseM a
-</span><a href="#local-6989586621681258846"><span class="hs-identifier hs-var">cont</span></a></span><span> </span><span class="annot"><span class="annottext">ParseM a -&gt; Text -&gt; LineInfo -&gt; ParseResult a
+</span><a href="#local-6989586621681330322"><span class="hs-identifier hs-var">tok</span></a></span><span class="hs-special">)</span><span> </span><span class="annot"><span class="annottext">Token -&gt; ParseM a
+</span><a href="#local-6989586621681330265"><span class="hs-identifier hs-var">cont</span></a></span><span> </span><span class="annot"><span class="annottext">ParseM a -&gt; Text -&gt; LineInfo -&gt; ParseResult a
 forall a. ParseM a -&gt; Text -&gt; LineInfo -&gt; ParseResult a
 </span><a href="Math.Tools.ParseMonad.html#runParseM"><span class="hs-operator hs-var">`runParseM`</span></a></span><span> </span><span class="annot"><span class="annottext">Text
-</span><a href="#local-6989586621681258904"><span class="hs-identifier hs-var">s'</span></a></span><span>
+</span><a href="#local-6989586621681330323"><span class="hs-identifier hs-var">s'</span></a></span><span>
 </span><span id="line-80"></span><span>                </span><span class="hs-glyph">|</span><span> </span><span class="annot"><span class="annottext">Char -&gt; Bool
 </span><a href="Math.Tools.Lexer.html#isOperatorChar"><span class="hs-identifier hs-var">isOperatorChar</span></a></span><span> </span><span class="annot"><span class="annottext">Char
-</span><a href="#local-6989586621681258900"><span class="hs-identifier hs-var">c</span></a></span><span class="hs-special">,</span><span>
-</span><span id="line-81"></span><span>                  </span><span class="hs-special">(</span><span id="local-6989586621681258907"><span class="annot"><span class="annottext">Text
-</span><a href="#local-6989586621681258907"><span class="hs-identifier hs-var">tok</span></a></span></span><span class="hs-special">,</span><span id="local-6989586621681258908"><span class="annot"><span class="annottext">Text
-</span><a href="#local-6989586621681258908"><span class="hs-identifier hs-var">s'</span></a></span></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">&lt;-</span><span> </span><span class="annot"><span class="annottext">(Char -&gt; Bool) -&gt; Text -&gt; (Text, Text)
+</span><a href="#local-6989586621681330319"><span class="hs-identifier hs-var">c</span></a></span><span class="hs-special">,</span><span>
+</span><span id="line-81"></span><span>                  </span><span class="hs-special">(</span><span id="local-6989586621681330326"><span class="annot"><span class="annottext">Text
+</span><a href="#local-6989586621681330326"><span class="hs-identifier hs-var">tok</span></a></span></span><span class="hs-special">,</span><span id="local-6989586621681330327"><span class="annot"><span class="annottext">Text
+</span><a href="#local-6989586621681330327"><span class="hs-identifier hs-var">s'</span></a></span></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">&lt;-</span><span> </span><span class="annot"><span class="annottext">(Char -&gt; Bool) -&gt; Text -&gt; (Text, Text)
 </span><span class="hs-identifier hs-var">span</span></span><span> </span><span class="annot"><span class="annottext">Char -&gt; Bool
 </span><a href="Math.Tools.Lexer.html#isOperatorChar"><span class="hs-identifier hs-var">isOperatorChar</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">Char -&gt; Text -&gt; Text
 </span><span class="hs-identifier hs-var">cons</span></span><span> </span><span class="annot"><span class="annottext">Char
-</span><a href="#local-6989586621681258900"><span class="hs-identifier hs-var">c</span></a></span><span> </span><span class="annot"><span class="annottext">Text
-</span><a href="#local-6989586621681258901"><span class="hs-identifier hs-var">r</span></a></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">-&gt;</span><span>
+</span><a href="#local-6989586621681330319"><span class="hs-identifier hs-var">c</span></a></span><span> </span><span class="annot"><span class="annottext">Text
+</span><a href="#local-6989586621681330320"><span class="hs-identifier hs-var">r</span></a></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">-&gt;</span><span>
 </span><span id="line-82"></span><span>                    </span><span class="annot"><span class="annottext">Token -&gt; Int -&gt; (Token -&gt; ParseM a) -&gt; ParseM a
 forall t a. t -&gt; Int -&gt; (t -&gt; ParseM a) -&gt; ParseM a
 </span><a href="Math.Tools.Lexer.html#tokenLexer"><span class="hs-identifier hs-var">tokenLexer</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">Text -&gt; Token
 </span><a href="Math.Tools.Lexer.html#Operator"><span class="hs-identifier hs-var">Operator</span></a></span><span> </span><span class="annot"><span class="annottext">Text
-</span><a href="#local-6989586621681258907"><span class="hs-identifier hs-var">tok</span></a></span><span class="hs-special">)</span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">Text -&gt; Int
+</span><a href="#local-6989586621681330326"><span class="hs-identifier hs-var">tok</span></a></span><span class="hs-special">)</span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">Text -&gt; Int
 </span><span class="hs-identifier hs-var">length</span></span><span> </span><span class="annot"><span class="annottext">Text
-</span><a href="#local-6989586621681258907"><span class="hs-identifier hs-var">tok</span></a></span><span class="hs-special">)</span><span> </span><span class="annot"><span class="annottext">Token -&gt; ParseM a
-</span><a href="#local-6989586621681258846"><span class="hs-identifier hs-var">cont</span></a></span><span> </span><span class="annot"><span class="annottext">ParseM a -&gt; Text -&gt; LineInfo -&gt; ParseResult a
+</span><a href="#local-6989586621681330326"><span class="hs-identifier hs-var">tok</span></a></span><span class="hs-special">)</span><span> </span><span class="annot"><span class="annottext">Token -&gt; ParseM a
+</span><a href="#local-6989586621681330265"><span class="hs-identifier hs-var">cont</span></a></span><span> </span><span class="annot"><span class="annottext">ParseM a -&gt; Text -&gt; LineInfo -&gt; ParseResult a
 forall a. ParseM a -&gt; Text -&gt; LineInfo -&gt; ParseResult a
 </span><a href="Math.Tools.ParseMonad.html#runParseM"><span class="hs-operator hs-var">`runParseM`</span></a></span><span> </span><span class="annot"><span class="annottext">Text
-</span><a href="#local-6989586621681258908"><span class="hs-identifier hs-var">s'</span></a></span><span>
+</span><a href="#local-6989586621681330327"><span class="hs-identifier hs-var">s'</span></a></span><span>
 </span><span id="line-83"></span><span>                </span><span class="hs-glyph">|</span><span> </span><span class="annot"><span class="annottext">Char -&gt; Bool
 </span><span class="hs-identifier hs-var">isDigit</span></span><span> </span><span class="annot"><span class="annottext">Char
-</span><a href="#local-6989586621681258900"><span class="hs-identifier hs-var">c</span></a></span><span>
-</span><span id="line-84"></span><span>                  </span><span class="hs-special">,</span><span> </span><span class="hs-special">(</span><span id="local-6989586621681258909"><span class="annot"><span class="annottext">Text
-</span><a href="#local-6989586621681258909"><span class="hs-identifier hs-var">tok</span></a></span></span><span class="hs-special">,</span><span id="local-6989586621681258910"><span class="annot"><span class="annottext">Text
-</span><a href="#local-6989586621681258910"><span class="hs-identifier hs-var">s'</span></a></span></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">&lt;-</span><span> </span><span class="annot"><span class="annottext">(Char -&gt; Bool) -&gt; Text -&gt; (Text, Text)
-</span><span class="hs-identifier hs-var">span</span></span><span> </span><span class="hs-special">(</span><span class="hs-glyph">\</span><span id="local-6989586621681258911"><span class="annot"><span class="annottext">Char
-</span><a href="#local-6989586621681258911"><span class="hs-identifier hs-var">x</span></a></span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="annottext">Char -&gt; Bool
+</span><a href="#local-6989586621681330319"><span class="hs-identifier hs-var">c</span></a></span><span>
+</span><span id="line-84"></span><span>                  </span><span class="hs-special">,</span><span> </span><span class="hs-special">(</span><span id="local-6989586621681330328"><span class="annot"><span class="annottext">Text
+</span><a href="#local-6989586621681330328"><span class="hs-identifier hs-var">tok</span></a></span></span><span class="hs-special">,</span><span id="local-6989586621681330329"><span class="annot"><span class="annottext">Text
+</span><a href="#local-6989586621681330329"><span class="hs-identifier hs-var">s'</span></a></span></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">&lt;-</span><span> </span><span class="annot"><span class="annottext">(Char -&gt; Bool) -&gt; Text -&gt; (Text, Text)
+</span><span class="hs-identifier hs-var">span</span></span><span> </span><span class="hs-special">(</span><span class="hs-glyph">\</span><span id="local-6989586621681330330"><span class="annot"><span class="annottext">Char
+</span><a href="#local-6989586621681330330"><span class="hs-identifier hs-var">x</span></a></span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="annottext">Char -&gt; Bool
 </span><span class="hs-identifier hs-var">isDigit</span></span><span> </span><span class="annot"><span class="annottext">Char
-</span><a href="#local-6989586621681258911"><span class="hs-identifier hs-var">x</span></a></span><span> </span><span class="annot"><span class="annottext">Bool -&gt; Bool -&gt; Bool
+</span><a href="#local-6989586621681330330"><span class="hs-identifier hs-var">x</span></a></span><span> </span><span class="annot"><span class="annottext">Bool -&gt; Bool -&gt; Bool
 </span><span class="hs-operator hs-var">||</span></span><span> </span><span class="annot"><span class="annottext">Char
-</span><a href="#local-6989586621681258911"><span class="hs-identifier hs-var">x</span></a></span><span> </span><span class="annot"><span class="annottext">Char -&gt; Char -&gt; Bool
+</span><a href="#local-6989586621681330330"><span class="hs-identifier hs-var">x</span></a></span><span> </span><span class="annot"><span class="annottext">Char -&gt; Char -&gt; Bool
 forall a. Eq a =&gt; a -&gt; a -&gt; Bool
 </span><span class="hs-operator hs-var">==</span></span><span> </span><span class="annot"><span class="annottext">Char
 </span><span class="hs-char">'.'</span></span><span class="hs-special">)</span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">Char -&gt; Text -&gt; Text
 </span><span class="hs-identifier hs-var">cons</span></span><span> </span><span class="annot"><span class="annottext">Char
-</span><a href="#local-6989586621681258900"><span class="hs-identifier hs-var">c</span></a></span><span> </span><span class="annot"><span class="annottext">Text
-</span><a href="#local-6989586621681258901"><span class="hs-identifier hs-var">r</span></a></span><span class="hs-special">)</span><span>
+</span><a href="#local-6989586621681330319"><span class="hs-identifier hs-var">c</span></a></span><span> </span><span class="annot"><span class="annottext">Text
+</span><a href="#local-6989586621681330320"><span class="hs-identifier hs-var">r</span></a></span><span class="hs-special">)</span><span>
 </span><span id="line-85"></span><span>                  </span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">(Char -&gt; Bool) -&gt; Text -&gt; Bool
 </span><span class="hs-identifier hs-var">any</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">Char -&gt; Char -&gt; Bool
 forall a. Eq a =&gt; a -&gt; a -&gt; Bool
 </span><span class="hs-operator hs-var">==</span></span><span class="annot"><span class="annottext">Char
 </span><span class="hs-char">'.'</span></span><span class="hs-special">)</span><span> </span><span class="annot"><span class="annottext">Text
-</span><a href="#local-6989586621681258909"><span class="hs-identifier hs-var">tok</span></a></span><span>
-</span><span id="line-86"></span><span>                  </span><span class="hs-special">,</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Right</span></span><span> </span><span class="hs-special">(</span><span id="local-6989586621681258912"><span class="annot"><span class="annottext">Double
-</span><a href="#local-6989586621681258912"><span class="hs-identifier hs-var">d</span></a></span></span><span class="hs-special">,</span><span id="local-6989586621681258913"><span class="annot"><span class="annottext">Text
-</span><a href="#local-6989586621681258913"><span class="hs-identifier hs-var">s''</span></a></span></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">&lt;-</span><span> </span><span class="annot"><span class="annottext">Reader Double
+</span><a href="#local-6989586621681330328"><span class="hs-identifier hs-var">tok</span></a></span><span>
+</span><span id="line-86"></span><span>                  </span><span class="hs-special">,</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Right</span></span><span> </span><span class="hs-special">(</span><span id="local-6989586621681330331"><span class="annot"><span class="annottext">Double
+</span><a href="#local-6989586621681330331"><span class="hs-identifier hs-var">d</span></a></span></span><span class="hs-special">,</span><span id="local-6989586621681330332"><span class="annot"><span class="annottext">Text
+</span><a href="#local-6989586621681330332"><span class="hs-identifier hs-var">s''</span></a></span></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">&lt;-</span><span> </span><span class="annot"><span class="annottext">Reader Double
 </span><span class="hs-identifier hs-var">TRead.double</span></span><span> </span><span class="annot"><span class="annottext">Text
-</span><a href="#local-6989586621681258909"><span class="hs-identifier hs-var">tok</span></a></span><span>
+</span><a href="#local-6989586621681330328"><span class="hs-identifier hs-var">tok</span></a></span><span>
 </span><span id="line-87"></span><span>                  </span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">Text -&gt; Bool
 </span><span class="hs-identifier hs-var">null</span></span><span> </span><span class="annot"><span class="annottext">Text
-</span><a href="#local-6989586621681258913"><span class="hs-identifier hs-var">s''</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span>
+</span><a href="#local-6989586621681330332"><span class="hs-identifier hs-var">s''</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span>
 </span><span id="line-88"></span><span>                      </span><span class="annot"><span class="annottext">Token -&gt; Int -&gt; (Token -&gt; ParseM a) -&gt; ParseM a
 forall t a. t -&gt; Int -&gt; (t -&gt; ParseM a) -&gt; ParseM a
 </span><a href="Math.Tools.Lexer.html#tokenLexer"><span class="hs-identifier hs-var">tokenLexer</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">Double -&gt; Token
 </span><a href="Math.Tools.Lexer.html#FloatNumber"><span class="hs-identifier hs-var">FloatNumber</span></a></span><span> </span><span class="annot"><span class="annottext">Double
-</span><a href="#local-6989586621681258912"><span class="hs-identifier hs-var">d</span></a></span><span class="hs-special">)</span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">Text -&gt; Int
+</span><a href="#local-6989586621681330331"><span class="hs-identifier hs-var">d</span></a></span><span class="hs-special">)</span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">Text -&gt; Int
 </span><span class="hs-identifier hs-var">length</span></span><span> </span><span class="annot"><span class="annottext">Text
-</span><a href="#local-6989586621681258909"><span class="hs-identifier hs-var">tok</span></a></span><span class="hs-special">)</span><span> </span><span class="annot"><span class="annottext">Token -&gt; ParseM a
-</span><a href="#local-6989586621681258846"><span class="hs-identifier hs-var">cont</span></a></span><span> </span><span class="annot"><span class="annottext">ParseM a -&gt; Text -&gt; LineInfo -&gt; ParseResult a
+</span><a href="#local-6989586621681330328"><span class="hs-identifier hs-var">tok</span></a></span><span class="hs-special">)</span><span> </span><span class="annot"><span class="annottext">Token -&gt; ParseM a
+</span><a href="#local-6989586621681330265"><span class="hs-identifier hs-var">cont</span></a></span><span> </span><span class="annot"><span class="annottext">ParseM a -&gt; Text -&gt; LineInfo -&gt; ParseResult a
 forall a. ParseM a -&gt; Text -&gt; LineInfo -&gt; ParseResult a
 </span><a href="Math.Tools.ParseMonad.html#runParseM"><span class="hs-operator hs-var">`runParseM`</span></a></span><span> </span><span class="annot"><span class="annottext">Text
-</span><a href="#local-6989586621681258910"><span class="hs-identifier hs-var">s'</span></a></span><span>
+</span><a href="#local-6989586621681330329"><span class="hs-identifier hs-var">s'</span></a></span><span>
 </span><span id="line-89"></span><span>                </span><span class="hs-glyph">|</span><span> </span><span class="annot"><span class="annottext">Char -&gt; Bool
 </span><span class="hs-identifier hs-var">isDigit</span></span><span> </span><span class="annot"><span class="annottext">Char
-</span><a href="#local-6989586621681258900"><span class="hs-identifier hs-var">c</span></a></span><span>
-</span><span id="line-90"></span><span>                  </span><span class="hs-special">,</span><span> </span><span class="hs-special">(</span><span id="local-6989586621681258914"><span class="annot"><span class="annottext">Text
-</span><a href="#local-6989586621681258914"><span class="hs-identifier hs-var">tok</span></a></span></span><span class="hs-special">,</span><span id="local-6989586621681258915"><span class="annot"><span class="annottext">Text
-</span><a href="#local-6989586621681258915"><span class="hs-identifier hs-var">s'</span></a></span></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">&lt;-</span><span> </span><span class="annot"><span class="annottext">(Char -&gt; Bool) -&gt; Text -&gt; (Text, Text)
+</span><a href="#local-6989586621681330319"><span class="hs-identifier hs-var">c</span></a></span><span>
+</span><span id="line-90"></span><span>                  </span><span class="hs-special">,</span><span> </span><span class="hs-special">(</span><span id="local-6989586621681330333"><span class="annot"><span class="annottext">Text
+</span><a href="#local-6989586621681330333"><span class="hs-identifier hs-var">tok</span></a></span></span><span class="hs-special">,</span><span id="local-6989586621681330334"><span class="annot"><span class="annottext">Text
+</span><a href="#local-6989586621681330334"><span class="hs-identifier hs-var">s'</span></a></span></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">&lt;-</span><span> </span><span class="annot"><span class="annottext">(Char -&gt; Bool) -&gt; Text -&gt; (Text, Text)
 </span><span class="hs-identifier hs-var">span</span></span><span> </span><span class="annot"><span class="annottext">Char -&gt; Bool
 </span><span class="hs-identifier hs-var">isDigit</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">Char -&gt; Text -&gt; Text
 </span><span class="hs-identifier hs-var">cons</span></span><span> </span><span class="annot"><span class="annottext">Char
-</span><a href="#local-6989586621681258900"><span class="hs-identifier hs-var">c</span></a></span><span> </span><span class="annot"><span class="annottext">Text
-</span><a href="#local-6989586621681258901"><span class="hs-identifier hs-var">r</span></a></span><span class="hs-special">)</span><span>
-</span><span id="line-91"></span><span>                  </span><span class="hs-special">,</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Right</span></span><span> </span><span class="hs-special">(</span><span id="local-6989586621681258916"><span class="annot"><span class="annottext">Integer
-</span><a href="#local-6989586621681258916"><span class="hs-identifier hs-var">d</span></a></span></span><span class="hs-special">,</span><span id="local-6989586621681258917"><span class="annot"><span class="annottext">Text
-</span><a href="#local-6989586621681258917"><span class="hs-identifier hs-var">s''</span></a></span></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">&lt;-</span><span> </span><span class="annot"><span class="annottext">Reader Integer
+</span><a href="#local-6989586621681330319"><span class="hs-identifier hs-var">c</span></a></span><span> </span><span class="annot"><span class="annottext">Text
+</span><a href="#local-6989586621681330320"><span class="hs-identifier hs-var">r</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-91"></span><span>                  </span><span class="hs-special">,</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Right</span></span><span> </span><span class="hs-special">(</span><span id="local-6989586621681330335"><span class="annot"><span class="annottext">Integer
+</span><a href="#local-6989586621681330335"><span class="hs-identifier hs-var">d</span></a></span></span><span class="hs-special">,</span><span id="local-6989586621681330336"><span class="annot"><span class="annottext">Text
+</span><a href="#local-6989586621681330336"><span class="hs-identifier hs-var">s''</span></a></span></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">&lt;-</span><span> </span><span class="annot"><span class="annottext">Reader Integer
 forall a. Integral a =&gt; Reader a
 </span><span class="hs-identifier hs-var">TRead.decimal</span></span><span> </span><span class="annot"><span class="annottext">Text
-</span><a href="#local-6989586621681258914"><span class="hs-identifier hs-var">tok</span></a></span><span>
+</span><a href="#local-6989586621681330333"><span class="hs-identifier hs-var">tok</span></a></span><span>
 </span><span id="line-92"></span><span>                  </span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">Text -&gt; Bool
 </span><span class="hs-identifier hs-var">null</span></span><span> </span><span class="annot"><span class="annottext">Text
-</span><a href="#local-6989586621681258917"><span class="hs-identifier hs-var">s''</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="annottext">Token -&gt; Int -&gt; (Token -&gt; ParseM a) -&gt; ParseM a
+</span><a href="#local-6989586621681330336"><span class="hs-identifier hs-var">s''</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="annottext">Token -&gt; Int -&gt; (Token -&gt; ParseM a) -&gt; ParseM a
 forall t a. t -&gt; Int -&gt; (t -&gt; ParseM a) -&gt; ParseM a
 </span><a href="Math.Tools.Lexer.html#tokenLexer"><span class="hs-identifier hs-var">tokenLexer</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">Integer -&gt; Token
 </span><a href="Math.Tools.Lexer.html#Number"><span class="hs-identifier hs-var">Number</span></a></span><span> </span><span class="annot"><span class="annottext">Integer
-</span><a href="#local-6989586621681258916"><span class="hs-identifier hs-var">d</span></a></span><span class="hs-special">)</span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">Text -&gt; Int
+</span><a href="#local-6989586621681330335"><span class="hs-identifier hs-var">d</span></a></span><span class="hs-special">)</span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">Text -&gt; Int
 </span><span class="hs-identifier hs-var">length</span></span><span> </span><span class="annot"><span class="annottext">Text
-</span><a href="#local-6989586621681258914"><span class="hs-identifier hs-var">tok</span></a></span><span class="hs-special">)</span><span> </span><span class="annot"><span class="annottext">Token -&gt; ParseM a
-</span><a href="#local-6989586621681258846"><span class="hs-identifier hs-var">cont</span></a></span><span> </span><span class="annot"><span class="annottext">ParseM a -&gt; Text -&gt; LineInfo -&gt; ParseResult a
+</span><a href="#local-6989586621681330333"><span class="hs-identifier hs-var">tok</span></a></span><span class="hs-special">)</span><span> </span><span class="annot"><span class="annottext">Token -&gt; ParseM a
+</span><a href="#local-6989586621681330265"><span class="hs-identifier hs-var">cont</span></a></span><span> </span><span class="annot"><span class="annottext">ParseM a -&gt; Text -&gt; LineInfo -&gt; ParseResult a
 forall a. ParseM a -&gt; Text -&gt; LineInfo -&gt; ParseResult a
 </span><a href="Math.Tools.ParseMonad.html#runParseM"><span class="hs-operator hs-var">`runParseM`</span></a></span><span> </span><span class="annot"><span class="annottext">Text
-</span><a href="#local-6989586621681258915"><span class="hs-identifier hs-var">s'</span></a></span><span>
+</span><a href="#local-6989586621681330334"><span class="hs-identifier hs-var">s'</span></a></span><span>
 </span><span id="line-93"></span><span>                </span><span class="hs-glyph">|</span><span> </span><span class="annot"><span class="annottext">Char -&gt; Bool
 </span><span class="hs-identifier hs-var">isSpace</span></span><span> </span><span class="annot"><span class="annottext">Char
-</span><a href="#local-6989586621681258900"><span class="hs-identifier hs-var">c</span></a></span><span class="hs-special">,</span><span> </span><span class="hs-special">(</span><span id="local-6989586621681258919"><span class="annot"><span class="annottext">Text
-</span><a href="#local-6989586621681258919"><span class="hs-identifier hs-var">tok</span></a></span></span><span class="hs-special">,</span><span id="local-6989586621681258920"><span class="annot"><span class="annottext">Text
-</span><a href="#local-6989586621681258920"><span class="hs-identifier hs-var">s'</span></a></span></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">&lt;-</span><span> </span><span class="annot"><span class="annottext">(Char -&gt; Bool) -&gt; Text -&gt; (Text, Text)
+</span><a href="#local-6989586621681330319"><span class="hs-identifier hs-var">c</span></a></span><span class="hs-special">,</span><span> </span><span class="hs-special">(</span><span id="local-6989586621681330338"><span class="annot"><span class="annottext">Text
+</span><a href="#local-6989586621681330338"><span class="hs-identifier hs-var">tok</span></a></span></span><span class="hs-special">,</span><span id="local-6989586621681330339"><span class="annot"><span class="annottext">Text
+</span><a href="#local-6989586621681330339"><span class="hs-identifier hs-var">s'</span></a></span></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">&lt;-</span><span> </span><span class="annot"><span class="annottext">(Char -&gt; Bool) -&gt; Text -&gt; (Text, Text)
 </span><span class="hs-identifier hs-var">span</span></span><span> </span><span class="annot"><span class="annottext">Char -&gt; Bool
 </span><span class="hs-identifier hs-var">isSpace</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">Char -&gt; Text -&gt; Text
 </span><span class="hs-identifier hs-var">cons</span></span><span> </span><span class="annot"><span class="annottext">Char
-</span><a href="#local-6989586621681258900"><span class="hs-identifier hs-var">c</span></a></span><span> </span><span class="annot"><span class="annottext">Text
-</span><a href="#local-6989586621681258901"><span class="hs-identifier hs-var">r</span></a></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">-&gt;</span><span>
+</span><a href="#local-6989586621681330319"><span class="hs-identifier hs-var">c</span></a></span><span> </span><span class="annot"><span class="annottext">Text
+</span><a href="#local-6989586621681330320"><span class="hs-identifier hs-var">r</span></a></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">-&gt;</span><span>
 </span><span id="line-94"></span><span>                    </span><span class="annot"><span class="annottext">Token -&gt; Int -&gt; (Token -&gt; ParseM a) -&gt; ParseM a
 forall t a. t -&gt; Int -&gt; (t -&gt; ParseM a) -&gt; ParseM a
 </span><a href="Math.Tools.Lexer.html#tokenLexer"><span class="hs-identifier hs-var">tokenLexer</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">Text -&gt; Token
 </span><a href="Math.Tools.Lexer.html#WhiteSpace"><span class="hs-identifier hs-var">WhiteSpace</span></a></span><span> </span><span class="annot"><span class="annottext">Text
-</span><a href="#local-6989586621681258919"><span class="hs-identifier hs-var">tok</span></a></span><span class="hs-special">)</span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">Text -&gt; Int
+</span><a href="#local-6989586621681330338"><span class="hs-identifier hs-var">tok</span></a></span><span class="hs-special">)</span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">Text -&gt; Int
 </span><span class="hs-identifier hs-var">length</span></span><span> </span><span class="annot"><span class="annottext">Text
-</span><a href="#local-6989586621681258919"><span class="hs-identifier hs-var">tok</span></a></span><span class="hs-special">)</span><span> </span><span class="annot"><span class="annottext">Token -&gt; ParseM a
-</span><a href="#local-6989586621681258846"><span class="hs-identifier hs-var">cont</span></a></span><span> </span><span class="annot"><span class="annottext">ParseM a -&gt; Text -&gt; LineInfo -&gt; ParseResult a
+</span><a href="#local-6989586621681330338"><span class="hs-identifier hs-var">tok</span></a></span><span class="hs-special">)</span><span> </span><span class="annot"><span class="annottext">Token -&gt; ParseM a
+</span><a href="#local-6989586621681330265"><span class="hs-identifier hs-var">cont</span></a></span><span> </span><span class="annot"><span class="annottext">ParseM a -&gt; Text -&gt; LineInfo -&gt; ParseResult a
 forall a. ParseM a -&gt; Text -&gt; LineInfo -&gt; ParseResult a
 </span><a href="Math.Tools.ParseMonad.html#runParseM"><span class="hs-operator hs-var">`runParseM`</span></a></span><span> </span><span class="annot"><span class="annottext">Text
-</span><a href="#local-6989586621681258920"><span class="hs-identifier hs-var">s'</span></a></span><span>
+</span><a href="#local-6989586621681330339"><span class="hs-identifier hs-var">s'</span></a></span><span>
 </span><span id="line-95"></span><span>                </span><span class="hs-glyph">|</span><span> </span><span class="annot"><span class="annottext">Bool
 </span><span class="hs-identifier hs-var">otherwise</span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">String -&gt; ParseM a
 forall a. String -&gt; ParseM a
@@ -726,19 +726,19 @@ forall a. [a] -&gt; [a] -&gt; [a]
 </span><span class="hs-operator hs-var">++</span></span><span> </span><span class="annot"><span class="annottext">Char -&gt; String
 forall a. Show a =&gt; a -&gt; String
 </span><span class="hs-identifier hs-var">show</span></span><span> </span><span class="annot"><span class="annottext">Char
-</span><a href="#local-6989586621681258900"><span class="hs-identifier hs-var">c</span></a></span><span> </span><span class="annot"><span class="annottext">String -&gt; String -&gt; String
+</span><a href="#local-6989586621681330319"><span class="hs-identifier hs-var">c</span></a></span><span> </span><span class="annot"><span class="annottext">String -&gt; String -&gt; String
 forall a. [a] -&gt; [a] -&gt; [a]
 </span><span class="hs-operator hs-var">++</span></span><span> </span><span class="annot"><span class="annottext">String
 </span><span class="hs-string">&quot;'&quot;</span></span><span class="hs-special">)</span><span> </span><span class="annot"><span class="annottext">ParseM a -&gt; Text -&gt; LineInfo -&gt; ParseResult a
 forall a. ParseM a -&gt; Text -&gt; LineInfo -&gt; ParseResult a
 </span><a href="Math.Tools.ParseMonad.html#runParseM"><span class="hs-operator hs-var">`runParseM`</span></a></span><span> </span><span class="annot"><span class="annottext">Text
-</span><a href="#local-6989586621681258901"><span class="hs-identifier hs-var">r</span></a></span><span>
+</span><a href="#local-6989586621681330320"><span class="hs-identifier hs-var">r</span></a></span><span>
 </span><span id="line-96"></span><span>
 </span><span id="line-97"></span><span> </span><span class="annot"><a href="Math.Tools.Lexer.html#isOperatorChar"><span class="hs-identifier hs-type">isOperatorChar</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Char</span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Bool</span></span><span>
 </span><span id="line-98"></span><span> </span><span id="isOperatorChar"><span class="annot"><span class="annottext">isOperatorChar :: Char -&gt; Bool
-</span><a href="Math.Tools.Lexer.html#isOperatorChar"><span class="hs-identifier hs-var hs-var">isOperatorChar</span></a></span></span><span> </span><span id="local-6989586621681258922"><span class="annot"><span class="annottext">Char
-</span><a href="#local-6989586621681258922"><span class="hs-identifier hs-var">ch</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Char
-</span><a href="#local-6989586621681258922"><span class="hs-identifier hs-var">ch</span></a></span><span> </span><span class="annot"><span class="annottext">Char -&gt; String -&gt; Bool
+</span><a href="Math.Tools.Lexer.html#isOperatorChar"><span class="hs-identifier hs-var hs-var">isOperatorChar</span></a></span></span><span> </span><span id="local-6989586621681330341"><span class="annot"><span class="annottext">Char
+</span><a href="#local-6989586621681330341"><span class="hs-identifier hs-var">ch</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Char
+</span><a href="#local-6989586621681330341"><span class="hs-identifier hs-var">ch</span></a></span><span> </span><span class="annot"><span class="annottext">Char -&gt; String -&gt; Bool
 forall a. Eq a =&gt; a -&gt; [a] -&gt; Bool
 forall (t :: * -&gt; *) a. (Foldable t, Eq a) =&gt; a -&gt; t a -&gt; Bool
 </span><span class="hs-operator hs-var">`elem`</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">String
@@ -746,57 +746,57 @@ forall (t :: * -&gt; *) a. (Foldable t, Eq a) =&gt; a -&gt; t a -&gt; Bool
 </span><span id="line-99"></span><span>
 </span><span id="line-100"></span><span> </span><span class="annot"><a href="Math.Tools.Lexer.html#isIdentifierChar"><span class="hs-identifier hs-type">isIdentifierChar</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Char</span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Bool</span></span><span>
 </span><span id="line-101"></span><span> </span><span id="isIdentifierChar"><span class="annot"><span class="annottext">isIdentifierChar :: Char -&gt; Bool
-</span><a href="Math.Tools.Lexer.html#isIdentifierChar"><span class="hs-identifier hs-var hs-var">isIdentifierChar</span></a></span></span><span> </span><span id="local-6989586621681258924"><span class="annot"><span class="annottext">Char
-</span><a href="#local-6989586621681258924"><span class="hs-identifier hs-var">ch</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Char -&gt; Bool
+</span><a href="Math.Tools.Lexer.html#isIdentifierChar"><span class="hs-identifier hs-var hs-var">isIdentifierChar</span></a></span></span><span> </span><span id="local-6989586621681330343"><span class="annot"><span class="annottext">Char
+</span><a href="#local-6989586621681330343"><span class="hs-identifier hs-var">ch</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Char -&gt; Bool
 </span><span class="hs-identifier hs-var">isLetter</span></span><span> </span><span class="annot"><span class="annottext">Char
-</span><a href="#local-6989586621681258924"><span class="hs-identifier hs-var">ch</span></a></span><span>
+</span><a href="#local-6989586621681330343"><span class="hs-identifier hs-var">ch</span></a></span><span>
 </span><span id="line-102"></span><span> </span><span>
 </span><span id="line-103"></span><span> </span><span class="annot"><a href="Math.Tools.Lexer.html#isIdentifierContinuationChar"><span class="hs-identifier hs-type">isIdentifierContinuationChar</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Char</span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Bool</span></span><span>
 </span><span id="line-104"></span><span> </span><span id="isIdentifierContinuationChar"><span class="annot"><span class="annottext">isIdentifierContinuationChar :: Char -&gt; Bool
-</span><a href="Math.Tools.Lexer.html#isIdentifierContinuationChar"><span class="hs-identifier hs-var hs-var">isIdentifierContinuationChar</span></a></span></span><span> </span><span id="local-6989586621681258926"><span class="annot"><span class="annottext">Char
-</span><a href="#local-6989586621681258926"><span class="hs-identifier hs-var">ch</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Char -&gt; Bool
+</span><a href="Math.Tools.Lexer.html#isIdentifierContinuationChar"><span class="hs-identifier hs-var hs-var">isIdentifierContinuationChar</span></a></span></span><span> </span><span id="local-6989586621681330345"><span class="annot"><span class="annottext">Char
+</span><a href="#local-6989586621681330345"><span class="hs-identifier hs-var">ch</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Char -&gt; Bool
 </span><span class="hs-identifier hs-var">isLetter</span></span><span> </span><span class="annot"><span class="annottext">Char
-</span><a href="#local-6989586621681258926"><span class="hs-identifier hs-var">ch</span></a></span><span> </span><span class="annot"><span class="annottext">Bool -&gt; Bool -&gt; Bool
+</span><a href="#local-6989586621681330345"><span class="hs-identifier hs-var">ch</span></a></span><span> </span><span class="annot"><span class="annottext">Bool -&gt; Bool -&gt; Bool
 </span><span class="hs-operator hs-var">||</span></span><span> </span><span class="annot"><span class="annottext">Char -&gt; Bool
 </span><span class="hs-identifier hs-var">isNumber</span></span><span> </span><span class="annot"><span class="annottext">Char
-</span><a href="#local-6989586621681258926"><span class="hs-identifier hs-var">ch</span></a></span><span> </span><span class="annot"><span class="annottext">Bool -&gt; Bool -&gt; Bool
+</span><a href="#local-6989586621681330345"><span class="hs-identifier hs-var">ch</span></a></span><span> </span><span class="annot"><span class="annottext">Bool -&gt; Bool -&gt; Bool
 </span><span class="hs-operator hs-var">||</span></span><span> </span><span class="annot"><span class="annottext">Char
-</span><a href="#local-6989586621681258926"><span class="hs-identifier hs-var">ch</span></a></span><span> </span><span class="annot"><span class="annottext">Char -&gt; Char -&gt; Bool
+</span><a href="#local-6989586621681330345"><span class="hs-identifier hs-var">ch</span></a></span><span> </span><span class="annot"><span class="annottext">Char -&gt; Char -&gt; Bool
 forall a. Eq a =&gt; a -&gt; a -&gt; Bool
 </span><span class="hs-operator hs-var">==</span></span><span> </span><span class="annot"><span class="annottext">Char
 </span><span class="hs-char">'_'</span></span><span>
 </span><span id="line-105"></span><span>
 </span><span id="line-106"></span><span> </span><span class="annot"><a href="Math.Tools.Lexer.html#hexToInt"><span class="hs-identifier hs-type">hexToInt</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Text</span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Integer</span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Integer</span></span><span>
 </span><span id="line-107"></span><span> </span><span id="hexToInt"><span class="annot"><span class="annottext">hexToInt :: Text -&gt; Integer -&gt; Integer
-</span><a href="Math.Tools.Lexer.html#hexToInt"><span class="hs-identifier hs-var hs-var">hexToInt</span></a></span></span><span> </span><span id="local-6989586621681258928"><span class="annot"><span class="annottext">Text
-</span><a href="#local-6989586621681258928"><span class="hs-identifier hs-var">str</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="hs-keyword">case</span><span> </span><span class="annot"><span class="annottext">Text -&gt; Maybe (Char, Text)
+</span><a href="Math.Tools.Lexer.html#hexToInt"><span class="hs-identifier hs-var hs-var">hexToInt</span></a></span></span><span> </span><span id="local-6989586621681330347"><span class="annot"><span class="annottext">Text
+</span><a href="#local-6989586621681330347"><span class="hs-identifier hs-var">str</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="hs-keyword">case</span><span> </span><span class="annot"><span class="annottext">Text -&gt; Maybe (Char, Text)
 </span><span class="hs-identifier hs-var">uncons</span></span><span> </span><span class="annot"><span class="annottext">Text
-</span><a href="#local-6989586621681258928"><span class="hs-identifier hs-var">str</span></a></span><span> </span><span class="hs-keyword">of</span><span>
+</span><a href="#local-6989586621681330347"><span class="hs-identifier hs-var">str</span></a></span><span> </span><span class="hs-keyword">of</span><span>
 </span><span id="line-108"></span><span>    </span><span class="annot"><span class="annottext">Maybe (Char, Text)
 </span><span class="hs-identifier hs-var">Nothing</span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="annottext">Integer -&gt; Integer
 forall a. a -&gt; a
 </span><span class="hs-identifier hs-var">id</span></span><span>
-</span><span id="line-109"></span><span>    </span><span class="annot"><span class="hs-identifier hs-type">Just</span></span><span> </span><span class="hs-special">(</span><span id="local-6989586621681258930"><span class="annot"><span class="annottext">Char
-</span><a href="#local-6989586621681258930"><span class="hs-identifier hs-var">c</span></a></span></span><span class="hs-special">,</span><span id="local-6989586621681258931"><span class="annot"><span class="annottext">Text
-</span><a href="#local-6989586621681258931"><span class="hs-identifier hs-var">cr</span></a></span></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">|</span><span> </span><span class="annot"><span class="annottext">Char
-</span><a href="#local-6989586621681258930"><span class="hs-identifier hs-var">c</span></a></span><span> </span><span class="annot"><span class="annottext">Char -&gt; String -&gt; Bool
+</span><span id="line-109"></span><span>    </span><span class="annot"><span class="hs-identifier hs-type">Just</span></span><span> </span><span class="hs-special">(</span><span id="local-6989586621681330349"><span class="annot"><span class="annottext">Char
+</span><a href="#local-6989586621681330349"><span class="hs-identifier hs-var">c</span></a></span></span><span class="hs-special">,</span><span id="local-6989586621681330350"><span class="annot"><span class="annottext">Text
+</span><a href="#local-6989586621681330350"><span class="hs-identifier hs-var">cr</span></a></span></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">|</span><span> </span><span class="annot"><span class="annottext">Char
+</span><a href="#local-6989586621681330349"><span class="hs-identifier hs-var">c</span></a></span><span> </span><span class="annot"><span class="annottext">Char -&gt; String -&gt; Bool
 forall a. Eq a =&gt; a -&gt; [a] -&gt; Bool
 forall (t :: * -&gt; *) a. (Foldable t, Eq a) =&gt; a -&gt; t a -&gt; Bool
 </span><span class="hs-operator hs-var">`elem`</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">String
 </span><span class="hs-string">&quot;abcdef&quot;</span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">String</span></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="annottext">Text -&gt; Integer -&gt; Integer
 </span><a href="Math.Tools.Lexer.html#hexToInt"><span class="hs-identifier hs-var">hexToInt</span></a></span><span> </span><span class="annot"><span class="annottext">Text
-</span><a href="#local-6989586621681258931"><span class="hs-identifier hs-var">cr</span></a></span><span> </span><span class="annot"><span class="annottext">(Integer -&gt; Integer) -&gt; (Integer -&gt; Integer) -&gt; Integer -&gt; Integer
+</span><a href="#local-6989586621681330350"><span class="hs-identifier hs-var">cr</span></a></span><span> </span><span class="annot"><span class="annottext">(Integer -&gt; Integer) -&gt; (Integer -&gt; Integer) -&gt; Integer -&gt; Integer
 forall b c a. (b -&gt; c) -&gt; (a -&gt; b) -&gt; a -&gt; c
 </span><span class="hs-operator hs-var">.</span></span><span>
-</span><span id="line-110"></span><span>                                      </span><span class="hs-special">(</span><span class="hs-glyph">\</span><span id="local-6989586621681258933"><span class="annot"><span class="annottext">Integer
-</span><a href="#local-6989586621681258933"><span class="hs-identifier hs-var">i</span></a></span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="annottext">Integer
-</span><a href="#local-6989586621681258933"><span class="hs-identifier hs-var">i</span></a></span><span> </span><span class="annot"><span class="annottext">Integer -&gt; Integer -&gt; Integer
+</span><span id="line-110"></span><span>                                      </span><span class="hs-special">(</span><span class="hs-glyph">\</span><span id="local-6989586621681330352"><span class="annot"><span class="annottext">Integer
+</span><a href="#local-6989586621681330352"><span class="hs-identifier hs-var">i</span></a></span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="annottext">Integer
+</span><a href="#local-6989586621681330352"><span class="hs-identifier hs-var">i</span></a></span><span> </span><span class="annot"><span class="annottext">Integer -&gt; Integer -&gt; Integer
 forall a. Num a =&gt; a -&gt; a -&gt; a
 </span><span class="hs-operator hs-var">+</span></span><span> </span><span class="annot"><span class="annottext">Int -&gt; Integer
 forall a. Integral a =&gt; a -&gt; Integer
 </span><span class="hs-identifier hs-var">toInteger</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">Char -&gt; Int
 </span><span class="hs-identifier hs-var">ord</span></span><span> </span><span class="annot"><span class="annottext">Char
-</span><a href="#local-6989586621681258930"><span class="hs-identifier hs-var">c</span></a></span><span> </span><span class="annot"><span class="annottext">Int -&gt; Int -&gt; Int
+</span><a href="#local-6989586621681330349"><span class="hs-identifier hs-var">c</span></a></span><span> </span><span class="annot"><span class="annottext">Int -&gt; Int -&gt; Int
 forall a. Num a =&gt; a -&gt; a -&gt; a
 </span><span class="hs-glyph hs-var">-</span></span><span> </span><span class="annot"><span class="annottext">Char -&gt; Int
 </span><span class="hs-identifier hs-var">ord</span></span><span> </span><span class="annot"><span class="annottext">Char
@@ -807,24 +807,24 @@ forall a. Num a =&gt; a -&gt; a -&gt; a
 </span><span class="hs-operator hs-var">*</span></span><span class="annot"><span class="annottext">Integer
 </span><span class="hs-number">16</span></span><span class="hs-special">)</span><span>
 </span><span id="line-111"></span><span>                </span><span class="hs-glyph">|</span><span> </span><span class="annot"><span class="annottext">Char
-</span><a href="#local-6989586621681258930"><span class="hs-identifier hs-var">c</span></a></span><span> </span><span class="annot"><span class="annottext">Char -&gt; String -&gt; Bool
+</span><a href="#local-6989586621681330349"><span class="hs-identifier hs-var">c</span></a></span><span> </span><span class="annot"><span class="annottext">Char -&gt; String -&gt; Bool
 forall a. Eq a =&gt; a -&gt; [a] -&gt; Bool
 forall (t :: * -&gt; *) a. (Foldable t, Eq a) =&gt; a -&gt; t a -&gt; Bool
 </span><span class="hs-operator hs-var">`elem`</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">String
 </span><span class="hs-string">&quot;ABCDEF&quot;</span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">String</span></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="annottext">Text -&gt; Integer -&gt; Integer
 </span><a href="Math.Tools.Lexer.html#hexToInt"><span class="hs-identifier hs-var">hexToInt</span></a></span><span> </span><span class="annot"><span class="annottext">Text
-</span><a href="#local-6989586621681258931"><span class="hs-identifier hs-var">cr</span></a></span><span> </span><span class="annot"><span class="annottext">(Integer -&gt; Integer) -&gt; (Integer -&gt; Integer) -&gt; Integer -&gt; Integer
+</span><a href="#local-6989586621681330350"><span class="hs-identifier hs-var">cr</span></a></span><span> </span><span class="annot"><span class="annottext">(Integer -&gt; Integer) -&gt; (Integer -&gt; Integer) -&gt; Integer -&gt; Integer
 forall b c a. (b -&gt; c) -&gt; (a -&gt; b) -&gt; a -&gt; c
 </span><span class="hs-operator hs-var">.</span></span><span>
-</span><span id="line-112"></span><span>                          </span><span class="hs-special">(</span><span class="hs-glyph">\</span><span id="local-6989586621681258936"><span class="annot"><span class="annottext">Integer
-</span><a href="#local-6989586621681258936"><span class="hs-identifier hs-var">i</span></a></span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="annottext">Integer
-</span><a href="#local-6989586621681258936"><span class="hs-identifier hs-var">i</span></a></span><span> </span><span class="annot"><span class="annottext">Integer -&gt; Integer -&gt; Integer
+</span><span id="line-112"></span><span>                          </span><span class="hs-special">(</span><span class="hs-glyph">\</span><span id="local-6989586621681330355"><span class="annot"><span class="annottext">Integer
+</span><a href="#local-6989586621681330355"><span class="hs-identifier hs-var">i</span></a></span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="annottext">Integer
+</span><a href="#local-6989586621681330355"><span class="hs-identifier hs-var">i</span></a></span><span> </span><span class="annot"><span class="annottext">Integer -&gt; Integer -&gt; Integer
 forall a. Num a =&gt; a -&gt; a -&gt; a
 </span><span class="hs-operator hs-var">+</span></span><span> </span><span class="annot"><span class="annottext">Int -&gt; Integer
 forall a. Integral a =&gt; a -&gt; Integer
 </span><span class="hs-identifier hs-var">toInteger</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">Char -&gt; Int
 </span><span class="hs-identifier hs-var">ord</span></span><span> </span><span class="annot"><span class="annottext">Char
-</span><a href="#local-6989586621681258930"><span class="hs-identifier hs-var">c</span></a></span><span> </span><span class="annot"><span class="annottext">Int -&gt; Int -&gt; Int
+</span><a href="#local-6989586621681330349"><span class="hs-identifier hs-var">c</span></a></span><span> </span><span class="annot"><span class="annottext">Int -&gt; Int -&gt; Int
 forall a. Num a =&gt; a -&gt; a -&gt; a
 </span><span class="hs-glyph hs-var">-</span></span><span> </span><span class="annot"><span class="annottext">Char -&gt; Int
 </span><span class="hs-identifier hs-var">ord</span></span><span> </span><span class="annot"><span class="annottext">Char
@@ -837,18 +837,18 @@ forall a. Num a =&gt; a -&gt; a -&gt; a
 </span><span id="line-113"></span><span>                </span><span class="hs-glyph">|</span><span> </span><span class="annot"><span class="annottext">Bool
 </span><span class="hs-identifier hs-var">otherwise</span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="annottext">Text -&gt; Integer -&gt; Integer
 </span><a href="Math.Tools.Lexer.html#hexToInt"><span class="hs-identifier hs-var">hexToInt</span></a></span><span> </span><span class="annot"><span class="annottext">Text
-</span><a href="#local-6989586621681258931"><span class="hs-identifier hs-var">cr</span></a></span><span> </span><span class="annot"><span class="annottext">(Integer -&gt; Integer) -&gt; (Integer -&gt; Integer) -&gt; Integer -&gt; Integer
+</span><a href="#local-6989586621681330350"><span class="hs-identifier hs-var">cr</span></a></span><span> </span><span class="annot"><span class="annottext">(Integer -&gt; Integer) -&gt; (Integer -&gt; Integer) -&gt; Integer -&gt; Integer
 forall b c a. (b -&gt; c) -&gt; (a -&gt; b) -&gt; a -&gt; c
 </span><span class="hs-operator hs-var">.</span></span><span>
-</span><span id="line-114"></span><span>                              </span><span class="hs-special">(</span><span class="hs-glyph">\</span><span id="local-6989586621681258937"><span class="annot"><span class="annottext">Integer
-</span><a href="#local-6989586621681258937"><span class="hs-identifier hs-var">i</span></a></span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="annottext">Integer
-</span><a href="#local-6989586621681258937"><span class="hs-identifier hs-var">i</span></a></span><span> </span><span class="annot"><span class="annottext">Integer -&gt; Integer -&gt; Integer
+</span><span id="line-114"></span><span>                              </span><span class="hs-special">(</span><span class="hs-glyph">\</span><span id="local-6989586621681330356"><span class="annot"><span class="annottext">Integer
+</span><a href="#local-6989586621681330356"><span class="hs-identifier hs-var">i</span></a></span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="annottext">Integer
+</span><a href="#local-6989586621681330356"><span class="hs-identifier hs-var">i</span></a></span><span> </span><span class="annot"><span class="annottext">Integer -&gt; Integer -&gt; Integer
 forall a. Num a =&gt; a -&gt; a -&gt; a
 </span><span class="hs-operator hs-var">+</span></span><span> </span><span class="annot"><span class="annottext">Int -&gt; Integer
 forall a. Integral a =&gt; a -&gt; Integer
 </span><span class="hs-identifier hs-var">toInteger</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">Char -&gt; Int
 </span><span class="hs-identifier hs-var">ord</span></span><span> </span><span class="annot"><span class="annottext">Char
-</span><a href="#local-6989586621681258930"><span class="hs-identifier hs-var">c</span></a></span><span> </span><span class="annot"><span class="annottext">Int -&gt; Int -&gt; Int
+</span><a href="#local-6989586621681330349"><span class="hs-identifier hs-var">c</span></a></span><span> </span><span class="annot"><span class="annottext">Int -&gt; Int -&gt; Int
 forall a. Num a =&gt; a -&gt; a -&gt; a
 </span><span class="hs-glyph hs-var">-</span></span><span> </span><span class="annot"><span class="annottext">Char -&gt; Int
 </span><span class="hs-identifier hs-var">ord</span></span><span> </span><span class="annot"><span class="annottext">Char
@@ -861,29 +861,29 @@ forall a. Num a =&gt; a -&gt; a -&gt; a
 </span><span id="line-115"></span><span>
 </span><span id="line-116"></span><span> </span><span class="annot"><a href="Math.Tools.Lexer.html#octToInt"><span class="hs-identifier hs-type">octToInt</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Text</span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Integer</span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Integer</span></span><span>
 </span><span id="line-117"></span><span> </span><span id="octToInt"><span class="annot"><span class="annottext">octToInt :: Text -&gt; Integer -&gt; Integer
-</span><a href="Math.Tools.Lexer.html#octToInt"><span class="hs-identifier hs-var hs-var">octToInt</span></a></span></span><span> </span><span id="local-6989586621681258938"><span class="annot"><span class="annottext">Text
-</span><a href="#local-6989586621681258938"><span class="hs-identifier hs-var">str</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="hs-keyword">case</span><span> </span><span class="annot"><span class="annottext">Text -&gt; Maybe (Char, Text)
+</span><a href="Math.Tools.Lexer.html#octToInt"><span class="hs-identifier hs-var hs-var">octToInt</span></a></span></span><span> </span><span id="local-6989586621681330357"><span class="annot"><span class="annottext">Text
+</span><a href="#local-6989586621681330357"><span class="hs-identifier hs-var">str</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="hs-keyword">case</span><span> </span><span class="annot"><span class="annottext">Text -&gt; Maybe (Char, Text)
 </span><span class="hs-identifier hs-var">uncons</span></span><span> </span><span class="annot"><span class="annottext">Text
-</span><a href="#local-6989586621681258938"><span class="hs-identifier hs-var">str</span></a></span><span> </span><span class="hs-keyword">of</span><span>
+</span><a href="#local-6989586621681330357"><span class="hs-identifier hs-var">str</span></a></span><span> </span><span class="hs-keyword">of</span><span>
 </span><span id="line-118"></span><span>        </span><span class="annot"><span class="annottext">Maybe (Char, Text)
 </span><span class="hs-identifier hs-var">Nothing</span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="annottext">Integer -&gt; Integer
 forall a. a -&gt; a
 </span><span class="hs-identifier hs-var">id</span></span><span>
-</span><span id="line-119"></span><span>        </span><span class="annot"><span class="hs-identifier hs-type">Just</span></span><span> </span><span class="hs-special">(</span><span id="local-6989586621681258939"><span class="annot"><span class="annottext">Char
-</span><a href="#local-6989586621681258939"><span class="hs-identifier hs-var">c</span></a></span></span><span class="hs-special">,</span><span id="local-6989586621681258940"><span class="annot"><span class="annottext">Text
-</span><a href="#local-6989586621681258940"><span class="hs-identifier hs-var">cr</span></a></span></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="annottext">Text -&gt; Integer -&gt; Integer
+</span><span id="line-119"></span><span>        </span><span class="annot"><span class="hs-identifier hs-type">Just</span></span><span> </span><span class="hs-special">(</span><span id="local-6989586621681330358"><span class="annot"><span class="annottext">Char
+</span><a href="#local-6989586621681330358"><span class="hs-identifier hs-var">c</span></a></span></span><span class="hs-special">,</span><span id="local-6989586621681330359"><span class="annot"><span class="annottext">Text
+</span><a href="#local-6989586621681330359"><span class="hs-identifier hs-var">cr</span></a></span></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="annottext">Text -&gt; Integer -&gt; Integer
 </span><a href="Math.Tools.Lexer.html#octToInt"><span class="hs-identifier hs-var">octToInt</span></a></span><span> </span><span class="annot"><span class="annottext">Text
-</span><a href="#local-6989586621681258940"><span class="hs-identifier hs-var">cr</span></a></span><span> </span><span class="annot"><span class="annottext">(Integer -&gt; Integer) -&gt; (Integer -&gt; Integer) -&gt; Integer -&gt; Integer
+</span><a href="#local-6989586621681330359"><span class="hs-identifier hs-var">cr</span></a></span><span> </span><span class="annot"><span class="annottext">(Integer -&gt; Integer) -&gt; (Integer -&gt; Integer) -&gt; Integer -&gt; Integer
 forall b c a. (b -&gt; c) -&gt; (a -&gt; b) -&gt; a -&gt; c
-</span><span class="hs-operator hs-var">.</span></span><span> </span><span class="hs-special">(</span><span class="hs-glyph">\</span><span id="local-6989586621681258941"><span class="annot"><span class="annottext">Integer
-</span><a href="#local-6989586621681258941"><span class="hs-identifier hs-var">i</span></a></span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="annottext">Integer
-</span><a href="#local-6989586621681258941"><span class="hs-identifier hs-var">i</span></a></span><span> </span><span class="annot"><span class="annottext">Integer -&gt; Integer -&gt; Integer
+</span><span class="hs-operator hs-var">.</span></span><span> </span><span class="hs-special">(</span><span class="hs-glyph">\</span><span id="local-6989586621681330360"><span class="annot"><span class="annottext">Integer
+</span><a href="#local-6989586621681330360"><span class="hs-identifier hs-var">i</span></a></span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="annottext">Integer
+</span><a href="#local-6989586621681330360"><span class="hs-identifier hs-var">i</span></a></span><span> </span><span class="annot"><span class="annottext">Integer -&gt; Integer -&gt; Integer
 forall a. Num a =&gt; a -&gt; a -&gt; a
 </span><span class="hs-operator hs-var">+</span></span><span> </span><span class="annot"><span class="annottext">Int -&gt; Integer
 forall a. Integral a =&gt; a -&gt; Integer
 </span><span class="hs-identifier hs-var">toInteger</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">Char -&gt; Int
 </span><span class="hs-identifier hs-var">ord</span></span><span> </span><span class="annot"><span class="annottext">Char
-</span><a href="#local-6989586621681258939"><span class="hs-identifier hs-var">c</span></a></span><span> </span><span class="annot"><span class="annottext">Int -&gt; Int -&gt; Int
+</span><a href="#local-6989586621681330358"><span class="hs-identifier hs-var">c</span></a></span><span> </span><span class="annot"><span class="annottext">Int -&gt; Int -&gt; Int
 forall a. Num a =&gt; a -&gt; a -&gt; a
 </span><span class="hs-glyph hs-var">-</span></span><span> </span><span class="annot"><span class="annottext">Char -&gt; Int
 </span><span class="hs-identifier hs-var">ord</span></span><span> </span><span class="annot"><span class="annottext">Char

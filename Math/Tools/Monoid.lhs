@@ -1,4 +1,4 @@
->{-# LANGUAGE GADTs, FlexibleInstances #-}
+>{-# LANGUAGE Safe, GADTs, FlexibleInstances #-}
 >module Math.Tools.Monoid where
 >import Prelude hiding (id,(.))
 >import Control.Applicative

@@ -105,8 +105,8 @@ instance Comonad ((,) a :*: (->) a) where
 >matrix4d f x y z t = x `matrixBind` \a -> matrix3d (f a) y z t
 
 >-- | needs type annotation
->constantMatrix :: (Applicative m, Applicative n) => a -> (m :*: n) a
->constantMatrix a = matrix (\_ _ -> a) (pure ()) (pure ())
+>constantMatrixGeneric :: (Applicative m, Applicative n) => a -> (m :*: n) a
+>constantMatrixGeneric a = matrix (\_ _ -> a) (pure ()) (pure ())
 
 >applyCol :: (Applicative f) => (f :*: (->) a) b -> f a -> f b
 >applyCol (Matrix m) x = pure ($) <*> m <*> x
@@ -193,10 +193,10 @@ instance Comonad ((,) a :*: (->) a) where
 
 matrixCommutator :: (Applicative h, Transposable h h, InnerProductSpace (h a), Scalar (h a) ~ a) => (h :*: h) a -> (h :*: h) a -> (h :*: h) a
 
->matrixCommutator :: (VectorSpace ((f :*: f) a),
+>matrixCommutator :: (VectorSpace ((f :*: f) (Scalar (f a))),
 > InnerProductSpaceFunctor f a, ConjugateSymmetric a,
 > Transposable f f a, Num a)
-> => (f :*: f) a -> (f :*: f) a -> (f :*: f) a
+> => (f :*: f) a -> (f :*: f) a -> (f :*: f) (Scalar (f a))
 >matrixCommutator m n = m %*% n %- n %*% m
 
 >instance (Num a, ConjugateSymmetric a) => LieAlgebra ((Vector4 :*: Vector4) a) where

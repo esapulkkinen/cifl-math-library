@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8"?>
 <bibliography>
   <Book id="lawvererosebrugh-sets">
     <summary>Lawvere, Rosebrugh: Sets for Mathematics</summary>
@@ -59,9 +59,18 @@
     <field name="hasPart" type="WebPage"><summary name="name">Conjugate transpose</summary><field name="url">http://en.wikipedia.org/wiki/Conjugate_transpose</field></field>
     <field name="hasPart" type="WebPage"><summary name="name">Cycle detection</summary><field name="url">http://en.wikipedia.org/wiki/Cycle_detection</field></field>
     <field name="hasPart" type="WebPage"><summary name="name">Determinant</summary><field name="url">http://en.wikipedia.org/wiki/Determinant</field></field>
+    <field name="hasPart" type="WebPage"><summary name="name">Logarithm</summary><field name="url">http://en.wikipedia.org/wiki/Logarithm</field></field>
+    <field name="hasPart" type="WebPage"><summary name="name">Fourier series</summary><field name="url">https://en.wikipedia.org/wiki/Fourier_series</field></field>
+    <field name="hasPart" type="WebPage"><summary name="name">Fourier transform</summary><field name="url">https://en.wikipedia.org/wiki/Fourier_transform</field></field>
+    <field name="hasPart" type="WebPage"><summary name="name">Chebyshev_polynomials</summary><field name="url">https://en.wikipedia.org/wiki/Chebyshev_polynomials</field></field>
     <field name="hasPart" type="WebPage"><summary name="name">Elementary matrix operations</summary><field name="url">http://en.wikipedia.org/wiki/Elementary_matrix#Operations</field></field>
     <field name="hasPart" type="WebPage"><summary name="name">Exponential function</summary><field name="url">http://en.wikipedia.org/wiki/Exponential_function</field></field>
     <field name="hasPart" type="WebPage"><summary name="name">Formal power series</summary><field name="url">http://en.wikipedia.org/wiki/Formal_power_series</field></field>
+    <field name="hasPart" type="WebPage"><summary name="name">List of trigonometric identities</summary><field name="url">https://en.wikipedia.org/wiki/List_of_trigonometric_identities</field></field>
+    <field name="hasPart" type="WebPage"><summary name="name">Hyperbolic function</summary><field name="url">https://en.wikipedia.org/wiki/Hyperbolic_functions</field></field>
+    <field name="hasPart" type="WebPage"><summary name="name">Exact trigonometric values</summary><field name="url">https://en.wikipedia.org/wiki/Exact_trigonometric_values</field></field>
+    <field name="hasPart" type="WebPage"><summary name="name">Heptadecagon</summary><field name="url">https://en.wikipedia.org/wiki/Heptadecagon</field></field>
+    <field name="hasPart" type="WebPage"><summary name="name">De Moivre's formula</summary><field name="url">https://en.wikipedia.org/wiki/De_Moivre's_formula</field></field>
     <field name="hasPart" type="WebPage"><summary name="name">Formula for primes</summary><field name="url">http://en.wikipedia.org/wiki/Formula_for_primes</field></field>
     <field name="hasPart" type="WebPage"><summary name="name">Hyperbolic function</summary><field name="url">http://en.wikipedia.org/wiki/Hyperbolic_function</field></field>
     <field name="hasPart" type="WebPage"><summary name="name">Integral</summary><field name="url">http://en.wikipedia.org/wiki/Integral</field></field>

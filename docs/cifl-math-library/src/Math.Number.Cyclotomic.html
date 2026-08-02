@@ -1,0 +1,317 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"><html xmlns="http://www.w3.org/1999/xhtml"><head><link rel="stylesheet" type="text/css" href="style.css" /><script type="text/javascript" src="highlight.js"></script></head><body><pre><span class="hs-operator">&gt;</span><span class="hs-pragma">{-# LANGUAGE GADTs, PolyKinds, FlexibleInstances,
+&gt;    MultiParamTypeClasses, TypeFamilies, DeriveFunctor, TypeOperators,
+&gt;    StandaloneDeriving
+&gt; #-}</span><span>
+</span><span id="line-5"></span><span class="hs-operator">&gt;</span><span> </span><span>
+</span><span id="line-6"></span><span class="hs-operator">&gt;</span><span class="hs-keyword">module</span><span> </span><span class="hs-identifier">Math.Number.Cyclotomic</span><span> </span><span class="hs-keyword">where</span><span>
+</span><span id="line-7"></span><span class="hs-operator">&gt;</span><span class="hs-keyword">import</span><span> </span><span class="annot"><a href="Math.Matrix.Interface.html"><span class="hs-identifier">Math.Matrix.Interface</span></a></span><span>
+</span><span id="line-8"></span><span class="hs-operator">&gt;</span><span class="hs-keyword">import</span><span> </span><span class="annot"><a href="Math.Number.Units.html"><span class="hs-identifier">Math.Number.Units</span></a></span><span>
+</span><span id="line-9"></span><span class="hs-operator">&gt;</span><span class="hs-keyword">import</span><span> </span><span class="annot"><span class="hs-identifier">Data.Ratio</span></span><span>
+</span><span id="line-10"></span><span class="hs-operator">&gt;</span><span class="hs-keyword">import</span><span> </span><span class="annot"><a href="Math.Number.Stream.html"><span class="hs-identifier">Math.Number.Stream</span></a></span><span>
+</span><span id="line-11"></span><span class="hs-operator">&gt;</span><span class="hs-keyword">import</span><span> </span><span class="annot"><a href="Math.Number.StreamInterface.html"><span class="hs-identifier">Math.Number.StreamInterface</span></a></span><span>
+</span><span id="line-12"></span><span class="hs-operator">&gt;</span><span class="hs-keyword">import</span><span> </span><span class="annot"><span class="hs-identifier">Data.Complex</span></span><span>
+</span><span id="line-13"></span><span>
+</span><span id="line-14"></span><span class="hs-identifier">The</span><span> </span><span class="hs-identifier">field</span><span> </span><span class="hs-identifier">cyclotomic</span><span> </span><span class="hs-identifier">polynomials</span><span class="hs-operator">.</span><span>
+</span><span id="line-15"></span><span>
+</span><span id="line-16"></span><span class="hs-operator">&gt;</span><span class="hs-keyword">data</span><span> </span><span id="CPoly"><span class="annot"><a href="Math.Number.Cyclotomic.html#CPoly"><span class="hs-identifier hs-var">CPoly</span></a></span></span><span> </span><span id="local-6989586621681415397"><span class="annot"><a href="#local-6989586621681415397"><span class="hs-identifier hs-type">q</span></a></span></span><span>
+</span><span id="line-17"></span><span>
+</span><span id="line-18"></span><span class="hs-operator">&gt;</span><span class="hs-keyword">data</span><span> </span><span id="Cyclotomic"><span class="annot"><a href="Math.Number.Cyclotomic.html#Cyclotomic"><span class="hs-identifier hs-var">Cyclotomic</span></a></span></span><span> </span><span id="local-6989586621681415398"><span class="annot"><a href="#local-6989586621681415398"><span class="hs-identifier hs-type">a</span></a></span></span><span> </span><span class="hs-keyword">where</span><span>
+</span><span id="line-19"></span><span class="hs-operator">&gt;</span><span>  </span><span id="CyclotomicRootOfUnity"><span class="annot"><a href="Math.Number.Cyclotomic.html#CyclotomicRootOfUnity"><span class="hs-identifier hs-var">CyclotomicRootOfUnity</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Integer</span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="Math.Number.Cyclotomic.html#Cyclotomic"><span class="hs-identifier hs-type">Cyclotomic</span></a></span><span> </span><span class="annot"><span class="hs-identifier hs-type">Rational</span></span><span> </span><span class="hs-comment">-- ROU(n)</span><span>
+</span><span id="line-20"></span><span class="hs-operator">&gt;</span><span>  </span><span id="local-6989586621681415307"><span id="CyclotomicPower"><span class="annot"><a href="Math.Number.Cyclotomic.html#CyclotomicPower"><span class="hs-identifier hs-var">CyclotomicPower</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Integer</span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="Math.Number.Cyclotomic.html#Cyclotomic"><span class="hs-identifier hs-type">Cyclotomic</span></a></span><span> </span><span class="annot"><a href="#local-6989586621681415307"><span class="hs-identifier hs-type">a</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="Math.Number.Cyclotomic.html#Cyclotomic"><span class="hs-identifier hs-type">Cyclotomic</span></a></span><span> </span><span class="annot"><a href="#local-6989586621681415307"><span class="hs-identifier hs-type">a</span></a></span></span><span> </span><span class="hs-comment">-- (ROU(n)^k)</span><span>
+</span><span id="line-21"></span><span class="hs-operator">&gt;</span><span>  </span><span id="CyclotomicPoly"><span class="annot"><a href="Math.Number.Cyclotomic.html#CyclotomicPoly"><span class="hs-identifier hs-var">CyclotomicPoly</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="hs-special">[</span><span class="annot"><a href="Math.Number.Cyclotomic.html#Cyclotomic"><span class="hs-identifier hs-type">Cyclotomic</span></a></span><span> </span><span class="annot"><span class="hs-identifier hs-type">Rational</span></span><span class="hs-special">]</span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="Math.Number.Cyclotomic.html#Cyclotomic"><span class="hs-identifier hs-type">Cyclotomic</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="Math.Number.Cyclotomic.html#CPoly"><span class="hs-identifier hs-type">CPoly</span></a></span><span> </span><span class="annot"><span class="hs-identifier hs-type">Rational</span></span><span class="hs-special">)</span><span> </span><span class="hs-comment">-- (x - ROU(n)^k_1)*...*(x - ROU(n)^k_n)</span><span>
+</span><span id="line-22"></span><span>
+</span><span id="line-23"></span><span class="hs-operator">&gt;</span><span class="hs-keyword">instance</span><span> </span><span id="local-6989586621681415303"><span id="local-6989586621681415403"><span id="local-6989586621681415408"><span class="annot"><span class="hs-identifier hs-type">Show</span></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="Math.Number.Cyclotomic.html#Cyclotomic"><span class="hs-identifier hs-type">Cyclotomic</span></a></span><span> </span><span class="annot"><a href="#local-6989586621681415303"><span class="hs-identifier hs-type">a</span></a></span><span class="hs-special">)</span></span></span></span><span> </span><span class="hs-keyword">where</span><span>
+</span><span id="line-24"></span><span class="hs-operator">&gt;</span><span>  </span><span id="local-6989586621681415414"><span class="annot"><span class="annottext">show :: Cyclotomic a -&gt; String
+</span><a href="#local-6989586621681415414"><span class="hs-identifier hs-var hs-var hs-var hs-var">show</span></a></span></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="Math.Number.Cyclotomic.html#CyclotomicRootOfUnity"><span class="hs-identifier hs-type">CyclotomicRootOfUnity</span></a></span><span> </span><span id="local-6989586621681415418"><span class="annot"><span class="annottext">Integer
+</span><a href="#local-6989586621681415418"><span class="hs-identifier hs-var">n</span></a></span></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">String
+</span><span class="hs-string">&quot;exp(2&#960;i/&quot;</span></span><span> </span><span class="annot"><span class="annottext">String -&gt; ShowS
+forall a. [a] -&gt; [a] -&gt; [a]
+</span><span class="hs-operator hs-var">++</span></span><span> </span><span class="annot"><span class="annottext">Integer -&gt; String
+forall a. Show a =&gt; a -&gt; String
+</span><span class="hs-identifier hs-var">show</span></span><span> </span><span class="annot"><span class="annottext">Integer
+</span><a href="#local-6989586621681415418"><span class="hs-identifier hs-var">n</span></a></span><span> </span><span class="annot"><span class="annottext">String -&gt; ShowS
+forall a. [a] -&gt; [a] -&gt; [a]
+</span><span class="hs-operator hs-var">++</span></span><span> </span><span class="annot"><span class="annottext">String
+</span><span class="hs-string">&quot;)&quot;</span></span><span>
+</span><span id="line-25"></span><span class="hs-operator">&gt;</span><span>  </span><span class="annot"><span class="hs-identifier hs-var">show</span></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="Math.Number.Cyclotomic.html#CyclotomicPower"><span class="hs-identifier hs-type">CyclotomicPower</span></a></span><span> </span><span id="local-6989586621681415419"><span class="annot"><span class="annottext">Integer
+</span><a href="#local-6989586621681415419"><span class="hs-identifier hs-var">n</span></a></span></span><span> </span><span id="local-6989586621681415420"><span class="annot"><span class="annottext">Cyclotomic a
+</span><a href="#local-6989586621681415420"><span class="hs-identifier hs-var">x</span></a></span></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Cyclotomic a -&gt; String
+forall a. Show a =&gt; a -&gt; String
+</span><span class="hs-identifier hs-var">show</span></span><span> </span><span class="annot"><span class="annottext">Cyclotomic a
+</span><a href="#local-6989586621681415420"><span class="hs-identifier hs-var">x</span></a></span><span> </span><span class="annot"><span class="annottext">String -&gt; ShowS
+forall a. [a] -&gt; [a] -&gt; [a]
+</span><span class="hs-operator hs-var">++</span></span><span> </span><span class="annot"><span class="annottext">String
+</span><span class="hs-string">&quot;^&quot;</span></span><span> </span><span class="annot"><span class="annottext">String -&gt; ShowS
+forall a. [a] -&gt; [a] -&gt; [a]
+</span><span class="hs-operator hs-var">++</span></span><span> </span><span class="annot"><span class="annottext">Integer -&gt; String
+forall a. Show a =&gt; a -&gt; String
+</span><span class="hs-identifier hs-var">show</span></span><span> </span><span class="annot"><span class="annottext">Integer
+</span><a href="#local-6989586621681415419"><span class="hs-identifier hs-var">n</span></a></span><span>
+</span><span id="line-26"></span><span class="hs-operator">&gt;</span><span>  </span><span class="annot"><span class="hs-identifier hs-var">show</span></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="Math.Number.Cyclotomic.html#CyclotomicPoly"><span class="hs-identifier hs-type">CyclotomicPoly</span></a></span><span> </span><span class="hs-special">[</span><span class="hs-special">]</span><span class="hs-special">)</span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">ShowS
+forall a. Show a =&gt; a -&gt; String
+</span><span class="hs-identifier hs-var">show</span></span><span> </span><span class="annot"><span class="annottext">String
+</span><span class="hs-string">&quot;1&quot;</span></span><span>
+</span><span id="line-27"></span><span class="hs-operator">&gt;</span><span>  </span><span class="annot"><span class="hs-identifier hs-var">show</span></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="Math.Number.Cyclotomic.html#CyclotomicPoly"><span class="hs-identifier hs-type">CyclotomicPoly</span></a></span><span> </span><span class="hs-special">[</span><span id="local-6989586621681415430"><span class="annot"><span class="annottext">Cyclotomic Rational
+</span><a href="#local-6989586621681415430"><span class="hs-identifier hs-var">c</span></a></span></span><span class="hs-special">]</span><span class="hs-special">)</span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">ShowS
+forall a. Show a =&gt; a -&gt; String
+</span><span class="hs-identifier hs-var">show</span></span><span> </span><span class="annot"><span class="annottext">String
+</span><span class="hs-string">&quot;(x - &quot;</span></span><span> </span><span class="annot"><span class="annottext">String -&gt; ShowS
+forall a. [a] -&gt; [a] -&gt; [a]
+</span><span class="hs-operator hs-var">++</span></span><span> </span><span class="annot"><span class="annottext">Cyclotomic Rational -&gt; String
+forall a. Show a =&gt; a -&gt; String
+</span><span class="hs-identifier hs-var">show</span></span><span> </span><span class="annot"><span class="annottext">Cyclotomic Rational
+</span><a href="#local-6989586621681415430"><span class="hs-identifier hs-var">c</span></a></span><span> </span><span class="annot"><span class="annottext">String -&gt; ShowS
+forall a. [a] -&gt; [a] -&gt; [a]
+</span><span class="hs-operator hs-var">++</span></span><span> </span><span class="annot"><span class="annottext">String
+</span><span class="hs-string">&quot;)&quot;</span></span><span>
+</span><span id="line-28"></span><span class="hs-operator">&gt;</span><span>  </span><span class="annot"><span class="hs-identifier hs-var">show</span></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="Math.Number.Cyclotomic.html#CyclotomicPoly"><span class="hs-identifier hs-type">CyclotomicPoly</span></a></span><span> </span><span class="hs-special">(</span><span id="local-6989586621681415436"><span class="annot"><span class="annottext">Cyclotomic Rational
+</span><a href="#local-6989586621681415436"><span class="hs-identifier hs-var">c</span></a></span></span><span class="annot"><span class="hs-glyph hs-type">:</span></span><span id="local-6989586621681415437"><span class="annot"><span class="annottext">[Cyclotomic Rational]
+</span><a href="#local-6989586621681415437"><span class="hs-identifier hs-var">cr</span></a></span></span><span class="hs-special">)</span><span class="hs-special">)</span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">ShowS
+forall a. Show a =&gt; a -&gt; String
+</span><span class="hs-identifier hs-var">show</span></span><span> </span><span class="annot"><span class="annottext">String
+</span><span class="hs-string">&quot;(x - &quot;</span></span><span> </span><span class="annot"><span class="annottext">String -&gt; ShowS
+forall a. [a] -&gt; [a] -&gt; [a]
+</span><span class="hs-operator hs-var">++</span></span><span> </span><span class="annot"><span class="annottext">Cyclotomic Rational -&gt; String
+forall a. Show a =&gt; a -&gt; String
+</span><span class="hs-identifier hs-var">show</span></span><span> </span><span class="annot"><span class="annottext">Cyclotomic Rational
+</span><a href="#local-6989586621681415436"><span class="hs-identifier hs-var">c</span></a></span><span> </span><span class="annot"><span class="annottext">String -&gt; ShowS
+forall a. [a] -&gt; [a] -&gt; [a]
+</span><span class="hs-operator hs-var">++</span></span><span> </span><span class="annot"><span class="annottext">String
+</span><span class="hs-string">&quot;)&quot;</span></span><span> </span><span class="annot"><span class="annottext">String -&gt; ShowS
+forall a. [a] -&gt; [a] -&gt; [a]
+</span><span class="hs-operator hs-var">++</span></span><span> </span><span class="annot"><span class="annottext">Cyclotomic (CPoly Rational) -&gt; String
+forall a. Show a =&gt; a -&gt; String
+</span><span class="hs-identifier hs-var">show</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">[Cyclotomic Rational] -&gt; Cyclotomic (CPoly Rational)
+</span><a href="Math.Number.Cyclotomic.html#CyclotomicPoly"><span class="hs-identifier hs-var">CyclotomicPoly</span></a></span><span> </span><span class="annot"><span class="annottext">[Cyclotomic Rational]
+</span><a href="#local-6989586621681415437"><span class="hs-identifier hs-var">cr</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-29"></span><span>
+</span><span id="line-30"></span><span>
+</span><span id="line-31"></span><span class="hs-operator">&gt;</span><span class="annot"><a href="Math.Number.Cyclotomic.html#cosFractionalAngle"><span class="hs-identifier hs-type">cosFractionalAngle</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Rational</span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="Math.Number.Cyclotomic.html#Cyclotomic"><span class="hs-identifier hs-type">Cyclotomic</span></a></span><span> </span><span class="annot"><span class="hs-identifier hs-type">Rational</span></span><span>
+</span><span id="line-32"></span><span class="hs-operator">&gt;</span><span id="cosFractionalAngle"><span class="annot"><span class="annottext">cosFractionalAngle :: Rational -&gt; Cyclotomic Rational
+</span><a href="Math.Number.Cyclotomic.html#cosFractionalAngle"><span class="hs-identifier hs-var hs-var">cosFractionalAngle</span></a></span></span><span> </span><span id="local-6989586621681415439"><span class="annot"><span class="annottext">Rational
+</span><a href="#local-6989586621681415439"><span class="hs-identifier hs-var">q</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Integer -&gt; Cyclotomic Rational -&gt; Cyclotomic Rational
+forall a. Integer -&gt; Cyclotomic a -&gt; Cyclotomic a
+</span><a href="Math.Number.Cyclotomic.html#CyclotomicPower"><span class="hs-identifier hs-var">CyclotomicPower</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">Rational -&gt; Integer
+forall a. Ratio a -&gt; a
+</span><span class="hs-identifier hs-var">numerator</span></span><span> </span><span class="annot"><span class="annottext">Rational
+</span><a href="#local-6989586621681415439"><span class="hs-identifier hs-var">q</span></a></span><span class="hs-special">)</span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">Integer -&gt; Cyclotomic Rational
+</span><a href="Math.Number.Cyclotomic.html#CyclotomicRootOfUnity"><span class="hs-identifier hs-var">CyclotomicRootOfUnity</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">Rational -&gt; Integer
+forall a. Ratio a -&gt; a
+</span><span class="hs-identifier hs-var">denominator</span></span><span> </span><span class="annot"><span class="annottext">Rational
+</span><a href="#local-6989586621681415439"><span class="hs-identifier hs-var">q</span></a></span><span class="hs-special">)</span><span class="hs-special">)</span><span>
+</span><span id="line-33"></span><span>
+</span><span id="line-34"></span><span class="hs-operator">&gt;</span><span class="annot"><a href="Math.Number.Cyclotomic.html#sinFractionalAngle"><span class="hs-identifier hs-type">sinFractionalAngle</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Rational</span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="Math.Number.Cyclotomic.html#Cyclotomic"><span class="hs-identifier hs-type">Cyclotomic</span></a></span><span> </span><span class="annot"><span class="hs-identifier hs-type">Rational</span></span><span>
+</span><span id="line-35"></span><span class="hs-operator">&gt;</span><span id="sinFractionalAngle"><span class="annot"><span class="annottext">sinFractionalAngle :: Rational -&gt; Cyclotomic Rational
+</span><a href="Math.Number.Cyclotomic.html#sinFractionalAngle"><span class="hs-identifier hs-var hs-var">sinFractionalAngle</span></a></span></span><span> </span><span id="local-6989586621681415443"><span class="annot"><span class="annottext">Rational
+</span><a href="#local-6989586621681415443"><span class="hs-identifier hs-var">q</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Rational -&gt; Cyclotomic Rational
+</span><a href="Math.Number.Cyclotomic.html#cosFractionalAngle"><span class="hs-identifier hs-var">cosFractionalAngle</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">Rational
+</span><a href="#local-6989586621681415443"><span class="hs-identifier hs-var">q</span></a></span><span> </span><span class="annot"><span class="annottext">Rational -&gt; Rational -&gt; Rational
+forall a. Num a =&gt; a -&gt; a -&gt; a
+</span><span class="hs-glyph hs-var">-</span></span><span> </span><span class="annot"><span class="annottext">Integer
+</span><span class="hs-number">1</span></span><span class="annot"><span class="annottext">Integer -&gt; Integer -&gt; Rational
+forall a. Integral a =&gt; a -&gt; a -&gt; Ratio a
+</span><span class="hs-operator hs-var">%</span></span><span class="annot"><span class="annottext">Integer
+</span><span class="hs-number">4</span></span><span class="hs-special">)</span><span>
+</span><span id="line-36"></span><span>
+</span><span id="line-37"></span><span class="hs-operator">&gt;--</span><span> </span><span class="hs-identifier">TODO</span><span class="hs-glyph">:</span><span> </span><span class="hs-identifier">does</span><span> </span><span class="hs-identifier">this</span><span> </span><span class="hs-identifier">make</span><span> </span><span class="hs-identifier">any</span><span> </span><span class="hs-identifier">sense</span><span class="hs-operator">?</span><span> </span><span class="hs-identifier">Cyclotomic</span><span> </span><span class="hs-identifier">is</span><span> </span><span class="hs-identifier">already</span><span> </span><span class="hs-identifier">subset</span><span> </span><span class="hs-keyword">of</span><span> </span><span class="hs-identifier">complex</span><span> </span><span class="hs-identifier">numbers</span><span class="hs-operator">.</span><span>
+</span><span id="line-38"></span><span class="hs-operator">&gt;</span><span class="annot"><a href="Math.Number.Cyclotomic.html#expFractionalAngle"><span class="hs-identifier hs-type">expFractionalAngle</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Rational</span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Complex</span></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="Math.Number.Cyclotomic.html#Cyclotomic"><span class="hs-identifier hs-type">Cyclotomic</span></a></span><span> </span><span class="annot"><span class="hs-identifier hs-type">Rational</span></span><span class="hs-special">)</span><span>
+</span><span id="line-39"></span><span class="hs-operator">&gt;</span><span id="expFractionalAngle"><span class="annot"><span class="annottext">expFractionalAngle :: Rational -&gt; Complex (Cyclotomic Rational)
+</span><a href="Math.Number.Cyclotomic.html#expFractionalAngle"><span class="hs-identifier hs-var hs-var">expFractionalAngle</span></a></span></span><span> </span><span id="local-6989586621681415446"><span class="annot"><span class="annottext">Rational
+</span><a href="#local-6989586621681415446"><span class="hs-identifier hs-var">bi</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">Rational -&gt; Cyclotomic Rational
+</span><a href="Math.Number.Cyclotomic.html#cosFractionalAngle"><span class="hs-identifier hs-var">cosFractionalAngle</span></a></span><span> </span><span class="annot"><span class="annottext">Rational
+</span><a href="#local-6989586621681415446"><span class="hs-identifier hs-var">bi</span></a></span><span> </span><span class="annot"><span class="annottext">Cyclotomic Rational
+-&gt; Cyclotomic Rational -&gt; Complex (Cyclotomic Rational)
+forall a. a -&gt; a -&gt; Complex a
+</span><span class="hs-operator hs-var">:+</span></span><span> </span><span class="annot"><span class="annottext">Rational -&gt; Cyclotomic Rational
+</span><a href="Math.Number.Cyclotomic.html#sinFractionalAngle"><span class="hs-identifier hs-var">sinFractionalAngle</span></a></span><span> </span><span class="annot"><span class="annottext">Rational
+</span><a href="#local-6989586621681415446"><span class="hs-identifier hs-var">bi</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-40"></span><span>
+</span><span id="line-41"></span><span>
+</span><span id="line-42"></span><span class="hs-operator">&gt;</span><span class="hs-keyword">data</span><span> </span><span id="FractionalAngle"><span class="annot"><a href="Math.Number.Cyclotomic.html#FractionalAngle"><span class="hs-identifier hs-var">FractionalAngle</span></a></span></span><span> </span><span id="local-6989586621681415313"><span class="annot"><a href="#local-6989586621681415313"><span class="hs-identifier hs-type">a</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span id="FractionOfCircle"><span class="annot"><a href="Math.Number.Cyclotomic.html#FractionOfCircle"><span class="hs-identifier hs-var">FractionOfCircle</span></a></span></span><span> </span><span class="hs-special">{</span><span> </span><span id="fractionalAngle"><span class="annot"><span class="annottext">forall a. FractionalAngle a -&gt; a
+</span><a href="Math.Number.Cyclotomic.html#fractionalAngle"><span class="hs-identifier hs-var hs-var">fractionalAngle</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="#local-6989586621681415313"><span class="hs-identifier hs-type">a</span></a></span><span> </span><span class="hs-special">}</span><span> </span><span class="hs-comment">-- represents angle of 2*pi*q</span><span>
+</span><span id="line-43"></span><span class="hs-operator">&gt;</span><span>                       </span><span class="hs-glyph">|</span><span> </span><span id="CyclotomicAngle"><span class="annot"><a href="Math.Number.Cyclotomic.html#CyclotomicAngle"><span class="hs-identifier hs-var">CyclotomicAngle</span></a></span></span><span> </span><span class="hs-special">{</span><span> </span><span id="cyclotomicAngle"><span class="annot"><span class="annottext">forall a. FractionalAngle a -&gt; Cyclotomic a
+</span><a href="Math.Number.Cyclotomic.html#cyclotomicAngle"><span class="hs-identifier hs-var hs-var">cyclotomicAngle</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="Math.Number.Cyclotomic.html#Cyclotomic"><span class="hs-identifier hs-type">Cyclotomic</span></a></span><span> </span><span class="annot"><a href="#local-6989586621681415313"><span class="hs-identifier hs-type">a</span></a></span><span> </span><span class="hs-special">}</span><span>
+</span><span id="line-44"></span><span class="hs-operator">&gt;</span><span>  </span><span class="hs-keyword">deriving</span><span> </span><span class="hs-special">(</span><span id="local-6989586621681415454"><span id="local-6989586621681415461"><span id="local-6989586621681415465"><span class="annot"><span class="annottext">Int -&gt; FractionalAngle a -&gt; ShowS
+[FractionalAngle a] -&gt; ShowS
+FractionalAngle a -&gt; String
+(Int -&gt; FractionalAngle a -&gt; ShowS)
+-&gt; (FractionalAngle a -&gt; String)
+-&gt; ([FractionalAngle a] -&gt; ShowS)
+-&gt; Show (FractionalAngle a)
+forall a. Show a =&gt; Int -&gt; FractionalAngle a -&gt; ShowS
+forall a. Show a =&gt; [FractionalAngle a] -&gt; ShowS
+forall a. Show a =&gt; FractionalAngle a -&gt; String
+forall a.
+(Int -&gt; a -&gt; ShowS) -&gt; (a -&gt; String) -&gt; ([a] -&gt; ShowS) -&gt; Show a
+$cshowsPrec :: forall a. Show a =&gt; Int -&gt; FractionalAngle a -&gt; ShowS
+showsPrec :: Int -&gt; FractionalAngle a -&gt; ShowS
+$cshow :: forall a. Show a =&gt; FractionalAngle a -&gt; String
+show :: FractionalAngle a -&gt; String
+$cshowList :: forall a. Show a =&gt; [FractionalAngle a] -&gt; ShowS
+showList :: [FractionalAngle a] -&gt; ShowS
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var">Show</span></span></span></span></span><span class="hs-special">)</span><span>
+</span><span id="line-45"></span><span>
+</span><span id="line-46"></span><span class="hs-keyword">instance</span><span> </span><span class="hs-identifier">DimensionalFloating</span><span> </span><span class="hs-identifier">FractionalAngle</span><span> </span><span class="hs-identifier">Rational</span><span> </span><span class="hs-keyword">where</span><span>
+</span><span id="line-47"></span><span>  </span><span class="hs-identifier">fractionOfRotation</span><span> </span><span class="hs-glyph">=</span><span> </span><span class="hs-identifier">FractionOfCircle</span><span>
+</span><span id="line-48"></span><span>
+</span><span id="line-49"></span><span class="hs-operator">&gt;</span><span class="hs-keyword">instance</span><span> </span><span id="local-6989586621681415324"><span class="hs-special">(</span><span class="annot"><span class="hs-identifier hs-type">Fractional</span></span><span> </span><span class="annot"><a href="#local-6989586621681415324"><span class="hs-identifier hs-type">r</span></a></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">=&gt;</span><span> </span><span class="annot"><a href="Math.Matrix.Interface.html#VectorSpace"><span class="hs-identifier hs-type">VectorSpace</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="Math.Number.Cyclotomic.html#FractionalAngle"><span class="hs-identifier hs-type">FractionalAngle</span></a></span><span> </span><span class="annot"><a href="#local-6989586621681415324"><span class="hs-identifier hs-type">r</span></a></span><span class="hs-special">)</span></span><span> </span><span class="hs-keyword">where</span><span>
+</span><span id="line-50"></span><span class="hs-operator">&gt;</span><span>  </span><span class="hs-keyword">type</span><span> </span><span id="Scalar"><span class="annot"><a href="Math.Matrix.Interface.html#Scalar"><span class="hs-identifier hs-var">Scalar</span></a></span></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="Math.Number.Cyclotomic.html#FractionalAngle"><span class="hs-identifier hs-type">FractionalAngle</span></a></span><span> </span><span class="annot"><a href="#local-6989586621681415324"><span class="hs-identifier hs-type">r</span></a></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><a href="#local-6989586621681415324"><span class="hs-identifier hs-type">r</span></a></span><span>
+</span><span id="line-51"></span><span class="hs-operator">&gt;</span><span>  </span><span id="local-6989586621681415479"><span class="annot"><span class="annottext">vzero :: FractionalAngle r
+</span><a href="#local-6989586621681415479"><span class="hs-identifier hs-var hs-var hs-var hs-var">vzero</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">r -&gt; FractionalAngle r
+forall a. a -&gt; FractionalAngle a
+</span><a href="Math.Number.Cyclotomic.html#FractionOfCircle"><span class="hs-identifier hs-var">FractionOfCircle</span></a></span><span> </span><span class="annot"><span class="annottext">r
+</span><span class="hs-number">0</span></span><span>
+</span><span id="line-52"></span><span class="hs-operator">&gt;</span><span>  </span><span id="local-6989586621681415482"><span class="annot"><span class="annottext">vnegate :: FractionalAngle r -&gt; FractionalAngle r
+</span><a href="#local-6989586621681415482"><span class="hs-identifier hs-var hs-var hs-var hs-var">vnegate</span></a></span></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="Math.Number.Cyclotomic.html#FractionOfCircle"><span class="hs-identifier hs-type">FractionOfCircle</span></a></span><span> </span><span id="local-6989586621681415484"><span class="annot"><span class="annottext">r
+</span><a href="#local-6989586621681415484"><span class="hs-identifier hs-var">a</span></a></span></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">r -&gt; FractionalAngle r
+forall a. a -&gt; FractionalAngle a
+</span><a href="Math.Number.Cyclotomic.html#FractionOfCircle"><span class="hs-identifier hs-var">FractionOfCircle</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">r -&gt; r
+forall a. Num a =&gt; a -&gt; a
+</span><span class="hs-identifier hs-var">negate</span></span><span> </span><span class="annot"><span class="annottext">r
+</span><a href="#local-6989586621681415484"><span class="hs-identifier hs-var">a</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-53"></span><span class="hs-operator">&gt;</span><span>  </span><span class="hs-special">(</span><span class="annot"><a href="Math.Number.Cyclotomic.html#FractionOfCircle"><span class="hs-identifier hs-type">FractionOfCircle</span></a></span><span> </span><span id="local-6989586621681415486"><span class="annot"><span class="annottext">r
+</span><a href="#local-6989586621681415486"><span class="hs-identifier hs-var">q</span></a></span></span><span class="hs-special">)</span><span> </span><span id="local-6989586621681415487"><span class="annot"><span class="annottext">%+ :: FractionalAngle r -&gt; FractionalAngle r -&gt; FractionalAngle r
+</span><a href="#local-6989586621681415487"><span class="hs-operator hs-var hs-var hs-var hs-var">%+</span></a></span></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="Math.Number.Cyclotomic.html#FractionOfCircle"><span class="hs-identifier hs-type">FractionOfCircle</span></a></span><span> </span><span id="local-6989586621681415489"><span class="annot"><span class="annottext">r
+</span><a href="#local-6989586621681415489"><span class="hs-identifier hs-var">q'</span></a></span></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">r -&gt; FractionalAngle r
+forall a. a -&gt; FractionalAngle a
+</span><a href="Math.Number.Cyclotomic.html#FractionOfCircle"><span class="hs-identifier hs-var">FractionOfCircle</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">r
+</span><a href="#local-6989586621681415486"><span class="hs-identifier hs-var">q</span></a></span><span> </span><span class="annot"><span class="annottext">r -&gt; r -&gt; r
+forall a. Num a =&gt; a -&gt; a -&gt; a
+</span><span class="hs-operator hs-var">+</span></span><span> </span><span class="annot"><span class="annottext">r
+</span><a href="#local-6989586621681415489"><span class="hs-identifier hs-var">q'</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-54"></span><span class="hs-operator">&gt;</span><span>  </span><span id="local-6989586621681415492"><span class="annot"><span class="annottext">Scalar (FractionalAngle r)
+</span><a href="#local-6989586621681415492"><span class="hs-identifier hs-var">k</span></a></span></span><span> </span><span id="local-6989586621681415493"><span class="annot"><span class="annottext">%* :: Scalar (FractionalAngle r)
+-&gt; FractionalAngle r -&gt; FractionalAngle r
+</span><a href="#local-6989586621681415493"><span class="hs-operator hs-var hs-var hs-var hs-var">%*</span></a></span></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="Math.Number.Cyclotomic.html#FractionOfCircle"><span class="hs-identifier hs-type">FractionOfCircle</span></a></span><span> </span><span id="local-6989586621681415495"><span class="annot"><span class="annottext">r
+</span><a href="#local-6989586621681415495"><span class="hs-identifier hs-var">q</span></a></span></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">r -&gt; FractionalAngle r
+forall a. a -&gt; FractionalAngle a
+</span><a href="Math.Number.Cyclotomic.html#FractionOfCircle"><span class="hs-identifier hs-var">FractionOfCircle</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">r
+Scalar (FractionalAngle r)
+</span><a href="#local-6989586621681415492"><span class="hs-identifier hs-var">k</span></a></span><span> </span><span class="annot"><span class="annottext">r -&gt; r -&gt; r
+forall a. Num a =&gt; a -&gt; a -&gt; a
+</span><span class="hs-operator hs-var">*</span></span><span> </span><span class="annot"><span class="annottext">r
+</span><a href="#local-6989586621681415495"><span class="hs-identifier hs-var">q</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-55"></span><span>
+</span><span id="line-56"></span><span class="hs-operator">&gt;</span><span class="annot"><a href="Math.Number.Cyclotomic.html#fractionalHalfRotation"><span class="hs-identifier hs-type">fractionalHalfRotation</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="Math.Number.Cyclotomic.html#FractionalAngle"><span class="hs-identifier hs-type">FractionalAngle</span></a></span><span> </span><span class="annot"><span class="hs-identifier hs-type">Rational</span></span><span>
+</span><span id="line-57"></span><span class="hs-operator">&gt;</span><span id="fractionalHalfRotation"><span class="annot"><span class="annottext">fractionalHalfRotation :: FractionalAngle Rational
+</span><a href="Math.Number.Cyclotomic.html#fractionalHalfRotation"><span class="hs-identifier hs-var hs-var">fractionalHalfRotation</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Rational -&gt; FractionalAngle Rational
+forall a. a -&gt; FractionalAngle a
+</span><a href="Math.Number.Cyclotomic.html#FractionOfCircle"><span class="hs-identifier hs-var">FractionOfCircle</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">Integer
+</span><span class="hs-number">1</span></span><span> </span><span class="annot"><span class="annottext">Integer -&gt; Integer -&gt; Rational
+forall a. Integral a =&gt; a -&gt; a -&gt; Ratio a
+</span><span class="hs-operator hs-var">%</span></span><span> </span><span class="annot"><span class="annottext">Integer
+</span><span class="hs-number">2</span></span><span class="hs-special">)</span><span>
+</span><span id="line-58"></span><span>
+</span><span id="line-59"></span><span class="hs-operator">&gt;--</span><span> </span><span class="hs-glyph">|</span><span> </span><span class="hs-identifier">Codiagonal</span><span> </span><span class="hs-identifier">version</span><span> </span><span class="hs-keyword">of</span><span> </span><span class="hs-identifier">chebyshev</span><span> </span><span class="hs-identifier">polynomials</span><span> </span><span class="hs-identifier">means</span><span> </span><span class="hs-identifier">the</span><span> </span><span class="hs-identifier">polynomials</span><span>
+</span><span id="line-60"></span><span class="hs-operator">&gt;--</span><span> </span><span class="hs-identifier">should</span><span> </span><span class="hs-identifier">be</span><span> </span><span class="hs-identifier">read</span><span> </span><span class="hs-identifier">from</span><span> </span><span class="hs-identifier">codiagonals</span><span class="hs-operator">.</span><span> </span><span class="hs-identifier">That</span><span> </span><span class="hs-identifier">is</span><span class="hs-special">,</span><span> </span><span class="hs-special">'</span><span class="hs-identifier">codiagonals</span><span> </span><span class="hs-identifier">chebyshevPolynomialsCodiag'</span><span>
+</span><span id="line-61"></span><span class="hs-operator">&gt;--</span><span> </span><span class="hs-identifier">is</span><span> </span><span class="hs-identifier">a</span><span> </span><span class="hs-identifier">stream</span><span> </span><span class="hs-keyword">of</span><span> </span><span class="hs-identifier">lists</span><span> </span><span class="hs-keyword">of</span><span> </span><span class="hs-identifier">coefficients</span><span> </span><span class="hs-keyword">of</span><span> </span><span class="hs-identifier">each</span><span> </span><span class="hs-identifier">polynomial</span><span class="hs-operator">.</span><span>
+</span><span id="line-62"></span><span class="hs-operator">&gt;</span><span class="annot"><a href="Math.Number.Cyclotomic.html#chebyshevPolynomialsCodiag"><span class="hs-identifier hs-type">chebyshevPolynomialsCodiag</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="hs-special">(</span><span class="annot"><a href="Math.Number.StreamInterface.html#Stream"><span class="hs-identifier hs-type">Stream</span></a></span><span> </span><span class="annot"><a href="Math.Matrix.Interface.html#%3A%2A%3A"><span class="hs-operator hs-type">:*:</span></a></span><span> </span><span class="annot"><a href="Math.Number.StreamInterface.html#Stream"><span class="hs-identifier hs-type">Stream</span></a></span><span class="hs-special">)</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Integer</span></span><span>
+</span><span id="line-63"></span><span class="hs-operator">&gt;</span><span id="chebyshevPolynomialsCodiag"><span class="annot"><span class="annottext">chebyshevPolynomialsCodiag :: (:*:) Stream Stream Integer
+</span><a href="Math.Number.Cyclotomic.html#chebyshevPolynomialsCodiag"><span class="hs-identifier hs-var hs-var">chebyshevPolynomialsCodiag</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">(:*:) Stream Stream Integer -&gt; (:*:) Stream Stream Integer
+forall a. (:*:) Stream Stream a -&gt; (:*:) Stream Stream a
+</span><a href="Math.Number.Stream.html#lowerTriangleImpl"><span class="hs-identifier hs-var">lowerTriangleImpl</span></a></span><span> </span><span class="annot"><span class="annottext">(:*:) Stream Stream Integer
+</span><a href="Math.Number.Cyclotomic.html#chebyshevPolynomials"><span class="hs-identifier hs-var">chebyshevPolynomials</span></a></span><span>
+</span><span id="line-64"></span><span>
+</span><span id="line-65"></span><span class="hs-operator">&gt;--</span><span> </span><span class="hs-glyph">|</span><span> </span><span class="hs-identifier">Codiagonal</span><span> </span><span class="hs-identifier">version</span><span> </span><span class="hs-keyword">of</span><span> </span><span class="hs-identifier">chebyshev</span><span> </span><span class="hs-identifier">polynomials</span><span> </span><span class="hs-identifier">means</span><span> </span><span class="hs-identifier">the</span><span> </span><span class="hs-identifier">polynomials</span><span>
+</span><span id="line-66"></span><span class="hs-operator">&gt;--</span><span> </span><span class="hs-identifier">should</span><span> </span><span class="hs-identifier">be</span><span> </span><span class="hs-identifier">read</span><span> </span><span class="hs-identifier">from</span><span> </span><span class="hs-identifier">codiagonals</span><span class="hs-operator">.</span><span> </span><span class="hs-identifier">That</span><span> </span><span class="hs-identifier">is</span><span class="hs-special">,</span><span> </span><span class="hs-special">'</span><span class="hs-identifier">codiagonals</span><span> </span><span class="hs-identifier">chebyshevPolynomialsCodiag'</span><span>
+</span><span id="line-67"></span><span class="hs-operator">&gt;--</span><span> </span><span class="hs-identifier">is</span><span> </span><span class="hs-identifier">a</span><span> </span><span class="hs-identifier">stream</span><span> </span><span class="hs-keyword">of</span><span> </span><span class="hs-identifier">lists</span><span> </span><span class="hs-keyword">of</span><span> </span><span class="hs-identifier">coefficients</span><span> </span><span class="hs-keyword">of</span><span> </span><span class="hs-identifier">each</span><span> </span><span class="hs-identifier">polynomial</span><span class="hs-operator">.</span><span>
+</span><span id="line-68"></span><span class="hs-operator">&gt;</span><span class="annot"><a href="Math.Number.Cyclotomic.html#chebyshevPolynomialsSecondKindCodiag"><span class="hs-identifier hs-type">chebyshevPolynomialsSecondKindCodiag</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="hs-special">(</span><span class="annot"><a href="Math.Number.StreamInterface.html#Stream"><span class="hs-identifier hs-type">Stream</span></a></span><span> </span><span class="annot"><a href="Math.Matrix.Interface.html#%3A%2A%3A"><span class="hs-operator hs-type">:*:</span></a></span><span> </span><span class="annot"><a href="Math.Number.StreamInterface.html#Stream"><span class="hs-identifier hs-type">Stream</span></a></span><span class="hs-special">)</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Integer</span></span><span>
+</span><span id="line-69"></span><span class="hs-operator">&gt;</span><span id="chebyshevPolynomialsSecondKindCodiag"><span class="annot"><span class="annottext">chebyshevPolynomialsSecondKindCodiag :: (:*:) Stream Stream Integer
+</span><a href="Math.Number.Cyclotomic.html#chebyshevPolynomialsSecondKindCodiag"><span class="hs-identifier hs-var hs-var">chebyshevPolynomialsSecondKindCodiag</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">(:*:) Stream Stream Integer -&gt; (:*:) Stream Stream Integer
+forall a. (:*:) Stream Stream a -&gt; (:*:) Stream Stream a
+</span><a href="Math.Number.Stream.html#lowerTriangleImpl"><span class="hs-identifier hs-var">lowerTriangleImpl</span></a></span><span> </span><span class="annot"><span class="annottext">(:*:) Stream Stream Integer
+</span><a href="Math.Number.Cyclotomic.html#chebyshevPolynomialsSecondKind"><span class="hs-identifier hs-var">chebyshevPolynomialsSecondKind</span></a></span><span>
+</span><span id="line-70"></span><span>
+</span><span id="line-71"></span><span class="hs-operator">&gt;--</span><span> </span><span class="hs-glyph">|</span><span> </span><span class="hs-operator">&lt;</span><span class="hs-identifier">https</span><span class="hs-operator">://</span><span class="hs-identifier">en</span><span class="hs-operator">.</span><span class="hs-identifier">wikipedia</span><span class="hs-operator">.</span><span class="hs-identifier">org</span><span class="hs-operator">/</span><span class="hs-identifier">wiki</span><span class="hs-operator">/</span><span class="hs-identifier">Chebyshev_polynomials</span><span class="hs-operator">&gt;</span><span>
+</span><span id="line-72"></span><span class="hs-operator">&gt;--</span><span> </span><span class="hs-identifier">Chebyshev</span><span> </span><span class="hs-identifier">polynomials</span><span> </span><span class="hs-identifier">are</span><span> </span><span class="hs-identifier">polynomial</span><span> </span><span class="hs-identifier">functions</span><span> </span><span class="hs-identifier">T_n</span><span> </span><span class="hs-identifier">that</span><span> </span><span class="hs-identifier">are</span><span>
+</span><span id="line-73"></span><span class="hs-operator">&gt;--</span><span> </span><span class="hs-identifier">solutions</span><span> </span><span class="hs-identifier">to</span><span> </span><span class="hs-identifier">equation</span><span class="hs-glyph">:</span><span> </span><span class="hs-identifier">T_n</span><span class="hs-special">(</span><span class="hs-identifier">cos</span><span class="hs-special">(</span><span class="hs-identifier">theta</span><span class="hs-special">)</span><span class="hs-special">)</span><span> </span><span class="hs-glyph">=</span><span> </span><span class="hs-identifier">cos</span><span> </span><span class="hs-special">(</span><span class="hs-identifier">n</span><span class="hs-operator">*</span><span class="hs-identifier">theta</span><span class="hs-special">)</span><span>
+</span><span id="line-74"></span><span class="hs-operator">&gt;--</span><span> </span><span class="hs-identifier">and</span><span> </span><span class="hs-identifier">also</span><span> </span><span class="hs-identifier">to</span><span> </span><span class="hs-identifier">equation</span><span class="hs-glyph">:</span><span> </span><span class="hs-identifier">T_n</span><span class="hs-special">(</span><span class="hs-identifier">cosh</span><span class="hs-special">(</span><span class="hs-identifier">theta</span><span class="hs-special">)</span><span class="hs-special">)</span><span> </span><span class="hs-glyph">=</span><span> </span><span class="hs-identifier">cosh</span><span> </span><span class="hs-special">(</span><span class="hs-identifier">n</span><span class="hs-operator">*</span><span class="hs-identifier">theta</span><span class="hs-special">)</span><span>
+</span><span id="line-75"></span><span class="hs-operator">&gt;</span><span class="annot"><a href="Math.Number.Cyclotomic.html#chebyshevPolynomials"><span class="hs-identifier hs-type">chebyshevPolynomials</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="hs-special">(</span><span class="annot"><a href="Math.Number.StreamInterface.html#Stream"><span class="hs-identifier hs-type">Stream</span></a></span><span> </span><span class="annot"><a href="Math.Matrix.Interface.html#%3A%2A%3A"><span class="hs-operator hs-type">:*:</span></a></span><span> </span><span class="annot"><a href="Math.Number.StreamInterface.html#Stream"><span class="hs-identifier hs-type">Stream</span></a></span><span class="hs-special">)</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Integer</span></span><span>
+</span><span id="line-76"></span><span class="hs-operator">&gt;</span><span id="chebyshevPolynomials"><span class="annot"><span class="annottext">chebyshevPolynomials :: (:*:) Stream Stream Integer
+</span><a href="Math.Number.Cyclotomic.html#chebyshevPolynomials"><span class="hs-identifier hs-var hs-var">chebyshevPolynomials</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Stream (Stream Integer) -&gt; (:*:) Stream Stream Integer
+forall {k} {k1} (f :: k -&gt; *) (g :: k1 -&gt; k) (a :: k1).
+f (g a) -&gt; (:*:) f g a
+</span><a href="Math.Matrix.Interface.html#Matrix"><span class="hs-identifier hs-var">Matrix</span></a></span><span> </span><span class="annot"><span class="annottext">(Stream (Stream Integer) -&gt; (:*:) Stream Stream Integer)
+-&gt; Stream (Stream Integer) -&gt; (:*:) Stream Stream Integer
+forall a b. (a -&gt; b) -&gt; a -&gt; b
+</span><span class="hs-operator hs-var">$</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">Stream (Stream Integer)
+</span><span class="hs-number">1</span></span><span> </span><span class="annot"><span class="annottext">Stream (Stream Integer)
+-&gt; Stream (Stream Integer) -&gt; Stream (Stream Integer)
+forall a. Num a =&gt; a -&gt; a -&gt; a
+</span><span class="hs-glyph hs-var">-</span></span><span> </span><span class="annot"><span class="annottext">Stream (Stream Integer)
+forall a. Num a =&gt; Stream (Stream a)
+</span><a href="Math.Number.Stream.html#s_z2"><span class="hs-identifier hs-var">s_z2</span></a></span><span> </span><span class="annot"><span class="annottext">Stream (Stream Integer)
+-&gt; Stream (Stream Integer) -&gt; Stream (Stream Integer)
+forall a. Num a =&gt; a -&gt; a -&gt; a
+</span><span class="hs-operator hs-var">*</span></span><span> </span><span class="annot"><span class="annottext">Stream (Stream Integer)
+forall a. Num a =&gt; Stream a
+</span><a href="Math.Number.Stream.html#s_z"><span class="hs-identifier hs-var">s_z</span></a></span><span class="hs-special">)</span><span> </span><span class="annot"><span class="annottext">Stream (Stream Integer)
+-&gt; Stream (Stream Integer) -&gt; Stream (Stream Integer)
+forall a. Integral a =&gt; a -&gt; a -&gt; a
+</span><span class="hs-operator hs-var">`div`</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">Stream (Stream Integer)
+</span><span class="hs-number">1</span></span><span> </span><span class="annot"><span class="annottext">Stream (Stream Integer)
+-&gt; Stream (Stream Integer) -&gt; Stream (Stream Integer)
+forall a. Num a =&gt; a -&gt; a -&gt; a
+</span><span class="hs-glyph hs-var">-</span></span><span> </span><span class="annot"><span class="annottext">Stream (Stream Integer)
+</span><span class="hs-number">2</span></span><span class="annot"><span class="annottext">Stream (Stream Integer)
+-&gt; Stream (Stream Integer) -&gt; Stream (Stream Integer)
+forall a. Num a =&gt; a -&gt; a -&gt; a
+</span><span class="hs-operator hs-var">*</span></span><span class="annot"><span class="annottext">Stream (Stream Integer)
+forall a. Num a =&gt; Stream a
+</span><a href="Math.Number.Stream.html#s_z"><span class="hs-identifier hs-var">s_z</span></a></span><span class="annot"><span class="annottext">Stream (Stream Integer)
+-&gt; Stream (Stream Integer) -&gt; Stream (Stream Integer)
+forall a. Num a =&gt; a -&gt; a -&gt; a
+</span><span class="hs-operator hs-var">*</span></span><span class="annot"><span class="annottext">Stream (Stream Integer)
+forall a. Num a =&gt; Stream (Stream a)
+</span><a href="Math.Number.Stream.html#s_z2"><span class="hs-identifier hs-var">s_z2</span></a></span><span>  </span><span class="annot"><span class="annottext">Stream (Stream Integer)
+-&gt; Stream (Stream Integer) -&gt; Stream (Stream Integer)
+forall a. Num a =&gt; a -&gt; a -&gt; a
+</span><span class="hs-operator hs-var">+</span></span><span> </span><span class="annot"><span class="annottext">Stream (Stream Integer)
+forall a. Num a =&gt; Stream a
+</span><a href="Math.Number.Stream.html#s_z"><span class="hs-identifier hs-var">s_z</span></a></span><span class="annot"><span class="annottext">Stream (Stream Integer)
+-&gt; Stream (Stream Integer) -&gt; Stream (Stream Integer)
+forall a. Num a =&gt; a -&gt; a -&gt; a
+</span><span class="hs-operator hs-var">*</span></span><span class="annot"><span class="annottext">Stream (Stream Integer)
+forall a. Num a =&gt; Stream a
+</span><a href="Math.Number.Stream.html#s_z"><span class="hs-identifier hs-var">s_z</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-77"></span><span>
+</span><span id="line-78"></span><span class="hs-operator">&gt;</span><span class="annot"><a href="Math.Number.Cyclotomic.html#chebyshevPolynomialsSecondKind"><span class="hs-identifier hs-type">chebyshevPolynomialsSecondKind</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="hs-special">(</span><span class="annot"><a href="Math.Number.StreamInterface.html#Stream"><span class="hs-identifier hs-type">Stream</span></a></span><span> </span><span class="annot"><a href="Math.Matrix.Interface.html#%3A%2A%3A"><span class="hs-operator hs-type">:*:</span></a></span><span> </span><span class="annot"><a href="Math.Number.StreamInterface.html#Stream"><span class="hs-identifier hs-type">Stream</span></a></span><span class="hs-special">)</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Integer</span></span><span>
+</span><span id="line-79"></span><span class="hs-operator">&gt;</span><span id="chebyshevPolynomialsSecondKind"><span class="annot"><span class="annottext">chebyshevPolynomialsSecondKind :: (:*:) Stream Stream Integer
+</span><a href="Math.Number.Cyclotomic.html#chebyshevPolynomialsSecondKind"><span class="hs-identifier hs-var hs-var">chebyshevPolynomialsSecondKind</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Stream (Stream Integer) -&gt; (:*:) Stream Stream Integer
+forall {k} {k1} (f :: k -&gt; *) (g :: k1 -&gt; k) (a :: k1).
+f (g a) -&gt; (:*:) f g a
+</span><a href="Math.Matrix.Interface.html#Matrix"><span class="hs-identifier hs-var">Matrix</span></a></span><span> </span><span class="annot"><span class="annottext">(Stream (Stream Integer) -&gt; (:*:) Stream Stream Integer)
+-&gt; Stream (Stream Integer) -&gt; (:*:) Stream Stream Integer
+forall a b. (a -&gt; b) -&gt; a -&gt; b
+</span><span class="hs-operator hs-var">$</span></span><span> </span><span class="annot"><span class="annottext">Stream (Stream Integer) -&gt; Stream (Stream Integer)
+forall a. Integral a =&gt; Stream a -&gt; Stream a
+</span><a href="Math.Number.Stream.html#inversion"><span class="hs-identifier hs-var">inversion</span></a></span><span> </span><span class="annot"><span class="annottext">(Stream (Stream Integer) -&gt; Stream (Stream Integer))
+-&gt; Stream (Stream Integer) -&gt; Stream (Stream Integer)
+forall a b. (a -&gt; b) -&gt; a -&gt; b
+</span><span class="hs-operator hs-var">$</span></span><span> </span><span class="annot"><span class="annottext">Stream (Stream Integer)
+</span><span class="hs-number">1</span></span><span> </span><span class="annot"><span class="annottext">Stream (Stream Integer)
+-&gt; Stream (Stream Integer) -&gt; Stream (Stream Integer)
+forall a. Num a =&gt; a -&gt; a -&gt; a
+</span><span class="hs-glyph hs-var">-</span></span><span> </span><span class="annot"><span class="annottext">Stream (Stream Integer)
+</span><span class="hs-number">2</span></span><span class="annot"><span class="annottext">Stream (Stream Integer)
+-&gt; Stream (Stream Integer) -&gt; Stream (Stream Integer)
+forall a. Num a =&gt; a -&gt; a -&gt; a
+</span><span class="hs-operator hs-var">*</span></span><span class="annot"><span class="annottext">Stream (Stream Integer)
+forall a. Num a =&gt; Stream a
+</span><a href="Math.Number.Stream.html#s_z"><span class="hs-identifier hs-var">s_z</span></a></span><span class="annot"><span class="annottext">Stream (Stream Integer)
+-&gt; Stream (Stream Integer) -&gt; Stream (Stream Integer)
+forall a. Num a =&gt; a -&gt; a -&gt; a
+</span><span class="hs-operator hs-var">*</span></span><span class="annot"><span class="annottext">Stream (Stream Integer)
+forall a. Num a =&gt; Stream (Stream a)
+</span><a href="Math.Number.Stream.html#s_z2"><span class="hs-identifier hs-var">s_z2</span></a></span><span> </span><span class="annot"><span class="annottext">Stream (Stream Integer)
+-&gt; Stream (Stream Integer) -&gt; Stream (Stream Integer)
+forall a. Num a =&gt; a -&gt; a -&gt; a
+</span><span class="hs-operator hs-var">+</span></span><span> </span><span class="annot"><span class="annottext">Stream (Stream Integer)
+forall a. Num a =&gt; Stream a
+</span><a href="Math.Number.Stream.html#s_z"><span class="hs-identifier hs-var">s_z</span></a></span><span class="annot"><span class="annottext">Stream (Stream Integer)
+-&gt; Stream (Stream Integer) -&gt; Stream (Stream Integer)
+forall a. Num a =&gt; a -&gt; a -&gt; a
+</span><span class="hs-operator hs-var">*</span></span><span class="annot"><span class="annottext">Stream (Stream Integer)
+forall a. Num a =&gt; Stream a
+</span><a href="Math.Number.Stream.html#s_z"><span class="hs-identifier hs-var">s_z</span></a></span><span>
+</span><span id="line-80"></span></pre></body></html>

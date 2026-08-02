@@ -1,4 +1,4 @@
->{-# LANGUAGE ExistentialQuantification #-}
+>{-# LANGUAGE Safe, ExistentialQuantification #-}
 >module Math.Tools.Complex where
 >import Data.Complex
 

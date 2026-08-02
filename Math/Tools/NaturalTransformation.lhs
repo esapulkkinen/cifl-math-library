@@ -1,4 +1,4 @@
->{-# LANGUAGE RankNTypes, PolyKinds, GADTs, MultiParamTypeClasses, TypeOperators, Arrows, Safe, ConstraintKinds #-}
+>{-# LANGUAGE RankNTypes, PolyKinds, GADTs, MultiParamTypeClasses, TypeOperators, Arrows, Safe, ConstraintKinds, DataKinds, TypeFamilies, StandaloneKindSignatures, TypeSynonymInstances, FlexibleContexts, ImpredicativeTypes, AllowAmbiguousTypes, FlexibleInstances #-}
 >module Math.Tools.NaturalTransformation where
 >
 >-- Basic support for natural transformations.
@@ -33,6 +33,7 @@
 >instance Category (:~>) where
 >   id = NatTrans id
 >   (NatTrans f) . (NatTrans g) = NatTrans (f . g)
+
 
 >type MaybeNT m = Maybe :~> m
 >type EitherNT a m = (Either a) :~> m
@@ -80,6 +81,9 @@
 
 >horiz :: (Functor h) => h :~> k -> f :~> g -> (h :*: f) :~> (k :*: g)
 >horiz s t = NatTrans (Matrix .  nattransComponent s . fmap (nattransComponent t) . cells)
+
+>ahoriz :: (FunctorArrow h (->) (->)) => h :~> k -> f :~> g -> (h :*: f) :~> (k :*: g)
+>ahoriz s t = NatTrans (Matrix .  nattransComponent s . amap (nattransComponent t) . cells)
 
 >mapNaturalMatrix :: (Functor f, Functor h) 
 >           => f :~> g -> h :~> i -> (a -> b) -> (f :*: h) a -> (g :*: i) b
@@ -195,8 +199,21 @@
 >runNaturalIso :: f :<~>: g -> f a :==: g a
 >runNaturalIso (NaturalIso fwd bck) = nattransComponent fwd <-> nattransComponent bck
 
-
+>type (:~~>) :: (k -> Type) -> (k -> Type) -> k -> Type
 >newtype (f :~~> g) a = NaturalTrans { unNatTrans :: f a -> g a }
+
+
+instance Category2 (:~~>) where
+  data ProductFunctor (:~~>) (g :: k' -> Type) (f :: k -> k') (a :: k) = CatMatrix { runCatMatrix :: g (f a) }
+  natural_id = NaturalTrans id
+
+
+instance MonoidalCategory (:~~>)  where
+   type Prod (:~~>) (f :: Type -> Type) (g :: Type -> Type)
+      = (Functor f, Functor g) => (f :*: g)
+   type MUnit (:~~>) = I
+   (NatTrans f) -*- (NatTrans g) =
+     NatTrans (Matrix . f . fmap g . cells)
 
 
 matrix_map :: (f :*: h) (a -> b)
@@ -222,8 +239,42 @@ mapmatrix :: (Applicative f) => ((f :~~> i) :*: h) a
 >                             -> (f' :*: g') a
 >transformMatrix (Matrix u) (Matrix t)  (Matrix x) = Matrix $ pure unNatTrans <*> t <*> unNatTrans u x
 
+>type Category2 :: ((Type -> Type -> Type) -> (Type -> Type) -> (Type -> Type) -> Type -> Type -> Type) -> Constraint
+>class Category2 nat where
+>  data ProductFunctor nat (f :: Type -> Type) (g :: Type -> Type) :: Type -> Type
+>  natural_id :: (FunctorArrow f arr arr') => forall a. nat arr f f a a
+>  natural_vert :: (FunctorArrow f arr arr', FunctorArrow g arr arr', FunctorArrow h arr arr')
+>               => (forall a. nat arr g h a a) -> (forall b. nat arr f g b b) -> forall c. nat arr f h c c
+>  natural_horiz :: (Arrow arr, Arrow arr', Arrow arr'',
+>                   FunctorArrow f arr' arr'',  FunctorArrow g arr' arr'',
+>                   FunctorArrow h arr' arr,  FunctorArrow j arr' arr)
+>                => (forall a. nat arr h j a a) -> (forall b. nat arr' f g b b)
+>                -> forall c. nat arr (ProductFunctor nat h f) (ProductFunctor nat j g) c c
+
+>instance Category2 NatTransAA where
+>  data ProductFunctor NatTransAA (f :: Type -> Type) (g :: Type -> Type) (a :: Type) = FMatrixAA {
+>     runFMatrixAA :: f (g a)
+>     }
+>  natural_id = NatTransAA id
+>  natural_vert = vertAA
+>  natural_horiz = horizAA
+
+>vertAA :: (Category arr) => (forall a. NatTransAA arr g h a a) -> (forall a. NatTransAA arr f g a a) -> forall a. NatTransAA arr f h a a
+>vertAA (NatTransAA m) (NatTransAA n) = NatTransAA (m <<< n)
+
+>horizAA ::
+>   (FunctorArrow h arr' arr, Arrow arr)
+>   => (forall a. NatTransAA arr h j a a) -> (forall b. NatTransAA arr' f g b b)
+>        -> forall c. NatTransAA arr (ProductFunctor NatTransAA h f) (ProductFunctor NatTransAA j g) c c
+>horizAA (NatTransAA m) (NatTransAA n) = NatTransAA (arr FMatrixAA <<< m <<< amap n <<< arr runFMatrixAA)
+
+
 >newtype NaturalTransA (arr :: k -> k -> Type) f g a = NaturalTransA { unNatTransA :: arr (f a) (g a) }
 >newtype NatTransA (arr :: k -> k -> Type) f g = NatTransA { nattransComponentA :: forall a. arr (f a) (g a) }
+
+>newtype NatTransAA (arr :: k' -> k' -> Type) (f :: k -> k') (g :: k -> k') (a :: k) (b :: k) = NatTransAA {
+>   natTransComponentAA :: arr (f a) (g b)
+> }
 
 >instance (Category arr) => Category (NatTransA arr) where
 >  id = NatTransA id
@@ -262,4 +313,46 @@ uncoyoneda f = NatTransA $ proc x -> inverseImageA x -<< f
 >arrowNatTrans :: NatTransA (->) f g -> f :~> g
 >arrowNatTrans (NatTransA f) = NatTrans f
 
+>-- | <https://en.wikipedia.org/wiki/Kan_extension>
+>data LKan l f x = LKan {
+>   lkanExtension :: x :~> (l :*: f),
+>   initialLKan :: forall m. (x :~> (m :*: f)) -> l :~> m
+> }
+
+>-- | <https://en.wikipedia.org/wiki/Kan_extension>
+>newtype (f :?: r) a = Subst { unSubst :: r (f a) }
+
+>-- | <https://en.wikipedia.org/wiki/Kan_extension>
+>data RKan r f x = RKan {
+>  rkanExtension :: (r :*: f) :~> x,
+>  terminalRKan :: forall m. (m :*: f) :~> x -> m :~> r
+> }
+
+>swapTrans :: (r :*: f) :~> (f :?: r)
+>swapTrans = NatTrans (Subst . cells)
+
+>unswapTrans :: (g :?: f) :~> (f :*: g)
+>unswapTrans = NatTrans (Matrix . unSubst)
+>
+>swapIsoTrans :: (r :*: f) :<~>: (f :?: r)
+>swapIsoTrans = NaturalIso swapTrans unswapTrans
+
+>mapSubst :: (Functor r) => (f :~> g) -> (f :?: r) :~> (g :?: r)
+>mapSubst (NatTrans f) = NatTrans (Subst . fmap f . unSubst)
+
+>mapSubst2 :: (Functor r, Functor g)
+>  => (h :~> k) -> (h :?: (g :?: r)) :~> (k :?: (g :?: r))
+>mapSubst2 (NatTrans f) = NatTrans (Subst . Subst . fmap (fmap f) . unSubst . unSubst)
+
+>reduceRKan :: RKan m f x -> m :~> m
+>reduceRKan (RKan ext term) = term ext
+
+>reduceLKan :: LKan m f x -> m :~> m
+>reduceLKan (LKan ext term) = term ext
+
+>extendRKan :: RKan r f g -> (r :*: f) a -> g a
+>extendRKan (RKan ext _) = nattransComponent ext
+
+termRKan :: RKan r f g -> ((k :*: f) :~> g) -> k a -> r a
+termRKan (RKan _ term) = nattransComponent . term
 

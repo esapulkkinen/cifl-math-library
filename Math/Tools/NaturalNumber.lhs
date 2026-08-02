@@ -1,4 +1,4 @@
->{-# LANGUAGE FlexibleInstances #-}
+>{-# LANGUAGE Safe, FlexibleInstances #-}
 >module Math.Tools.NaturalNumber where
 >import Math.Tools.FixedPoint
 >import Math.Tools.Orthogonal

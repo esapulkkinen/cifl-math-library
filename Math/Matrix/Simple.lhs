@@ -39,6 +39,8 @@
 >import Text.PrettyPrint (empty, vcat,hsep,(<+>))
 >import qualified Text.PrettyPrint as Pretty
 >import Data.Complex
+>import Data.Monoid (Endo(..))
+>import Math.Tools.Median
 >import Math.Tools.Universe
 >import Math.Tools.PrettyP as Tools.PrettyP
 >import Math.Tools.CoMonad
@@ -55,7 +57,13 @@
 >import Math.Matrix.Vector4
 >import Math.Number.StreamInterface hiding (drop, take)
 
+>type instance RealPart (row -> a) = row -> RealPart a
+>type instance ImagPart (row -> a) = row -> ImagPart a
+
 >type (row :&: col) elem = (row -> elem) :-> (col -> elem)
+
+>type instance RealPart ((row :&: col) elem) = (row :&: col) (RealPart elem)
+>type instance ImagPart ((row :&: col) elem) = (row :&: col) (ImagPart elem)
 >
 >type Matrix3S row col dep elem = (row -> dep -> elem)
 >                             :-> (col :&: dep) elem
@@ -309,11 +317,11 @@ instance Transposable ((->) row) ((->) col) a where
 >   diagonalImpl (Matrix f) i = f i i
 >   diagonalMatrixImpl f (Matrix m) = Matrix $ \i j -> if i == j then f i else m i j
 >
->instance (Integral row, Universe row, SupportsMatrixMultiplication ((->) row) ((->) row) ((->) row) a)
+>instance (a ~ Scalar a, Integral row, Universe row, SupportsMatrixMultiplication ((->) row) ((->) row) ((->) row) a)
 > => LieAlgebra ((row :&: row) a) where
 >   x %<>% y = x %***% y %- y %***% x
 >
->(%***%) :: (Integral row, Integral mid, Universe row, Universe col, Universe mid, SupportsMatrixMultiplication ((->) row) ((->) col) ((->) mid) a)
+>(%***%) :: (a ~ Scalar a, Integral row, Integral mid, Universe row, Universe col, Universe mid, SupportsMatrixMultiplication ((->) row) ((->) col) ((->) mid) a)
 > => (row :&: mid) a -> (mid :&: col) a -> (row :&: col) a
 >(%***%) = (%**%)
 
@@ -394,6 +402,22 @@ leviCivita4S :: (VectorSpace a, Fractional (Scalar a), ConjugateSymmetric a, Num
 >   diagonalProjections i = MakeIndex (\fi -> (fi i)) (\a fi j -> if i == j then a else fi j) 
 >   indexableIndices i = fromIntegral i
 >
+
+>instance (Eq c, Universe dim) => Eq (dim -> c) where
+>   (==) = separator
+
+>instance (Ord c, Universe dim) => Ord (dim -> c) where
+>   f <= g = and [f x <= g x | x <- allElements]
+
+>instance (MedianAlgebra c, Universe dim) => MedianAlgebra (dim -> c) where
+>   med f g h eps = med (f eps) (g eps) (h eps)
+
+>instance (Universe a, Eq a) => Eq (Endo a) where
+>   (Endo f) == (Endo g) = f == g
+
+>instance (Universe a, Ord a) => Ord (Endo a) where
+>   (Endo f) <= (Endo g) = f == g
+
 
 instance (Universe a, Integral a, InnerProductSpace b) => CoordinateSpace (a -> b) where
    type Coordinate (a -> b) = a

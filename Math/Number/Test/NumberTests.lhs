@@ -4,9 +4,11 @@
 >import qualified Math.Number.Test.RTest
 >import qualified Math.Number.Test.StreamTest
 >import qualified Math.Number.Test.DimensionalAnalysisTest
+>import qualified Math.Number.Test.TrigonometricTest
 > 
 >tests = test [ Math.Number.Test.RTest.tests,
 >               Math.Number.Test.RealTest.tests,
 >               Math.Number.Test.StreamTest.tests,
->               Math.Number.Test.DimensionalAnalysisTest.tests
+>               Math.Number.Test.DimensionalAnalysisTest.tests,
+>               Math.Number.Test.TrigonometricTest.tests
 >             ]
